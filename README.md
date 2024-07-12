@@ -1,6 +1,6 @@
 # Collocation Benchmark
 
-This is a benchmark to measure the end-to-end performance of machine learning pipelines. In comparison to the other existing options, this benchmark focuses on:
+This is a benchmark to measure the end-to-end performance of (collocated) machine learning pipelines. In comparison to the other existing options, this benchmark focuses on:
 
 - Measurement of end-to-end perfomance - the alternatives often focus on quantifying the performance of DNN inference and discounting the other parts of the pipelines, such as data loading or preprocessing, which account for a significant portion of the pipeline execution.
 - Modularity - while the benchmark provides different use case scenarios, the implementation of the different stages of the pipeline is not locked. The different stages of the pipeline, such as data loading are standalone building blocks, making for easier performance evaluation.
