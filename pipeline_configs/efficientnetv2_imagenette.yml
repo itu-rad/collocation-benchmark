@@ -1,0 +1,20 @@
+Pipelines:
+  - name: EfficientNetv2 S Imagenette
+    Dataset:
+      name: imagenette
+      provider: torchvision
+      type: image
+    stages:
+      - name: Load Imagenette samples from TorchVision Dataset
+        type: data_loading
+        module_name: torchvision_from_dataset
+        config:
+          weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1
+      - name: EfficientNet inference
+        type: inference
+        module_name: torchvision_classification
+        config:
+          model: efficient
+          model_checkpoint_path: "efficientnet_example/efficientnet_v2_imagenette.pth"
+          replace_classifier: True
+          num_classes: 10
