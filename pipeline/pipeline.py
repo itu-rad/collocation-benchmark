@@ -1,3 +1,4 @@
+from stages.dataset.dataset_registry import DATASET_REGISTRY
 from stages.stage_registry import STAGE_REGISTRY
 
 
@@ -6,6 +7,7 @@ class Pipeline:
     as well as, the logging of execution times of the separate stages.
     """
 
+    dataset = None
     stages = []
     is_training = []
     logger = None  # import logger once done
@@ -16,21 +18,37 @@ class Pipeline:
 
         print("Got pipeline config", pipeline_config)
 
-        # TODO: handle dataset here. It should not be counted as a stage but rather
-        # instantiated and pushed into stage_config of a stage asking for dataset
-        # by the name of the dataset module (usually the dataloader module).
+        dataset_config = pipeline_config.get("dataset", None)
+        if dataset_config is None:
+            raise Exception("Pipeline definition is missing a dataset.")
+
+        self.dataset = DATASET_REGISTRY[dataset_config["module_name"]](
+            dataset_config
+        ).get_dataset()
 
         stage_config = pipeline_config.get("stages", None)
         if stage_config is None:
             raise Exception("Pipeline definition is missing pipeline stages.")
         for stage in stage_config:
-            STAGE_REGISTRY[stage["type"]][stage["module_name"]](stage)
+            if stage.get("ingest_dataset", False):
+                stage["config"]["dataset"] = self.dataset
+            self.stages.append(
+                STAGE_REGISTRY[stage["type"]][stage["module_name"]](stage)
+            )
 
     def prepare(self):
-        """This runs prepare functions of the stages of the pipelines which contain functionality,
+        """Run prepare functions of the stages of the pipelines which contain functionality,
         such as loading/building models."""
-        pass
+        for stage in self.stages:
+            stage.prepare()
 
-    def run(self):
-        """This is a function that invokes the pipeline"""
-        pass
+    def run(self, id):
+        """Invoke the pipeline and pass data between stages."""
+        data = {
+            "id": id,
+        }
+
+        for stage in self.stages:
+            data = stage.run(data)
+
+        return data

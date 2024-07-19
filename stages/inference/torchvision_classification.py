@@ -24,6 +24,7 @@ class TorchVisionClassification(Stage):
             Exception: Model checkpoint path is required for inference.
         """
         super().__init__(stage_config)
+        stage_config = stage_config.get("config", {})
 
         self.model_name = stage_config.get("model", None)
         if self.model_name is None:
@@ -34,7 +35,7 @@ class TorchVisionClassification(Stage):
         self.replace_classifier = stage_config.get("replace_classifier", False)
         self.num_classes = stage_config.get("num_classes", 1000)
 
-    def replace_last_module(self, module: tuple[str, torch.Module]):
+    def replace_last_module(self, module):
         """Replace the last module/layer inside the classifier head of the model.
 
         Args:
@@ -47,8 +48,9 @@ class TorchVisionClassification(Stage):
                 module[1].in_features, self.num_classes
             )
         else:
-            self.model.__getattr__(".".join(last_module_name[:-1]))
-            [last_module_name[-1]] = Linear(module[1].in_features, self.num_classes)
+            self.model.__getattr__(".".join(last_module_name[:-1]))[
+                int(last_module_name[-1])
+            ] = Linear(module[1].in_features, self.num_classes)
 
     def get_device(self):
         """Decides between GPU acceleration based on availability.
@@ -57,13 +59,13 @@ class TorchVisionClassification(Stage):
             str: String representing the type of device used for inference
         """
         if torch.cuda.is_available():
-            print("Using cuda for inference")
+            # print("Using cuda for inference")
             device = "cuda:0"
         elif torch.backends.mps.is_available():
-            print("Using Metal Performance Shaders for inference")
+            # print("Using Metal Performance Shaders for inference")
             device = "mps:0"
         else:
-            print("Using CPU for inference")
+            # print("Using CPU for inference")
             device = "cpu"
         return device
 
@@ -96,7 +98,17 @@ class TorchVisionClassification(Stage):
             dimensons of the model.
         """
 
-        outputs = self.model(data)
+        inputs = data.get("data", None)
+        if inputs is None:
+            raise Exception("Did not receive any input from the previous stage")
+
+        [inputs, labels] = inputs
+        device = self.get_device()
+        inputs = inputs.to(device)
+
+        outputs = self.model(inputs)
         _, preds = torch.max(outputs, 1)
 
-        return preds
+        data["data"] = [preds, labels]
+
+        return data

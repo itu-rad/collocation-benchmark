@@ -6,9 +6,10 @@ from functools import wraps
 def log_phase(f):
     @wraps(f)
     def wrapper(self, *args, **kw):
-        print(f"{time.perf_counter}\t{self.name}\tSTART\t{f.__name__}")
+        # TODO: the print statements here should be offloaded to custom logger
+        print(f"{time.perf_counter_ns()}, {self.name}, START, {f.__name__}")
         result = f(self, *args, **kw)
-        print(f"{time.perf_counter}\t{self.name}\tSTART\t{f.__name__}")
+        print(f"{time.perf_counter_ns()}, {self.name}, END, {f.__name__}")
         return result
 
     return wrapper
