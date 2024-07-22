@@ -1,3 +1,4 @@
+name: "EfficientNetv2 S Imagenette single pipeline benchmark"
 pipelines:
   - name: EfficientNetv2 S Imagenette
     dataset:

@@ -1,15 +1,23 @@
-from enum import Enum
 import time
 from functools import wraps
+import logging
 
 
 def log_phase(f):
     @wraps(f)
     def wrapper(self, *args, **kw):
         # TODO: the print statements here should be offloaded to custom logger
-        print(f"{time.perf_counter_ns()}, {self.name}, START, {f.__name__}")
+        # https://stackoverflow.com/questions/641420/how-should-i-log-while-using-multiprocessing-in-python
+        # use this thread to implement the logging. Here, loadgen should start up a new process for
+        # the logger and new process for each new pipeline (have to think about how to initialize
+        # this).
+        if not self.disable_logs:
+            # print(f"{time.perf_counter_ns()}, {self.name}, START, {f.__name__}")
+            logging.info(f"{self.parent_name}, {self.name}, {f.__name__}, start")
         result = f(self, *args, **kw)
-        print(f"{time.perf_counter_ns()}, {self.name}, END, {f.__name__}")
+        if not self.disable_logs:
+            # print(f"{time.perf_counter_ns()}, {self.name}, END, {f.__name__}")
+            logging.info(f"{self.parent_name}, {self.name}, {f.__name__}, end")
         return result
 
     return wrapper
@@ -22,9 +30,14 @@ class Stage:
     easy as possible."""
 
     name = "Generic stage"
+    parent_name = "Unknown parent"
+    disable_logs = False
 
-    def __init__(self, stage_config):
+    def __init__(self, stage_config, parent_name):
         self.name = stage_config.get("name", "Unknown stage")
+        if parent_name is not None and len(parent_name) > 0:
+            self.parent_name = parent_name
+        self.disable_logs = stage_config.get("disable_logs", False)
 
     @log_phase
     def prepare(self):

@@ -1,5 +1,4 @@
 from torch.utils.data import DataLoader
-import torch
 
 from stages.stage import Stage, log_phase
 
@@ -11,13 +10,13 @@ class TorchFromDataset(Stage):
     num_workers = 0
     preprocessing = False
 
-    def __init__(self, stage_config):
+    def __init__(self, stage_config, parent_name):
         """nitialize the stage by parsing the stage configuration.
 
         Args:
             stage_config (dict): Stage configuration, such as batch size and number of workers.
         """
-        super().__init__(stage_config)
+        super().__init__(stage_config, parent_name)
         stage_config = stage_config.get("config", {})
 
         self.dataset = stage_config.get("dataset", None)

@@ -9,14 +9,14 @@ class TorchVisionPreprocessFromWeights(Stage):
     weights = None
     preprocess = None
 
-    def __init__(self, stage_config):
+    def __init__(self, stage_config, parent_name):
         """nitialize the stage by parsing the stage configuration.
 
         Args:
             stage_config (_type_): Stage configuration, such as the TorchVision weight names
             to extract preprocessing steps from.
         """
-        super().__init__(stage_config)
+        super().__init__(stage_config, parent_name)
         stage_config = stage_config.get("config", {})
 
         self.weight_name = stage_config.get("weights", None)

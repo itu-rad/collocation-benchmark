@@ -11,7 +11,7 @@ class TorchVisionDataset(Stage):
     dataset_name = ""
     split = "val"
 
-    def __init__(self, stage_config: dict):
+    def __init__(self, stage_config: dict, parent_name):
         """Initialize the stage by parsing the stage configuration.
 
         Args:
@@ -21,7 +21,7 @@ class TorchVisionDataset(Stage):
             Exception: Missing model name.
             Exception: Model checkpoint path is required for inference.
         """
-        super().__init__(stage_config)
+        super().__init__(stage_config, parent_name)
         stage_config = stage_config.get("config", {})
 
         dataset_name = stage_config.get("dataset_name", None)
