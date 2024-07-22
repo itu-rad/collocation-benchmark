@@ -101,7 +101,6 @@ class TorchVisionClassification(Stage):
         inputs = data.get("data", None)
         if inputs is None:
             raise Exception("Did not receive any input from the previous stage")
-
         [inputs, labels] = inputs
         device = self.get_device()
         inputs = inputs.to(device)

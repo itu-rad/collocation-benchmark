@@ -12,12 +12,10 @@ def log_phase(f):
         # the logger and new process for each new pipeline (have to think about how to initialize
         # this).
         if not self.disable_logs:
-            # print(f"{time.perf_counter_ns()}, {self.name}, START, {f.__name__}")
-            logging.info(f"{self.parent_name}, {self.name}, {f.__name__}, start")
+            logging.info("%s, %s, %s, start", self.parent_name, self.name, f.__name__)
         result = f(self, *args, **kw)
         if not self.disable_logs:
-            # print(f"{time.perf_counter_ns()}, {self.name}, END, {f.__name__}")
-            logging.info(f"{self.parent_name}, {self.name}, {f.__name__}, end")
+            logging.info("%s, %s, %s, end", self.parent_name, self.name, f.__name__)
         return result
 
     return wrapper

@@ -29,6 +29,7 @@ class Pipeline:
         ).get_dataset()
 
         stage_config = pipeline_config.get("stages", None)
+
         if stage_config is None:
             raise Exception("Pipeline definition is missing pipeline stages.")
         for stage in stage_config:
@@ -42,7 +43,6 @@ class Pipeline:
         """Run prepare functions of the stages of the pipelines which contain functionality,
         such as loading/building models."""
         logging.info("%s, pipeline, prepare, start", self.name)
-
         for stage in self.stages:
             stage.prepare()
 
@@ -55,7 +55,6 @@ class Pipeline:
         }
 
         logging.info("%s, pipeline, run, start", self.name)
-
         for stage in self.stages:
             data = stage.run(data)
 
