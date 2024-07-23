@@ -1,7 +1,7 @@
+import logging
+
 from stages.dataset.dataset_registry import DATASET_REGISTRY
 from stages.stage_registry import STAGE_REGISTRY
-
-import logging
 
 
 class Pipeline:
@@ -48,16 +48,17 @@ class Pipeline:
 
         logging.info("%s, pipeline, prepare, end", self.name)
 
-    def run(self, id):
+    def run(self, sample_queue, event):
         """Invoke the pipeline and pass data between stages."""
-        data = {
-            "id": id,
-        }
 
-        logging.info("%s, pipeline, run, start", self.name)
-        for stage in self.stages:
-            data = stage.run(data)
+        while True:
+            idx = sample_queue.get()
+            if idx is None:
+                break
+            data = {"id": idx}
+            logging.info("%s, pipeline, run, start", self.name)
+            for stage in self.stages:
+                data = stage.run(data)
 
-        logging.info("%s, pipeline, run, end", self.name)
-
-        return data
+            logging.info("%s, pipeline, run, end", self.name)
+            event.set()

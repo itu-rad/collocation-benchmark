@@ -1,6 +1,12 @@
 name: "EfficientNetv2 S Imagenette single pipeline benchmark with preprocessing in dataloader"
 pipelines:
   - name: EfficientNetv2 S Imagenette
+    loadgen:
+      type: poisson
+      max_queries: 200
+      timeout: 30
+      config:
+        rate: 20 # average #requests/sec
     dataset:
       name: Imagenette dataset
       module_name: torchvision_dataset

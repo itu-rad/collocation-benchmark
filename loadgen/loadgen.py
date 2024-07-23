@@ -1,9 +1,13 @@
 import logging
 from logging.handlers import QueueHandler
 import uuid
-import torch
+from threading import Thread, Event
+from queue import Queue
+from time import sleep
 
-from pipeline import pipeline
+from loadgen.schedulers.offline_scheduler import OfflineLoadScheduler
+from loadgen.schedulers.poisson_scheduler import PoissionLoadScheduler
+from loadgen.schedulers.scheduler_registry import SCHEDULER_REGISTRY
 from pipeline.pipeline import Pipeline
 
 
@@ -20,9 +24,17 @@ def runLoadGen(pipeline_config, logger_queue):
     loadgen.run()
 
 
+# responsibility of a scheduler
+def genload(sample_queue):
+    for _ in range(30):
+        sample_queue.put_nowait(uuid.uuid4())
+        sleep(0.2)
+    sample_queue.put(None)
+
+
 class LoadGen:
     logger = None
-    pipeline = None
+    pipeline_thread = None
 
     def __init__(self, pipeline_config, logger_queue):
 
@@ -32,19 +44,24 @@ class LoadGen:
         self.logger.setLevel(logging.DEBUG)
         self.logger.addHandler(qh)
 
-        self.pipeline = Pipeline(pipeline_config)
+        pipeline = Pipeline(pipeline_config)
+        pipeline.prepare()
 
-        # print("Num threads: ", torch.get_num_thread())
-        # torch.set_num_threads(1)
-        # print(torch.__config__.parallel_info())
+        loadgen_config = pipeline_config.get("loadgen", {})
+        scheduler_type = loadgen_config.get("type", "offline")
+        scheduler = SCHEDULER_REGISTRY[scheduler_type](loadgen_config)
+        scheduler.prepare()
+
+        sample_queue = Queue(maxsize=10)
+        event = Event()
+
+        self.pipeline_thread = Thread(target=pipeline.run, args=[sample_queue, event])
+        self.scheduler_thread = Thread(
+            target=scheduler.generate, args=[sample_queue, event]
+        )
 
     def run(self):
-        self.pipeline.prepare()
-
-        for _ in range(1000):
-            result = self.pipeline.run(uuid.uuid4())
-            print(result)
-            # Test on 1000 samples:
-            # mixed_benchmark 36.681s
-            # extra preprocessing 32.108s
-            # preprocessing in dataloader 33.903s
+        self.pipeline_thread.start()
+        self.scheduler_thread.start()
+        self.scheduler_thread.join()
+        self.pipeline_thread.join()
