@@ -1,6 +1,7 @@
 import plotly.express as px
 import pandas as pd
 import argparse
+from tqdm import tqdm
 
 
 def parse_args():
@@ -17,7 +18,7 @@ def merge_start_end(df):
     stack = dict()
     rows = []
 
-    for idx in range(1, df.shape[0]):
+    for idx in tqdm(range(1, df.shape[0])):
         next_row = df.iloc[idx]
         if len(stack.get(next_row["pipeline_name"], [])) == 0:
             stack[next_row["pipeline_name"]] = [next_row]
@@ -37,9 +38,10 @@ def merge_start_end(df):
                     "Phase": matched_row["phase"].strip(),
                     "Level": (
                         "Level 0"
-                        if matched_row["module_name"].strip() == "pipeline"
+                        if matched_row["module_name"].strip().find("pipeline") == 0
                         else "Level 1"
                     ),
+                    "Query submitted": matched_row["submitted"],
                 }
             )
         else:
@@ -53,10 +55,19 @@ def main():
     args = parse_args()
     df = pd.read_csv(
         args.log_file_path,
-        names=["timestamp", "pipeline_name", "module_name", "phase", "state"],
+        names=[
+            "timestamp",
+            "pipeline_name",
+            "module_name",
+            "phase",
+            "state",
+            "submitted",
+        ],
     )
+    df = df.dropna(thresh=2)
 
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+    df["submitted"] = pd.to_datetime(df["submitted"], unit="s")
 
     # merge start and end records of events into one
     new_df = merge_start_end(df)
@@ -64,6 +75,9 @@ def main():
     # calculate the timedelta between start and end of an event in milliseconds
     new_df["Duration"] = (
         new_df["End timestamp"] - new_df["Start timestamp"]
+    ) / pd.Timedelta(milliseconds=1)
+    new_df["Slack"] = (
+        new_df["Start timestamp"] - new_df["Query submitted"]
     ) / pd.Timedelta(milliseconds=1)
 
     # create a map of columns to show in a tooltip
@@ -75,6 +89,8 @@ def main():
         "Pipeline name": False,
         "Level": False,
         "Phase": True,
+        "Query submitted": False,
+        "Slack": True,
     }
 
     fig = px.timeline(

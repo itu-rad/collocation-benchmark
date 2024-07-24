@@ -7,9 +7,9 @@ from stages.stage import Stage
 
 
 class TorchVisionDataset(Stage):
-    dataset = None
+    datasets = dict()
     dataset_name = ""
-    split = "val"
+    split = ["val"]
 
     def __init__(self, stage_config: dict, parent_name):
         """Initialize the stage by parsing the stage configuration.
@@ -30,36 +30,45 @@ class TorchVisionDataset(Stage):
         self.dataset = torchvision.datasets.__dict__.get(dataset_name, None)
         if self.dataset is None:
             raise Exception(f"Could not find dataset {dataset_name}.")
-        split = stage_config.get("split", "val")
+        split = stage_config.get("split", ["val"])
         dataset_downloaded = os.path.exists(
             os.path.join(os.getcwd(), "data", dataset_name)
         )
-        print(f"Dataset downloaded? {dataset_downloaded}")
+        # print(f"Dataset downloaded? {dataset_downloaded}")
         weights_name = stage_config.get("weights", None)
         if weights_name is None:
-            self.dataset = self.dataset(
-                root=f"data/{self.dataset_name}",
-                split=split,
-                download=(not dataset_downloaded),
-                transform=v2.ToTensor(),
-            )
+            self.datasets = {
+                x: self.dataset(
+                    root=f"data/{self.dataset_name}",
+                    split=x,
+                    download=(not dataset_downloaded),
+                    transform=v2.ToTensor(),
+                )
+                for x in split
+            }
         else:
             weights = get_weight(weights_name)
             preprocess = weights.transforms()
-            self.dataset = self.dataset(
-                root=f"data/{self.dataset_name}",
-                split=split,
-                download=(not dataset_downloaded),
-                transform=preprocess,
-            )
+            self.datasets = {
+                x: self.dataset(
+                    root=f"data/{self.dataset_name}",
+                    split=x,
+                    download=(not dataset_downloaded),
+                    transform=preprocess,
+                )
+                for x in split
+            }
 
     def prepare(self):
         """Build the model according to the config and load the weights"""
 
-        return self.dataset
+        return self.datasets
 
     def get_dataset(self):
-        return self.dataset
+        return self.datasets
+
+    def get_length(self):
+        return {k: len(v) for (k, v) in self.datasets.items()}
 
     def run(self, data):
         """Run inference query
@@ -71,5 +80,6 @@ class TorchVisionDataset(Stage):
         if inputs is None:
             raise Exception("Did not receive any input from the previous stage")
 
-        data["data"] = self.dataset[inputs]
+        split = data.get("split", "val")
+        data["data"] = self.datasets[split][inputs]
         return data

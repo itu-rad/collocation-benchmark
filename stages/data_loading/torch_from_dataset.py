@@ -4,8 +4,8 @@ from stages.stage import Stage, log_phase
 
 
 class TorchFromDataset(Stage):
-    dataset = None
-    dataloader = None
+    datasets = dict()
+    dataloaders = dict()
     batch_size = 1
     num_workers = 0
     preprocessing = False
@@ -19,8 +19,8 @@ class TorchFromDataset(Stage):
         super().__init__(stage_config, parent_name)
         stage_config = stage_config.get("config", {})
 
-        self.dataset = stage_config.get("dataset", None)
-        if self.dataset is None:
+        self.datasets = stage_config.get("dataset", dict())
+        if self.datasets is None:
             raise Exception(
                 "Dataset is missing. Dataset is required to build a dataloader."
             )
@@ -36,23 +36,29 @@ class TorchFromDataset(Stage):
     def prepare(self):
         """Build the dataloader"""
         if self.preprocessing:
-            self.dataloader = DataLoader(
-                self.dataset,
-                self.batch_size,
-                num_workers=self.num_workers,
-                shuffle=True,
-                drop_last=True,
-            )
+            self.dataloaders = {
+                k: DataLoader(
+                    v,
+                    self.batch_size,
+                    num_workers=self.num_workers,
+                    shuffle=True,
+                    drop_last=True,
+                )
+                for (k, v) in self.datasets.items()
+            }
         else:
-            self.dataloader = DataLoader(
-                self.dataset,
-                self.batch_size,
-                num_workers=self.num_workers,
-                shuffle=True,
-                drop_last=True,
-                collate_fn=self.my_collate_fn,
-            )
-        self.dataloader = iter(self.dataloader)
+            self.dataloaders = {
+                k: DataLoader(
+                    v,
+                    self.batch_size,
+                    num_workers=self.num_workers,
+                    shuffle=True,
+                    drop_last=True,
+                    collate_fn=self.my_collate_fn,
+                )
+                for (k, v) in self.datasets.items()
+            }
+        self.dataloaders = {k: iter(v) for (k, v) in self.dataloaders.items()}
 
     @log_phase
     def run(self, data):
@@ -61,5 +67,6 @@ class TorchFromDataset(Stage):
         Args:
             data (Tensor): Input data
         """
-        data["data"] = next(self.dataloader)
+        split = data.get("split", "val")
+        data["data"] = next(self.dataloaders[split])
         return data

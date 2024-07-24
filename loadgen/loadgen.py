@@ -46,10 +46,11 @@ class LoadGen:
 
         pipeline = Pipeline(pipeline_config)
         pipeline.prepare()
+        dataset_length = pipeline.get_dataset_length()
 
         loadgen_config = pipeline_config.get("loadgen", {})
         scheduler_type = loadgen_config.get("type", "offline")
-        scheduler = SCHEDULER_REGISTRY[scheduler_type](loadgen_config)
+        scheduler = SCHEDULER_REGISTRY[scheduler_type](loadgen_config, dataset_length)
         scheduler.prepare()
 
         sample_queue = Queue(maxsize=10)

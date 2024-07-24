@@ -1,5 +1,5 @@
 from stages.data_loading.torch_from_dataset import TorchFromDataset
-from stages.inference.torchvision_classification import TorchVisionClassification
+from stages.classification.torchvision_classification import TorchVisionClassification
 from stages.preprocessing.torchvision_preprocess_from_weights import (
     TorchVisionPreprocessFromWeights,
 )

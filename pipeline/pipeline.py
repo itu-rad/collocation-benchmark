@@ -10,7 +10,7 @@ class Pipeline:
     """
 
     name = ""
-    dataset = None
+    datasets = None
     stages = []
     is_training = []
 
@@ -24,7 +24,7 @@ class Pipeline:
         if dataset_config is None:
             raise Exception("Pipeline definition is missing a dataset.")
 
-        self.dataset = DATASET_REGISTRY[dataset_config["module_name"]](
+        self.datasets = DATASET_REGISTRY[dataset_config["module_name"]](
             dataset_config, self.name
         ).get_dataset()
 
@@ -34,10 +34,13 @@ class Pipeline:
             raise Exception("Pipeline definition is missing pipeline stages.")
         for stage in stage_config:
             if stage.get("ingest_dataset", False):
-                stage["config"]["dataset"] = self.dataset
+                stage["config"]["dataset"] = self.datasets
             self.stages.append(
                 STAGE_REGISTRY[stage["type"]][stage["module_name"]](stage, self.name)
             )
+
+    def get_dataset_length(self):
+        return {k: len(v) for (k, v) in self.datasets.items()}
 
     def prepare(self):
         """Run prepare functions of the stages of the pipelines which contain functionality,
@@ -52,13 +55,16 @@ class Pipeline:
         """Invoke the pipeline and pass data between stages."""
 
         while True:
-            idx = sample_queue.get()
-            if idx is None:
+            data = sample_queue.get()
+            if data is None:
                 break
-            data = {"id": idx}
-            logging.info("%s, pipeline, run, start", self.name)
+            split = data.get("split", "val")
+            submitted = data.get("query_submitted", 0)
+            logging.info(
+                "%s, pipeline - %s, run, start, %.6f", self.name, split, submitted
+            )
             for stage in self.stages:
                 data = stage.run(data)
 
-            logging.info("%s, pipeline, run, end", self.name)
+            logging.info("%s, pipeline - %s, run, end", self.name, split)
             event.set()

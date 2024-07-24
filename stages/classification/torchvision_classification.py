@@ -1,5 +1,6 @@
 import torch
-from torch.nn import Linear
+from torch.nn import Linear, CrossEntropyLoss
+from torch.optim import SGD
 from torchvision.models import get_model
 
 from stages.stage import Stage, log_phase
@@ -11,6 +12,8 @@ class TorchVisionClassification(Stage):
     model_checkpoint_path = None
     replace_classifier = False
     num_classes = 1000
+    optimizer = None
+    criterion = None
 
     def __init__(self, stage_config: dict, parent_name):
         """Initialize the stage by parsing the stage configuration.
@@ -85,9 +88,18 @@ class TorchVisionClassification(Stage):
         for param in self.model.parameters():
             param.requires_grad = False
 
+        params_to_update = []
+        for name, param in self.model.named_parameters():
+            if last_module[0] in name:
+                param.requires_grad = True
+                params_to_update.append(param)
+
         device = self.get_device()
         self.model = self.model.to(device)
-        self.model.eval()
+
+        self.optimizer = SGD(params_to_update, lr=0.001, momentum=0.9)
+
+        self.criterion = CrossEntropyLoss()
 
     @log_phase
     def run(self, data):
@@ -104,9 +116,23 @@ class TorchVisionClassification(Stage):
         [inputs, labels] = inputs
         device = self.get_device()
         inputs = inputs.to(device)
+        labels = labels.to(device)
 
-        outputs = self.model(inputs)
-        _, preds = torch.max(outputs, 1)
+        split = data.get("split", "val")
+        if split == "val":
+            self.model.eval()
+        else:
+            self.model.train()
+
+        with torch.set_grad_enabled(split == "train"):
+            outputs = self.model(inputs)
+            loss = self.criterion(outputs, labels)
+
+            _, preds = torch.max(outputs, 1)
+
+            if split == "train":
+                loss.backward()
+                self.optimizer.step()
 
         data["data"] = [preds, labels]
 
