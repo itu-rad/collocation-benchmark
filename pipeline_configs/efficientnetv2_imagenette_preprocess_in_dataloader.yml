@@ -6,7 +6,7 @@ pipelines:
       max_queries: 200
       timeout: 30
       config:
-        rate: 20 # average #requests/sec
+        rate: 10 # average #requests/sec
     dataset:
       name: Imagenette dataset
       module_name: torchvision_dataset

@@ -1,5 +1,7 @@
 from threading import Timer
 
+# other scheduler options include: gamma distribution, paretto distribution, weibull distribution
+
 
 class LoadScheduler:
     max_queries = 100
