@@ -80,6 +80,8 @@ def main():
         new_df["Start timestamp"] - new_df["Query submitted"]
     ) / pd.Timedelta(milliseconds=1)
 
+    new_df["Slack"] = new_df["Slack"].fillna("n/a")
+
     # create a map of columns to show in a tooltip
     hover_data = {
         "Duration": True,

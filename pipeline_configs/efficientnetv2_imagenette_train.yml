@@ -25,11 +25,6 @@ pipelines:
           batch_size: 8
           num_workers: 0 # if 0 no prefetching else prefetches 2*num_workers samples
           preprocessing: True
-      # - name: Preprocess Imagenette data coming from DataLoader
-      #   type: preprocessing
-      #   module_name: torchvision_preprocess_from_weights
-      #   config:
-      #     weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1
       - name: EfficientNet inference
         type: inference
         module_name: torchvision_classification
