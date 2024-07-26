@@ -18,7 +18,7 @@ class OfflineLoadScheduler(LoadScheduler):
         self.timer.start()
         while counter < self.max_queries - 1:
             if self.is_training:
-                for _ in range(self.dataset_length["train"] // self.batch_size):
+                for _ in range(self.dataset_length["train"]):
                     print("train")
                     if self.stop:
                         break
@@ -35,7 +35,7 @@ class OfflineLoadScheduler(LoadScheduler):
                     counter += 1
                     if counter > self.max_queries:
                         self.stop = True
-            for _ in range(self.dataset_length["val"] // self.batch_size):
+            for _ in range(self.dataset_length["val"]):
                 print("eval")
                 if self.stop:
                     break

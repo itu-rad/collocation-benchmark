@@ -27,7 +27,7 @@ class PoissionLoadScheduler(LoadScheduler):
     def generate(self, queue, event):
         self.timer.start()
         event.set()
-        total_length = sum([x // self.batch_size for x in self.dataset_length.values()])
+        total_length = sum(self.dataset_length.values())
         split = "val"
         for i, offset in enumerate(self.offsets):
             if self.stop:
@@ -37,8 +37,7 @@ class PoissionLoadScheduler(LoadScheduler):
                 iters_this_epoch = i % total_length
                 split = (
                     "train"
-                    if iters_this_epoch
-                    <= self.dataset_length["train"] // self.batch_size
+                    if iters_this_epoch <= self.dataset_length["train"]
                     else "val"
                 )
             queue.put_nowait(

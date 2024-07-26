@@ -46,7 +46,7 @@ class LoadGen:
 
         pipeline = Pipeline(pipeline_config)
         pipeline.prepare()
-        dataset_length = pipeline.get_dataset_length()
+        dataset_length = list(pipeline.get_dataset_length().values())[0]
 
         loadgen_config = pipeline_config.get("loadgen", {})
         scheduler_type = loadgen_config.get("type", "offline")
