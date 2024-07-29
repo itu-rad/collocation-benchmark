@@ -4,12 +4,13 @@ pipelines:
     inputs: [0]
     outputs: [2]
     loadgen:
-      type: offline
+      type: poisson
       max_queries: 2000
       is_training: True
       timeout: 20000
+      queue_depth: 50
       config:
-        rate: 10 # average #requests/sec
+        rate: 8 # average #requests/sec
     stages:
       - name: Imagenette dataset
         id: 0

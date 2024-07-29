@@ -28,20 +28,26 @@ class PoissionLoadScheduler(LoadScheduler):
         self.timer.start()
         event.set()
         total_length = sum(self.dataset_length.values())
+        train_length = self.dataset_length.get("train", 0)
         split = "val"
         for i, offset in enumerate(self.offsets):
             if self.stop:
                 break
             sleep(offset)
+            iters_this_epoch = i % total_length
             if self.is_training:
-                iters_this_epoch = i % total_length
-                split = (
-                    "train"
-                    if iters_this_epoch <= self.dataset_length["train"]
-                    else "val"
-                )
+                split = "train" if iters_this_epoch < train_length else "val"
             queue.put_nowait(
-                {"id": uuid.uuid4(), "split": split, "query_submitted": time()}
+                {
+                    "id": uuid.uuid4(),
+                    "split": split,
+                    "query_submitted": time(),
+                    "batch": (
+                        iters_this_epoch
+                        if split == "train"
+                        else iters_this_epoch - train_length
+                    ),
+                }
             )
 
         queue.put(None)

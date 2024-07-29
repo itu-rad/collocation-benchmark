@@ -75,12 +75,10 @@ class TorchFromDataset(Stage):
             data_from_first = list(data_from_queues.values())[0]
             split = data_from_first.get("split", "val")
             batch_idx = data_from_first.get("batch", 0)
-            print("batch", batch_idx)
 
             # make sure to restart the iterator on every epoch
             # otherwise StopIteration exception is raised
             if batch_idx == 0:
-                print("creating new iterator")
                 dataloader_iter = iter(self.dataloaders[split])
             data_from_first["data"] = next(dataloader_iter)
             self.push_to_output(data_from_first)
