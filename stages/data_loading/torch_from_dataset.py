@@ -1,3 +1,4 @@
+from itertools import cycle
 from torch.utils.data import DataLoader
 
 from stages.stage import Stage, log_phase, log_phase_single
@@ -54,7 +55,7 @@ class TorchFromDataset(Stage):
                 )
                 for (k, v) in datasets.items()
             }
-        self.dataloaders = {k: iter(v) for (k, v) in self.dataloaders.items()}
+        # self.dataloaders = {k: iter(v) for (k, v) in self.dataloaders.items()}
 
     def run(self):
         """Run inference query
@@ -73,7 +74,15 @@ class TorchFromDataset(Stage):
 
             data_from_first = list(data_from_queues.values())[0]
             split = data_from_first.get("split", "val")
-            data_from_first["data"] = next(self.dataloaders[split])
+            batch_idx = data_from_first.get("batch", 0)
+            print("batch", batch_idx)
+
+            # make sure to restart the iterator on every epoch
+            # otherwise StopIteration exception is raised
+            if batch_idx == 0:
+                print("creating new iterator")
+                dataloader_iter = iter(self.dataloaders[split])
+            data_from_first["data"] = next(dataloader_iter)
             self.push_to_output(data_from_first)
 
             if not self.disable_logs:

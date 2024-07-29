@@ -42,6 +42,8 @@ def merge_start_end(df):
                         else "Level 1"
                     ),
                     "Query submitted": matched_row["submitted"],
+                    "Epoch": matched_row["epoch"],
+                    "Batch": matched_row["batch"],
                 }
             )
         else:
@@ -49,6 +51,22 @@ def merge_start_end(df):
 
     new_df = pd.DataFrame.from_dict(rows, orient="columns")
     return new_df
+
+
+def merge_details_from_pipeline(df):
+    pipeline = df[df["Level"] == "Level 0"]
+
+    for idx in range(len(pipeline)):
+        idx_whole = df[
+            (df["Start timestamp"] > pipeline.iloc[idx]["Start timestamp"])
+            & (df["End timestamp"] < pipeline.iloc[idx]["End timestamp"])
+            & (df["Pipeline name"] == pipeline.iloc[idx]["Pipeline name"])
+        ].index
+
+        df.loc[idx_whole, "Batch"] = pipeline.iloc[idx]["Batch"]
+        df.loc[idx_whole, "Epoch"] = pipeline.iloc[idx]["Epoch"]
+
+    return df
 
 
 def main():
@@ -62,15 +80,18 @@ def main():
             "phase",
             "state",
             "submitted",
+            "epoch",
+            "batch",
         ],
     )
-    df = df.dropna(thresh=2)
+    df = df.dropna(thresh=4)
 
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
     df["submitted"] = pd.to_datetime(df["submitted"], unit="s")
 
     # merge start and end records of events into one
     new_df = merge_start_end(df)
+    new_df = merge_details_from_pipeline(new_df)
 
     # calculate the timedelta between start and end of an event in milliseconds
     new_df["Duration"] = (
@@ -93,6 +114,8 @@ def main():
         "Phase": True,
         "Query submitted": False,
         "Slack": True,
+        "Epoch": True,
+        "Batch": True,
     }
 
     fig = px.timeline(

@@ -159,6 +159,8 @@ class Pipeline:
     def run(self, sample_queue, event):
         """Invoke the pipeline and pass data between stages."""
 
+        epoch_dict = {"train": 0, "val": 0}
+
         while True:
             data = sample_queue.get()
 
@@ -171,8 +173,16 @@ class Pipeline:
 
             split = data.get("split", "val")
             submitted = data.get("query_submitted", 0)
+            batch_idx = data.get("batch", 0)
+            if batch_idx == 0:
+                epoch_dict[split] += 1
             logging.info(
-                "%s, pipeline - %s, run, start, %.6f", self.name, split, submitted
+                "%s, pipeline - %s, run, start, %.6f, %d, %d",
+                self.name,
+                split,
+                submitted,
+                epoch_dict[split],
+                batch_idx + 1,
             )
 
             # populate the pipeline input queues / start pipeline execution
@@ -184,7 +194,12 @@ class Pipeline:
                 _ = output_queue.get(data)
 
             logging.info(
-                "%s, pipeline - %s, run, end, %.6f", self.name, split, submitted
+                "%s, pipeline - %s, run, end, %.6f, %d, %d",
+                self.name,
+                split,
+                submitted,
+                epoch_dict[split],
+                batch_idx + 1,
             )
 
             event.set()
