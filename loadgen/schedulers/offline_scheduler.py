@@ -18,7 +18,7 @@ class OfflineLoadScheduler(LoadScheduler):
         self.timer.start()
         while counter < self.max_queries - 1:
             if self.is_training:
-                for _ in range(self.dataset_length["train"] // self.batch_size):
+                for batch_idx in range(self.dataset_length["train"]):
                     print("train")
                     if self.stop:
                         break
@@ -29,13 +29,14 @@ class OfflineLoadScheduler(LoadScheduler):
                         {
                             "id": uuid.uuid4(),
                             "split": "train",
+                            "batch": batch_idx,
                             "query_submitted": time(),
                         }
                     )
                     counter += 1
                     if counter > self.max_queries:
                         self.stop = True
-            for _ in range(self.dataset_length["val"] // self.batch_size):
+            for batch_idx in range(self.dataset_length["val"]):
                 print("eval")
                 if self.stop:
                     break
@@ -43,7 +44,12 @@ class OfflineLoadScheduler(LoadScheduler):
                     event.wait()
                     event.clear()
                 queue.put_nowait(
-                    {"id": uuid.uuid4(), "split": "val", "query_submitted": time()}
+                    {
+                        "id": uuid.uuid4(),
+                        "split": "val",
+                        "batch": batch_idx,
+                        "query_submitted": time(),
+                    }
                 )
                 counter += 1
                 if counter > self.max_queries:

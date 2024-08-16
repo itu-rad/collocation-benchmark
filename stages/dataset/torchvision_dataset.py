@@ -3,13 +3,14 @@ from torchvision.transforms import v2
 from torchvision.models import get_weight
 import os
 
-from stages.stage import Stage
+from stages.stage import Stage, log_phase_single
 
 
 class TorchVisionDataset(Stage):
     datasets = dict()
     dataset_name = ""
     split = ["val"]
+    batch_size = 1
 
     def __init__(self, stage_config: dict, parent_name):
         """Initialize the stage by parsing the stage configuration.
@@ -26,7 +27,7 @@ class TorchVisionDataset(Stage):
 
         dataset_name = stage_config.get("dataset_name", None)
         if dataset_name is None:
-            raise Exception("Missing dataset name.")
+            raise ValueError("Missing dataset name.")
         self.dataset = torchvision.datasets.__dict__.get(dataset_name, None)
         if self.dataset is None:
             raise Exception(f"Could not find dataset {dataset_name}.")
@@ -59,27 +60,39 @@ class TorchVisionDataset(Stage):
                 for x in split
             }
 
+        self.batch_size = stage_config.get("batch_size", 1)
+
     def prepare(self):
         """Build the model according to the config and load the weights"""
+        super(TorchVisionDataset, self).prepare()
 
+    def get_datasets(self):
         return self.datasets
 
-    def get_dataset(self):
-        return self.datasets
+    def get_num_batches(self):
+        return {k: len(v) // self.batch_size for (k, v) in self.datasets.items()}
 
-    def get_length(self):
-        return {k: len(v) for (k, v) in self.datasets.items()}
-
-    def run(self, data):
+    def run(self):
         """Run inference query
 
         Args:
             data (Tensor): indices
         """
-        inputs = data.get("data", None)
-        if inputs is None:
-            raise Exception("Did not receive any input from the previous stage")
+        # inputs = data.get("data", None)
+        # if inputs is None:
+        #     raise Exception("Did not receive any input from the previous stage")
 
-        split = data.get("split", "val")
-        data["data"] = self.datasets[split][inputs]
-        return data
+        # split = data.get("split", "val")
+        # data["data"] = self.datasets[split][inputs]
+        # return data
+        while True:
+            inputs = self.get_next_from_queues()
+            if self.is_done(inputs):
+                self.push_to_output(list(inputs.values())[0])
+                break
+
+            if not self.disable_logs:
+                log_phase_single(self.parent_name, self.name, "run", "start")
+            self.push_to_output(list(inputs.values())[0])
+            if not self.disable_logs:
+                log_phase_single(self.parent_name, self.name, "run", "end")

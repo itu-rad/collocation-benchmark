@@ -9,7 +9,6 @@ class LoadScheduler:
     stop = False
     dataset_length = dict()
     is_training = False
-    batch_size = 1
 
     def __init__(self, loadgen_config, dataset_length):
         self.max_queries = loadgen_config.get("max_queries", 100)
@@ -17,7 +16,6 @@ class LoadScheduler:
         self.timer = Timer(timeout, self.stop_generator)
         self.dataset_length = dataset_length
         self.is_training = loadgen_config.get("is_training", False)
-        self.batch_size = loadgen_config.get("batch_size", 1)
 
     def prepare(self):
         pass

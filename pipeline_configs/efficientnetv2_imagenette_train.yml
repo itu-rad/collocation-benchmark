@@ -1,23 +1,31 @@
 name: "EfficientNetv2 S Imagenette training pipeline"
 pipelines:
   - name: EfficientNetv2 S Imagenette
+    inputs: [0]
+    outputs: [2]
     loadgen:
       type: poisson
-      max_queries: 125
-      timeout: 20000
+      max_queries: 2000
       is_training: True
-      batch_size: 8
+      timeout: 20000
+      queue_depth: 50
       config:
-        rate: 5
-    dataset:
-      name: Imagenette dataset
-      module_name: torchvision_dataset
-      config:
-        dataset_name: Imagenette # must be title-case
-        split: [val, train]
-        weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1
+        rate: 8 # average #requests/sec
     stages:
+      - name: Imagenette dataset
+        id: 0
+        outputs: [1]
+        type: dataset
+        module_name: torchvision_dataset
+        config:
+          dataset_name: Imagenette # must be title-case
+          split: [train, val]
+          batch_size: 8
+          weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1
       - name: Load Imagenette samples from TorchVision Dataset
+        id: 1
+        inputs: [0]
+        outputs: [2]
         type: data_loading
         module_name: torch_from_dataset
         ingest_dataset: True
@@ -25,12 +33,9 @@ pipelines:
           batch_size: 8
           num_workers: 0 # if 0 no prefetching else prefetches 2*num_workers samples
           preprocessing: True
-      # - name: Preprocess Imagenette data coming from DataLoader
-      #   type: preprocessing
-      #   module_name: torchvision_preprocess_from_weights
-      #   config:
-      #     weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1
       - name: EfficientNet inference
+        id: 2
+        inputs: [1]
         type: inference
         module_name: torchvision_classification
         config:

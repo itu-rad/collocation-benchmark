@@ -46,14 +46,15 @@ class LoadGen:
 
         pipeline = Pipeline(pipeline_config)
         pipeline.prepare()
-        dataset_length = pipeline.get_dataset_length()
+        dataset_length = list(pipeline.get_dataset_length().values())[0]
 
         loadgen_config = pipeline_config.get("loadgen", {})
         scheduler_type = loadgen_config.get("type", "offline")
         scheduler = SCHEDULER_REGISTRY[scheduler_type](loadgen_config, dataset_length)
         scheduler.prepare()
 
-        sample_queue = Queue(maxsize=10)
+        queue_depth = loadgen_config.get("queue_depth", 10)
+        sample_queue = Queue(maxsize=queue_depth)
         event = Event()
 
         self.pipeline_thread = Thread(target=pipeline.run, args=[sample_queue, event])

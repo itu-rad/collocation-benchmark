@@ -3,7 +3,7 @@ from torch.nn import Linear, CrossEntropyLoss
 from torch.optim import SGD
 from torchvision.models import get_model
 
-from stages.stage import Stage, log_phase
+from stages.stage import Stage, log_phase, log_phase_single
 
 
 class TorchVisionClassification(Stage):
@@ -31,10 +31,10 @@ class TorchVisionClassification(Stage):
 
         self.model_name = stage_config.get("model", None)
         if self.model_name is None:
-            raise Exception("Missing model name.")
+            raise ValueError("Missing model name.")
         self.model_checkpoint_path = stage_config.get("model_checkpoint_path", None)
         if self.model_name is None:
-            raise Exception("Model checkpoint path is required for inference.")
+            raise ValueError("Model checkpoint path is required for inference.")
         self.replace_classifier = stage_config.get("replace_classifier", False)
         self.num_classes = stage_config.get("num_classes", 1000)
 
@@ -75,6 +75,8 @@ class TorchVisionClassification(Stage):
     @log_phase
     def prepare(self):
         """Build the model according to the config and load the weights"""
+        super(TorchVisionClassification, self).prepare()
+
         # load the correct torchvision model
         self.model = get_model(self.model_name, weights=None)
 
@@ -101,39 +103,49 @@ class TorchVisionClassification(Stage):
 
         self.criterion = CrossEntropyLoss()
 
-    @log_phase
-    def run(self, data):
+    def run(self):
         """Run inference query
 
         Args:
             data (Tensor): Input data in the Torch format with size matching the input
             dimensons of the model.
         """
+        while True:
+            data_from_queues = self.get_next_from_queues()
 
-        inputs = data.get("data", None)
-        if inputs is None:
-            raise Exception("Did not receive any input from the previous stage")
-        [inputs, labels] = inputs
-        device = self.get_device()
-        inputs = inputs.to(device)
-        labels = labels.to(device)
+            if self.is_done(data_from_queues):
+                self.push_to_output(None)
+                break
 
-        split = data.get("split", "val")
-        if split == "val":
-            self.model.eval()
-        else:
-            self.model.train()
+            if not self.disable_logs:
+                log_phase_single(self.parent_name, self.name, "run", "start")
 
-        with torch.set_grad_enabled(split == "train"):
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, labels)
+            data_from_first = list(data_from_queues.values())[0]
+            inputs = data_from_first.get("data", None)
+            if inputs is None:
+                raise ValueError("Did not receive any input from the previous stage")
+            [inputs, labels] = inputs
+            device = self.get_device()
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
-            _, preds = torch.max(outputs, 1)
+            split = data_from_first.get("split", "val")
+            if split == "val":
+                self.model.eval()
+            else:
+                self.model.train()
 
-            if split == "train":
-                loss.backward()
-                self.optimizer.step()
+            with torch.set_grad_enabled(split == "train"):
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, labels)
 
-        data["data"] = [preds, labels]
+                _, preds = torch.max(outputs, 1)
 
-        return data
+                if split == "train":
+                    loss.backward()
+                    self.optimizer.step()
+
+            data_from_first["data"] = [preds, labels]
+            self.push_to_output(data_from_first)
+            if not self.disable_logs:
+                log_phase_single(self.parent_name, self.name, "run", "end")
