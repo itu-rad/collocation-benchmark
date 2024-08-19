@@ -1,9 +1,9 @@
 import argparse
-import yaml
 from multiprocessing import Process, Queue
+import yaml
 
 from utils.logger import Logger
-from loadgen.loadgen import runLoadGen
+from loadgen import run_loadgen
 
 
 def parse_args():
@@ -24,6 +24,7 @@ def main():
 
     benchmark_name = benchmark_config.get("name", "Unknown benchmark name")
 
+    # initialize a multiprocessing-safe logger
     logger_queue = Queue()
     logger = Logger(logger_queue, benchmark_name)
 
@@ -32,7 +33,7 @@ def main():
 
     # start each loadgen/pipeline as a separate process
     loadgen_processes = [
-        Process(target=runLoadGen, args=[pipeline_config, logger_queue])
+        Process(target=run_loadgen, args=[pipeline_config, logger_queue])
         for pipeline_config in pipeline_configs
     ]
 

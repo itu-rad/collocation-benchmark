@@ -1,4 +1,3 @@
-from itertools import cycle
 from torch.utils.data import DataLoader
 
 from stages.stage import Stage, log_phase, log_phase_single

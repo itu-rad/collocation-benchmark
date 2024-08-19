@@ -1,5 +1,5 @@
-from loadgen.schedulers.offline_scheduler import OfflineLoadScheduler
-from loadgen.schedulers.poisson_scheduler import PoissionLoadScheduler
+from .offline_scheduler import OfflineLoadScheduler
+from .poisson_scheduler import PoissonLoadScheduler
 
 
-SCHEDULER_REGISTRY = {"poisson": PoissionLoadScheduler, "offline": OfflineLoadScheduler}
+SCHEDULER_REGISTRY = {"poisson": PoissonLoadScheduler, "offline": OfflineLoadScheduler}
