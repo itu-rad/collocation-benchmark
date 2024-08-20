@@ -1,6 +1,6 @@
+import argparse
 import plotly.express as px
 import pandas as pd
-import argparse
 from tqdm import tqdm
 
 

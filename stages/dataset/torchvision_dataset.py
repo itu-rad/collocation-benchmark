@@ -1,18 +1,19 @@
+import os
 import torchvision.datasets
 from torchvision.transforms import v2
 from torchvision.models import get_weight
-import os
+
 
 from stages.stage import Stage, log_phase_single
 
 
 class TorchVisionDataset(Stage):
-    datasets = dict()
-    dataset_name = ""
-    split = ["val"]
-    batch_size = 1
+    """This stage defines and exposes a TorchVision dataset.
+    This stage does not perform any action during pipeline execution and is only
+    used for dataloader initialization.
+    """
 
-    def __init__(self, stage_config: dict, parent_name):
+    def __init__(self, stage_config, parent_name):
         """Initialize the stage by parsing the stage configuration.
 
         Args:
@@ -40,7 +41,7 @@ class TorchVisionDataset(Stage):
         if weights_name is None:
             self.datasets = {
                 x: self.dataset(
-                    root=f"data/{self.dataset_name}",
+                    root=f"data/{dataset_name}",
                     split=x,
                     download=(not dataset_downloaded),
                     transform=v2.ToTensor(),
@@ -52,7 +53,7 @@ class TorchVisionDataset(Stage):
             preprocess = weights.transforms()
             self.datasets = {
                 x: self.dataset(
-                    root=f"data/{self.dataset_name}",
+                    root=f"data/{dataset_name}",
                     split=x,
                     download=(not dataset_downloaded),
                     transform=preprocess,
@@ -62,29 +63,24 @@ class TorchVisionDataset(Stage):
 
         self.batch_size = stage_config.get("batch_size", 1)
 
-    def prepare(self):
-        """Build the model according to the config and load the weights"""
-        super(TorchVisionDataset, self).prepare()
-
     def get_datasets(self):
+        """Getter for the datasets
+
+        Returns:
+            dict[str, torchvision.datasets.VisionDataset]: dictionary of datasets (train and/or val)
+        """
         return self.datasets
 
     def get_num_batches(self):
+        """Calculate the number of batches for each dataset
+
+        Returns:
+            dict[str, int]: dictionary with number of batches for each dataset
+        """
         return {k: len(v) // self.batch_size for (k, v) in self.datasets.items()}
 
     def run(self):
-        """Run inference query
-
-        Args:
-            data (Tensor): indices
-        """
-        # inputs = data.get("data", None)
-        # if inputs is None:
-        #     raise Exception("Did not receive any input from the previous stage")
-
-        # split = data.get("split", "val")
-        # data["data"] = self.datasets[split][inputs]
-        # return data
+        """Pass the input onto the output (no action to be performed on the data)"""
         while True:
             inputs = self.get_next_from_queues()
             if self.is_done(inputs):

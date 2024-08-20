@@ -4,19 +4,20 @@ from stages.stage import Stage, log_phase, log_phase_single
 
 
 class TorchFromDataset(Stage):
-    datasets = dict()
-    dataloaders = dict()
-    batch_size = 1
-    num_workers = 0
-    preprocessing = False
+    """This stage contains the Torch dataloading functionality with the possibility
+    of prefetching and preprocessing the data.
+    """
 
     def __init__(self, stage_config, parent_name):
-        """nitialize the stage by parsing the stage configuration.
+        """Initialize the stage by parsing the stage configuration.
 
         Args:
             stage_config (dict): Stage configuration, such as batch size and number of workers.
         """
         super().__init__(stage_config, parent_name)
+
+        self.dataloaders: dict[str, DataLoader] = {}
+
         stage_config = stage_config.get("config", {})
 
         self.batch_size = stage_config.get("batch_size", 1)
@@ -24,12 +25,16 @@ class TorchFromDataset(Stage):
         self.preprocessing = stage_config.get("preprocessing", False)
 
     def my_collate_fn(self, data):
+        """Custom collate identity function, allowing us
+        to perform preprocessing in a separate stage.
+        """
         return data
 
     @log_phase
     def prepare(self):
-        """Build the dataloader"""
-        super(TorchFromDataset, self).prepare()
+        """Build the dataloaders."""
+        super().prepare()
+        # data loader has a single preceeding stage, which is the Torch dataset itself
         datasets = self.previous_stages[0].get_datasets()
         if self.preprocessing:
             self.dataloaders = {
@@ -57,11 +62,8 @@ class TorchFromDataset(Stage):
         # self.dataloaders = {k: iter(v) for (k, v) in self.dataloaders.items()}
 
     def run(self):
-        """Run inference query
-
-        Args:
-            data (Tensor): Input data
-        """
+        """Poll for incoming data in the queues,
+        load the next batch of data and pass it onto the output queues."""
         while True:
             data_from_queues = self.get_next_from_queues()
             if self.is_done(data_from_queues):

@@ -5,18 +5,21 @@ from stages.stage import Stage, log_phase, log_phase_single
 
 
 class TorchVisionPreprocessFromWeights(Stage):
-    weight_name = ""
-    weights = None
-    preprocess = None
+    """TorchVision stage for preprocessing. The preprocessing steps stem from the
+    preprocessing pipeline associated with the pretrained weights of a TorchVision model.
+    """
 
     def __init__(self, stage_config, parent_name):
-        """nitialize the stage by parsing the stage configuration.
+        """Initialize the stage by parsing the stage configuration.
 
         Args:
             stage_config (_type_): Stage configuration, such as the TorchVision weight names
             to extract preprocessing steps from.
         """
         super().__init__(stage_config, parent_name)
+
+        self.preprocess = None
+
         stage_config = stage_config.get("config", {})
 
         self.weight_name = stage_config.get("weights", None)
@@ -25,14 +28,15 @@ class TorchVisionPreprocessFromWeights(Stage):
 
     @log_phase
     def prepare(self):
-        """Build the dataloader"""
-        super(TorchVisionPreprocessFromWeights, self).prepare()
-        self.weights = get_weight(self.weight_name)
-        self.preprocess = self.weights.transforms()
+        """Load in the weights and the corresponding preprocessing pipeline"""
+        super().prepare()
+        weights = get_weight(self.weight_name)
+        self.preprocess = weights.transforms()
 
     @log_phase
     def run(self):
-        """Run inference query
+        """Poll the input queues for incomming data, preprocess the data and
+        pass it onto the output queues
 
         Args:
             data (Tensor): Input data
@@ -54,7 +58,8 @@ class TorchVisionPreprocessFromWeights(Stage):
 
             # NOTE: This is not optimal, but necessary if we want to measure loading and
             # preprocessing separately. Better solution would be to put the preprocessing into
-            # the dataset definition, which combines the two latencies in the dataloader's execution.
+            # the dataset definition, which combines the two latencies in the
+            # dataloader's execution.
             preprocessed_inputs = []
             labels = []
             for [sample, label] in inputs:

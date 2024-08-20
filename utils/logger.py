@@ -5,6 +5,8 @@ import re
 
 
 class Logger:
+    """Multiprocessing-safe logger, listening on events in a queue"""
+
     queue = None
     queue_listener = None
 
@@ -34,4 +36,5 @@ class Logger:
         logger.addHandler(file_handler)
 
     def stop_queue_listener(self):
+        """Stop the queue listener"""
         self.queue_listener.stop()
