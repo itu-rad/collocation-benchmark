@@ -2,7 +2,8 @@ import logging
 from queue import Queue
 from typing import Union
 
-from stages import STAGE_REGISTRY, Stage
+from stages import Stage
+from utils.component import get_stage_component
 
 
 class Pipeline:
@@ -32,13 +33,8 @@ class Pipeline:
             input_stage_config = stage_config_dict.get(input_stage_idx, None)
             if input_stage_config is None:
                 raise ValueError("Input stage not found")
-            stage_class: Union[Stage, None] = STAGE_REGISTRY.get(
-                input_stage_config["type"], {}
-            ).get(input_stage_config["module_name"], None)
-            if stage_class is None:
-                raise ValueError("Stage class not found")
-            self.input_stages[input_stage_idx] = stage_class(
-                input_stage_config, self.name
+            self.input_stages[input_stage_idx] = get_stage_component(
+                input_stage_config, pipeline_config
             )
 
         # find the output stages
@@ -52,13 +48,8 @@ class Pipeline:
             output_stage_config = stage_config_dict.get(output_stage_idx, None)
             if output_stage_config is None:
                 raise ValueError("output stage not found")
-            stage_class: Union[Stage, None] = STAGE_REGISTRY.get(
-                output_stage_config["type"], {}
-            ).get(output_stage_config["module_name"], None)
-            if stage_class is None:
-                raise ValueError("Stage class not found")
-            self.output_stages[output_stage_idx] = stage_class(
-                output_stage_config, self.name
+            self.output_stages[output_stage_idx] = get_stage_component(
+                output_stage_config, pipeline_config
             )
 
         # initialize the intermediate (rest of) stages
@@ -68,12 +59,9 @@ class Pipeline:
             if stage_idx is None:
                 raise ValueError("All stages are required to have IDs.")
             if stage_idx not in input_stages_idx and stage_idx not in output_stages_idx:
-                stage_class: Union[Stage, None] = STAGE_REGISTRY.get(
-                    stage["type"], {}
-                ).get(stage["module_name"], None)
-                if stage_class is None:
-                    raise ValueError("Stage class not found")
-                self.intermediate_stages[stage_idx] = stage_class(stage, self.name)
+                self.intermediate_stages[stage_idx] = get_stage_component(
+                    stage, pipeline_config
+                )
 
         # populate the input stages with the outputs
         for idx, input_stage in self.input_stages.items():

@@ -38,11 +38,10 @@ class Stage:
     make the development of specific part of a pipeline and subsequent evaluation as
     easy as possible."""
 
-    def __init__(self, stage_config, parent_name):
+    def __init__(self, stage_config, pipeline_config):
         self.id = stage_config["id"]
         self.name = stage_config.get("name", "Unknown stage")
-        if parent_name is not None and len(parent_name) > 0:
-            self.parent_name = parent_name
+        self.parent_name = pipeline_config.get("name", "Unknown pipeline")
         self.disable_logs = stage_config.get("disable_logs", False)
         self.previous_stages: list[Stage] = []
         self.next_stages: list[Stage] = []
