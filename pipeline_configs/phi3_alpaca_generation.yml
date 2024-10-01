@@ -1,12 +1,13 @@
-name: "PHI3 Mini Alpaca finetuning pipeline"
+name: "PHI3 Mini Alpaca generation pipeline"
 pipelines:
-  - name: Alpaca finetuning
+  - name: Alpaca generation
     inputs: [0]
     outputs: [2]
     loadgen:
-      type: offline
+      type: poisson
       max_queries: 2000
-      is_training: True
+      is_training: False
+      queue_depth: 100
       timeout: 20000
       config:
         rate: 1 # average #requests/sec
@@ -18,7 +19,7 @@ pipelines:
         config:
           dataset:
             component: torchtune.datasets.alpaca_cleaned_dataset
-            split: ["train"]
+            split: ["val"]
             batch_size_stage_id: 1
           tokenizer: 
             component: torchtune.models.phi3.phi3_mini_tokenizer
@@ -31,23 +32,22 @@ pipelines:
         config:
           tokenizer_stage_id: 0
           dataset_stage_id: 0
-          loss_fn_stage_id: 2
-          batch_size: 2
+          batch_size: 16
           shuffle: True
-      - name: Alpaca finetune
+          #split: ["val"]
+      - name: Alpaca inference
         id: 2
         inputs: [1]
-        component: stages.lora_finetune.Finetune
+        component: stages.lora_finetune.Inference
         config: 
           dtype: bf16
           device: cuda
+          temperature: 0.6
+          top_k: 300
+          max_new_tokens: 300
+          batch_size_stage_id: 1
           model:
-            component: torchtune.models.phi3.qlora_phi3_mini
-            lora_attn_modules: ['q_proj', 'v_proj', 'k_proj', 'output_proj']
-            apply_lora_to_mlp: True
-            apply_lora_to_output: False
-            lora_rank: 8
-            lora_alpha: 16
+            component: torchtune.models.phi3.phi3_mini
           checkpointer:
             component: torchtune.utils.FullModelHFCheckpointer
             checkpoint_dir: tmp/phi3-mini-4k
@@ -57,13 +57,3 @@ pipelines:
             ]
             output_dir: tmp/phi3-mini-4k
             model_type: PHI3_MINI
-          optimizer:
-            component: torch.optim.AdamW
-            weight_decay: 0.01
-            lr: 3.0e-4
-          lr_scheduler:
-            component: torchtune.modules.get_cosine_schedule_with_warmup
-            num_warmup_steps: 100
-          loss:
-            component: torch.nn.CrossEntropyLoss
-          gradient_accumulation_steps: 16

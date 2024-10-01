@@ -16,6 +16,7 @@ class Pipeline:
         print("Got pipeline config", pipeline_config)
 
         self.name = pipeline_config.get("name", "Unknown pipeline name")
+        self.stage_dict = {}
 
         stage_config = pipeline_config.get("stages", None)
         stage_config_dict = {stage.get("id", None): stage for stage in stage_config}
@@ -33,9 +34,9 @@ class Pipeline:
             input_stage_config = stage_config_dict.get(input_stage_idx, None)
             if input_stage_config is None:
                 raise ValueError("Input stage not found")
-            self.input_stages[input_stage_idx] = get_stage_component(
-                input_stage_config, pipeline_config
-            )
+            stage_obj = get_stage_component(input_stage_config, pipeline_config)
+            self.stage_dict[stage_obj.get_id()] = stage_obj
+            self.input_stages[input_stage_idx] = stage_obj
 
         # find the output stages
         output_stages_idx = pipeline_config.get("outputs", [])
@@ -48,9 +49,9 @@ class Pipeline:
             output_stage_config = stage_config_dict.get(output_stage_idx, None)
             if output_stage_config is None:
                 raise ValueError("output stage not found")
-            self.output_stages[output_stage_idx] = get_stage_component(
-                output_stage_config, pipeline_config
-            )
+            stage_obj = get_stage_component(output_stage_config, pipeline_config)
+            self.stage_dict[stage_obj.get_id()] = stage_obj
+            self.output_stages[output_stage_idx] = stage_obj
 
         # initialize the intermediate (rest of) stages
         self.intermediate_stages: dict[str, Stage] = dict()
@@ -59,9 +60,13 @@ class Pipeline:
             if stage_idx is None:
                 raise ValueError("All stages are required to have IDs.")
             if stage_idx not in input_stages_idx and stage_idx not in output_stages_idx:
-                self.intermediate_stages[stage_idx] = get_stage_component(
-                    stage, pipeline_config
-                )
+                stage_obj = get_stage_component(stage, pipeline_config)
+                self.stage_dict[stage_obj.get_id()] = stage_obj
+                self.intermediate_stages[stage_idx] = stage_obj
+
+        # populate the stages with the stage dictionary for dynamic method invocation
+        for stage in self.stage_dict.values():
+            stage.add_stage_dict(self.stage_dict)
 
         # populate the input stages with the outputs
         for idx, input_stage in self.input_stages.items():

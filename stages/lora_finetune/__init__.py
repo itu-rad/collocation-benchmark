@@ -1,3 +1,4 @@
-from .Dataset import Dataset
-from .DataLoader import TorchTuneDataLoader
-from .Finetune import Finetune
+from .dataset import Dataset
+from .dataloader import TorchTuneDataLoader
+from .finetune import Finetune
+from .inference import Inference

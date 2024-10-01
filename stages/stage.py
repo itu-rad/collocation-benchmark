@@ -10,11 +10,11 @@ def log_phase(f):
 
     @wraps(f)
     def wrapper(self, *args, **kw):
-        if not self.disable_logs:
-            logging.info("%s, %s, %s, start", self.parent_name, self.name, f.__name__)
+        if not self._disable_logs:
+            logging.info("%s, %s, %s, start", self._parent_name, self._name, f.__name__)
         result = f(self, *args, **kw)
-        if not self.disable_logs:
-            logging.info("%s, %s, %s, end", self.parent_name, self.name, f.__name__)
+        if not self._disable_logs:
+            logging.info("%s, %s, %s, end", self._parent_name, self._name, f.__name__)
         return result
 
     return wrapper
@@ -39,15 +39,14 @@ class Stage:
     easy as possible."""
 
     def __init__(self, stage_config, pipeline_config):
-        self.id = stage_config["id"]
-        self.name = stage_config.get("name", "Unknown stage")
-        self.parent_name = pipeline_config.get("name", "Unknown pipeline")
-        self.disable_logs = stage_config.get("disable_logs", False)
-        self.previous_stages: list[Stage] = []
-        self.next_stages: list[Stage] = []
-        self.input_queues: dict[int, Queue] = {}
-        self.output_queues: dict[int, Queue] = {}
-        self.thread = None
+        self._id = stage_config["id"]
+        self._name = stage_config.get("name", "Unknown stage")
+        self._parent_name = pipeline_config.get("name", "Unknown pipeline")
+        self._disable_logs = stage_config.get("disable_logs", False)
+        self._previous_stages: list[Stage] = []
+        self._next_stages: list[Stage] = []
+        self._input_queues: dict[int, Queue] = {}
+        self._output_queues: dict[int, Queue] = {}
 
     def get_id(self):
         """Getter for the ID of the stage
@@ -55,7 +54,7 @@ class Stage:
         Returns:
             int: Stage ID
         """
-        return self.id
+        return self._id
 
     def add_previous_stage(self, stage):
         """Add an incoming edge (preceeding stage) to the DAG execution graph.
@@ -63,7 +62,7 @@ class Stage:
         Args:
             stage (Stage): Preceeding stage
         """
-        self.previous_stages.append(stage)
+        self._previous_stages.append(stage)
 
     def add_next_stage(self, stage):
         """Add an outgoing edge (following stage) to the DAG execution graph.
@@ -71,7 +70,33 @@ class Stage:
         Args:
             stage (Stage): Following stage
         """
-        self.next_stages.append(stage)
+        self._next_stages.append(stage)
+
+    def add_stage_dict(self, stage_dict):
+        """Set the stage dictionary, which is used for dynamic method invocation.
+
+        Args:
+            stage_dict (dict): Dictionary mapping stage IDs to their corresponding Stage objects.
+        """
+        self._stage_dict = stage_dict
+
+    def dispatch_call(self, stage_id, method_name, *args, **kwargs):
+        """Invoke a method on a stage by its ID.
+
+        The method is invoked on the stage with the given ID. The method to invoke
+        is specified by the method_name parameter. The arguments to the method are
+        passed in as *args and **kwargs.
+
+        Args:
+            stage_id (int): The ID of the stage to invoke the method on.
+            method_name (str): The name of the method to invoke.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            The result of the invoked method.
+        """
+        return getattr(self._stage_dict[stage_id], method_name)(*args, **kwargs)
 
     def get_input_queues(self):
         """Getter for input queues
@@ -79,7 +104,7 @@ class Stage:
         Returns:
             list[queue.Queue]: Input queues
         """
-        return self.input_queues
+        return self._input_queues
 
     def set_output_queue(self, queue):
         """Setter for output queue. (only applicable in case of the last layer,
@@ -88,7 +113,7 @@ class Stage:
         Args:
             queue (queue.Queue): Output queue
         """
-        self.output_queues = {0: queue}
+        self._output_queues = {0: queue}
 
     def get_next_from_queues(self):
         """Retrieve items from all input queues
@@ -97,7 +122,7 @@ class Stage:
             dict[int, any]: dictionary of inputs.
         """
         inputs = dict()
-        for idx, input_queue in self.input_queues.items():
+        for idx, input_queue in self._input_queues.items():
             inputs[idx] = input_queue.get()
 
         return inputs
@@ -108,7 +133,7 @@ class Stage:
         Args:
             output (dict[str, any]): Element to be pushed to output queues
         """
-        for output_queue in self.output_queues.values():
+        for output_queue in self._output_queues.values():
             output_queue.put(output)
 
     def is_done(self, inputs):
@@ -130,29 +155,46 @@ class Stage:
 
     def join_thread(self):
         """Wait for the stage thread to join."""
-        self.thread.join()
+        self._thread.join()
 
     def create_input_queues(self):
         """Initializes all of the input queries, based on the number of preceeding stages."""
-        for previous_stage in self.previous_stages:
-            self.input_queues[previous_stage.get_id()] = Queue()
+        for previous_stage in self._previous_stages:
+            self._input_queues[previous_stage.get_id()] = Queue()
         # if no previous stages present (only the case for input stages),
         # create input queue
-        if len(self.previous_stages) == 0:
-            self.input_queues[0] = Queue()
+        if len(self._previous_stages) == 0:
+            self._input_queues[0] = Queue()
 
     def prepare(self):
         """Iterates through the following stages, gets their input queue and sets
         it as its output queue. Additionally, starts the thread of the run phase execution.
         """
-        for next_stage in self.next_stages:
+        for next_stage in self._next_stages:
             idx = next_stage.get_id()
             queues = next_stage.get_input_queues()
-            self.output_queues[idx] = queues[self.id]
-        self.thread = Thread(target=self.run)
-        self.thread.start()
+            self._output_queues[idx] = queues[self._id]
+        self._thread = Thread(target=self.run_wrapper)
+        self._thread.start()
 
-    def run(self):
+    def run(self, inputs):
+        """Pass the input onto the output (no action to be performed on the data)"""
+        return next(iter(inputs.values()))
+
+    def run_wrapper(self):
         """Continuously poll for the incoming data in the input queues,
         perform actions on them and push the results onto the output queues."""
-        pass
+        while True:
+            inputs = self.get_next_from_queues()
+            if self.is_done(inputs):
+                self.push_to_output(list(inputs.values())[0])
+                break
+
+            if not self._disable_logs:
+                log_phase_single(self._parent_name, self._name, "run", "start")
+
+            new_data = self.run(inputs)
+
+            self.push_to_output(new_data)
+            if not self._disable_logs:
+                log_phase_single(self._parent_name, self._name, "run", "end")

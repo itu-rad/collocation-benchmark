@@ -26,10 +26,14 @@ class Dataset(Stage):
         self._tokenizer = tokenizer_class(path=extra_config["tokenizer"]["path"])
         self._dataset = dataset_class(tokenizer=self._tokenizer)
 
-        splits = random_split(self._dataset, [0.8, 0.2])
-        self._datasets = {"train": splits[0], "val": splits[1]}
+        splits = extra_config["dataset"].get("split", ["val"])
+        dataset_splits = random_split(self._dataset, [0.8, 0.2])
+        dataset_splits = {"train": dataset_splits[0], "val": dataset_splits[1]}
+        self._datasets = {split: dataset_splits[split] for split in splits}
 
-        self.batch_size = 16
+        self._batch_size_stage_id = extra_config["dataset"].get(
+            "batch_size_stage_id", 1
+        )
 
     def get_datasets(self):
         """Getter for the datasets
@@ -45,7 +49,7 @@ class Dataset(Stage):
         Returns:
             dict[str, int]: dictionary with number of batches for each dataset
         """
-        return {k: len(v) // self.batch_size for (k, v) in self._datasets.items()}
+        return {k: len(v) // self._batch_size for (k, v) in self._datasets.items()}
 
     def get_tokenizer(self):
         """Getter for the tokenizer
@@ -60,16 +64,6 @@ class Dataset(Stage):
         """Prepare stage for execution"""
         super().prepare()
 
-    def run(self):
-        """Pass the input onto the output (no action to be performed on the data)"""
-        while True:
-            inputs = self.get_next_from_queues()
-            if self.is_done(inputs):
-                self.push_to_output(list(inputs.values())[0])
-                break
-
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "start")
-            self.push_to_output(list(inputs.values())[0])
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "end")
+        self._batch_size = self.dispatch_call(
+            self._batch_size_stage_id, "get_batch_size"
+        )

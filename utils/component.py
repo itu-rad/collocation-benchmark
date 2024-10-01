@@ -9,10 +9,10 @@ class InstantiationError(Exception):
         self.errors = errors
 
     def __str__(self):
-        error_messages = [f"{type(e).__name__}: {str(e)}" for e in self.errors]
+        # error_messages = [f"{type(e).__name__}: {str(e)}" for e in self.errors]
         return (
             "Unable to instantiate component, found the following errors: \n"
-            + "\n".join(error_messages)
+            + self.errors
         )
 
 

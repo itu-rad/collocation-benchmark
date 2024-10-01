@@ -41,6 +41,7 @@ class LoadGen:
 
         # TODO: Fix this so the loadgen can use multiple datasets
         dataset_length = list(pipeline.get_dataset_length().values())[0]
+        print("dataset length: ", dataset_length)
 
         # parse the loadgen scheduler config and initialize the appropriate scheduler
         loadgen_config = pipeline_config.get("loadgen", {})
