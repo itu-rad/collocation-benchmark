@@ -74,7 +74,10 @@ class Pipeline:
             if len(outputs) < 1:
                 raise ValueError("Output stage ids required for an input stage.")
             for output_idx in outputs:
-                input_stage.add_next_stage(self.intermediate_stages[output_idx])
+                if output_idx in self.output_stages:
+                    input_stage.add_next_stage(self.output_stages[output_idx])
+                else:
+                    input_stage.add_next_stage(self.intermediate_stages[output_idx])
 
         # populate the output stages with the inputs
         for idx, output_stage in self.output_stages.items():
@@ -82,7 +85,10 @@ class Pipeline:
             if len(inputs) < 1:
                 raise ValueError("Input stage ids required for an output stage.")
             for input_idx in inputs:
-                output_stage.add_previous_stage(self.intermediate_stages[input_idx])
+                if input_idx in self.input_stages:
+                    output_stage.add_previous_stage(self.input_stages[input_idx])
+                else:
+                    output_stage.add_previous_stage(self.intermediate_stages[input_idx])
 
         # populate intermediate stages with their inputs and outputs
         for idx, stage in self.intermediate_stages.items():
