@@ -124,15 +124,26 @@ class Finetune(Stage):
         batch = {k: v.to(self._device) for k, v in batch.items()}
         outputs = self._model(**batch)
         loss = outputs.loss
+        loss = loss / self._gradient_accumulation_steps
+        self._running_loss += loss
         loss.backward()
 
         self._optimizer.step()
         self._lr_scheduler.step()
         self._optimizer.zero_grad()
 
-        print("Loss", loss.item())
+        if (self._current_step + 1) % self._gradient_accumulation_steps == 0:
+            self._optimizer.step()
+            self._optimizer.zero_grad(set_to_none=True)
+            self._lr_scheduler.step()
 
-        # TODO: Add support for gradient accumulation
+            print(
+                f"{self._current_step}/{self._max_queries} | Running loss: {self._running_loss.item()}"
+            )
+            # Reset running stats for the next step
+            self._running_loss = 0
+
+        self._current_step += 1
 
         data_from_first_queue["data"] = loss.item()
         return data_from_first_queue
