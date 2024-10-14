@@ -2,6 +2,7 @@ from queue import Queue
 from threading import Thread
 from functools import wraps
 import logging
+from typing import Any, Optional
 
 
 def log_phase(f):
@@ -43,12 +44,12 @@ class Stage:
         self._name = stage_config.get("name", "Unknown stage")
         self._parent_name = pipeline_config.get("name", "Unknown pipeline")
         self._disable_logs = stage_config.get("disable_logs", False)
-        self._previous_stages: list[Stage] = []
-        self._next_stages: list[Stage] = []
+        self._stage_dict: dict[int, Stage] = {}
+        self._output_stages: list[Stage] = []
         self._input_queues: dict[int, Queue] = {}
         self._output_queues: dict[int, Queue] = {}
 
-    def get_id(self):
+    def get_id(self) -> int:
         """Getter for the ID of the stage
 
         Returns:
@@ -56,31 +57,60 @@ class Stage:
         """
         return self._id
 
-    def add_previous_stage(self, stage):
-        """Add an incoming edge (preceeding stage) to the DAG execution graph.
+    def get_output_stages(self) -> list[Stage]:
+        """Getter for the list of outgoing stages.
 
-        Args:
-            stage (Stage): Preceeding stage
+        Returns:
+            list[Stage]: List of outgoing stages
         """
-        self._previous_stages.append(stage)
+        return self._output_stages
 
-    def add_next_stage(self, stage):
-        """Add an outgoing edge (following stage) to the DAG execution graph.
-
-        Args:
-            stage (Stage): Following stage
-        """
-        self._next_stages.append(stage)
-
-    def add_stage_dict(self, stage_dict):
+    def set_stage_dict(self, stage_dict: dict[int, Stage]) -> None:
         """Set the stage dictionary, which is used for dynamic method invocation.
 
         Args:
-            stage_dict (dict): Dictionary mapping stage IDs to their corresponding Stage objects.
+            stage_dict (dict[int, Stage]): Dictionary mapping stage IDs (int) to their corresponding Stage objects.
         """
         self._stage_dict = stage_dict
 
-    def dispatch_call(self, stage_id, method_name, *args, **kwargs):
+    def set_output_queues(self):
+        """Set the output queues of the stage by calling get_input_queue on the outgoing stages.
+
+        Note: This method is automatically called by the pipeline after setting the stage_dict.
+        """
+        self._output_queues: dict[int, Queue] = {}
+        for out_stage in self._output_stages:
+            out_stage_idx = out_stage.get_id()
+            self._output_queues[out_stage_idx] = self._dispatch_call(
+                out_stage_idx, "get_input_queue", self.get_id()
+            )
+
+    def set_output_queue(self, queue: Queue):
+        """Set the output queue of the stage manually. Only used for output stages.
+
+        Args:
+            queue (Queue):
+        """
+        self._output_queues = {-1: queue}
+
+    def get_input_queue(self, idx: int) -> Queue:
+        """Get the input queue for the given stage ID.
+
+        If the queue does not exist yet, it is created.
+
+        Args:
+            id (int): The ID of the stage to get the input queue for.
+
+        Returns:
+            queue.Queue: The input queue for the given stage ID.
+        """
+        if idx not in self._input_queues:
+            self._input_queues[idx] = Queue()
+        return self._input_queues[idx]
+
+    def _dispatch_call(
+        self, stage_id: int, method_name: str, *args: Any, **kwargs: Any
+    ) -> Any:
         """Invoke a method on a stage by its ID.
 
         The method is invoked on the stage with the given ID. The method to invoke
@@ -90,53 +120,57 @@ class Stage:
         Args:
             stage_id (int): The ID of the stage to invoke the method on.
             method_name (str): The name of the method to invoke.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
+            *args (Any): Variable length argument list.
+            **kwargs (Any): Arbitrary keyword arguments.
 
         Returns:
-            The result of the invoked method.
+            Any: The result of the invoked method.
         """
         return getattr(self._stage_dict[stage_id], method_name)(*args, **kwargs)
 
-    def get_input_queues(self):
-        """Getter for input queues
+    def join_thread(self) -> None:
+        """Wait for the stage thread to join."""
+        self._thread.join()
 
-        Returns:
-            list[queue.Queue]: Input queues
+    def prepare(self) -> None:
         """
-        return self._input_queues
-
-    def set_output_queue(self, queue):
-        """Setter for output queue. (only applicable in case of the last layer,
-        where the queue does not come from the following layer but rather from the pipeline itself)
-
-        Args:
-            queue (queue.Queue): Output queue
+        Prepare the stage for execution.
         """
-        self._output_queues = {0: queue}
+        self._thread = Thread(target=self.run_wrapper)
+        self._thread.start()
 
-    def get_next_from_queues(self):
+    def _get_input_from_queues(self) -> dict[int, Any]:
         """Retrieve items from all input queues
 
         Returns:
-            dict[int, any]: dictionary of inputs.
+            dict[int, Any]: dictionary of inputs.
         """
-        inputs = dict()
+        inputs: dict[int, Any] = {}
         for idx, input_queue in self._input_queues.items():
             inputs[idx] = input_queue.get()
 
         return inputs
 
-    def push_to_output(self, output):
-        """Push to output queues
+    def _push_to_all_outputs(self, output: any) -> None:
+        """Push the same data to all output queues
 
         Args:
-            output (dict[str, any]): Element to be pushed to output queues
+            output (any): Element to be pushed to all output queues
         """
         for output_queue in self._output_queues.values():
             output_queue.put(output)
 
-    def is_done(self, inputs):
+    def _push_to_outputs(self, outputs: dict[int, any]) -> None:
+        """Push each output to its corresponding output queue.
+
+        Args:
+            outputs (dict[int, any]): dictionary of outputs, where keys are the stage IDs
+                and values are the outputs to be pushed to the corresponding output queue.
+        """
+        for idx, output in outputs.items():
+            self._output_queues[idx].put(output)
+
+    def _is_done(self, inputs) -> bool:
         """Check for termination elements from all input queues.
 
         Args:
@@ -153,41 +187,30 @@ class Stage:
             return True
         return False
 
-    def join_thread(self):
-        """Wait for the stage thread to join."""
-        self._thread.join()
-
-    def create_input_queues(self):
-        """Initializes all of the input queries, based on the number of preceeding stages."""
-        for previous_stage in self._previous_stages:
-            self._input_queues[previous_stage.get_id()] = Queue()
-        # if no previous stages present (only the case for input stages),
-        # create input queue
-        if len(self._previous_stages) == 0:
-            self._input_queues[0] = Queue()
-
-    def prepare(self):
-        """Iterates through the following stages, gets their input queue and sets
-        it as its output queue. Additionally, starts the thread of the run phase execution.
+    def run(self, inputs) -> dict[int, any]:
         """
-        for next_stage in self._next_stages:
-            idx = next_stage.get_id()
-            queues = next_stage.get_input_queues()
-            self._output_queues[idx] = queues[self._id]
-        self._thread = Thread(target=self.run_wrapper)
-        self._thread.start()
+        Run function of the Identity stage.
 
-    def run(self, inputs):
-        """Pass the input onto the output (no action to be performed on the data)"""
-        return next(iter(inputs.values()))
+        This function simply returns the first value it receives from any of the input queues.
+        It does not perform any operation on the inputs.
+
+        Args:
+            inputs (dict[int, any]): Inputs retrieved from input queues
+
+        Returns:
+            dict[int, any]: Dictionary of outputs, where keys are the stage IDs
+                and values are the outputs to be pushed to the corresponding output queue.
+        """
+        val = next(iter(inputs.values()))
+        return {idx: val for idx in self._output_queues}
 
     def run_wrapper(self):
         """Continuously poll for the incoming data in the input queues,
         perform actions on them and push the results onto the output queues."""
         while True:
-            inputs = self.get_next_from_queues()
-            if self.is_done(inputs):
-                self.push_to_output(list(inputs.values())[0])
+            inputs = self._get_input_from_queues()
+            if self._is_done(inputs):
+                self._push_to_all_outputs(None)
                 break
 
             if not self._disable_logs:
@@ -195,6 +218,6 @@ class Stage:
 
             new_data = self.run(inputs)
 
-            self.push_to_output(new_data)
+            self._push_to_all_outputs(new_data)
             if not self._disable_logs:
                 log_phase_single(self._parent_name, self._name, "run", "end")
