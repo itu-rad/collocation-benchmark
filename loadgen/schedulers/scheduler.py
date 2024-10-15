@@ -1,4 +1,5 @@
 from threading import Timer
+from typing import Any
 
 # other scheduler options include: gamma distribution, paretto distribution, weibull distribution
 
@@ -6,13 +7,18 @@ from threading import Timer
 class LoadScheduler:
     """Base load scheduler class, responsible for generating load for a single pipeline."""
 
-    def __init__(self, loadgen_config, dataset_length):
-        self.max_queries = loadgen_config.get("max_queries", 100)
+    def __init__(
+        self,
+        max_queries: int,
+        timeout: int,
+        load_scheduler_config: dict[str, Any],
+        dataset_splits: dict[str, int],
+    ):
+        self.max_queries = max_queries
         self.stop = False
-        timeout = loadgen_config.get("timeout", 15)
         self.timer = Timer(timeout, self.stop_generator)
-        self.dataset_length = dataset_length
-        self.is_training = loadgen_config.get("is_training", False)
+        self.dataset_splits = dataset_splits
+        self.extra_config = load_scheduler_config
 
     def prepare(self):
         pass

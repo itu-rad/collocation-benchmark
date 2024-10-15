@@ -1,9 +1,10 @@
 import argparse
 from multiprocessing import Process, Queue
-import yaml
+from pydantic_yaml import parse_yaml_raw_as
 
 from utils.logger import Logger
 from loadgen import run_loadgen
+from utils.schemas import BenchmarkModel
 
 
 def parse_args():
@@ -18,23 +19,21 @@ def parse_args():
 
 def main():
     args = parse_args()
-    benchmark_config = None
-    with open(args.config_file_path, "r", encoding="utf-8") as file:
-        benchmark_config = yaml.safe_load(file)
 
-    benchmark_name = benchmark_config.get("name", "Unknown benchmark name")
+    with open(args.config_file_path, "r", encoding="utf-8") as file:
+        yaml_config = file.read()
+        benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
+
+    print(benchmark_config.model_dump())
 
     # initialize a multiprocessing-safe logger
     logger_queue = Queue()
-    logger = Logger(logger_queue, benchmark_name)
-
-    # create loadgen for each pipeline
-    pipeline_configs = benchmark_config.get("pipelines", [])
+    logger = Logger(logger_queue, benchmark_config.name)
 
     # start each loadgen/pipeline as a separate process
     loadgen_processes = [
         Process(target=run_loadgen, args=[pipeline_config, logger_queue])
-        for pipeline_config in pipeline_configs
+        for pipeline_config in benchmark_config.pipelines
     ]
 
     # start child processes

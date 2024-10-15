@@ -3,10 +3,11 @@ pipelines:
   - name: Alpaca finetuning
     inputs: [0]
     outputs: [1]
+    dataset_stage_id: 0
     loadgen:
-      type: offline
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 10
       max_queries: 2000
-      is_training: True
       timeout: 20000
       config:
         rate: 1 # average #requests/sec
@@ -27,7 +28,6 @@ pipelines:
             assistant_column_name: output
       - name: Alpaca finetune
         id: 1
-        inputs: [0]
         component: stages.llm_huggingface.Finetune
         config: 
           dtype: bf16

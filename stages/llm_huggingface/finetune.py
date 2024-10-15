@@ -1,34 +1,32 @@
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    HfArgumentParser,
     BitsAndBytesConfig,
-    default_data_collator,
     get_scheduler,
 )
-from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 import torch
+import transformers
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
+from utils.schemas import StageModel, PipelineModel
 
 
 class Finetune(Stage):
-    def __init__(self, stage_config, pipeline_config):
+    def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
         super().__init__(stage_config, pipeline_config)
 
-        self._extra_config = stage_config.get("config", {})
-
-        self._device = self._parse_device(self._extra_config["device"])
-        self._dtype = self._parse_dtype(self._extra_config["dtype"])
+        self._device = self._parse_device(self.extra_config["device"])
+        self._dtype = self._parse_dtype(self.extra_config["dtype"])
         self._max_queries = pipeline_config["loadgen"]["max_queries"]
-        self._gradient_accumulation_steps = self._extra_config[
+        self._gradient_accumulation_steps = self.extra_config[
             "gradient_accumulation_steps"
         ]
         self._running_loss = 0.0
         self._current_step = 0
         self._tokenizer = AutoTokenizer.from_pretrained(
-            self._extra_config["model"]["name"]
+            self.extra_config["model"]["name"]
         )
 
     def _parse_dtype(self, dtype):
@@ -39,7 +37,19 @@ class Finetune(Stage):
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
 
-    def _parse_device(self, device):
+    def _parse_device(self, device: str) -> torch.device:
+        """
+        Parse the device string and return the appropriate torch.device.
+
+        Args:
+            device (str): The device string, either "cpu" or "cuda".
+
+        Returns:
+            torch.device: The parsed device.
+
+        Raises:
+            ValueError: If the device is not "cpu" or "cuda".
+        """
         if device == "cpu":
             return torch.device("cpu")
         elif device == "cuda":
@@ -47,10 +57,15 @@ class Finetune(Stage):
         else:
             raise ValueError(f"Invalid device: {device}")
 
-    def get_device(self):
+    def get_device(self) -> torch.device:
+        """Getter for the device
+
+        Returns:
+            torch.device: The device
+        """
         return self._device
 
-    def get_tokenizer(self):
+    def get_tokenizer(self) -> transformers.PreTrainedTokenizer:
         """Getter for the tokenizer
 
         Returns:
@@ -59,9 +74,9 @@ class Finetune(Stage):
         return self._tokenizer
 
     def _setup_model(self):
-        if self._extra_config["model"]["quantize"]:
+        if self.extra_config["model"]["quantize"]:
             model = AutoModelForCausalLM.from_pretrained(
-                self._extra_config["model"]["name"],
+                self.extra_config["model"]["name"],
                 quantization_config=BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=(
@@ -79,14 +94,14 @@ class Finetune(Stage):
             )
         else:
             model = AutoModelForCausalLM.from_pretrained(
-                self._extra_config["model"]["name"]
+                self.extra_config["model"]["name"]
             )
 
         lora_config = LoraConfig(
-            r=self._extra_config["model"]["lora_rank"],
-            lora_alpha=self._extra_config["model"]["lora_alpha"],
-            target_modules=self._extra_config["model"]["lora_attn_modules"],
-            lora_dropout=self._extra_config["model"]["lora_dropout"],
+            r=self.extra_config["model"]["lora_rank"],
+            lora_alpha=self.extra_config["model"]["lora_alpha"],
+            target_modules=self.extra_config["model"]["lora_attn_modules"],
+            lora_dropout=self.extra_config["model"]["lora_dropout"],
             bias="none",
             task_type="CAUSAL_LM",
         )
@@ -95,12 +110,12 @@ class Finetune(Stage):
         self._model.train()
 
     def _setup_optimizer(self):
-        config = self._extra_config["optimizer"]
+        config = self.extra_config["optimizer"]
         optimizer_cls = get_component(config.pop("component"))
         self._optimizer = optimizer_cls(params=self._model.parameters(), **config)
 
     def _setup_lr_scheduler(self):
-        config = self._extra_config["lr_scheduler"]
+        config = self.extra_config["lr_scheduler"]
         name = config.pop("name")
         self._lr_scheduler = get_scheduler(
             name=name,

@@ -2,6 +2,8 @@ from importlib import import_module
 from types import ModuleType
 from typing import List
 
+from utils.schemas import PipelineModel, StageModel
+
 
 class InstantiationError(Exception):
 
@@ -16,8 +18,8 @@ class InstantiationError(Exception):
         )
 
 
-def get_stage_component(stage_config, pipeline_config):
-    stage_class = get_component(stage_config["component"])
+def get_stage_component(stage_config: StageModel, pipeline_config: PipelineModel):
+    stage_class = get_component(stage_config.component)
     if stage_class is None:
         raise ValueError("Stage class not found")
     return stage_class(stage_config, pipeline_config)

@@ -1,16 +1,16 @@
 import uuid
 from time import time
+from queue import Queue
+import threading
 
+from utils.schemas import Query
 from .scheduler import LoadScheduler
 
 
 class OfflineLoadScheduler(LoadScheduler):
     """Load generation scheduler, which waits for processing of the previous query"""
 
-    def __init__(self, loadgen_config, dataset_length):
-        super().__init__(loadgen_config, dataset_length)
-
-    def generate(self, queue, event):
+    def generate(self, queue: Queue, event: threading.Event):
         """Generate load, which is synchronized with the pipeline execution.
         The generation is stopped when the max_queries is reached or timer elapses.
 
@@ -23,63 +23,39 @@ class OfflineLoadScheduler(LoadScheduler):
         self.timer.start()
 
         # terminate when max_queries is reached
-        while counter < self.max_queries - 1:
-            # optionally use the training split
-            if self.is_training:
-                # loop through entire train set
-                for batch_idx in range(self.dataset_length["train"]):
+        while counter < self.max_queries:
+            for split_name, split_batches in self.dataset_splits.items():
+                for batch_idx in range(split_batches):
                     # look for a timeout
                     if self.stop:
                         break
 
                     # wait for the pipeline execution to finish
+                    # wait only when we have already pushed something (counter > 0)
                     if counter > 0:
                         event.wait()
                         event.clear()
 
                     # push the query onto queue
                     queue.put_nowait(
-                        {
-                            "id": uuid.uuid4(),
-                            "split": "train",
-                            "batch": batch_idx,
-                            "query_submitted": time(),
-                        }
+                        Query(
+                            split=split_name,
+                            batch=batch_idx,
+                            query_submitted_timestamp=time(),
+                        )
                     )
 
-                    # trigger termination (gracefully)
+                    # increment the counter and check if exceeds the max_queries
                     counter += 1
-                    if counter > self.max_queries:
+                    if counter >= self.max_queries:
                         self.stop = True
-
-            # loop through entire validation set
-            for batch_idx in range(self.dataset_length["val"]):
-                # look for a timeot
+                        break
+                # propagate the stop signal
                 if self.stop:
                     break
-
-                # wait for the pipeline execution to finish
-                if counter > 0:
-                    event.wait()
-                    event.clear()
-
-                # push the query onto queue
-                queue.put_nowait(
-                    {
-                        "id": uuid.uuid4(),
-                        "split": "val",
-                        "batch": batch_idx,
-                        "query_submitted": time(),
-                    }
-                )
-
-                # trigger termination (gracefully)
-                counter += 1
-                if counter > self.max_queries:
-                    self.stop = True
+            # propagate the stop signal
             if self.stop:
                 break
-
         # push termination element onto the queue
         queue.put(None)
         self.timer.cancel()

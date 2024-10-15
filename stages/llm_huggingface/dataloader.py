@@ -1,10 +1,7 @@
 from torch.utils.data import DataLoader
 from datasets import load_dataset
-from functools import partial
 from transformers import (
-    DataCollatorWithPadding,
     DataCollatorForLanguageModeling,
-    default_data_collator,
 )
 
 from stages.stage import Stage, log_phase
@@ -19,14 +16,12 @@ class HuggingFaceDataLoader(Stage):
         """
         super().__init__(stage_config, pipeline_config)
 
-        extra_config = stage_config.get("config", {})
-
-        self._batch_size = extra_config.get("batch_size", 1)
-        self._split = extra_config.get("split", ["train"])
-        self._shuffle = extra_config.get("shuffle", True)
-        self._dataset_config = extra_config.get("dataset", {})
-        self._tokenizer_stage_id = extra_config.get("tokenizer_stage_id", 0)
-        dataset_name = self._dataset_config.get("name")
+        self._batch_size = self.extra_config.get("batch_size", 1)
+        self._split = self.extra_config.get("split", ["train"])
+        self._shuffle = self.extra_config.get("shuffle", True)
+        self._dataset_config = self.extra_config.get("dataset", {})
+        self._tokenizer_stage_id = self.extra_config.get("tokenizer_stage_id", 0)
+        dataset_name = self._dataset_config["name"]
         self._dataset = load_dataset(dataset_name)
         self._dataset_length = {k: len(v) for (k, v) in self._dataset.items()}
         self._dataset = {
@@ -44,11 +39,11 @@ class HuggingFaceDataLoader(Stage):
     def get_batch_size(self):
         return self._batch_size
 
-    def get_num_batches(self):
-        """Calculate the number of batches for each dataset
+    def get_dataset_splits(self) -> dict[str, int]:
+        """Get the number of batches for each dataset split.
 
         Returns:
-            dict[str, int]: dictionary with number of batches for each dataset
+            dict[str, int]: Dictionary with number of batches for each dataset split
         """
         return {
             split: self._dataset_length[split] // self._batch_size
@@ -85,7 +80,7 @@ class HuggingFaceDataLoader(Stage):
     def prepare(self):
         """Build the dataloaders."""
         super().prepare()
-        self._tokenizer = self.dispatch_call(self._tokenizer_stage_id, "get_tokenizer")
+        self._tokenizer = self._dispatch_call(self._tokenizer_stage_id, "get_tokenizer")
         self._dataset = self._dataset.map(
             self._concat,
         )
@@ -101,7 +96,7 @@ class HuggingFaceDataLoader(Stage):
                 "concated_text",
             ]
         )
-        self._device = self.dispatch_call(self._tokenizer_stage_id, "get_device")
+        self._device = self._dispatch_call(self._tokenizer_stage_id, "get_device")
         self._dataset = self._dataset.with_format("torch")
         self._dataloader = DataLoader(
             self._dataset,

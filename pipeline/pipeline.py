@@ -1,9 +1,11 @@
 import logging
 from queue import Queue
-from typing import Union
+from threading import Event, Thread
 
 from stages import Stage
 from utils.component import get_stage_component
+from utils.schemas import PipelineModel, StageModel
+from utils.schemas import Query
 
 
 class Pipeline:
@@ -11,211 +13,171 @@ class Pipeline:
     as well as, the logging of execution times of the separate stages.
     """
 
-    def __init__(self, pipeline_config):
+    def __init__(self, pipeline_config: PipelineModel):
+        """Initialize the pipeline by parsing the pipeline configuration.
 
-        print("Got pipeline config", pipeline_config)
+        Args:
+            pipeline_config (PipelineModel): The configuration of the pipeline.
+        """
+        self._pipeline_config = pipeline_config
+        self.name = self._pipeline_config.name
+        stage_config = pipeline_config.stages
+        stage_config_dict = {stage.id: stage for stage in stage_config}
 
-        self.name = pipeline_config.get("name", "Unknown pipeline name")
-        self.stage_dict = {}
+        self._input_queues: list[Queue] = []
+        self._output_queues: list[Queue] = []
 
-        stage_config = pipeline_config.get("stages", None)
-        stage_config_dict = {stage.get("id", None): stage for stage in stage_config}
+        self.stages = self._create_stages(stage_config_dict)
 
-        # find the input stages
-        input_stages_idx = pipeline_config.get("inputs", [])
-        if len(input_stages_idx) < 1:
-            raise ValueError(
-                "At least one input stage (usually a dataset) required for the pipeline."
-            )
+        self._populate_stages_with_stage_dict()
+        self._populate_queues()
 
-        # initialize the input stages
-        self.input_stages: dict[str, Stage] = dict()
-        for input_stage_idx in input_stages_idx:
-            input_stage_config = stage_config_dict.get(input_stage_idx, None)
-            if input_stage_config is None:
-                raise ValueError("Input stage not found")
-            stage_obj = get_stage_component(input_stage_config, pipeline_config)
-            self.stage_dict[stage_obj.get_id()] = stage_obj
-            self.input_stages[input_stage_idx] = stage_obj
+    def _create_stages(
+        self, stage_config_dict: dict[int, StageModel]
+    ) -> dict[int, Stage]:
+        """Create a dictionary of stage objects from the given configuration.
 
-        # find the output stages
-        output_stages_idx = pipeline_config.get("outputs", [])
-        if len(output_stages_idx) < 1:
-            raise ValueError("At least one output stage required for the pipeline.")
-
-        # initialize the output stages
-        self.output_stages: dict[str, Stage] = dict()
-        for output_stage_idx in output_stages_idx:
-            output_stage_config = stage_config_dict.get(output_stage_idx, None)
-            if output_stage_config is None:
-                raise ValueError("output stage not found")
-            stage_obj = get_stage_component(output_stage_config, pipeline_config)
-            self.stage_dict[stage_obj.get_id()] = stage_obj
-            self.output_stages[output_stage_idx] = stage_obj
-
-        # initialize the intermediate (rest of) stages
-        self.intermediate_stages: dict[str, Stage] = dict()
-        for stage in stage_config:
-            stage_idx = stage.get("id", None)
-            if stage_idx is None:
-                raise ValueError("All stages are required to have IDs.")
-            if stage_idx not in input_stages_idx and stage_idx not in output_stages_idx:
-                stage_obj = get_stage_component(stage, pipeline_config)
-                self.stage_dict[stage_obj.get_id()] = stage_obj
-                self.intermediate_stages[stage_idx] = stage_obj
-
-        # populate the stages with the stage dictionary for dynamic method invocation
-        for stage in self.stage_dict.values():
-            stage.add_stage_dict(self.stage_dict)
-
-        # populate the input stages with the outputs
-        for idx, input_stage in self.input_stages.items():
-            outputs = stage_config_dict[idx].get("outputs", [])
-            if len(outputs) < 1:
-                raise ValueError("Output stage ids required for an input stage.")
-            for output_idx in outputs:
-                if output_idx in self.output_stages:
-                    input_stage.add_next_stage(self.output_stages[output_idx])
-                else:
-                    input_stage.add_next_stage(self.intermediate_stages[output_idx])
-
-        # populate the output stages with the inputs
-        for idx, output_stage in self.output_stages.items():
-            inputs = stage_config_dict[idx].get("inputs", [])
-            if len(inputs) < 1:
-                raise ValueError("Input stage ids required for an output stage.")
-            for input_idx in inputs:
-                if input_idx in self.input_stages:
-                    output_stage.add_previous_stage(self.input_stages[input_idx])
-                else:
-                    output_stage.add_previous_stage(self.intermediate_stages[input_idx])
-
-        # populate intermediate stages with their inputs and outputs
-        for idx, stage in self.intermediate_stages.items():
-            inputs = stage_config_dict[idx].get("inputs", [])
-            if len(inputs) < 1:
-                raise ValueError("Input IDs required for all but input stages.")
-            # find the input of the stage in input or intermediate stages
-            for input_idx in inputs:
-                input_stage = self.input_stages.get(input_idx, None)
-                if input_stage is None:
-                    input_stage = self.intermediate_stages.get(input_idx, None)
-                if input_stage is None:
-                    raise ValueError("Stage with input ID not found.")
-                stage.add_previous_stage(input_stage)
-            outputs = stage_config_dict[idx].get("outputs", [])
-            if len(outputs) < 1:
-                raise ValueError("Output IDs required for all but output stages.")
-            # find the output of the stage in output or intermediate stages
-            for output_idx in outputs:
-                output_stage = self.output_stages.get(output_idx, None)
-                if output_stage is None:
-                    output_stage = self.intermediate_stages.get(output_idx, None)
-                if output_stage is None:
-                    raise ValueError("Stage with output ID not found.")
-                stage.add_next_stage(output_stage)
-
-        self.input_queues: list[Queue] = []
-        # setup output queues
-        self.output_queues: list[Queue] = []
-        for _, output_stage in self.output_stages.items():
-            queue = Queue()
-            self.output_queues.append(queue)
-            output_stage.set_output_queue(queue)
-
-    def get_dataset_length(self) -> dict[int, dict[str, int]]:
-        """Get the size of the datasets in input stages
+        Args:
+            stage_config_dict (dict[int, StageModel]): A dictionary where the keys are stage IDs and the values are the configurations of the stages.
 
         Returns:
-            dict[int, dict[str, int]]: Dictionary with batch sizes of each input stage
+            dict: A dictionary where the keys are stage IDs and the values are the corresponding stage objects.
         """
-        return {
-            i_idx: input_stage.get_num_batches()
-            for i_idx, input_stage in self.input_stages.items()
-        }
+        stages = {}
+        for stage_idx, stage_config in stage_config_dict.items():
+            stage_obj = get_stage_component(stage_config, self._pipeline_config)
+            stages[stage_idx] = stage_obj
+        return stages
 
-    def prepare(self):
-        """Run prepare functions of the stages of the pipelines which contain functionality,
-        such as loading/building models."""
+    def _populate_stages_with_stage_dict(self) -> None:
+        """
+        Populate all of the stages in the pipeline with the stage dictionary.
+        """
+        for stage in self.stages.values():
+            stage.set_stage_dict(self.stages)
+
+    def _populate_queues(self) -> None:
+        """
+        Populate all of the stages in the pipeline with their output queues.
+        """
+
+        for stage in self.stages.values():
+            stage.set_output_queues()
+
+    def get_dataset_splits(self) -> dict[str, int]:
+        """
+        Get the number of batches in each dataset split of the pipeline.
+
+        Returns:
+            dict[str, int]: A dictionary where the keys are the dataset split names and the values are the number of batches in each split.
+        """
+        stage_id = self._pipeline_config.dataset_stage_id
+        return self.stages[stage_id].get_dataset_splits()
+
+    def prepare(self) -> None:
+        """
+        Prepare all the stages in the pipeline.
+
+        This includes creating input queues, output queues, as well as calling the prepare method of each stage.
+        """
         logging.info("%s, pipeline, prepare, start", self.name)
-        # create input queues first (needs to be done separately,
-        # because prior stages depend on subsequent having created queues)
-        for stage in self.input_stages.values():
-            stage.create_input_queues()
-        for stage in self.intermediate_stages.values():
-            stage.create_input_queues()
-        for stage in self.output_stages.values():
-            stage.create_input_queues()
-
-        for stage in self.input_stages.values():
-            stage.prepare()
-        for stage in self.intermediate_stages.values():
-            stage.prepare()
-        for stage in self.output_stages.values():
-            stage.prepare()
 
         # get all the input queues of the pipeline
-        for _, input_stage in self.input_stages.items():
-            self.input_queues.append(input_stage.get_input_queues()[0])
+        for input_stage_idx in self._pipeline_config.inputs:
+            self._input_queues.append(self.stages[input_stage_idx].get_input_queue(-1))
+
+        # create output queue for each output stage of the pipeline and pass it to the output stage
+        for output_stage_idx in self._pipeline_config.outputs:
+            queue = Queue()
+            self._output_queues.append(queue)
+            self.stages[output_stage_idx].set_output_queue(queue)
+
+        # start the stage threads
+        for stage in self.stages.values():
+            stage.prepare()
 
         logging.info("%s, pipeline, prepare, end", self.name)
 
-    def join_threads(self):
-        """join the stage threads upon end of exection"""
-        for stage in self.input_stages.values():
-            stage.join_thread()
-        for stage in self.intermediate_stages.values():
-            stage.join_thread()
-        for stage in self.output_stages.values():
+    def join_threads(self) -> None:
+        """
+        Wait for all the stage threads to finish.
+
+        This method is useful for shutting down the pipeline, since it waits for all the stages to finish.
+        """
+        for stage in self.stages.values():
             stage.join_thread()
 
-    def run(self, sample_queue, event):
-        """Read the queries from the loadgen queue and execute the pipeline until a terminating element is retrieved."""
-
-        epoch_dict = {"train": 0, "val": 0}
-
+    def retrieve_results(self, event: Event) -> None:
+        """
+        Retrieve the results from all the output queues of the pipeline.
+        """
         while True:
-            data = sample_queue.get()
+            count_none = 0
+            for output_queue in self._output_queues:
+                new_query: Query | None = output_queue.get()
+                if not new_query:
+                    count_none += 1
 
-            # check if done
-            if data is None:
-                for input_queue in self.input_queues:
-                    input_queue.put(data)
-                self.join_threads()
+            # check if received termination element (None)
+            if count_none == len(self._output_queues):
                 break
-
-            # log the start of execution
-            split = data.get("split", "val")
-            submitted = data.get("query_submitted", 0)
-            batch_idx = data.get("batch", 0)
-            if batch_idx == 0:
-                epoch_dict[split] += 1
-            logging.info(
-                "%s, pipeline - %s, run, start, %.6f, %d, %d",
-                self.name,
-                split,
-                submitted,
-                epoch_dict[split],
-                batch_idx + 1,
-            )
-
-            # populate the pipeline input queues / start pipeline execution
-            for input_queue in self.input_queues:
-                input_queue.put(data)
-
-            # retrieve the pipeline results
-            for output_queue in self.output_queues:
-                _ = output_queue.get(data)
 
             # log the end of pipeline execution
             logging.info(
-                "%s, pipeline - %s, run, end, %.6f, %d, %d",
+                "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
                 self.name,
-                split,
-                submitted,
-                epoch_dict[split],
-                batch_idx + 1,
+                new_query.split,
+                new_query.query_id,
+                new_query.query_submitted_timestamp,
+                new_query.epoch,
+                new_query.batch + 1,
             )
 
-            # release the lock such that for synchronyzed schedulers
             event.set()
+
+    def run(self, sample_queue: Queue, event: Event) -> None:
+        """
+        Read the queries from the loadgen queue and execute the pipeline until a terminating element is retrieved.
+
+        Args:
+            sample_queue (Queue): The queue with the queries from the load generator.
+            event (Event): An event that is used for synchronization between the pipeline and the load generator.
+        """
+        # TODO: Make this naming-agnostic. Get the names of the splits from the dataset / dataloader
+        result_retrieval_thread = Thread(target=self.retrieve_results, args=[event])
+
+        dataset_splits = self.get_dataset_splits()
+        epoch_dict = {split: 0 for split in dataset_splits}
+
+        while True:
+            query: Query | None = sample_queue.get()
+
+            # check if done
+            if query is None:
+                # if so, send the termination element to the following stages and join the threads
+                for input_queue in self._input_queues:
+                    input_queue.put(None)
+                self.join_threads()
+                break
+
+            # log the start of pipeline execution for the query
+            if query.batch == 0:
+                epoch_dict[query.split] += 1
+
+            query.epoch = epoch_dict[query.split]
+
+            logging.info(
+                "%s, pipeline - %s, run, start, %d, %.6f, %d, %d",
+                self.name,
+                query.split,
+                query.query_id,
+                query.query_submitted_timestamp,
+                query.epoch,
+                query.batch + 1,
+            )
+
+            # populate the pipeline input queues / start pipeline execution
+            for input_queue in self._input_queues:
+                input_queue.put(query)
+
+        result_retrieval_thread.join()

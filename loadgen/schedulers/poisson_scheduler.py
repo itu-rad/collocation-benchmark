@@ -1,18 +1,17 @@
 from random import expovariate
-import uuid
 from time import sleep, time
 
+from utils.schemas import Query
 from .scheduler import LoadScheduler
 
 
 class PoissonLoadScheduler(LoadScheduler):
     """Load generation scheduler based on the poisson distribution"""
 
-    def __init__(self, loadgen_config, dataset_length):
-        super().__init__(loadgen_config, dataset_length)
+    def __init__(self, max_queries, timeout, load_scheduler_config, dataset_splits):
+        super().__init__(max_queries, timeout, load_scheduler_config, dataset_splits)
 
-        poisson_config = loadgen_config.get("config", {})
-        self.rate = poisson_config.get("rate", 3)
+        self.rate = self.extra_config.get("rate", 3)
         self.offsets = []
 
     def prepare(self):
@@ -34,38 +33,38 @@ class PoissonLoadScheduler(LoadScheduler):
         # release the lock, so the pipeline thread can execute
         event.set()
 
-        total_length = sum(self.dataset_length.values())
-        train_length = self.dataset_length.get("train", 0)
+        counter = 0
 
-        split = "val"
+        while counter < self.max_queries:
+            for split_name, split_batches in self.dataset_splits.items():
+                for batch_idx in range(split_batches):
+                    # look for a timeout
+                    if self.stop:
+                        break
 
-        # Iterate over all the offsets
-        for i, offset in enumerate(self.offsets):
-            # look for a timeout
+                    # sleep until it's time to generate next query
+                    sleep(self.offsets[counter])
+
+                    # push the query onto queue
+                    queue.put_nowait(
+                        Query(
+                            split=split_name,
+                            batch=batch_idx,
+                            query_submitted_timestamp=time(),
+                        )
+                    )
+
+                    # increament the counter and check that it does not exceed max_queries
+                    counter += 1
+                    if counter >= self.max_queries:
+                        self.stop = True
+                        break
+                # propagate the stop signal
+                if self.stop:
+                    break
+            # propagate the stop signal
             if self.stop:
                 break
-
-            # wait for the offset time before generating next query
-            sleep(offset)
-
-            # choose split based on the total iteration count
-            iters_this_epoch = i % total_length
-            if self.is_training:
-                split = "train" if iters_this_epoch < train_length else "val"
-
-            # push the query onto queue
-            queue.put_nowait(
-                {
-                    "id": uuid.uuid4(),
-                    "split": split,
-                    "query_submitted": time(),
-                    "batch": (
-                        iters_this_epoch
-                        if split == "train"
-                        else iters_this_epoch - train_length
-                    ),
-                }
-            )
 
         # push termination element onto the queue
         queue.put(None)

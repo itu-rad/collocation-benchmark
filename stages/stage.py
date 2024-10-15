@@ -1,8 +1,11 @@
+from __future__ import annotations  # postponed evaluation of annotations
 from queue import Queue
 from threading import Thread
 from functools import wraps
 import logging
-from typing import Any, Optional
+from typing import Any
+
+from utils.schemas import StageModel, PipelineModel
 
 
 def log_phase(f):
@@ -39,31 +42,16 @@ class Stage:
     make the development of specific part of a pipeline and subsequent evaluation as
     easy as possible."""
 
-    def __init__(self, stage_config, pipeline_config):
-        self._id = stage_config["id"]
-        self._name = stage_config.get("name", "Unknown stage")
-        self._parent_name = pipeline_config.get("name", "Unknown pipeline")
-        self._disable_logs = stage_config.get("disable_logs", False)
+    def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
+        self.id = stage_config.id
+        self._name = stage_config.name
+        self._parent_name = pipeline_config.name
+        self._disable_logs = stage_config.disable_logs
+        self._output_stage_ids = stage_config.outputs
+        self.extra_config = stage_config.config
         self._stage_dict: dict[int, Stage] = {}
-        self._output_stages: list[Stage] = []
         self._input_queues: dict[int, Queue] = {}
         self._output_queues: dict[int, Queue] = {}
-
-    def get_id(self) -> int:
-        """Getter for the ID of the stage
-
-        Returns:
-            int: Stage ID
-        """
-        return self._id
-
-    def get_output_stages(self) -> list[Stage]:
-        """Getter for the list of outgoing stages.
-
-        Returns:
-            list[Stage]: List of outgoing stages
-        """
-        return self._output_stages
 
     def set_stage_dict(self, stage_dict: dict[int, Stage]) -> None:
         """Set the stage dictionary, which is used for dynamic method invocation.
@@ -79,10 +67,9 @@ class Stage:
         Note: This method is automatically called by the pipeline after setting the stage_dict.
         """
         self._output_queues: dict[int, Queue] = {}
-        for out_stage in self._output_stages:
-            out_stage_idx = out_stage.get_id()
-            self._output_queues[out_stage_idx] = self._dispatch_call(
-                out_stage_idx, "get_input_queue", self.get_id()
+        for out_stage_id in self._output_stage_ids:
+            self._output_queues[out_stage_id] = self._dispatch_call(
+                out_stage_id, "get_input_queue", self.id
             )
 
     def set_output_queue(self, queue: Queue):
