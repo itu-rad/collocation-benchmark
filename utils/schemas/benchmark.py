@@ -7,5 +7,5 @@ class BenchmarkModel(BaseModel):
     Benchmark configuration parsed from yaml file.
     """
 
-    name: str = "Unknown benchmark name"
     pipelines: list[PipelineModel]
+    name: str = "Unknown benchmark name"

@@ -5,7 +5,7 @@ from functools import wraps
 import logging
 from typing import Any
 
-from utils.schemas import StageModel, PipelineModel
+from utils.schemas import StageModel, PipelineModel, Query
 
 
 def log_phase(f):
@@ -51,7 +51,7 @@ class Stage:
         self.extra_config = stage_config.config
         self._stage_dict: dict[int, Stage] = {}
         self._input_queues: dict[int, Queue] = {}
-        self._output_queues: dict[int, Queue] = {}
+        self.output_queues: dict[int, Queue] = {}
 
     def set_stage_dict(self, stage_dict: dict[int, Stage]) -> None:
         """Set the stage dictionary, which is used for dynamic method invocation.
@@ -66,9 +66,8 @@ class Stage:
 
         Note: This method is automatically called by the pipeline after setting the stage_dict.
         """
-        self._output_queues: dict[int, Queue] = {}
         for out_stage_id in self._output_stage_ids:
-            self._output_queues[out_stage_id] = self._dispatch_call(
+            self.output_queues[out_stage_id] = self._dispatch_call(
                 out_stage_id, "get_input_queue", self.id
             )
 
@@ -78,7 +77,7 @@ class Stage:
         Args:
             queue (Queue):
         """
-        self._output_queues = {-1: queue}
+        self.output_queues = {-1: queue}
 
     def get_input_queue(self, idx: int) -> Queue:
         """Get the input queue for the given stage ID.
@@ -144,10 +143,10 @@ class Stage:
         Args:
             output (any): Element to be pushed to all output queues
         """
-        for output_queue in self._output_queues.values():
+        for output_queue in self.output_queues.values():
             output_queue.put(output)
 
-    def _push_to_outputs(self, outputs: dict[int, any]) -> None:
+    def _push_to_outputs(self, outputs: dict[int, Query]) -> None:
         """Push each output to its corresponding output queue.
 
         Args:
@@ -155,7 +154,7 @@ class Stage:
                 and values are the outputs to be pushed to the corresponding output queue.
         """
         for idx, output in outputs.items():
-            self._output_queues[idx].put(output)
+            self.output_queues[idx].put(output)
 
     def _is_done(self, inputs) -> bool:
         """Check for termination elements from all input queues.
@@ -174,7 +173,7 @@ class Stage:
             return True
         return False
 
-    def run(self, inputs) -> dict[int, any]:
+    def run(self, inputs: dict[int, Query]) -> dict[int, Query]:
         """
         Run function of the Identity stage.
 
@@ -189,9 +188,9 @@ class Stage:
                 and values are the outputs to be pushed to the corresponding output queue.
         """
         val = next(iter(inputs.values()))
-        return {idx: val for idx in self._output_queues}
+        return {idx: val for idx in self.output_queues}
 
-    def run_wrapper(self):
+    def run_wrapper(self) -> None:
         """Continuously poll for the incoming data in the input queues,
         perform actions on them and push the results onto the output queues."""
         while True:
@@ -203,8 +202,8 @@ class Stage:
             if not self._disable_logs:
                 log_phase_single(self._parent_name, self._name, "run", "start")
 
-            new_data = self.run(inputs)
+            outputs = self.run(inputs)
 
-            self._push_to_all_outputs(new_data)
+            self._push_to_outputs(outputs)
             if not self._disable_logs:
                 log_phase_single(self._parent_name, self._name, "run", "end")

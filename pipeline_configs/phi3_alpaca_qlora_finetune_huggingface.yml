@@ -1,4 +1,4 @@
-name: "PHI3 Mini Alpaca finetuning pipeline"
+name: "phi3_alpaca_qlora_finetune_huggingface"
 pipelines:
   - name: Alpaca finetuning
     inputs: [0]

@@ -4,8 +4,7 @@ from threading import Event, Thread
 
 from stages import Stage
 from utils.component import get_stage_component
-from utils.schemas import PipelineModel, StageModel
-from utils.schemas import Query
+from utils.schemas import PipelineModel, StageModel, Query
 
 
 class Pipeline:
@@ -112,11 +111,13 @@ class Pipeline:
         Retrieve the results from all the output queues of the pipeline.
         """
         while True:
+            # print("Retrieving results...")
             count_none = 0
             for output_queue in self._output_queues:
                 new_query: Query | None = output_queue.get()
                 if not new_query:
                     count_none += 1
+            # print("Retrieved results.")
 
             # check if received termination element (None)
             if count_none == len(self._output_queues):
@@ -143,8 +144,8 @@ class Pipeline:
             sample_queue (Queue): The queue with the queries from the load generator.
             event (Event): An event that is used for synchronization between the pipeline and the load generator.
         """
-        # TODO: Make this naming-agnostic. Get the names of the splits from the dataset / dataloader
         result_retrieval_thread = Thread(target=self.retrieve_results, args=[event])
+        result_retrieval_thread.start()
 
         dataset_splits = self.get_dataset_splits()
         epoch_dict = {split: 0 for split in dataset_splits}

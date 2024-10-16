@@ -8,7 +8,7 @@ class LoadGenModel(BaseModel):
     """
 
     component: str
-    queue_depth: int = 10
     max_queries: int
     timeout: int
+    queue_depth: int = 10
     config: dict[str, Any] = {}

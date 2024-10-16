@@ -9,7 +9,7 @@ class StageModel(BaseModel):
 
     id: int
     name: str
-    outputs: list[int] = []
     component: str
+    outputs: list[int] = []
     disable_logs: bool = False
     config: dict[str, Any] = {}

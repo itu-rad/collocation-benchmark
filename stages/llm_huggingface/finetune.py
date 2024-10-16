@@ -19,7 +19,7 @@ class Finetune(Stage):
 
         self._device = self._parse_device(self.extra_config["device"])
         self._dtype = self._parse_dtype(self.extra_config["dtype"])
-        self._max_queries = pipeline_config["loadgen"]["max_queries"]
+        self._max_queries = pipeline_config.loadgen.max_queries
         self._gradient_accumulation_steps = self.extra_config[
             "gradient_accumulation_steps"
         ]
@@ -133,8 +133,8 @@ class Finetune(Stage):
         self._setup_lr_scheduler()
 
     def run(self, inputs):
-        data_from_first_queue = list(inputs.values())[0]
-        batch = data_from_first_queue["data"]
+        query_from_first_queue = next(iter(inputs.values()))
+        batch = query_from_first_queue.data
 
         batch = {k: v.to(self._device) for k, v in batch.items()}
         outputs = self._model(**batch)
@@ -160,5 +160,6 @@ class Finetune(Stage):
 
         self._current_step += 1
 
-        data_from_first_queue["data"] = loss.item()
-        return data_from_first_queue
+        query_from_first_queue.data = loss.item()
+        outputs = {idx: query_from_first_queue for idx in self.output_queues}
+        return outputs

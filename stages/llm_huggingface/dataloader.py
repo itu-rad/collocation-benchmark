@@ -5,6 +5,7 @@ from transformers import (
 )
 
 from stages.stage import Stage, log_phase
+from utils.schemas import Query
 
 
 class HuggingFaceDataLoader(Stage):
@@ -31,7 +32,7 @@ class HuggingFaceDataLoader(Stage):
         self._dataset = self._dataset["train"]
         if self._shuffle:
             self._dataset = self._dataset.shuffle()
-        print("Shards", self._dataset.n_shards)
+        # print("Shards", self._dataset.n_shards)
         self._system_column_name = self._dataset_config.get("system_column_name")
         self._user_column_name = self._dataset_config.get("user_column_name")
         self._assistant_column_name = self._dataset_config.get("assistant_column_name")
@@ -107,10 +108,12 @@ class HuggingFaceDataLoader(Stage):
         )
         self._dataloader_iter = iter(self._dataloader)
 
-    def run(self, inputs):
+    def run(self, inputs: dict[int, Query]) -> dict[int, Query]:
         """Poll for incoming data in the queues,
         load the next batch of data and pass it onto the output queues."""
-        data_from_first_queue = list(inputs.values())[0]
+        query_from_first_queue = next(iter(inputs.values()))
 
-        data_from_first_queue["data"] = next(self._dataloader_iter)
-        return data_from_first_queue
+        next_batch = next(self._dataloader_iter)
+        query_from_first_queue.data = next_batch
+        output = {idx: query_from_first_queue for idx in self.output_queues}
+        return output
