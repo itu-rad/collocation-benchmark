@@ -37,25 +37,24 @@ class Finetune(Stage):
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
 
-    def _parse_device(self, device: str) -> torch.device:
-        """
-        Parse the device string and return the appropriate torch.device.
-
-        Args:
-            device (str): The device string, either "cpu" or "cuda".
-
-        Returns:
-            torch.device: The parsed device.
-
-        Raises:
-            ValueError: If the device is not "cpu" or "cuda".
-        """
-        if device == "cpu":
-            return torch.device("cpu")
-        elif device == "cuda":
-            return torch.device("cuda")
+    def _parse_device(self, device: str | None) -> torch.device:
+        # Parse the device string and return the appropriate torch.device.
+        # If no device is specified, return the appropriate torch.device based on the available devices.
+        #
+        # Args:
+        #     device (str | None): The device string, or None if no device is specified.
+        #
+        # Returns:
+        #     torch.device: The parsed device.
+        if device:
+            return torch.device(device)
         else:
-            raise ValueError(f"Invalid device: {device}")
+            if torch.backends.mps.is_available():
+                return torch.device("mps")
+            elif torch.cuda.is_available():
+                return torch.device("cuda")
+            else:
+                return torch.device("cpu")
 
     def get_device(self) -> torch.device:
         """Getter for the device

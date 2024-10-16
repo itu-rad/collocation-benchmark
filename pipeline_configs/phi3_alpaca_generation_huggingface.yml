@@ -1,0 +1,42 @@
+name: "phi3_alpaca_generation_huggingface"
+pipelines:
+  - name: RAG generation
+    inputs: [0]
+    outputs: [1]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 10
+      max_queries: 2000
+      timeout: 20000
+      config:
+        rate: 1 # average #requests/sec
+    stages:
+      - name: Mock dataloader
+        id: 0
+        outputs: [1]
+        component: stages.llm_huggingface.MockDataLoader  
+        config:
+          tokenizer_stage_id: 1
+          batch_size: 2
+          shuffle: True
+          split: ["train"]
+          dataset:
+            name: yahma/alpaca-cleaned
+            system_column_name: instruction
+            user_column_name: input
+            assistant_column_name: output
+      - name: RAG infer
+        id: 1
+        component: stages.llm_huggingface.Inference
+        config: 
+          dtype: bf16
+          device: cuda
+          data_model: utils.schemas.rag.Score
+          model:
+            name: microsoft/Phi-3-mini-4k-instruct
+            quantize: False
+            lora_attn_modules: all-linear
+            lora_rank: 8
+            lora_alpha: 16
+            lora_dropout: 0.05
