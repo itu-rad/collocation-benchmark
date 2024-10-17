@@ -1,5 +1,5 @@
 import logging
-from queue import Queue
+from queue import Queue, Empty
 from threading import Event, Thread
 
 from stages import Stage
@@ -111,30 +111,30 @@ class Pipeline:
         Retrieve the results from all the output queues of the pipeline.
         """
         while True:
-            # print("Retrieving results...")
-            count_none = 0
             for output_queue in self._output_queues:
-                new_query: Query | None = output_queue.get()
+                # non-blocking retrieval from the queues
+                # if the queue is empty, simply move on
+                try:
+                    new_query: Query | None = output_queue.get_nowait()
+                except Empty:
+                    continue
+
+                # if terminating character is received, return
                 if not new_query:
-                    count_none += 1
-            # print("Retrieved results.")
+                    return
 
-            # check if received termination element (None)
-            if count_none == len(self._output_queues):
-                break
+                # log the end of pipeline execution
+                logging.info(
+                    "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
+                    self.name,
+                    new_query.split,
+                    new_query.query_id,
+                    new_query.query_submitted_timestamp,
+                    new_query.epoch,
+                    new_query.batch + 1,
+                )
 
-            # log the end of pipeline execution
-            logging.info(
-                "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
-                self.name,
-                new_query.split,
-                new_query.query_id,
-                new_query.query_submitted_timestamp,
-                new_query.epoch,
-                new_query.batch + 1,
-            )
-
-            event.set()
+                event.set()
 
     def run(self, sample_queue: Queue, event: Event) -> None:
         """

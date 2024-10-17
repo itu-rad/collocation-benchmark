@@ -108,12 +108,11 @@ class HuggingFaceDataLoader(Stage):
         )
         self._dataloader_iter = iter(self._dataloader)
 
-    def run(self, inputs: dict[int, Query]) -> dict[int, Query]:
+    def run(self, query: Query) -> dict[int, Query]:
         """Poll for incoming data in the queues,
         load the next batch of data and pass it onto the output queues."""
-        query_from_first_queue = next(iter(inputs.values()))
 
         next_batch = next(self._dataloader_iter)
-        query_from_first_queue.data = next_batch
-        output = {idx: query_from_first_queue for idx in self.output_queues}
+        query.data = next_batch
+        output = {idx: query for idx in self.output_queues}
         return output

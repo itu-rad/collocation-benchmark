@@ -10,7 +10,7 @@ import transformers
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
-from utils.schemas import StageModel, PipelineModel
+from utils.schemas import StageModel, PipelineModel, Query
 
 
 class Finetune(Stage):
@@ -131,9 +131,8 @@ class Finetune(Stage):
         self._setup_optimizer()
         self._setup_lr_scheduler()
 
-    def run(self, inputs):
-        query_from_first_queue = next(iter(inputs.values()))
-        batch = query_from_first_queue.data
+    def run(self, query: Query) -> dict[int, Query]:
+        batch = query.data
 
         batch = {k: v.to(self._device) for k, v in batch.items()}
         outputs = self._model(**batch)
@@ -159,6 +158,6 @@ class Finetune(Stage):
 
         self._current_step += 1
 
-        query_from_first_queue.data = loss.item()
-        outputs = {idx: query_from_first_queue for idx in self.output_queues}
+        query.data = loss.item()
+        outputs = {idx: query for idx in self.output_queues}
         return outputs

@@ -96,7 +96,6 @@ class Finetune(Stage):
         # Load the base model checkpoint
         base_model_state_dict = self._checkpoint_dict[MODEL_KEY]
         self._model.load_state_dict(base_model_state_dict, strict=False)
-        # TODO: Add option to load adapter checkpoint
 
     def _setup_optimizer(self):
         config = self._extra_config["optimizer"]

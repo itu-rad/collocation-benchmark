@@ -5,6 +5,8 @@ from functools import wraps
 import logging
 from typing import Any
 
+from stages.queues.polling.polling_policy import PollingPolicy
+from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
 
 
@@ -14,11 +16,11 @@ def log_phase(f):
 
     @wraps(f)
     def wrapper(self, *args, **kw):
-        if not self._disable_logs:
-            logging.info("%s, %s, %s, start", self._parent_name, self._name, f.__name__)
+        if not self.disable_logs:
+            logging.info("%s, %s, %s, start", self.parent_name, self.name, f.__name__)
         result = f(self, *args, **kw)
-        if not self._disable_logs:
-            logging.info("%s, %s, %s, end", self._parent_name, self._name, f.__name__)
+        if not self.disable_logs:
+            logging.info("%s, %s, %s, end", self.parent_name, self.name, f.__name__)
         return result
 
     return wrapper
@@ -44,9 +46,10 @@ class Stage:
 
     def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
         self.id = stage_config.id
-        self._name = stage_config.name
-        self._parent_name = pipeline_config.name
-        self._disable_logs = stage_config.disable_logs
+        self.name = stage_config.name
+        self.parent_name = pipeline_config.name
+        self.disable_logs = stage_config.disable_logs
+        self._polling_policy = stage_config.polling_policy
         self._output_stage_ids = stage_config.outputs
         self.extra_config = stage_config.config
         self._stage_dict: dict[int, Stage] = {}
@@ -122,20 +125,24 @@ class Stage:
         """
         Prepare the stage for execution.
         """
+        if (
+            len(self._input_queues) > 1
+            and self._polling_policy is "stages.queues.polling.SingleQueuePolicy"
+        ):
+            raise ValueError("SingleQueuePolicy only works with one input queue")
+        self._polling_policy_obj: PollingPolicy = get_component(self._polling_policy)(
+            self._input_queues
+        )
         self._thread = Thread(target=self.run_wrapper)
         self._thread.start()
 
-    def _get_input_from_queues(self) -> dict[int, Any]:
+    def _get_input_from_queues(self) -> Query | None:
         """Retrieve items from all input queues
 
         Returns:
-            dict[int, Any]: dictionary of inputs.
+            Query | None: The first query from all input queues or None if terminating character is received.
         """
-        inputs: dict[int, Any] = {}
-        for idx, input_queue in self._input_queues.items():
-            inputs[idx] = input_queue.get()
-
-        return inputs
+        return self._polling_policy_obj.get_input_from_queues()
 
     def _push_to_all_outputs(self, output: any) -> None:
         """Push the same data to all output queues
@@ -156,24 +163,7 @@ class Stage:
         for idx, output in outputs.items():
             self.output_queues[idx].put(output)
 
-    def _is_done(self, inputs) -> bool:
-        """Check for termination elements from all input queues.
-
-        Args:
-            inputs (dict[int, any]): Inputs retrieved from input queues
-
-        Returns:
-            bool: Boolean representing whether execution has been termianted from all queues.
-        """
-        counter = 0
-        for ins in inputs.values():
-            if ins is None:
-                counter += 1
-        if counter == len(inputs):
-            return True
-        return False
-
-    def run(self, inputs: dict[int, Query]) -> dict[int, Query]:
+    def run(self, query: Query) -> dict[int, Query]:
         """
         Run function of the Identity stage.
 
@@ -181,29 +171,29 @@ class Stage:
         It does not perform any operation on the inputs.
 
         Args:
-            inputs (dict[int, any]): Inputs retrieved from input queues
+            query (Query): Inputs retrieved from input queues
 
         Returns:
-            dict[int, any]: Dictionary of outputs, where keys are the stage IDs
-                and values are the outputs to be pushed to the corresponding output queue.
+            dict[int, Query]: Dictionary of queries, where keys are the stage IDs
+                and values are the queries to be pushed to the corresponding output queue.
         """
-        val = next(iter(inputs.values()))
-        return {idx: val for idx in self.output_queues}
+        return {idx: query for idx in self.output_queues}
 
     def run_wrapper(self) -> None:
         """Continuously poll for the incoming data in the input queues,
         perform actions on them and push the results onto the output queues."""
         while True:
-            inputs = self._get_input_from_queues()
-            if self._is_done(inputs):
+            query = self._get_input_from_queues()
+            if not query:
+                # received terminating element (None)
                 self._push_to_all_outputs(None)
                 break
 
-            if not self._disable_logs:
-                log_phase_single(self._parent_name, self._name, "run", "start")
+            if not self.disable_logs:
+                log_phase_single(self.parent_name, self.name, "run", "start")
 
-            outputs = self.run(inputs)
+            outputs = self.run(query)
 
             self._push_to_outputs(outputs)
-            if not self._disable_logs:
-                log_phase_single(self._parent_name, self._name, "run", "end")
+            if not self.disable_logs:
+                log_phase_single(self.parent_name, self.name, "run", "end")

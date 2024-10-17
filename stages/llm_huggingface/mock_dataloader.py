@@ -1,9 +1,3 @@
-from torch.utils.data import DataLoader
-from datasets import load_dataset
-from transformers import (
-    DataCollatorForLanguageModeling,
-)
-
 from stages.stage import Stage, log_phase
 from utils.schemas import Query
 
@@ -42,12 +36,11 @@ class MockDataLoader(Stage):
         super().prepare()
         self._tokenizer = self._dispatch_call(self._tokenizer_stage_id, "get_tokenizer")
 
-    def run(self, inputs: dict[int, Query]) -> dict[int, Query]:
+    def run(self, query: Query) -> dict[int, Query]:
         """Poll for incoming data in the queues,
         load the next batch of data and pass it onto the output queues."""
-        query_from_first_queue = next(iter(inputs.values()))
 
         next_batch = self._data[: self._batch_size]
-        query_from_first_queue.data = next_batch
-        output = {idx: query_from_first_queue for idx in self.output_queues}
+        query.data = next_batch
+        output = {idx: query for idx in self.output_queues}
         return output

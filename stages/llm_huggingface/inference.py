@@ -2,16 +2,14 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
-    get_scheduler,
 )
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 import torch
 import transformers
 from outlines import models, generate
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
-from utils.schemas import StageModel, PipelineModel
+from utils.schemas import StageModel, PipelineModel, Query
 
 
 class Inference(Stage):
@@ -115,9 +113,8 @@ class Inference(Stage):
 
         self._setup_model()
 
-    def run(self, inputs):
-        query_from_first_queue = next(iter(inputs.values()))
-        batch = query_from_first_queue.data
+    def run(self, query: Query) -> dict[int, Query]:
+        batch = query.data
 
         if self._data_model:
             model_out = self._generator(batch)
@@ -134,7 +131,7 @@ class Inference(Stage):
             )
 
         print("Model output: ", model_out)
-        query_from_first_queue.data = model_out
+        query.data = model_out
 
-        outputs = {idx: query_from_first_queue for idx in self.output_queues}
+        outputs = {idx: query for idx in self.output_queues}
         return outputs
