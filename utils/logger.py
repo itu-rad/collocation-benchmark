@@ -5,6 +5,25 @@ import re
 
 
 class Logger:
+    """
+    Multiprocessing-safe logger, listening on events in a queue.
+
+    Attributes:
+        queue (multiprocessing.Queue): The queue to listen on for logging events.
+        queue_listener (logging.handlers.QueueListener): The listener that processes log records from the queue.
+
+    Methods:
+        __init__(queue, benchmark_name):
+            Initializes the Logger with a queue and a benchmark name.
+
+            Args:
+                queue (multiprocessing.Queue): The queue to listen on for logging events.
+                benchmark_name (str): The name of the benchmark, used to create a filename-safe log file.
+
+        stop_queue_listener():
+            Stops the queue listener.
+    """
+
     """Multiprocessing-safe logger, listening on events in a queue"""
 
     queue = None

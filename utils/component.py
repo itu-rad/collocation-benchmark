@@ -6,6 +6,15 @@ from utils.schemas import PipelineModel, StageModel
 
 
 class InstantiationError(Exception):
+    """
+    Exception raised for errors encountered during the instantiation of a component.
+
+    Attributes:
+        errors (List[Exception]): A list of exceptions that were raised during instantiation.
+
+    Methods:
+        __str__(): Returns a string representation of the error messages.
+    """
 
     def __init__(self, errors: List[Exception]):
         self.errors = errors
@@ -19,6 +28,19 @@ class InstantiationError(Exception):
 
 
 def get_stage_component(stage_config: StageModel, pipeline_config: PipelineModel):
+    """
+    Retrieves and initializes a stage component based on the provided stage configuration and pipeline configuration.
+
+    Args:
+        stage_config (StageModel): The configuration for the specific stage.
+        pipeline_config (PipelineModel): The overall pipeline configuration.
+
+    Returns:
+        object: An instance of the stage component class.
+
+    Raises:
+        ValueError: If the stage class is not found.
+    """
     stage_class = get_component(stage_config.component)
     if stage_class is None:
         raise ValueError("Stage class not found")

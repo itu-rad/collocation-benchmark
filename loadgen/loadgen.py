@@ -22,6 +22,8 @@ def run_loadgen(
         logger_queue (multiprocessing.Queue): Queue to facilitate process-safe logging
     """
     loadgen = LoadGen(pipeline_config, logger_queue)
+    # TODO: Write this to a .md file
+    print(loadgen)
     loadgen.run()
 
 
@@ -34,6 +36,7 @@ class LoadGen:
     def __init__(
         self, pipeline_config: PipelineModel, logger_queue: multiprocessing.Queue
     ):
+        self._pipeline_config = pipeline_config
 
         # initialize process-safe logging
         qh = QueueHandler(logger_queue)
@@ -42,20 +45,20 @@ class LoadGen:
         self.logger.addHandler(qh)
 
         # initialize the pipeline and all pipeline stages
-        pipeline = Pipeline(pipeline_config)
-        pipeline.prepare()
-        dataset_splits = pipeline.get_dataset_splits()
+        self._pipeline = Pipeline(pipeline_config)
+        self._pipeline.prepare()
+        dataset_splits = self._pipeline.get_dataset_splits()
 
         # parse the loadgen scheduler config and initialize the appropriate scheduler
         loadgen_config = pipeline_config.loadgen
         load_scheduler_config = loadgen_config.config
-        load_scheduler = get_component(loadgen_config.component)(
+        self._load_scheduler = get_component(loadgen_config.component)(
             loadgen_config.max_queries,
             loadgen_config.timeout,
             load_scheduler_config,
             dataset_splits,
         )
-        load_scheduler.prepare()
+        self._load_scheduler.prepare()
 
         # set up queue for passing queries from the loadgen to the pipeline
         sample_queue = Queue(maxsize=loadgen_config.queue_depth)
@@ -65,10 +68,18 @@ class LoadGen:
         event = Event()
 
         # set up the pipeline and scheduler threads
-        self.pipeline_thread = Thread(target=pipeline.run, args=[sample_queue, event])
-        self.scheduler_thread = Thread(
-            target=load_scheduler.generate, args=[sample_queue, event]
+        self.pipeline_thread = Thread(
+            target=self._pipeline.run, args=[sample_queue, event]
         )
+        self.scheduler_thread = Thread(
+            target=self._load_scheduler.generate, args=[sample_queue, event]
+        )
+
+    def __str__(self) -> str:
+        s = f"---\ntitle: 'Pipeline: {self._pipeline_config.name}'\n---\nflowchart LR\n"
+        s += str(self._load_scheduler)
+        s += str(self._pipeline)
+        return s
 
     def run(self) -> None:
         """

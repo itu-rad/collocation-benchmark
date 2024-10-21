@@ -1,3 +1,4 @@
+from sympy import Q
 from torchtune.utils._checkpointing._checkpointer import FullModelHFCheckpointer
 from torchtune.modules.peft.peft_utils import (
     get_adapter_params,
@@ -11,6 +12,7 @@ import torch
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
+from utils.schemas import Query
 
 
 class Finetune(Stage):
@@ -119,9 +121,8 @@ class Finetune(Stage):
         self._setup_optimizer()
         self._setup_lr_scheduler()
 
-    def run(self, inputs):
-        data_from_first_queue = list(inputs.values())[0]
-        batch = data_from_first_queue["data"]
+    def run(self, query: Query) -> Query:
+        batch = query.data
 
         tokens, labels = batch["tokens"], batch["labels"]
         # Get the attention mask and position ids from the dataset if they
@@ -158,5 +159,5 @@ class Finetune(Stage):
 
         self._current_step += 1
 
-        data_from_first_queue["data"] = loss.item()
-        return data_from_first_queue
+        query.data = loss.item()
+        return query

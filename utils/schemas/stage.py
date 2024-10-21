@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 from typing import Any
 
-from stages.queues.polling import polling_policy
-
 
 class StageModel(BaseModel):
     """

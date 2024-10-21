@@ -31,6 +31,17 @@ class Pipeline:
         self._populate_stages_with_stage_dict()
         self._populate_queues()
 
+    def __str__(self) -> str:
+        s = "subgraph Stages\n"
+        for stage in self.stages.values():
+            s += str(stage)
+        s += "end\n"
+        for input_stage_id in self._pipeline_config.inputs:
+            s += f"load_sched -->|queue depth:{self._pipeline_config.loadgen.queue_depth}|{input_stage_id}\n"
+        for output_stage_id in self._pipeline_config.outputs:
+            s += f"{output_stage_id} --> load_sched\n"
+        return s
+
     def _create_stages(
         self, stage_config_dict: dict[int, StageModel]
     ) -> dict[int, Stage]:
@@ -108,8 +119,16 @@ class Pipeline:
 
     def retrieve_results(self, event: Event) -> None:
         """
-        Retrieve the results from all the output queues of the pipeline.
+        This method continuously checks all output queues for new queries. It performs
+        non-blocking retrieval from the queues and processes the queries if available.
+        If a terminating character (None) is received, the method returns and stops
+        further processing. Additionally, it logs the end of the pipeline execution
+        and sets the provided event to signal completion.
+
+        Args:
+            event (Event): An event object used to signal the completion of the pipeline.
         """
+
         while True:
             for output_queue in self._output_queues:
                 # non-blocking retrieval from the queues
@@ -136,14 +155,18 @@ class Pipeline:
 
                 event.set()
 
-    def run(self, sample_queue: Queue, event: Event) -> None:
+    def run(self, query_queue: Queue, event: Event) -> None:
         """
-        Read the queries from the loadgen queue and execute the pipeline until a terminating element is retrieved.
+        Executes the pipeline by reading queries from the query queue and processing them until a termination signal is received.
 
-        Args:
-            sample_queue (Queue): The queue with the queries from the load generator.
-            event (Event): An event that is used for synchronization between the pipeline and the load generator.
+        This method starts a separate thread for result retrieval and processes incoming queries from the sample queue.
+        It continues to process queries until a `None` value is retrieved from the queue, indicating termination.
+        Upon termination, it sends a termination signal to subsequent stages and joins all threads.
+
+            query_queue (Queue): The queue containing queries from the load generator.
+            event (Event): An event used for synchronization between the pipeline and the load generator.
         """
+
         result_retrieval_thread = Thread(target=self.retrieve_results, args=[event])
         result_retrieval_thread.start()
 
@@ -151,7 +174,7 @@ class Pipeline:
         epoch_dict = {split: 0 for split in dataset_splits}
 
         while True:
-            query: Query | None = sample_queue.get()
+            query: Query | None = query_queue.get()
 
             # check if done
             if query is None:

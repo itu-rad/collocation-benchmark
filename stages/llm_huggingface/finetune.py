@@ -38,14 +38,16 @@ class Finetune(Stage):
             raise ValueError(f"Invalid dtype: {dtype}")
 
     def _parse_device(self, device: str | None) -> torch.device:
-        # Parse the device string and return the appropriate torch.device.
-        # If no device is specified, return the appropriate torch.device based on the available devices.
-        #
-        # Args:
-        #     device (str | None): The device string, or None if no device is specified.
-        #
-        # Returns:
-        #     torch.device: The parsed device.
+        """
+        Parse the device string and return the appropriate torch.device.
+        If no device is specified, return the appropriate torch.device based on the available devices.
+
+        Args:
+            device (str | None): The device string, or None if no device is specified.
+
+        Returns:
+            torch.device: The parsed device.
+        """
         if device:
             return torch.device(device)
         else:

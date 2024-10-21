@@ -4,6 +4,7 @@ from threading import Thread
 from functools import wraps
 import logging
 from typing import Any
+import json
 
 from stages.queues.polling.polling_policy import PollingPolicy
 from utils.component import get_component
@@ -11,8 +12,23 @@ from utils.schemas import StageModel, PipelineModel, Query
 
 
 def log_phase(f):
-    """Wraps the function execution with logging functionality.
-    The wrapper automatically parses the function, pipeline and stage names."""
+    """
+    Decorator to log the start and end of a function's execution.
+
+    This decorator wraps a function to log its execution phases (start and end) using the `logging` module.
+    It logs the parent name, stage name, and function name at the start and end of the function execution.
+
+    Args:
+        f (function): The function to be wrapped with logging functionality.
+
+    Returns:
+        function: The wrapped function with logging.
+
+    Usage:
+        @log_phase
+        def some_function(self, *args, **kwargs):
+            # Function implementation
+    """
 
     @wraps(f)
     def wrapper(self, *args, **kw):
@@ -49,12 +65,31 @@ class Stage:
         self.name = stage_config.name
         self.parent_name = pipeline_config.name
         self.disable_logs = stage_config.disable_logs
+        self._stage_config = stage_config
         self._polling_policy = stage_config.polling_policy
         self._output_stage_ids = stage_config.outputs
         self.extra_config = stage_config.config
         self._stage_dict: dict[int, Stage] = {}
         self._input_queues: dict[int, Queue] = {}
         self.output_queues: dict[int, Queue] = {}
+
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the object.
+        The string includes the object's ID, name, and a JSON dump of its stage configuration.
+        Additionally, it lists all output stage IDs in the format "current_id -> output_stage_id".
+        Returns:
+            str: A formatted string representing the object.
+        """
+        encoded_config = (
+            json.dumps(self._stage_config.__dict__, indent=4)
+            .replace('"', "'")
+            .replace("    ", "&emsp;")
+        )
+        s = f'{self.id}["`{self.name}\n{encoded_config}`"]\nstyle {self.id} text-align:left\n'
+        for output_stage_id in self._output_stage_ids:
+            s += f"{self.id} --> {output_stage_id}\n"
+        return s
 
     def set_stage_dict(self, stage_dict: dict[int, Stage]) -> None:
         """Set the stage dictionary, which is used for dynamic method invocation.
@@ -127,7 +162,7 @@ class Stage:
         """
         if (
             len(self._input_queues) > 1
-            and self._polling_policy is "stages.queues.polling.SingleQueuePolicy"
+            and self._polling_policy == "stages.queues.polling.SingleQueuePolicy"
         ):
             raise ValueError("SingleQueuePolicy only works with one input queue")
         self._polling_policy_obj: PollingPolicy = get_component(self._polling_policy)(

@@ -10,7 +10,7 @@ from .scheduler import LoadScheduler
 class OfflineLoadScheduler(LoadScheduler):
     """Load generation scheduler, which waits for processing of the previous query"""
 
-    def generate(self, queue: Queue, event: threading.Event):
+    def generate(self, queue: Queue, event: threading.Event) -> None:
         """Generate load, which is synchronized with the pipeline execution.
         The generation is stopped when the max_queries is reached or timer elapses.
 

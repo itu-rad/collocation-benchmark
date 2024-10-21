@@ -6,28 +6,52 @@ from .scheduler import LoadScheduler
 
 
 class PoissonLoadScheduler(LoadScheduler):
-    """Load generation scheduler based on the poisson distribution"""
+    """
+    PoissonLoadScheduler is a load scheduler that generates load based on a Poisson distribution.
+    """
 
     def __init__(self, max_queries, timeout, load_scheduler_config, dataset_splits):
+        """
+        Initializes the PoissonScheduler with the given parameters.
+
+        Args:
+            max_queries (int): The maximum number of queries to handle.
+            timeout (int): The timeout value for the scheduler.
+            load_scheduler_config (dict): Configuration settings for the load scheduler.
+            dataset_splits (list): List of dataset splits to be used.
+        """
         super().__init__(max_queries, timeout, load_scheduler_config, dataset_splits)
 
         self.rate = self.extra_config.get("rate", 3)
         self.offsets = []
 
-    def prepare(self):
-        """Generate time offsets based on the poisson distribution."""
+    def prepare(self) -> None:
+        """
+        Generate time offsets based on the Poisson distribution.
+
+        This method initializes the `offsets` list with a starting value of 0 and
+        then appends additional time offsets generated using the exponential
+        distribution with the specified rate. The number of offsets generated
+        is determined by `self.max_queries`.
+
+        Returns:
+            None
+        """
         self.offsets = [0]
         for _ in range(self.max_queries - 1):
             self.offsets.append(expovariate(self.rate))
 
     def generate(self, queue, event):
-        """Generate load based on the poisson distribution.
-        The generation is stopped when the max_queries is reached or timer elapses.
-
-        Args:
-            queue (queue.Queue): Pipeline's input queue.
-            event (threading.Event): Conditional variable for synchronizing between the load generation and the pipeline's execution.
         """
+        Generates queries and pushes them onto the provided queue at intervals defined by offsets.
+        Args:
+            queue (Queue): The queue to push generated queries onto.
+            event (Event): An event to signal the start of query generation.
+        The method will generate queries until the maximum number of queries (`self.max_queries`) is reached or a stop signal is received.
+        It uses the dataset splits defined in `self.dataset_splits` to generate queries for each split and batch.
+        The method also handles timeout and stop signals to ensure proper termination of the query generation process.
+        """
+
         # start the timeout timer
         self.timer.start()
         # release the lock, so the pipeline thread can execute

@@ -24,8 +24,6 @@ def main():
         yaml_config = file.read()
         benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
 
-    print(benchmark_config.model_dump())
-
     # initialize a multiprocessing-safe logger
     logger_queue = Queue()
     logger = Logger(logger_queue, benchmark_config.name)
