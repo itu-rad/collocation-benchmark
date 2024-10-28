@@ -34,7 +34,7 @@ class MockDataLoader(Stage):
     def prepare(self):
         """Build the dataloaders."""
         super().prepare()
-        self._tokenizer = self._dispatch_call(self._tokenizer_stage_id, "get_tokenizer")
+        self._tokenizer = self.dispatch_call(self._tokenizer_stage_id, "get_tokenizer")
 
     def run(self, query: Query) -> dict[int, Query]:
         """Poll for incoming data in the queues,

@@ -9,41 +9,43 @@ import torch
 
 from stages.stage import Stage, log_phase, log_phase_single
 from utils.component import get_component
+from utils.schemas import StageModel, PipelineModel, Query
 
 
 class Inference(Stage):
-    def __init__(self, stage_config, pipeline_config):
+
+    def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
         super().__init__(stage_config, pipeline_config)
 
-        self._extra_config = stage_config.get("config", {})
+        self._checkpoint_dict = self._load_checkpoint(self.extra_config["checkpointer"])
 
-        self._checkpoint_dict = self._load_checkpoint(
-            self._extra_config["checkpointer"]
-        )
+        self._device = self._parse_device(self.extra_config["device"])
+        self._dtype = get_component(self.extra_config.get("dtype", "torch.float32"))
 
-        self._device = self._parse_device(self._extra_config["device"])
-        self._dtype = self._parse_dtype(self._extra_config["dtype"])
         self._max_queries = pipeline_config["loadgen"]["max_queries"]
-        self._temperature = self._extra_config.get("temperature", 0.6)
-        self._top_k = self._extra_config.get("top_k", 300)
-        self._max_new_tokens = self._extra_config.get("max_new_tokens", 300)
-        self._batch_size_stage_id = self._extra_config.get("batch_size_stage_id", 1)
 
-    def _parse_dtype(self, dtype):
-        if dtype == "bf16":
-            return torch.bfloat16
-        elif dtype == "fp32":
-            return torch.float32
-        else:
-            raise ValueError(f"Invalid dtype: {dtype}")
+        self._temperature = self.extra_config.get("temperature", 0.6)
+        self._top_k = self.extra_config.get("top_k", 300)
 
-    def _parse_device(self, device):
-        if device == "cpu":
-            return torch.device("cpu")
-        elif device == "cuda":
-            return torch.device("cuda")
+    def _parse_device(self, device: str | None) -> torch.device:
+        """
+        Parse the device string and return the appropriate torch.device.
+        If no device is specified, return the appropriate torch.device based on the available devices.
+        Args:
+            device (str | None): The device string, or None if no device is specified.
+        Returns:
+            torch.device: The parsed device.
+        """
+
+        if device:
+            return torch.device(device)
         else:
-            raise ValueError(f"Invalid device: {device}")
+            if torch.backends.mps.is_available():
+                return torch.device("mps")
+            elif torch.cuda.is_available():
+                return torch.device("cuda")
+            else:
+                return torch.device("cpu")
 
     def _load_checkpoint(self, checkpoint_conf):
         """Load a checkpoint from the checkpoint config.
@@ -67,13 +69,15 @@ class Inference(Stage):
     def _setup_model(self):
         # Configure device and precision
         with set_default_dtype(self._dtype), self._device:
-            self._model = get_component(self._extra_config["model"]["component"])()
+            self._model = get_component(self.extra_config["model"]["component"])()
 
         # Load the base model checkpoint
         base_model_state_dict = self._checkpoint_dict[MODEL_KEY]
         self._model.load_state_dict(base_model_state_dict, strict=False)
 
-        batch_size = self.dispatch_call(self._batch_size_stage_id, "get_batch_size")
+        batch_size = self.dispatch_call(
+            self.extra_config.get("batch_size_stage_id", 1), "get_batch_size"
+        )
         with self._device:
             self._model.setup_caches(batch_size=batch_size, dtype=self._dtype)
 
@@ -86,10 +90,9 @@ class Inference(Stage):
         self._setup_model()
         self._tokenizer = self.dispatch_call(0, "get_tokenizer")
 
-    def run(self, inputs):
+    def run(self, query: Query) -> dict[int, Query]:
         with torch.no_grad():
-            data_from_first_queue = list(inputs.values())[0]
-            batch = data_from_first_queue["data"]
+            batch = query.data
 
             prompt = batch["tokens"]
 
@@ -124,13 +127,12 @@ class Inference(Stage):
                     tokens, stop_tokens, stop_token_reached
                 )
                 if stop_token_reached.all().item():
-                    data_from_first_queue["data"] = self._tokenizer.decode(
-                        generated_tokens[0].tolist()
-                    )
-                    return data_from_first_queue
+                    query.data = self._tokenizer.decode(generated_tokens[0].tolist())
+                    outputs = {idx: query for idx in self.output_queues}
+                    return outputs
 
             input_pos = torch.tensor([prompt_length], device=prompt.device)
-            for _ in range(self._max_new_tokens - 1):
+            for _ in range(self.extra_config.get("max_new_tokens", 300) - 1):
                 # update stop_token_mask if we reached a stop token in a previous step
                 # by appending the logical not of stop_token_reached to the end of the mask
                 # reshaped to be bsz first
@@ -164,8 +166,6 @@ class Inference(Stage):
                 if self._tokenizer.pad_id != 0:
                     generated_tokens[generated_tokens == 0] = self._tokenizer.pad_id
 
-            data_from_first_queue["data"] = self._tokenizer.decode(
-                generated_tokens[0].tolist()
-            )
-            # print(data_from_first_queue["data"])
-            return data_from_first_queue
+            query.data = self._tokenizer.decode(generated_tokens[0].tolist())
+            outputs = {idx: query for idx in self.output_queues}
+            return outputs

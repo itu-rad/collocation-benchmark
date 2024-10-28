@@ -18,7 +18,7 @@ pipelines:
         component: stages.llm_huggingface.MockDataLoader  
         config:
           tokenizer_stage_id: 1
-          batch_size: 2
+          batch_size: 1
           shuffle: True
           split: ["train"]
           dataset:
@@ -30,7 +30,7 @@ pipelines:
         id: 1
         component: stages.llm_huggingface.Inference
         config: 
-          dtype: bf16
+          dtype: torch.bfloat16
           device: cuda
           data_model: utils.schemas.rag.Score
           model:

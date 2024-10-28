@@ -105,7 +105,7 @@ class Stage:
         Note: This method is automatically called by the pipeline after setting the stage_dict.
         """
         for out_stage_id in self._output_stage_ids:
-            self.output_queues[out_stage_id] = self._dispatch_call(
+            self.output_queues[out_stage_id] = self.dispatch_call(
                 out_stage_id, "get_input_queue", self.id
             )
 
@@ -132,7 +132,7 @@ class Stage:
             self._input_queues[idx] = Queue()
         return self._input_queues[idx]
 
-    def _dispatch_call(
+    def dispatch_call(
         self, stage_id: int, method_name: str, *args: Any, **kwargs: Any
     ) -> Any:
         """Invoke a method on a stage by its ID.

@@ -30,7 +30,7 @@ pipelines:
         id: 1
         component: stages.llm_huggingface.Finetune
         config: 
-          dtype: bf16
+          dtype: torch.bfloat16
           device: cuda
           model:
             name: microsoft/Phi-3-mini-4k-instruct

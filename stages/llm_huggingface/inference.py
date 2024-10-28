@@ -17,7 +17,7 @@ class Inference(Stage):
         super().__init__(stage_config, pipeline_config)
 
         self._device = self._parse_device(self.extra_config.get("device", None))
-        self._dtype = self._parse_dtype(self.extra_config.get("dtype", "fp32"))
+        self._dtype = get_component(self.extra_config.get("dtype", "torch.float32"))
 
         self._max_queries = pipeline_config.loadgen.max_queries
 
@@ -25,17 +25,10 @@ class Inference(Stage):
             self.extra_config["model"]["name"]
         )
 
-        self._data_model = self.extra_config.get("data_model", None)
-        if self._data_model:
+        # data model for structured generation
+        data_model_path = self.extra_config.get("data_model", None)
+        if data_model_path:
             self._data_model = get_component(self._data_model)
-
-    def _parse_dtype(self, dtype):
-        if dtype == "bf16":
-            return torch.bfloat16
-        elif dtype == "fp32":
-            return torch.float32
-        else:
-            raise ValueError(f"Invalid dtype: {dtype}")
 
     def _parse_device(self, device: str | None) -> torch.device:
         # Parse the device string and return the appropriate torch.device.

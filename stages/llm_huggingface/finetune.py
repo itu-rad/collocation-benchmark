@@ -18,24 +18,19 @@ class Finetune(Stage):
         super().__init__(stage_config, pipeline_config)
 
         self._device = self._parse_device(self.extra_config["device"])
-        self._dtype = self._parse_dtype(self.extra_config["dtype"])
+        self._dtype = get_component(self.extra_config.get("dtype", "torch.float32"))
+
         self._max_queries = pipeline_config.loadgen.max_queries
         self._gradient_accumulation_steps = self.extra_config[
             "gradient_accumulation_steps"
         ]
+
         self._running_loss = 0.0
         self._current_step = 0
+
         self._tokenizer = AutoTokenizer.from_pretrained(
             self.extra_config["model"]["name"]
         )
-
-    def _parse_dtype(self, dtype):
-        if dtype == "bf16":
-            return torch.bfloat16
-        elif dtype == "fp32":
-            return torch.float32
-        else:
-            raise ValueError(f"Invalid dtype: {dtype}")
 
     def _parse_device(self, device: str | None) -> torch.device:
         """

@@ -2,7 +2,7 @@ name: "PHI3 Mini Alpaca generation pipeline"
 pipelines:
   - name: Alpaca generation
     inputs: [0]
-    outputs: [2]
+    outputs: [1]
     loadgen:
       type: poisson
       max_queries: 2000
@@ -12,35 +12,24 @@ pipelines:
       config:
         rate: 1 # average #requests/sec
     stages:
-      - name: Alpaca dataset
+      - name: Alpaca dataloader
         id: 0
         outputs: [1]
-        component: stages.lora_finetune.Dataset
+        component: stages.llm_torchtune.TorchTuneDataLoader
         config:
-          dataset:
-            component: torchtune.datasets.alpaca_cleaned_dataset
-            split: ["val"]
-            batch_size_stage_id: 1
-          tokenizer: 
-            component: torchtune.models.phi3.phi3_mini_tokenizer
-            path: tmp/phi3-mini-4k/tokenizer.model
-      - name: Alpaca dataloader
-        id: 1
-        inputs: [0]
-        outputs: [2]
-        component: stages.lora_finetune.TorchTuneDataLoader
-        config:
-          tokenizer_stage_id: 0
-          dataset_stage_id: 0
           batch_size: 16
           shuffle: True
-          #split: ["val"]
+          split: ["val"]
+          dataset:
+            component: torchtune.datasets.alpaca_cleaned_dataset
+          tokenizer:
+            component: torchtune.models.phi3.phi3_mini_tokenizer
+            path: tmp/phi3-mini-4k/tokenizer.model
       - name: Alpaca inference
-        id: 2
-        inputs: [1]
-        component: stages.lora_finetune.Inference
+        id: 1
+        component: stages.llm_torchtune.Inference
         config: 
-          dtype: bf16
+          dtype: torch.bfloat16
           device: cuda
           temperature: 0.6
           top_k: 300

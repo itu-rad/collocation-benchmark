@@ -1,4 +1,3 @@
-from sympy import Q
 from torchtune.utils._checkpointing._checkpointer import FullModelHFCheckpointer
 from torchtune.modules.peft.peft_utils import (
     get_adapter_params,
@@ -12,46 +11,58 @@ import torch
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
-from utils.schemas import Query
+from utils.schemas import Query, StageModel, PipelineModel
 
 
 class Finetune(Stage):
-    def __init__(self, stage_config, pipeline_config):
+
+    def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
         super().__init__(stage_config, pipeline_config)
 
-        self._extra_config = stage_config.get("config", {})
+        self._loss_fn = get_component(self.extra_config["loss"]["component"])()
 
-        self._loss_fn = get_component(self._extra_config["loss"]["component"])()
-        self._checkpoint_dict = self._load_checkpoint(
-            self._extra_config["checkpointer"]
-        )
-        self._device = self._parse_device(self._extra_config["device"])
-        self._dtype = self._parse_dtype(self._extra_config["dtype"])
+        self._checkpoint_dict = self._load_checkpoint(self.extra_config["checkpointer"])
+
+        self._device = self._parse_device(self.extra_config["device"])
+        self._dtype = get_component(self.extra_config["dtype"])
+
         self._max_queries = pipeline_config["loadgen"]["max_queries"]
-        self._gradient_accumulation_steps = self._extra_config[
+
+        self._gradient_accumulation_steps = self.extra_config[
             "gradient_accumulation_steps"
         ]
         self._running_loss = 0.0
         self._current_step = 0
 
     def get_loss_fn(self):
+        """
+        Returns the loss function used for training.
+        Returns:
+            Callable: The loss function.
+        """
+
         return self._loss_fn
 
-    def _parse_dtype(self, dtype):
-        if dtype == "bf16":
-            return torch.bfloat16
-        elif dtype == "fp32":
-            return torch.float32
-        else:
-            raise ValueError(f"Invalid dtype: {dtype}")
+    def _parse_device(self, device: str | None) -> torch.device:
+        """
+        Parse the device string and return the appropriate torch.device.
+        If no device is specified, return the appropriate torch.device based on the available devices.
 
-    def _parse_device(self, device):
-        if device == "cpu":
-            return torch.device("cpu")
-        elif device == "cuda":
-            return torch.device("cuda")
+        Args:
+            device (str | None): The device string, or None if no device is specified.
+
+        Returns:
+            torch.device: The parsed device.
+        """
+        if device:
+            return torch.device(device)
         else:
-            raise ValueError(f"Invalid device: {device}")
+            if torch.backends.mps.is_available():
+                return torch.device("mps")
+            elif torch.cuda.is_available():
+                return torch.device("cuda")
+            else:
+                return torch.device("cpu")
 
     def _load_checkpoint(self, checkpoint_conf):
         """Load a checkpoint from the checkpoint config.
@@ -73,17 +84,24 @@ class Finetune(Stage):
         return checkpoint_dict
 
     def _setup_model(self):
+        """
+        Sets up the model for fine-tuning by performing the following steps:
+
+        1. Configures the device and precision settings.
+        2. Initializes the model using the configuration specified in `self.extra_config`.
+        3. Sets adapter parameters as trainable.
+        4. Enables activation checkpointing for memory efficiency.
+        5. Loads the base model checkpoint into the model.
+        """
         # Configure device and precision
         with set_default_dtype(self._dtype), self._device:
-            model_cls = get_component(self._extra_config["model"]["component"])
+            model_cls = get_component(self.extra_config["model"]["component"])
             self._model = model_cls(
-                lora_attn_modules=self._extra_config["model"]["lora_attn_modules"],
-                apply_lora_to_mlp=self._extra_config["model"]["apply_lora_to_mlp"],
-                apply_lora_to_output=self._extra_config["model"][
-                    "apply_lora_to_output"
-                ],
-                lora_rank=self._extra_config["model"]["lora_rank"],
-                lora_alpha=self._extra_config["model"]["lora_alpha"],
+                lora_attn_modules=self.extra_config["model"]["lora_attn_modules"],
+                apply_lora_to_mlp=self.extra_config["model"]["apply_lora_to_mlp"],
+                apply_lora_to_output=self.extra_config["model"]["apply_lora_to_output"],
+                lora_rank=self.extra_config["model"]["lora_rank"],
+                lora_alpha=self.extra_config["model"]["lora_alpha"],
             )
 
         # Set adapter parameters as trainable
@@ -100,12 +118,12 @@ class Finetune(Stage):
         self._model.load_state_dict(base_model_state_dict, strict=False)
 
     def _setup_optimizer(self):
-        config = self._extra_config["optimizer"]
+        config = self.extra_config["optimizer"]
         optimizer_cls = get_component(config.pop("component"))
         self._optimizer = optimizer_cls(params=self._model.parameters(), **config)
 
     def _setup_lr_scheduler(self):
-        config = self._extra_config["lr_scheduler"]
+        config = self.extra_config["lr_scheduler"]
         lr_scheduler_cls = get_component(config.pop("component"))
         self._lr_scheduler = lr_scheduler_cls(
             optimizer=self._optimizer,
@@ -121,7 +139,7 @@ class Finetune(Stage):
         self._setup_optimizer()
         self._setup_lr_scheduler()
 
-    def run(self, query: Query) -> Query:
+    def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
 
         tokens, labels = batch["tokens"], batch["labels"]
@@ -160,4 +178,5 @@ class Finetune(Stage):
         self._current_step += 1
 
         query.data = loss.item()
-        return query
+        outputs = {idx: query for idx in self.output_queues}
+        return outputs
