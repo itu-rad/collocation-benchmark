@@ -6,7 +6,7 @@ import logging
 from typing import Any
 import json
 
-from stages.queues.polling.polling_policy import PollingPolicy
+from utils.queues.polling.polling_policy import PollingPolicy
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
 

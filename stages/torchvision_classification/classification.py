@@ -1,0 +1,141 @@
+from ast import parse
+from os import replace
+from pandas import lreshape
+import torch
+from torch.nn import Linear, CrossEntropyLoss
+from torch.optim import SGD
+from torchvision.models import get_model
+
+from stages.stage import Stage, log_phase, log_phase_single
+from utils.schemas import Query, StageModel, PipelineModel
+from utils.component import get_component
+
+
+class TorchVisionClassification(Stage):
+    """This stage loads a TorchVision model and performs transfer learning
+    and/or inference using the pretrained model."""
+
+    def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
+        """Initialize the stage by parsing the stage configuration.
+
+        Args:
+            stage_config (dict): Configuration, which includes the name of the model,
+            possible checkpoint and change to the head of the classifier.
+
+        Raises:
+            Exception: Missing model name.
+            Exception: Model checkpoint path is required for inference.
+        """
+        super().__init__(stage_config, pipeline_config)
+
+        self._model = None
+        self._optimizer = None
+        self._criterion = None
+
+        self._device = self._parse_device(self.extra_config["device"])
+        self._num_classes = self.extra_config["model"].get("num_classes", 1000)
+
+    def replace_last_module(self, module):
+        """Replace the last module/layer inside the classifier head of the model.
+
+        Args:
+            module (tuple[str, torch.Module]): The last (name, module) tuple in the neural network
+        """
+        last_module_name = module[0].split(".")
+
+        if len(last_module_name) == 1:
+            self._model[last_module_name[0]] = Linear(
+                module[1].in_features, self._num_classes
+            )
+        else:
+            self._model.__getattr__(".".join(last_module_name[:-1]))[
+                int(last_module_name[-1])
+            ] = Linear(module[1].in_features, self._num_classes)
+
+    def _parse_device(self, device: str | None) -> torch.device:
+        """
+        Parse the device string and return the appropriate torch.device.
+        If no device is specified, return the appropriate torch.device based on the available devices.
+
+        Args:
+            device (str | None): The device string, or None if no device is specified.
+
+        Returns:
+            torch.device: The parsed device.
+        """
+        if device:
+            return torch.device(device)
+        else:
+            if torch.backends.mps.is_available():
+                return torch.device("mps")
+            elif torch.cuda.is_available():
+                return torch.device("cuda")
+            else:
+                return torch.device("cpu")
+
+    @log_phase
+    def prepare(self):
+        """Build the model according to the config and load the weights"""
+        super().prepare()
+
+        model_cls = self.extra_config["model"]["component"]
+        weights_cls = self.extra_config["model"].get("weights", None)
+
+        self._model = get_component(model_cls)(weights=weights_cls)
+
+        replace_classifier = self.extra_config["model"].get("replace_classifier", False)
+        if replace_classifier:
+            # get the last module of the model and replace it
+            *_, last_module = self._model.named_modules()
+            self.replace_last_module(last_module)
+
+        # load from checkpoint file
+        model_checkpoint_path = self.extra_config["model"].get(
+            "model_checkpoint_path", None
+        )
+        if model_checkpoint_path:
+            self._model.load_state_dict(torch.load(model_checkpoint_path))
+
+        # set only subset of the weights as trainable parameter (transfer learning)
+        for param in self._model.parameters():
+            param.requires_grad = False
+
+        # TODO: Parametrize the number of layers to be trainable
+        params_to_update = []
+        for name, param in self._model.named_parameters():
+            if last_module[0] in name:
+                param.requires_grad = True
+                params_to_update.append(param)
+
+        self._model = self._model.to(self._device)
+
+        optimizer_config = self.extra_config["optimizer"]
+        optimizer_cls = get_component(optimizer_config.pop("component"))
+        self._optimizer = optimizer_cls(params_to_update, **optimizer_config)
+
+        self._criterion = get_component(self.extra_config["criterion"]["component"])()
+
+    def run(self, query: Query) -> dict[int, Query]:
+        batch = query.data
+        [inputs, labels] = batch
+        inputs = inputs.to(self._device)
+        labels = labels.to(self._device)
+
+        if query.split == "val":
+            self._model.eval()
+        else:
+            self._model.train()
+
+        with torch.set_grad_enabled(query.split == "train"):
+            outputs = self._model(inputs)
+            loss = self._criterion(outputs, labels)
+
+            # _, preds = torch.max(outputs, 1)
+
+            if query.split == "train":
+                loss.backward()
+                self._optimizer.step()
+
+        query.data = loss.item()
+        output = {idx: query for idx in self.output_queues}
+        return output

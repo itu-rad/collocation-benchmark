@@ -1,4 +1,4 @@
-from stages.queues import PeekableQueue
+from utils.queues import PeekableQueue
 
 from utils.schemas import Query
 from .polling_policy import PollingPolicy

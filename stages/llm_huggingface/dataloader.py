@@ -41,6 +41,10 @@ class HuggingFaceDataLoader(Stage):
         self._user_column_name = dataset_config.get("user_column_name")
         self._assistant_column_name = dataset_config.get("assistant_column_name")
 
+        self._tokenizer = None
+        self._dataloader = None
+        self._dataloader_iter = None
+
     def get_batch_size(self) -> int:
         """
         Retrieve the batch size for the data loader.
@@ -91,6 +95,7 @@ class HuggingFaceDataLoader(Stage):
     def prepare(self):
         """Build the dataloaders."""
         super().prepare()
+
         self._tokenizer = self.dispatch_call(
             self.extra_config.get("tokenizer_stage_id", 0), "get_tokenizer"
         )
@@ -109,7 +114,6 @@ class HuggingFaceDataLoader(Stage):
                 "concated_text",
             ]
         )
-        self._device = self.dispatch_call(self._tokenizer_stage_id, "get_device")
         self._dataset = self._dataset.with_format("torch")
         self._dataloader = DataLoader(
             self._dataset,

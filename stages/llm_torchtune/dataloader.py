@@ -36,6 +36,9 @@ class TorchTuneDataLoader(Stage):
         # if _loss_fn_stage_id is not set, the run will be deemed as inference
         self._loss_fn_stage_id = self.extra_config.get("loss_fn_stage_id", None)
 
+        self._dataloaders = {}
+        self._dataloader_iter = None
+
     def get_batch_size(self) -> int:
         """
         Retrieve the batch size for the data loader.
