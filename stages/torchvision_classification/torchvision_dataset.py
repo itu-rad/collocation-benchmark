@@ -6,6 +6,9 @@ from torchvision.datasets import VisionDataset
 
 
 from stages.stage import Stage, log_phase, log_phase_single
+from utils.schemas.pipeline import PipelineModel
+from utils.schemas.query import Query
+from utils.schemas.stage import StageModel
 
 
 class PreloadedDataset(VisionDataset):
@@ -29,7 +32,7 @@ class TorchVisionDataset(Stage):
     used for dataloader initialization.
     """
 
-    def __init__(self, stage_config, parent_name):
+    def __init__(self, stage_config: StageModel, pipeline_config: PipelineModel):
         """Initialize the stage by parsing the stage configuration.
 
         Args:
@@ -39,23 +42,22 @@ class TorchVisionDataset(Stage):
             Exception: Missing model name.
             Exception: Model checkpoint path is required for inference.
         """
-        super().__init__(stage_config, parent_name)
-        stage_config = stage_config.get("config", {})
+        super().__init__(stage_config, pipeline_config)
 
-        self.preload = stage_config.get("preload", False)
+        self.preload = self.extra_config.get("preload", False)
 
-        dataset_name = stage_config.get("dataset_name", None)
+        dataset_name = self.extra_config.get("dataset_name", None)
         if dataset_name is None:
             raise ValueError("Missing dataset name.")
         self.dataset = torchvision.datasets.__dict__.get(dataset_name, None)
         if self.dataset is None:
             raise Exception(f"Could not find dataset {dataset_name}.")
-        split = stage_config.get("split", ["val"])
+        split = self.extra_config.get("split", ["val"])
         dataset_downloaded = os.path.exists(
             os.path.join(os.getcwd(), "data", dataset_name)
         )
         # print(f"Dataset downloaded? {dataset_downloaded}")
-        weights_name = stage_config.get("weights", None)
+        weights_name = self.extra_config.get("weights", None)
         if weights_name is None:
             self.datasets: dict[str, VisionDataset] = {
                 x: self.dataset(
@@ -79,7 +81,7 @@ class TorchVisionDataset(Stage):
                 for x in split
             }
 
-        self.batch_size = stage_config.get("batch_size", 1)
+        self.batch_size = self.extra_config.get("batch_size", 1)
 
     def get_datasets(self):
         """Getter for the datasets
@@ -112,17 +114,3 @@ class TorchVisionDataset(Stage):
             self.datasets[key].transform = None
             # add transform to cached dataset
             self.datasets[key] = PreloadedDataset(self.datasets[key], transform)
-
-    def run(self):
-        """Pass the input onto the output (no action to be performed on the data)"""
-        while True:
-            inputs = self.get_next_from_queues()
-            if self.is_done(inputs):
-                self.push_to_output(list(inputs.values())[0])
-                break
-
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "start")
-            self.push_to_output(list(inputs.values())[0])
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "end")

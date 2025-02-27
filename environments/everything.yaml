@@ -1,0 +1,22 @@
+name: benchmark
+channels:
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.4
+  - boto3
+  - pip:
+      - mlflow>=1.0
+      - tensorflow
+      - tensorboardX
+      - transformers
+      - peft
+      - datasets
+      - psutil
+      - radt
+      - pydantic_yaml

@@ -1,8 +1,8 @@
+import os
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 from torchvision.models import get_weight
 from torchvision.datasets import VisionDataset
-import os
 
 from stages.stage import Stage, log_phase
 from utils.schemas import Query, StageModel, PipelineModel

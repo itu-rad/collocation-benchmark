@@ -35,7 +35,7 @@ class TorchVisionClassification(Stage):
         self._device = self._parse_device(self.extra_config["device"])
         self._num_classes = self.extra_config["model"].get("num_classes", 1000)
 
-    def replace_last_module(self, module):
+    def _replace_last_module(self, module):
         """Replace the last module/layer inside the classifier head of the model.
 
         Args:
@@ -87,7 +87,7 @@ class TorchVisionClassification(Stage):
         if replace_classifier:
             # get the last module of the model and replace it
             *_, last_module = self._model.named_modules()
-            self.replace_last_module(last_module)
+            self._replace_last_module(last_module)
 
         # load from checkpoint file
         model_checkpoint_path = self.extra_config["model"].get(
@@ -119,6 +119,7 @@ class TorchVisionClassification(Stage):
         batch = query.data
         [inputs, labels] = batch
         inputs = inputs.to(self._device)
+        labels = labels.type(torch.LongTensor)
         labels = labels.to(self._device)
 
         if query.split == "val":
