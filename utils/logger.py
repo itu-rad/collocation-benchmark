@@ -31,8 +31,6 @@ class Logger:
             Stops the queue listener.
     """
 
-    """Multiprocessing-safe logger, listening on events in a queue"""
-
     queue = None
     queue_listener = None
 

@@ -33,12 +33,12 @@ def log_phase(f):
     @wraps(f)
     def wrapper(self, *args, **kw):
         if not self.disable_logs:
-            self._logger.info(
+            logging.getLogger("benchmark").info(
                 "%s, %s, %s, start", self.parent_name, self.name, f.__name__
             )
         result = f(self, *args, **kw)
         if not self.disable_logs:
-            self._logger.info(
+            logging.getLogger("benchmark").info(
                 "%s, %s, %s, end", self.parent_name, self.name, f.__name__
             )
         return result
