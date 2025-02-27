@@ -36,7 +36,4 @@ pipelines:
           model:
             name: microsoft/Phi-3-mini-4k-instruct
             quantize: False
-            lora_attn_modules: all-linear
-            lora_rank: 8
-            lora_alpha: 16
-            lora_dropout: 0.05
+            temperature: 0

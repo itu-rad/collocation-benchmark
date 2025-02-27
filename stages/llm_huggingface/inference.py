@@ -5,7 +5,11 @@ from transformers import (
 )
 import torch
 import transformers
-from outlines import models, generate
+
+from outlines.processors import JSONLogitsProcessor
+from outlines.models import TransformerTokenizer
+
+from threading import Lock
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
@@ -26,9 +30,19 @@ class Inference(Stage):
         )
 
         # data model for structured generation
+        self._data_model = None
         data_model_path = self.extra_config.get("data_model", None)
         if data_model_path:
-            self._data_model = get_component(self._data_model)
+            self._data_model = get_component(data_model_path)
+
+        self._logits_processors = []
+
+        self._model = None
+
+        self._depends_on_id = self.extra_config.get("depends_on_id", None)
+        self._mutex = None
+        if not self._depends_on_id:
+            self._mutex = Lock()
 
     def _parse_device(self, device: str | None) -> torch.device:
         # Parse the device string and return the appropriate torch.device.
@@ -65,6 +79,9 @@ class Inference(Stage):
         """
         return self._tokenizer
 
+    def get_model_lock(self):
+        return self._model, self._mutex
+
     def _setup_model(self):
         if self.extra_config["model"]["quantize"]:
             self._model = AutoModelForCausalLM.from_pretrained(
@@ -96,32 +113,54 @@ class Inference(Stage):
 
         self._model.to(self._device)
 
+    def _setup_logit_processors(self) -> None:
         if self._data_model:
-            self._model = models.Transformers(self._model, self._tokenizer)
-            self._generator = generate.json(self._model, self._data_model)
+            outlines_tokenizer = TransformerTokenizer(self._tokenizer)
+            json_processor = JSONLogitsProcessor(self._data_model, outlines_tokenizer)
+            self._logits_processors = transformers.LogitsProcessorList([json_processor])
 
     @log_phase
     def prepare(self):
         super().prepare()
 
-        self._setup_model()
+        if not self._depends_on_id:
+            self._setup_model()
+
+        self._setup_logit_processors()
+
+    def pre_run(self):
+        if self._depends_on_id:
+            self._model, self._mutex = self.dispatch_call(
+                self._depends_on_id, "get_model_lock"
+            )
 
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
 
-        if self._data_model:
-            model_out = self._generator(batch)
-        else:
-            self._tokenizer.pad_token = (
-                self._tokenizer.eos_token
-            )  # Most LLMs don't have a pad token by default
-            model_inputs = self._tokenizer(batch, return_tensors="pt", padding=True).to(
-                self._device
-            )
-            generated_ids = self._model.generate(**model_inputs, max_new_tokens=50)
-            model_out = self._tokenizer.batch_decode(
-                generated_ids, skip_special_tokens=True
-            )
+        self._tokenizer.pad_token = (
+            self._tokenizer.eos_token
+        )  # Most LLMs don't have a pad token by default
+        model_inputs = self._tokenizer(batch, return_tensors="pt", padding=True).to(
+            self._device
+        )
+
+        # Acquire the lock if the model is shared
+        if self._mutex:
+            self._mutex.acquire()
+
+        generated_ids = self._model.generate(
+            **model_inputs,
+            max_new_tokens=50,
+            logits_processor=self._logits_processors,
+            temperature=self.extra_config["model"].get("temperature", 1.0)
+        )
+
+        if self._mutex:
+            self._mutex.release()
+
+        model_out = self._tokenizer.batch_decode(
+            generated_ids, skip_special_tokens=True
+        )
 
         print("Model output: ", model_out)
         query.data = model_out
