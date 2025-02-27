@@ -33,10 +33,14 @@ def log_phase(f):
     @wraps(f)
     def wrapper(self, *args, **kw):
         if not self.disable_logs:
-            logging.info("%s, %s, %s, start", self.parent_name, self.name, f.__name__)
+            self._logger.info(
+                "%s, %s, %s, start", self.parent_name, self.name, f.__name__
+            )
         result = f(self, *args, **kw)
         if not self.disable_logs:
-            logging.info("%s, %s, %s, end", self.parent_name, self.name, f.__name__)
+            self._logger.info(
+                "%s, %s, %s, end", self.parent_name, self.name, f.__name__
+            )
         return result
 
     return wrapper
@@ -51,7 +55,9 @@ def log_phase_single(parent_name, name, phase, start):
         phase (str): Name of phase (prepare or run)
         start (str): Execution status (start or end)
     """
-    logging.info("%s, %s, %s, %s", parent_name, name, phase, start)
+    logging.getLogger("benchmark").info(
+        "%s, %s, %s, %s", parent_name, name, phase, start
+    )
 
 
 class Stage:
@@ -72,6 +78,7 @@ class Stage:
         self._stage_dict: dict[int, Stage] = {}
         self._input_queues: dict[int, Queue] = {}
         self.output_queues: dict[int, Queue] = {}
+        self._logger = logging.getLogger("benchmark")
 
     def __str__(self) -> str:
         """

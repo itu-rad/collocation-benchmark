@@ -4,10 +4,9 @@ pipelines:
     inputs: [0]
     outputs: [1]
     loadgen:
-      type: poisson
+      component: loadgen.PoissonLoadScheduler
+      queue_depth: 10
       max_queries: 2000
-      is_training: False
-      queue_depth: 100
       timeout: 20000
       config:
         rate: 1 # average #requests/sec

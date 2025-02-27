@@ -4,6 +4,13 @@ import os
 import re
 
 
+class BenchmarkFilter(logging.Filter):
+    """Only allow logs from the 'benchmark' logger"""
+
+    def filter(self, record):
+        return record.name == "benchmark"
+
+
 class Logger:
     """
     Multiprocessing-safe logger, listening on events in a queue.
@@ -32,8 +39,15 @@ class Logger:
     def __init__(self, queue, benchmark_name):
         self.queue = queue
 
+        formatter = logging.Formatter("%(created)f, %(message)s")
+        # formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
+
+        # Create filter to only allow logs from benchmark logger
+        benchmark_filter = BenchmarkFilter()
+
         stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(logging.Formatter("%(created)f, %(message)s"))
+        stream_handler.setFormatter(formatter)
+        # stream_handler.addFilter(benchmark_filter)
 
         # make benchmark name filename-safe
         benchmark_name = benchmark_name.lower()
@@ -42,13 +56,14 @@ class Logger:
         file_handler = logging.FileHandler(
             filename=os.path.join(os.getcwd(), "tmp", f"{benchmark_name}.csv")
         )
-        file_handler.setFormatter(logging.Formatter("%(created)f, %(message)s"))
+        file_handler.setFormatter(formatter)
+        file_handler.addFilter(benchmark_filter)
 
         # queue_listener gets records from the queue and sends them to the handler
         self.queue_listener = QueueListener(self.queue, stream_handler, file_handler)
         self.queue_listener.start()
 
-        logger = logging.getLogger()
+        logger = logging.getLogger("benchmark")
         logger.setLevel(logging.DEBUG)
         # add the handler to the logger so records from this process are handled
         logger.addHandler(stream_handler)

@@ -18,6 +18,7 @@ class Pipeline:
         Args:
             pipeline_config (PipelineModel): The configuration of the pipeline.
         """
+        self._logger = logging.getLogger("benchmark")
         self._pipeline_config = pipeline_config
         self.name = self._pipeline_config.name
         stage_config = pipeline_config.stages
@@ -90,7 +91,7 @@ class Pipeline:
 
         This includes creating input queues, output queues, as well as calling the prepare method of each stage.
         """
-        logging.info("%s, pipeline, prepare, start", self.name)
+        self._logger.info("%s, pipeline, prepare, start", self.name)
 
         # get all the input queues of the pipeline
         for input_stage_idx in self._pipeline_config.inputs:
@@ -106,7 +107,7 @@ class Pipeline:
         for stage in self.stages.values():
             stage.prepare()
 
-        logging.info("%s, pipeline, prepare, end", self.name)
+        self._logger.info("%s, pipeline, prepare, end", self.name)
 
     def join_threads(self) -> None:
         """
@@ -143,7 +144,7 @@ class Pipeline:
                     return
 
                 # log the end of pipeline execution
-                logging.info(
+                self._logger.info(
                     "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
                     self.name,
                     new_query.split,
@@ -190,7 +191,7 @@ class Pipeline:
 
             query.epoch = epoch_dict[query.split]
 
-            logging.info(
+            self._logger.info(
                 "%s, pipeline - %s, run, start, %d, %.6f, %d, %d",
                 self.name,
                 query.split,
