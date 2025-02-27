@@ -11,6 +11,6 @@ class StageModel(BaseModel):
     name: str
     component: str
     outputs: list[int] = []
-    polling_policy: str = "stages.queues.polling.SingleQueuePolicy"
+    polling_policy: str = "utils.queues.polling.SingleQueuePolicy"
     disable_logs: bool = False
     config: dict[str, Any] = {}

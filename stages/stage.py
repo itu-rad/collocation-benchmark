@@ -214,9 +214,24 @@ class Stage:
         """
         return {idx: query for idx in self.output_queues}
 
+    def pre_run(self) -> None:
+        """
+        This function is run at the very beginning of the run wrapper function.
+        This can be used to perform any setup operation that requires to happen in the same thread as run (prepare function is run in the main pipeline thread).
+        """
+        pass
+
+    def post_run(self) -> None:
+        """
+        This function is run at the very end of the run wrapper function.
+        This can be used to perform any cleanup operations such as closing files or connections.
+        """
+        pass
+
     def run_wrapper(self) -> None:
         """Continuously poll for the incoming data in the input queues,
         perform actions on them and push the results onto the output queues."""
+        self.pre_run()
         while True:
             query = self._get_input_from_queues()
             if not query:
@@ -232,3 +247,4 @@ class Stage:
             self._push_to_outputs(outputs)
             if not self.disable_logs:
                 log_phase_single(self.parent_name, self.name, "run", "end")
+        self.post_run()
