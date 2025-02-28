@@ -30,7 +30,7 @@ def main():
 
     # start each loadgen/pipeline as a separate process
     loadgen_processes = [
-        Process(target=run_loadgen, args=[pipeline_config, logger_queue])
+        Process(target=run_loadgen, args=[pipeline_config])
         for pipeline_config in benchmark_config.pipelines
     ]
 

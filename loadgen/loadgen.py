@@ -4,14 +4,13 @@ from threading import Thread, Event
 from queue import Queue
 import multiprocessing
 
+from loadgen.schedulers.scheduler import LoadScheduler
 from pipeline import Pipeline
 from utils.component import get_component
 from utils.schemas import PipelineModel
 
 
-def run_loadgen(
-    pipeline_config: PipelineModel, logger_queue: multiprocessing.Queue
-) -> None:
+def run_loadgen(pipeline_config: PipelineModel) -> None:
     """
     Initialization and invokation of LoadGen. Initialization is necessary after process
     creation, because fork is not the default start method on all platforms (spawn does
@@ -19,9 +18,8 @@ def run_loadgen(
 
     Args:
         pipeline_config (PipelineModel): Pipeline configuration (parsed from YAML file)
-        logger_queue (multiprocessing.Queue): Queue to facilitate process-safe logging
     """
-    loadgen = LoadGen(pipeline_config, logger_queue)
+    loadgen = LoadGen(pipeline_config)
     # TODO: Write this to a .md file
     print(loadgen)
     loadgen.run()
@@ -33,16 +31,8 @@ class LoadGen:
     the load generation, logging and communication between all of these components.
     """
 
-    def __init__(
-        self, pipeline_config: PipelineModel, logger_queue: multiprocessing.Queue
-    ):
+    def __init__(self, pipeline_config: PipelineModel):
         self._pipeline_config = pipeline_config
-
-        # initialize process-safe logging
-        qh = QueueHandler(logger_queue)
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.DEBUG)
-        self.logger.addHandler(qh)
 
         # initialize the pipeline and all pipeline stages
         self._pipeline = Pipeline(pipeline_config)
@@ -52,7 +42,7 @@ class LoadGen:
         # parse the loadgen scheduler config and initialize the appropriate scheduler
         loadgen_config = pipeline_config.loadgen
         load_scheduler_config = loadgen_config.config
-        self._load_scheduler = get_component(loadgen_config.component)(
+        self._load_scheduler: LoadScheduler = get_component(loadgen_config.component)(
             loadgen_config.max_queries,
             loadgen_config.timeout,
             load_scheduler_config,

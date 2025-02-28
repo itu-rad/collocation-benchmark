@@ -7,6 +7,7 @@ from transformers import (
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 import torch
 import transformers
+from accelerate import Accelerator
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
@@ -31,6 +32,15 @@ class Finetune(Stage):
         self._tokenizer = AutoTokenizer.from_pretrained(
             self.extra_config["model"]["name"]
         )
+
+        self._accelerator = None
+        if self.extra_config["accelerator"]["is_enabled"]:
+            self._accelerator = Accelerator()
+            self._device = self._accelerator.device
+
+        self._model = None
+        self._optimizer = None
+        self._lr_scheduler = None
 
     def _parse_device(self, device: str | None) -> torch.device:
         """
@@ -69,6 +79,14 @@ class Finetune(Stage):
         """
         return self._tokenizer
 
+    def get_accelerator(self) -> Accelerator:
+        """Getter for the accelerator
+
+        Returns:
+            Accelerator: The accelerator
+        """
+        return self._accelerator
+
     def _setup_model(self):
         if self.extra_config["model"]["quantize"]:
             model = AutoModelForCausalLM.from_pretrained(
@@ -102,7 +120,8 @@ class Finetune(Stage):
             task_type="CAUSAL_LM",
         )
         self._model = get_peft_model(model, lora_config)
-        self._model.to(self._device)
+        if not self._accelerator:
+            self._model.to(self._device)
         self._model.train()
 
     def _setup_optimizer(self):
@@ -128,10 +147,19 @@ class Finetune(Stage):
         self._setup_optimizer()
         self._setup_lr_scheduler()
 
+        # enable distributed training
+        if self._accelerator:
+            self._model, self._optimizer, self._lr_scheduler = (
+                self._accelerator.prepare(
+                    self._model, self._optimizer, self._lr_scheduler
+                )
+            )
+
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
 
-        batch = {k: v.to(self._device) for k, v in batch.items()}
+        if not self._accelerator:
+            batch = {k: v.to(self._device) for k, v in batch.items()}
         outputs = self._model(**batch)
         loss = outputs.loss
         loss = loss / self._gradient_accumulation_steps

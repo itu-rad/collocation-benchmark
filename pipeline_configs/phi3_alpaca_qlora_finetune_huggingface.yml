@@ -18,6 +18,7 @@ pipelines:
         component: stages.llm_huggingface.HuggingFaceDataLoader
         config:
           tokenizer_stage_id: 1
+          accelerator_stage_id: 1
           batch_size: 1
           shuffle: True
           split: ["train"]
@@ -33,7 +34,7 @@ pipelines:
           dtype: torch.bfloat16
           device: cuda
           model:
-            name: microsoft/Phi-3-mini-4k-instruct
+            name: Qwen/Qwen2.5-0.5B-Instruct
             quantize: False
             lora_attn_modules: all-linear
             lora_rank: 8
@@ -46,4 +47,6 @@ pipelines:
           lr_scheduler:
             name: cosine
             num_warmup_steps: 100
-          gradient_accumulation_steps: 16
+          gradient_accumulation_steps: 1
+          accelerator: # huggingface accelerator (distributed training)
+            is_enabled: True
