@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader, random_split
-from torchtune.utils.collate import padded_collate
+from torchtune.data import padded_collate_sft
 from functools import partial
 
 from stages.stage import Stage, log_phase
@@ -19,9 +19,10 @@ class TorchTuneDataLoader(Stage):
         super().__init__(stage_config, pipeline_config)
 
         dataset_class = get_component(self.extra_config["dataset"]["component"])
-        tokenizer_class = get_component(self.extra_config["tokenizer"]["component"])
 
-        self._tokenizer = tokenizer_class(path=self.extra_config["tokenizer"]["path"])
+        tokenizer_config = self.extra_config["tokenizer"]
+        tokenizer_class = get_component(tokenizer_config.pop("component"))
+        self._tokenizer = tokenizer_class(**tokenizer_config)
         self._dataset = dataset_class(tokenizer=self._tokenizer)
 
         self._batch_size = self.extra_config.get("batch_size", 1)
@@ -56,6 +57,14 @@ class TorchTuneDataLoader(Stage):
         """
         return {k: len(v) // self._batch_size for (k, v) in self._datasets.items()}
 
+    def get_tokenizer(self):
+        """Get the tokenizer used by the DataLoader.
+
+        Returns:
+            Tokenizer: The tokenizer used by the DataLoader.
+        """
+        return self._tokenizer
+
     @log_phase
     def prepare(self):
         """Build the dataloaders."""
@@ -72,12 +81,12 @@ class TorchTuneDataLoader(Stage):
                 batch_size=self._batch_size,
                 collate_fn=(
                     partial(
-                        padded_collate,
+                        padded_collate_sft,
                         padding_idx=self._tokenizer.pad_id,
                         ignore_idx=loss_fn.ignore_index,
                     )
                     if self._loss_fn_stage_id
-                    else partial(padded_collate, padding_idx=self._tokenizer.pad_id)
+                    else partial(padded_collate_sft, padding_idx=self._tokenizer.pad_id)
                 ),
                 shuffle=self.extra_config.get("shuffle", True),
             )

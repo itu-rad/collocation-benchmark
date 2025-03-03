@@ -1,6 +1,6 @@
 from torchtune.training.checkpointing import FullModelHFCheckpointer
 from torchtune.training import MODEL_KEY, set_default_dtype
-from torchtune.generation import generate_next_token
+from torchtune.generation import generate
 import torch
 
 from stages.stage import Stage, log_phase
@@ -22,6 +22,7 @@ class Inference(Stage):
 
         self._temperature = self.extra_config.get("temperature", 0.6)
         self._top_k = self.extra_config.get("top_k", 300)
+        self._max_new_tokens = self.extra_config.get("max_new_tokens", 300)
 
     def _parse_device(self, device: str | None) -> torch.device:
         """
@@ -74,8 +75,10 @@ class Inference(Stage):
         batch_size = self.dispatch_call(
             self.extra_config.get("batch_size_stage_id", 1), "get_batch_size"
         )
-        with self._device:
-            self._model.setup_caches(batch_size=batch_size, dtype=self._dtype)
+
+        if self.extra_config["model"].get("KV_cache", False):
+            with self._device:
+                self._model.setup_caches(batch_size=batch_size, dtype=self._dtype)
 
         self._model.eval()
 
@@ -110,74 +113,17 @@ class Inference(Stage):
 
             prompt = prompt.to(self._device)
 
-            stop_tokens = torch.tensor(self._tokenizer.stop_tokens, device=self._device)
-            bsz, prompt_length = prompt.size()
-            generated_tokens = prompt.clone()
-            # keeps track at a high level if we've already hit a stop token in a sequence so we can early stop
-            stop_token_reached = torch.zeros(
-                bsz, dtype=torch.bool, device=prompt.device
-            )
-            # everything in stop_token_mask starts as 1s, and we'll set them to 0 for sequences
-            # that already hit a stop token
-            stop_token_mask = torch.ones(
-                (bsz, prompt_length + 1), dtype=torch.int32, device=prompt.device
-            )
-
-            tokens = generate_next_token(
-                self._model,
-                input_pos=torch.arange(0, prompt_length, device=prompt.device),
-                x=prompt,
+            generated_tokens, _ = generate(
+                model=self._model,
+                prompt=prompt,
+                max_generated_tokens=self._max_new_tokens,
+                pad_id=self._tokenizer.pad_id,
                 temperature=self._temperature,
                 top_k=self._top_k,
+                stop_tokens=self._tokenizer.stop_tokens,
             )
 
-            generated_tokens = torch.cat([generated_tokens, tokens], dim=-1)
-
-            # stop early if we reach a stop token in every seq
-            if stop_tokens is not None:
-                stop_token_reached = self._update_stop_tokens_tracker(
-                    tokens, stop_tokens, stop_token_reached
-                )
-                if stop_token_reached.all().item():
-                    query.data = self._tokenizer.decode(generated_tokens[0].tolist())
-                    outputs = {idx: query for idx in self.output_queues}
-                    return outputs
-
-            input_pos = torch.tensor([prompt_length], device=prompt.device)
-            for _ in range(self.extra_config.get("max_new_tokens", 300) - 1):
-                # update stop_token_mask if we reached a stop token in a previous step
-                # by appending the logical not of stop_token_reached to the end of the mask
-                # reshaped to be bsz first
-                if stop_tokens is not None:
-                    stop_token_mask = torch.cat(
-                        [stop_token_mask, ~stop_token_reached.reshape(bsz, 1)], dim=-1
-                    )
-
-                tokens = generate_next_token(
-                    self._model,
-                    input_pos=input_pos,
-                    x=tokens,
-                    temperature=self._temperature,
-                    top_k=self._top_k,
-                )
-
-                generated_tokens = torch.cat([generated_tokens, tokens], dim=-1)
-                input_pos += 1
-
-                if stop_tokens is not None:
-                    stop_token_reached = self._update_stop_tokens_tracker(
-                        tokens, stop_tokens, stop_token_reached
-                    )
-                    if stop_token_reached.all().item():
-                        break
-
-            # mask out generated tokens in seqs that already hit a stop token
-            if stop_tokens is not None:
-                generated_tokens = generated_tokens * stop_token_mask
-                # if pad_id is not 0, replace 0 with pad_id
-                if self._tokenizer.pad_id != 0:
-                    generated_tokens[generated_tokens == 0] = self._tokenizer.pad_id
-
             query.data = self._tokenizer.decode(generated_tokens[0].tolist())
+            print(query.data)
             outputs = {idx: query for idx in self.output_queues}
             return outputs

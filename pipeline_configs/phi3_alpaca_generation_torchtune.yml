@@ -3,8 +3,9 @@ pipelines:
   - name: Alpaca generation
     inputs: [0]
     outputs: [1]
+    dataset_stage_id: 0
     loadgen:
-      component: loadgen.PoissonLoadScheduler
+      component: loadgen.OfflineLoadScheduler
       queue_depth: 10
       max_queries: 2000
       timeout: 20000
@@ -16,14 +17,15 @@ pipelines:
         outputs: [1]
         component: stages.llm_torchtune.TorchTuneDataLoader
         config:
-          batch_size: 16
+          batch_size: 1
           shuffle: True
           split: ["val"]
           dataset:
             component: torchtune.datasets.alpaca_cleaned_dataset
           tokenizer:
-            component: torchtune.models.phi3.phi3_mini_tokenizer
-            path: tmp/phi3-mini-4k/tokenizer.model
+            component: torchtune.models.qwen2_5.qwen2_5_tokenizer
+            path: tmp/Qwen2.5-0.5B-Instruct/vocab.json
+            merges_file: tmp/Qwen2.5-0.5B-Instruct/merges.txt
       - name: Alpaca inference
         id: 1
         component: stages.llm_torchtune.Inference
@@ -33,15 +35,16 @@ pipelines:
           temperature: 0.6
           top_k: 300
           max_new_tokens: 300
-          batch_size_stage_id: 1
+          batch_size_stage_id: 0
+          tokenizer_stage_id: 0
           model:
-            component: torchtune.models.phi3.phi3_mini
+            component: torchtune.models.qwen2_5.qwen2_5_0_5b
+            KV_cache: true
           checkpointer:
             component: torchtune.utils.FullModelHFCheckpointer
-            checkpoint_dir: tmp/phi3-mini-4k
+            checkpoint_dir: tmp/Qwen2.5-0.5B-Instruct
             checkpoint_files: [
-              model-00001-of-00002.safetensors,
-              model-00002-of-00002.safetensors
+              model.safetensors
             ]
-            output_dir: tmp/phi3-mini-4k
-            model_type: PHI3_MINI
+            output_dir: tmp/Qwen2.5-0.5B-out
+            model_type: QWEN2

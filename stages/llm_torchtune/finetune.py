@@ -1,12 +1,14 @@
-from torchtune.utils._checkpointing._checkpointer import FullModelHFCheckpointer
-from torchtune.modules.peft.peft_utils import (
+from torchtune.training.checkpointing import FullModelHFCheckpointer
+from torchtune.modules.peft import (
     get_adapter_params,
     set_trainable_params,
 )
-from torchtune.utils.precision import set_default_dtype, validate_expected_param_dtype
-from torchtune.modules.transformer import TransformerDecoderLayer
-from torchtune.utils.memory import set_activation_checkpointing
-from torchtune.utils.constants import MODEL_KEY, ADAPTER_KEY, OPT_KEY
+from torchtune.training import (
+    set_default_dtype,
+    set_activation_checkpointing,
+    MODEL_KEY,
+)
+from torchtune.modules import TransformerSelfAttentionLayer
 import torch
 
 from stages.stage import Stage, log_phase
@@ -110,7 +112,7 @@ class Finetune(Stage):
 
         # Activation checkpointing
         set_activation_checkpointing(
-            self._model, auto_wrap_policy={TransformerDecoderLayer}
+            self._model, auto_wrap_policy={TransformerSelfAttentionLayer}
         )
 
         # Load the base model checkpoint
