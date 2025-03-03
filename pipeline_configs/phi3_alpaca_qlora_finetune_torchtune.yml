@@ -3,8 +3,10 @@ pipelines:
   - name: Alpaca finetuning
     inputs: [0]
     outputs: [1]
+    dataset_stage_id: 0
     loadgen:
-      type: offline
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 10
       max_queries: 2000
       is_training: True
       timeout: 20000
@@ -17,14 +19,15 @@ pipelines:
         component: stages.llm_torchtune.TorchTuneDataLoader
         config:
           loss_fn_stage_id: 1
-          batch_size: 2
+          batch_size: 1
           shuffle: True
           split: ["train"]
           dataset:
             component: torchtune.datasets.alpaca_cleaned_dataset
           tokenizer:
-            component: torchtune.models.phi3.phi3_mini_tokenizer
-            path: tmp/phi3-mini-4k/tokenizer.model
+            component: torchtune.models.qwen2_5.qwen2_5_tokenizer
+            path: tmp/Qwen2.5-0.5B-Instruct/vocab.json
+            merges_file: tmp/Qwen2.5-0.5B-Instruct/merges.txt
       - name: Alpaca finetune
         id: 1
         component: stages.llm_torchtune.Finetune
@@ -32,28 +35,27 @@ pipelines:
           dtype: torch.bfloat16
           device: cuda
           model:
-            component: torchtune.models.phi3.qlora_phi3_mini
-            lora_attn_modules: ['q_proj', 'v_proj', 'k_proj', 'output_proj']
+            component: torchtune.models.qwen2_5.lora_qwen2_5_0_5b
+            lora_attn_modules: ['q_proj', 'v_proj', 'output_proj']
             apply_lora_to_mlp: True
             apply_lora_to_output: False
-            lora_rank: 8
-            lora_alpha: 16
+            lora_rank: 32
+            lora_alpha: 64
           checkpointer:
             component: torchtune.utils.FullModelHFCheckpointer
-            checkpoint_dir: tmp/phi3-mini-4k
+            checkpoint_dir: tmp/Qwen2.5-0.5B-Instruct
             checkpoint_files: [
-              model-00001-of-00002.safetensors,
-              model-00002-of-00002.safetensors
+              model.safetensors
             ]
-            output_dir: tmp/phi3-mini-4k
-            model_type: PHI3_MINI
+            output_dir: tmp/Qwen2.5-0.5B-out
+            model_type: QWEN2
           optimizer:
             component: torch.optim.AdamW
             weight_decay: 0.01
             lr: 3.0e-4
           lr_scheduler:
-            component: torchtune.modules.get_cosine_schedule_with_warmup
+            component: torchtune.training.get_cosine_schedule_with_warmup
             num_warmup_steps: 100
           loss:
             component: torch.nn.CrossEntropyLoss
-          gradient_accumulation_steps: 16
+          gradient_accumulation_steps: 2

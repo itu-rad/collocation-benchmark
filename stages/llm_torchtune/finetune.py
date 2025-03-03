@@ -28,7 +28,7 @@ class Finetune(Stage):
         self._device = self._parse_device(self.extra_config["device"])
         self._dtype = get_component(self.extra_config["dtype"])
 
-        self._max_queries = pipeline_config["loadgen"]["max_queries"]
+        self._max_queries = pipeline_config.loadgen.max_queries
 
         self._gradient_accumulation_steps = self.extra_config[
             "gradient_accumulation_steps"
