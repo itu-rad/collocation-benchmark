@@ -14,7 +14,7 @@ class SQLiteSearch(Stage):
         con = sqlite3.connect(self.extra_config["db_path"])
         self._cur = con.cursor()
 
-    def get_schema(self):
+    def _get_schema(self):
         # return the schema of the database
         tables = self._cur.execute(
             "SELECT name, sql FROM sqlite_master WHERE type='table'"
@@ -25,7 +25,7 @@ class SQLiteSearch(Stage):
     def prepare(self):
         super().prepare()
 
-        for table_name, sql in self.get_schema():
+        for table_name, sql in self._get_schema():
             print(f"Table: {table_name}")
             print("Schema", sql)
 
@@ -40,7 +40,7 @@ class SQLiteSearch(Stage):
             'select sum(open_balance) from ( select distinct transaction_id, open_balance from master_txn_table where customers = "Rick Hamilton" )'
         ).fetchall()
 
-        print("results:\n", results)
+        # print("results:\n", results)
 
         output = {idx: query for idx in self.output_queues}
         return output

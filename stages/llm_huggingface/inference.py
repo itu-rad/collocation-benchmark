@@ -1,3 +1,5 @@
+from pyexpat import model
+from pydantic import ValidationError
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -5,6 +7,8 @@ from transformers import (
 )
 import torch
 import transformers
+
+from torch.profiler import profile, record_function, ProfilerActivity
 
 from outlines.processors import JSONLogitsProcessor
 from outlines.models import TransformerTokenizer
@@ -21,6 +25,7 @@ class Inference(Stage):
         super().__init__(stage_config, pipeline_config)
 
         self._device = self._parse_device(self.extra_config.get("device", None))
+        print(f"Device: {self._device}")
         self._dtype = get_component(self.extra_config.get("dtype", "torch.float32"))
 
         self._max_queries = pipeline_config.loadgen.max_queries
@@ -98,20 +103,21 @@ class Inference(Stage):
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4",
                 ),
+                device_map=self._device,
             )
         else:
             self._model = AutoModelForCausalLM.from_pretrained(
                 self.extra_config["model"]["name"],
                 # attn_implementation="flash_attention_2",
-                torch_dtype=(
-                    torch.bfloat16
-                    if self._device == torch.device("cuda")
-                    and torch.cuda.is_bf16_supported()
-                    else torch.float16
-                ),
+                # torch_dtype=(
+                #     torch.bfloat16
+                #     if self._device == torch.device("cuda")
+                #     and torch.cuda.is_bf16_supported()
+                #     else torch.float16
+                # ),
+                torch_dtype="auto",
+                device_map=self._device,
             )
-
-        self._model.to(self._device)
 
     def _setup_logit_processors(self) -> None:
         if self._data_model:
@@ -129,6 +135,7 @@ class Inference(Stage):
         self._setup_logit_processors()
 
     def pre_run(self):
+
         if self._depends_on_id:
             self._model, self._mutex = self.dispatch_call(
                 self._depends_on_id, "get_model_lock"
@@ -141,19 +148,24 @@ class Inference(Stage):
             self._tokenizer.eos_token
         )  # Most LLMs don't have a pad token by default
         model_inputs = self._tokenizer(batch, return_tensors="pt", padding=True).to(
-            self._device
+            self._model.device
         )
 
-        # Acquire the lock if the model is shared
+        # # Acquire the lock if the model is shared
         if self._mutex:
             self._mutex.acquire()
 
         generated_ids = self._model.generate(
             **model_inputs,
-            max_new_tokens=50,
+            max_new_tokens=512,
             logits_processor=self._logits_processors,
-            temperature=self.extra_config["model"].get("temperature", 1.0)
+            temperature=self.extra_config["model"].get("temperature", 1.0),
         )
+
+        generated_ids = [
+            output_ids[len(input_ids) :]
+            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
 
         if self._mutex:
             self._mutex.release()
@@ -161,6 +173,16 @@ class Inference(Stage):
         model_out = self._tokenizer.batch_decode(
             generated_ids, skip_special_tokens=True
         )
+
+        print("Raw model output: ", model_out)
+
+        if self._data_model:
+            # the validation might fail, however, regeneration does not seem to help
+            # try:
+            #     model_out = [self._data_model.model_validate_json(x) for x in model_out]
+            # except ValidationError:
+            #     return self.run(query)
+            model_out = [self._data_model.model_validate_json(x) for x in model_out]
 
         print("Model output: ", model_out)
         query.data = model_out

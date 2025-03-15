@@ -135,7 +135,7 @@ class Pipeline:
                 # non-blocking retrieval from the queues
                 # if the queue is empty, simply move on
                 try:
-                    new_query: Query | None = output_queue.get_nowait()
+                    new_query: Query | None = output_queue.get(timeout=0.1)
                 except Empty:
                     continue
 

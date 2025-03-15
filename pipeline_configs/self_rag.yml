@@ -1,4 +1,4 @@
-name: "Self RAG with DuckDB connection"
+name: "Self RAG"
 pipelines:
   - name: Self RAG
     inputs: [0]
@@ -7,27 +7,31 @@ pipelines:
     loadgen:
       component: loadgen.OfflineLoadScheduler
       queue_depth: 10
-      max_queries: 4
+      max_queries: 10
       timeout: 20000
       config:
         rate: 1 # average #requests/sec
     stages:
-      - name: Mock dataloader
+      - name: RAG questions dataloader
         id: 0
         outputs: [1]
-        component: stages.llm_huggingface.MockDataLoader  
+        component: stages.self_rag.RAGDataLoader
         config:
           tokenizer_stage_id: 1
           batch_size: 1
-          shuffle: True
-          split: ["train"]
-          dataset:
-            name: yahma/alpaca-cleaned
-            system_column_name: instruction
-            user_column_name: input
-            assistant_column_name: output
-      - name: SQLite query
+      - name: RAG infer
         id: 1
-        component: stages.self_rag.SQLiteSearch
-        config:
-          db_path: tmp/accounting.sqlite
+        component: stages.llm_huggingface.Inference
+        config: 
+          dtype: torch.bfloat16
+          device: cuda
+          data_model: utils.schemas.rag.RouterAnswer
+          model:
+            name: Qwen/Qwen2.5-1.5B-Instruct
+            quantize: False
+            temperature: 0.7
+      # - name: SQLite query
+      #   id: 2
+      #   component: stages.self_rag.SQLiteSearch
+      #   config:
+      #     db_path: tmp/accounting.sqlite

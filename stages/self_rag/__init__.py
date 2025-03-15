@@ -1,2 +1,2 @@
-from .duckdb import DuckDBSearch
+from .question_dataloader import RAGDataLoader
 from .sqlite import SQLiteSearch
