@@ -32,10 +32,11 @@ class CombinedDataset(Dataset):
         chat = [
             {
                 "role": "system",
-                "content": """ You are an expert at routing a user question to a vectorstore or web search. 
-                                The vectorstore contains documents related to agents, prompt engineering, and adversarial attacks. 
-                                Use the vectorstore for questions on these topics. Otherwise, use web-search.
-                                Structure your response as a json object with the key "search_engine" and the value "vectorstore" or "web-search".
+                "content": """ You are an expert at routing a user question to a sqlite database or web search. 
+                                The sqlite database contains accounting records. 
+                                Use the sqlite for questions on these topics. Otherwise, use web-search.
+                                Structure your response as a json object with the key "search_engine" and the value "sqlite" or "web-search", for example {"search_engine": "sqlite"}.
+                                Output nothing but the json object.
                             """,
             },
             {"role": "user", "content": sample["input"]},
@@ -113,5 +114,6 @@ class RAGDataLoader(Stage):
         next_batch = next(self._dataloader_iter)
         print(next_batch)
         query.data = next_batch
+        query.context = {"original_query": next_batch}
         output = {idx: query for idx in self.output_queues}
         return output

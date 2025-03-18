@@ -15,3 +15,4 @@ class Query:
     epoch: int = 0
     query_id: int = uuid.uuid4()
     data: Any = None
+    context: Any = None

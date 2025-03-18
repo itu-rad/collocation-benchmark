@@ -7,4 +7,4 @@ class Score(BaseModel):
 
 
 class RouterAnswer(BaseModel):
-    search_engine: Literal["vectorstore", "web-search"]
+    search_engine: Literal["sqlite", "web-search"]

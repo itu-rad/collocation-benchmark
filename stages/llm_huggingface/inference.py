@@ -1,5 +1,4 @@
-from pyexpat import model
-from pydantic import ValidationError
+# from pydantic import ValidationError
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -8,7 +7,7 @@ from transformers import (
 import torch
 import transformers
 
-from torch.profiler import profile, record_function, ProfilerActivity
+# from torch.profiler import profile, record_function, ProfilerActivity
 
 from outlines.processors import JSONLogitsProcessor
 from outlines.models import TransformerTokenizer
