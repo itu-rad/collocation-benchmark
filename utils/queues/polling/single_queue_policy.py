@@ -1,5 +1,3 @@
-from queue import Queue
-
 from utils.schemas import Query
 from .polling_policy import PollingPolicy
 

@@ -16,36 +16,45 @@ class CombinedDataset(Dataset):
 
         self.tokenizer = tokenizer
 
-        self.dataset1 = self.dataset1.map(self.apply_template)
-        self.dataset2 = self.dataset2.map(self.apply_template)
+        self.dataset1 = self.dataset1.map(
+            self.apply_template, load_from_cache_file=False
+        )
+        self.dataset2 = self.dataset2.map(
+            self.apply_template, load_from_cache_file=False
+        )
 
     def __len__(self):
         return self.total_length
 
     def __getitem__(self, idx):
         if idx < len(self.dataset1):
-            return self.dataset1[idx]["input"]
+            return self.dataset1[idx]
         else:
-            return self.dataset2[idx - len(self.dataset1)]["input"]
+            return self.dataset2[idx - len(self.dataset1)]
 
     def apply_template(self, sample):
         chat = [
             {
                 "role": "system",
-                "content": """ You are an expert at routing a user question to a sqlite database or web search. 
+                "content": """ You are an expert at routing a user question to a sqlite database or llm generation. 
                                 The sqlite database contains accounting records. 
-                                Use the sqlite for questions on these topics. Otherwise, use web-search.
-                                Structure your response as a json object with the key "search_engine" and the value "sqlite" or "web-search", for example {"search_engine": "sqlite"}.
+                                Use the sqlite for questions on these topics. Otherwise, use llm generation.
+                                Structure your response as a json object with the key "index_backend" and the value "sqlite" or "llm", for example {"index_backend": "sqlite"}.
                                 Output nothing but the json object.
                             """,
             },
             {"role": "user", "content": sample["input"]},
         ]
-        sample["input"] = self.tokenizer.apply_chat_template(
+
+        print("chat", chat)
+        sample["templated_input"] = self.tokenizer.apply_chat_template(
             chat,
             tokenize=False,
             add_generation_prompt=True,
         )
+
+        print("sample", sample)
+
         return sample
 
 
@@ -113,7 +122,7 @@ class RAGDataLoader(Stage):
             self._dataloader_iter = iter(self._dataloader)
         next_batch = next(self._dataloader_iter)
         print(next_batch)
-        query.data = next_batch
-        query.context = {"original_query": next_batch}
+        query.data = next_batch["templated_input"]
+        query.context = {"original_query": next_batch["input"]}
         output = {idx: query for idx in self.output_queues}
         return output

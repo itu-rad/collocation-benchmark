@@ -43,7 +43,7 @@ class Inference(Stage):
 
         self._model = None
 
-        self._depends_on_id = self.extra_config.get("depends_on_id", None)
+        self._depends_on_id = self.extra_config.get("depends_on_id")
         self._mutex = None
         if not self._depends_on_id:
             self._mutex = Lock()
@@ -102,7 +102,7 @@ class Inference(Stage):
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4",
                 ),
-                device_map=self._device,
+                device_map="auto",
             )
         else:
             self._model = AutoModelForCausalLM.from_pretrained(
@@ -115,7 +115,7 @@ class Inference(Stage):
                 #     else torch.float16
                 # ),
                 torch_dtype="auto",
-                device_map=self._device,
+                device_map="auto",
             )
 
     def _setup_logit_processors(self) -> None:
@@ -129,6 +129,7 @@ class Inference(Stage):
         super().prepare()
 
         if not self._depends_on_id:
+            print("Setting up model in ", self.name)
             self._setup_model()
 
         self._setup_logit_processors()
@@ -142,6 +143,8 @@ class Inference(Stage):
 
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
+
+        print("Input data:", batch)
 
         self._tokenizer.pad_token = (
             self._tokenizer.eos_token
@@ -183,7 +186,7 @@ class Inference(Stage):
             #     return self.run(query)
             model_out = [self._data_model.model_validate_json(x) for x in model_out]
 
-        print("Model output: ", model_out)
+        # print("Model output: ", model_out)
         query.data = model_out
 
         outputs = {idx: query for idx in self.output_queues}

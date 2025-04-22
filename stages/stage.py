@@ -7,6 +7,7 @@ from typing import Any
 import json
 
 from utils.queues.polling.polling_policy import PollingPolicy
+from utils.queues.peekable_queue import PeekableQueue
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
 
@@ -76,7 +77,7 @@ class Stage:
         self._output_stage_ids = stage_config.outputs
         self.extra_config = stage_config.config
         self._stage_dict: dict[int, Stage] = {}
-        self._input_queues: dict[int, Queue] = {}
+        self._input_queues: dict[int, PeekableQueue] = {}
         self.output_queues: dict[int, Queue] = {}
         self._logger = logging.getLogger("benchmark")
 
@@ -136,7 +137,7 @@ class Stage:
             queue.Queue: The input queue for the given stage ID.
         """
         if idx not in self._input_queues:
-            self._input_queues[idx] = Queue()
+            self._input_queues[idx] = PeekableQueue()
         return self._input_queues[idx]
 
     def dispatch_call(

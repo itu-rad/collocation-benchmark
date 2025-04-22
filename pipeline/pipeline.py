@@ -118,7 +118,7 @@ class Pipeline:
         for stage in self.stages.values():
             stage.join_thread()
 
-    def retrieve_results(self, event: Event) -> None:
+    def retrieve_results(self, event: Event, queries_processed: int) -> None:
         """
         This method continuously checks all output queues for new queries. It performs
         non-blocking retrieval from the queues and processes the queries if available.
@@ -139,6 +139,8 @@ class Pipeline:
                 except Empty:
                     continue
 
+                print("Retrieved query:", new_query)
+
                 # if terminating character is received, return
                 if not new_query:
                     return
@@ -154,6 +156,7 @@ class Pipeline:
                     new_query.batch + 1,
                 )
 
+                queries_processed += 1
                 event.set()
 
     def run(self, query_queue: Queue, event: Event) -> None:
@@ -168,7 +171,12 @@ class Pipeline:
             event (Event): An event used for synchronization between the pipeline and the load generator.
         """
 
-        result_retrieval_thread = Thread(target=self.retrieve_results, args=[event])
+        queries_sent = 0
+        queries_procesed = 0
+
+        result_retrieval_thread = Thread(
+            target=self.retrieve_results, args=[event, queries_procesed]
+        )
         result_retrieval_thread.start()
 
         dataset_splits = self.get_dataset_splits()
@@ -179,6 +187,16 @@ class Pipeline:
 
             # check if done
             if query is None:
+                # only terminate once all of the queries have been processed in order to protect the graph from circular dependencies during termination
+                while queries_sent > queries_procesed:
+                    # print(
+                    #     "Waiting for all queries to be processed, sent: %d, processed: %d",
+                    #     queries_sent,
+                    #     queries_procesed,
+                    # )
+                    # wait for a query to be processed
+                    event.wait(0.1)
+
                 # if so, send the termination element to the following stages and join the threads
                 for input_queue in self._input_queues:
                     input_queue.put(None)
@@ -204,5 +222,7 @@ class Pipeline:
             # populate the pipeline input queues / start pipeline execution
             for input_queue in self._input_queues:
                 input_queue.put(query)
+
+            queries_sent += 1
 
         result_retrieval_thread.join()

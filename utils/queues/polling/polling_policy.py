@@ -1,4 +1,4 @@
-from queue import Queue
+from utils.queues.peekable_queue import PeekableQueue
 from utils.schemas import Query
 from abc import ABC, abstractmethod
 
@@ -8,7 +8,7 @@ class PollingPolicy(ABC):
     Base class for all queue polling policies.
     """
 
-    def __init__(self, input_queues: dict[int, Queue]):
+    def __init__(self, input_queues: dict[int, PeekableQueue]):
         self.input_queues = input_queues
 
     @abstractmethod
