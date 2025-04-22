@@ -13,6 +13,7 @@ class BinaryRouter(Stage):
 
         self._yes_stage_id = self.extra_config["yes_stage_id"]
         self._no_stage_id = self.extra_config["no_stage_id"]
+        self._end_stage_id = self.extra_config["end_stage_id"]
         self._num_retries = self.extra_config["max_retries"]
         self._retry_is_yes = self.extra_config["retry_is_yes"]
         self._query_dict = {}
@@ -31,10 +32,11 @@ class BinaryRouter(Stage):
                     self._query_dict[query_id] = self._num_retries
                 self._query_dict[query_id] -= 1
                 if self._query_dict[query_id] < 0:
-                    # No more retries left, send to no stage
-                    print("No more retries left, sending to no stage")
+                    # No more retries left, send to end stage
+                    print("No more retries left, sending to end stage")
                     # del self._query_dict[query_id]
-                    output = {self._no_stage_id: query}
+                    query.data = "Error: No more retries left"
+                    output = {self._end_stage_id: query}
                 else:
                     output = {self._yes_stage_id: query}
             else:
@@ -51,10 +53,11 @@ class BinaryRouter(Stage):
                     self._query_dict[query_id] = self._num_retries
                 self._query_dict[query_id] -= 1
                 if self._query_dict[query_id] < 0:
-                    # No more retries left, send to yes stage
-                    print("No more retries left, sending to yes stage")
+                    # No more retries left, send to end stage
+                    print("No more retries left, sending to end stage")
                     # del self._query_dict[query_id]
-                    output = {self._yes_stage_id: query}
+                    query.data = "Error: No more retries left"
+                    output = {self._end_stage_id: query}
                 else:
                     output = {self._no_stage_id: query}
         print(f"BinaryRouter: {query_id} -> {output}")
