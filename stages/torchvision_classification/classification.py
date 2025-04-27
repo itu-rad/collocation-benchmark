@@ -84,9 +84,9 @@ class TorchVisionClassification(Stage):
         self._model = get_component(model_cls)(weights=weights_cls)
 
         replace_classifier = self.extra_config["model"].get("replace_classifier", False)
+        *_, last_module = self._model.named_modules()
         if replace_classifier:
             # get the last module of the model and replace it
-            *_, last_module = self._model.named_modules()
             self._replace_last_module(last_module)
 
         # load from checkpoint file
@@ -100,20 +100,25 @@ class TorchVisionClassification(Stage):
         for param in self._model.parameters():
             param.requires_grad = False
 
+        optimizer_config = self.extra_config.get("optimizer", None)
+
         # TODO: Parametrize the number of layers to be trainable
         params_to_update = []
-        for name, param in self._model.named_parameters():
-            if last_module[0] in name:
-                param.requires_grad = True
-                params_to_update.append(param)
+        if optimizer_config:
+            for name, param in self._model.named_parameters():
+                if last_module[0] in name:
+                    param.requires_grad = True
+                    params_to_update.append(param)
 
         self._model = self._model.to(self._device)
 
-        optimizer_config = self.extra_config["optimizer"]
-        optimizer_cls = get_component(optimizer_config.pop("component"))
-        self._optimizer = optimizer_cls(params_to_update, **optimizer_config)
+        if optimizer_config:
+            optimizer_cls = get_component(optimizer_config.pop("component"))
+            self._optimizer = optimizer_cls(params_to_update, **optimizer_config)
 
-        self._criterion = get_component(self.extra_config["criterion"]["component"])()
+        criterion_config = self.extra_config.get("criterion", None)
+        if criterion_config:
+            self._criterion = get_component(criterion_config["component"])()
 
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
@@ -129,14 +134,18 @@ class TorchVisionClassification(Stage):
 
         with torch.set_grad_enabled(query.split == "train"):
             outputs = self._model(inputs)
-            loss = self._criterion(outputs, labels)
 
-            # _, preds = torch.max(outputs, 1)
+            preds = torch.argmax(outputs, dim=1)
+
+            print(f"Predictions: {preds}, Labels: {labels}")
 
             if query.split == "train":
+                loss = self._criterion(outputs, labels)
                 loss.backward()
                 self._optimizer.step()
 
-        query.data = loss.item()
+        query.data = [
+            pred == label for pred, label in zip(preds.tolist(), labels.tolist())
+        ]
         output = {idx: query for idx in self.output_queues}
         return output

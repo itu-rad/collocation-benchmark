@@ -40,7 +40,6 @@ class TorchVisionDataset(Stage):
 
         Raises:
             Exception: Missing model name.
-            Exception: Model checkpoint path is required for inference.
         """
         super().__init__(stage_config, pipeline_config)
 
@@ -52,36 +51,63 @@ class TorchVisionDataset(Stage):
         self.dataset = torchvision.datasets.__dict__.get(dataset_name, None)
         if self.dataset is None:
             raise Exception(f"Could not find dataset {dataset_name}.")
+
         split = self.extra_config.get("split", ["val"])
         dataset_downloaded = os.path.exists(
             os.path.join(os.getcwd(), "data", dataset_name)
         )
-        # print(f"Dataset downloaded? {dataset_downloaded}")
-        weights_name = self.extra_config.get("weights", None)
-        if weights_name is None:
-            self.datasets: dict[str, VisionDataset] = {
-                x: self.dataset(
-                    root=f"data/{dataset_name}",
-                    split=x,
-                    download=(not dataset_downloaded),
-                    transform=v2.ToTensor(),
-                )
-                for x in split
-            }
+
+        # Handle ImageNet validation dataset specifically
+        if dataset_name.lower() == "imagenet" and "val" in split:
+            dataset_root = os.path.join(os.getcwd(), "data", "imagenet")
+            if not dataset_downloaded:
+                self._download_imagenet_val(dataset_root)
+            transform = v2.ToTensor()  # Default transform
         else:
-            weights = get_weight(weights_name)
-            preprocess = weights.transforms()
-            self.datasets: dict[str, VisionDataset] = {
-                x: self.dataset(
-                    root=f"data/{dataset_name}",
-                    split=x,
-                    download=(not dataset_downloaded),
-                    transform=preprocess,
-                )
-                for x in split
-            }
+            weights_name = self.extra_config.get("weights", None)
+            if weights_name is None:
+                transform = v2.ToTensor()
+            else:
+                weights = get_weight(weights_name)
+                transform = weights.transforms()
+
+        self.datasets: dict[str, VisionDataset] = {
+            x: self.dataset(
+                root=(
+                    dataset_root
+                    if dataset_name.lower() == "imagenet"
+                    else f"data/{dataset_name}"
+                ),
+                split=x,
+                download=(not dataset_downloaded),
+                transform=transform,
+            )
+            for x in split
+        }
 
         self.batch_size = self.extra_config.get("batch_size", 1)
+
+    def _download_imagenet_val(self, dataset_root: str):
+        """Download the ImageNet validation dataset using Kaggle API if not already present.
+
+        Args:
+            dataset_root (str): Path to the dataset root directory.
+        """
+        os.makedirs(dataset_root, exist_ok=True)
+        kaggle_dataset = "fastai/imagenet-validation"  # Kaggle dataset identifier
+
+        try:
+            import kaggle
+        except ImportError:
+            raise ImportError(
+                "Kaggle API is not installed. Install it using 'pip install kaggle'."
+            )
+
+        print(
+            f"Downloading ImageNet validation dataset from Kaggle to {dataset_root}..."
+        )
+        kaggle.api.dataset_download_files(kaggle_dataset, path=dataset_root, unzip=True)
+        print("Download complete. Ensure the dataset is properly structured.")
 
     def get_datasets(self):
         """Getter for the datasets

@@ -39,41 +39,73 @@ class TorchVisionDataLoader(Stage):
 
         dataset_cls = get_component(self.extra_config["dataset"]["component"])
 
-        dataset_downloaded = os.path.exists(
-            os.path.join(os.getcwd(), "tmp", "torchvision_dataset")
-        )
-
         self._splits = self.extra_config.get("split", ["val"])
+        dataset_name = self.extra_config["dataset"]["component"].split(".")[-1]
+        dataset_root = os.path.join(
+            os.getcwd(), "tmp", "torchvision_dataset", dataset_name
+        )
+        dataset_downloaded = os.path.isdir(dataset_root) and os.listdir(dataset_root)
+
+        print(f"Dataset downloaded: {dataset_downloaded}")
+
+        # Handle ImageNet validation dataset specifically
+        if dataset_name.lower() == "imagenet" and "val" in self._splits:
+            print("detected imagenet val")
+            if not dataset_downloaded:
+                print("downloading imagenet val")
+                self._download_imagenet_val(dataset_root)
 
         weights_name = self.extra_config["dataset"].get("weights", None)
-
         if weights_name is None:
-            self._datasets: dict[str, VisionDataset] = {
-                x: dataset_cls(
-                    root=os.path.join(os.getcwd(), "tmp", "torchvision_dataset"),
-                    split=x,
-                    download=(not dataset_downloaded),
-                    transform=v2.ToTensor(),
-                )
-                for x in self._splits
-            }
+            transform = v2.ToTensor()
         else:
             weights = get_weight(weights_name)
-            preprocess = weights.transforms()
-            self._datasets: dict[str, VisionDataset] = {
-                x: dataset_cls(
-                    root=os.path.join(os.getcwd(), "tmp", "torchvision_dataset"),
-                    split=x,
-                    download=(not dataset_downloaded),
-                    transform=preprocess,
-                )
-                for x in self._splits
-            }
+            transform = weights.transforms()
+            print(f"Transform: {transform}")
+
+        self._datasets: dict[str, VisionDataset] = {
+            x: dataset_cls(
+                root=dataset_root,
+                split=x,
+                **(
+                    {"download": not dataset_downloaded}
+                    if dataset_name.lower() != "imagenet"
+                    else {}
+                ),
+                transform=transform,
+            )
+            for x in self._splits
+        }
 
         self._batch_size = self.extra_config.get("batch_size", 1)
-
         self._dataloaders = {}
         self._dataloader_iter = None
+
+    def _download_imagenet_val(self, dataset_root: str):
+        """Download the ImageNet validation dataset using Kaggle API if not already present.
+
+        Args:
+            dataset_root (str): Path to the dataset root directory.
+        """
+        os.makedirs(dataset_root, exist_ok=True)
+        kaggle_dataset = "titericz/imagenet1k-val"  # Kaggle dataset identifier
+
+        try:
+            from kaggle.api.kaggle_api_extended import KaggleApi
+        except ImportError:
+            raise ImportError(
+                "Kaggle API is not installed. Install it using 'pip install kaggle'."
+            )
+
+        print(
+            f"Downloading ImageNet validation dataset from Kaggle to {dataset_root}..."
+        )
+
+        api = KaggleApi()
+        api.authenticate()
+
+        api.dataset_download_files(kaggle_dataset, path=dataset_root, unzip=True)
+        print("Download complete. Ensure the dataset is properly structured.")
 
     def get_dataset_splits(self) -> dict[str, int]:
         """Get the number of batches for each dataset split.
@@ -96,6 +128,7 @@ class TorchVisionDataLoader(Stage):
         """Custom collate identity function, allowing us
         to perform preprocessing in a separate stage.
         """
+        print("Custom collate function called")
         return data
 
     @log_phase
