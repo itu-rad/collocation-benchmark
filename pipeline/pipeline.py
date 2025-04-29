@@ -139,8 +139,6 @@ class Pipeline:
                 except Empty:
                     continue
 
-                print("Retrieved query:", new_query)
-
                 # if terminating character is received, return
                 if not new_query:
                     return

@@ -1,8 +1,10 @@
 import os
+from re import split
+from turtle import width
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 from torchvision.models import get_weight
-from torchvision.datasets import VisionDataset
+from torchvision.datasets import VisionDataset, wrap_dataset_for_transforms_v2
 
 from stages.stage import Stage, log_phase
 from utils.schemas import Query, StageModel, PipelineModel
@@ -24,6 +26,25 @@ class PreloadedDataset(VisionDataset):
         return len(self.data)
 
 
+def transform_openimages(split):
+    if split == "train":
+        return v2.Compose(
+            [
+                v2.Resize((800, 800)),
+                v2.RandomHorizontalFlip(),
+                v2.ToTensor(),
+            ]
+        )
+    else:
+        return v2.Compose(
+            [
+                v2.RGB(),
+                v2.Resize((800, 800)),
+                v2.ToTensor(),
+            ]
+        )
+
+
 class TorchVisionDataLoader(Stage):
     """This stage contains the Torch dataloading functionality with the possibility
     of prefetching and preprocessing the data.
@@ -41,19 +62,11 @@ class TorchVisionDataLoader(Stage):
 
         self._splits = self.extra_config.get("split", ["val"])
         dataset_name = self.extra_config["dataset"]["component"].split(".")[-1]
-        dataset_root = os.path.join(
-            os.getcwd(), "tmp", "torchvision_dataset", dataset_name
+        dataset_root = self.extra_config["dataset"].get(
+            "root",
+            os.path.join(os.getcwd(), "tmp", "torchvision_dataset", dataset_name),
         )
         dataset_downloaded = os.path.isdir(dataset_root) and os.listdir(dataset_root)
-
-        print(f"Dataset downloaded: {dataset_downloaded}")
-
-        # Handle ImageNet validation dataset specifically
-        if dataset_name.lower() == "imagenet" and "val" in self._splits:
-            print("detected imagenet val")
-            if not dataset_downloaded:
-                print("downloading imagenet val")
-                self._download_imagenet_val(dataset_root)
 
         weights_name = self.extra_config["dataset"].get("weights", None)
         if weights_name is None:
@@ -63,49 +76,38 @@ class TorchVisionDataLoader(Stage):
             transform = weights.transforms()
             print(f"Transform: {transform}")
 
+        transform_cls = self.extra_config["dataset"].get("transform", None)
+
         self._datasets: dict[str, VisionDataset] = {
             x: dataset_cls(
                 root=dataset_root,
-                split=x,
+                **({"split": x} if dataset_name.lower() != "cocodetection" else {}),
                 **(
                     {"download": not dataset_downloaded}
-                    if dataset_name.lower() != "imagenet"
+                    if dataset_name.lower() not in ["imagenet", "cocodetection"]
                     else {}
                 ),
-                transform=transform,
+                **(
+                    {"annFile": self.extra_config["dataset"]["annFile"]}
+                    if dataset_name.lower() == "cocodetection"
+                    else {}
+                ),
+                transform=(
+                    transform if not transform_cls else get_component(transform_cls)(x)
+                ),
             )
             for x in self._splits
         }
 
+        # if dataset_name.lower() == "openimages":
+        #     for split in self._datasets:
+        #         self._datasets[split] = wrap_dataset_for_transforms_v2(
+        #             self._datasets[split], target_keys=["boxes", "labels", "image_id"]
+        #         )
+
         self._batch_size = self.extra_config.get("batch_size", 1)
         self._dataloaders = {}
         self._dataloader_iter = None
-
-    def _download_imagenet_val(self, dataset_root: str):
-        """Download the ImageNet validation dataset using Kaggle API if not already present.
-
-        Args:
-            dataset_root (str): Path to the dataset root directory.
-        """
-        os.makedirs(dataset_root, exist_ok=True)
-        kaggle_dataset = "titericz/imagenet1k-val"  # Kaggle dataset identifier
-
-        try:
-            from kaggle.api.kaggle_api_extended import KaggleApi
-        except ImportError:
-            raise ImportError(
-                "Kaggle API is not installed. Install it using 'pip install kaggle'."
-            )
-
-        print(
-            f"Downloading ImageNet validation dataset from Kaggle to {dataset_root}..."
-        )
-
-        api = KaggleApi()
-        api.authenticate()
-
-        api.dataset_download_files(kaggle_dataset, path=dataset_root, unzip=True)
-        print("Download complete. Ensure the dataset is properly structured.")
 
     def get_dataset_splits(self) -> dict[str, int]:
         """Get the number of batches for each dataset split.
@@ -128,7 +130,6 @@ class TorchVisionDataLoader(Stage):
         """Custom collate identity function, allowing us
         to perform preprocessing in a separate stage.
         """
-        print("Custom collate function called")
         return data
 
     @log_phase
@@ -170,6 +171,7 @@ class TorchVisionDataLoader(Stage):
         if query.batch == 0:
             self._dataloader_iter = iter(self._dataloaders[query.split])
         next_batch = next(self._dataloader_iter)
+        # print(f"Batch: {next_batch}")
         query.data = next_batch
         output = {idx: query for idx in self.output_queues}
         return output

@@ -1,0 +1,49 @@
+name: "RetinaNet implementation of MLPerf Inference v5.0"
+pipelines:
+  - name: RetinaNet inference
+    inputs: [0]
+    outputs: [2]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.PoissonLoadScheduler
+      max_queries: 200
+      timeout: 30
+      queue_depth: 10
+      config:
+        rate: 10 # average #requests/sec
+    stages:
+      - name: Load OpenImages samples from TorchVision Dataset
+        id: 0
+        outputs: [1]
+        component: stages.torchvision_classification.TorchVisionDataLoader
+        polling_policy: utils.queues.polling.SingleQueuePolicy
+        disable_logs: false
+        config:
+          batch_size: 1
+          preprocess: True
+          preload: False
+          num_workers: 0 # if 0 no prefetching else prefetches 2*num_workers samples
+          dataset:
+            component: torchvision.datasets.CocoDetection
+            split: [val]
+            root: /home/roba/collocation-benchmark/tmp/torchvision_dataset/openimages/validation/data
+            annFile: /home/roba/collocation-benchmark/tmp/torchvision_dataset/openimages/annotations/openimages-mlperf.json
+            transform: stages.torchvision_classification.transform_openimages
+      - name: RetinaNet inference
+        id: 1
+        outputs: [2]
+        component: stages.torchvision_classification.TorchVisionDetection
+        polling_policy: utils.queues.polling.SingleQueuePolicy
+        disable_logs: false
+        config:
+          model: 
+            component: torchvision.models.detection.retinanet_resnet50_fpn
+            weights: RetinaNet_ResNet50_FPN_Weights.DEFAULT
+            # num_classes: 264
+            weights_backbone: ResNet50_Weights.IMAGENET1K_V1
+          device: cuda
+      - name: Detection postporcess
+        id: 2
+        component: stages.torchvision_classification.DetectionPostprocess
+        polling_policy: utils.queues.polling.SingleQueuePolicy
+        disable_logs: false
