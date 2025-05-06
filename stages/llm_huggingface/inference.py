@@ -41,6 +41,8 @@ class Inference(Stage):
 
         self._logits_processors = []
 
+        self._gen_kwargs = self.extra_config["model"].get("gen_kwargs", {})
+
         self._model = None
 
         self._depends_on_id = self.extra_config.get("depends_on_id")
@@ -82,6 +84,14 @@ class Inference(Stage):
             transformers.PreTrainedTokenizer: The tokenizer
         """
         return self._tokenizer
+
+    def get_accelerator(self) -> None:
+        """Getter for the accelerator
+
+        Returns:
+            Accelerator: The accelerator
+        """
+        return None
 
     def get_model_lock(self):
         return self._model, self._mutex
@@ -159,9 +169,8 @@ class Inference(Stage):
 
         generated_ids = self._model.generate(
             **model_inputs,
-            max_new_tokens=512,
+            **self._gen_kwargs,
             logits_processor=self._logits_processors,
-            temperature=self.extra_config["model"].get("temperature", 1.0),
         )
 
         generated_ids = [

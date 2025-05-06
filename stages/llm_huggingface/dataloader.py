@@ -1,3 +1,4 @@
+from torch import ne
 from torch.utils.data import DataLoader
 from datasets import load_dataset
 from transformers import (
@@ -26,13 +27,23 @@ class HuggingFaceDataLoader(Stage):
 
         dataset_config = self.extra_config.get("dataset", {})
         dataset_name = dataset_config["name"]
-        self._datasets = load_dataset(dataset_name)
+        dataset_subset = dataset_config.get("subset", None)
+        self._datasets = load_dataset(
+            dataset_name,
+            **({"name": dataset_subset} if dataset_subset else {}),
+            split=self._split,
+        )
+
+        self._datasets = {
+            self._split[idx]: split for idx, split in enumerate(self._datasets)
+        }
+
         self._dataset_length = {k: len(v) for (k, v) in self._datasets.items()}
         self._datasets = {
             k: v.to_iterable_dataset(num_shards=self._dataset_length[k])
             for (k, v) in self._datasets.items()
         }
-        self._datasets = {k: v for (k, v) in self._datasets.items() if k in self._split}
+        # self._datasets = {k: v for (k, v) in self._datasets.items() if k in self._split}
 
         # shuffle, if necessary
         if self.extra_config.get("shuffle", True):
@@ -41,6 +52,8 @@ class HuggingFaceDataLoader(Stage):
         self._system_column_name = dataset_config.get("system_column_name")
         self._user_column_name = dataset_config.get("user_column_name")
         self._assistant_column_name = dataset_config.get("assistant_column_name")
+
+        self._instruction = dataset_config.get("instruction", None)
 
         self._tokenizer = None
         self._dataloaders = {}
@@ -66,22 +79,40 @@ class HuggingFaceDataLoader(Stage):
             for split in self._split
         }
 
-    def _concat(self, sample):
-        if sample[self._user_column_name] != "":
-            sample["concated_text"] = (
-                "Below is an instruction that describes a task, paired with an input that provides further context. "
-                "Write a response that appropriately completes the request.\n\n"
-                f"### Instruction:\n{sample[self._system_column_name]}\n\n### Input:\n{sample[self._user_column_name]}\n\n"
-                f"### Response:\n{sample[self._assistant_column_name]}\n\n"
-            )
-        else:
-            sample["concated_text"] = (
-                "Below is an instruction that describes a task. "
-                "Write a response that appropriately completes the request.\n\n"
-                f"### Instruction:\n{sample[self._system_column_name]}\n\n"
-                f"### Response:\n{sample[self._assistant_column_name]}\n\n"
-            )
-        return sample
+    def _concat(self, is_train: bool):
+        def _concat_train(sample):
+            if sample[self._user_column_name] != "":
+                sample["concated_text"] = (
+                    "Below is an instruction that describes a task, paired with an input that provides further context. "
+                    "Write a response that appropriately completes the request.\n\n"
+                    f"### Instruction:\n{self._instruction if self._instruction else sample[self._system_column_name]}\n\n### Input:\n{sample[self._user_column_name]}\n\n"
+                    f"### Response:\n{sample[self._assistant_column_name]}\n\n"
+                )
+            else:
+                sample["concated_text"] = (
+                    "Below is an instruction that describes a task. "
+                    "Write a response that appropriately completes the request.\n\n"
+                    f"### Instruction:\n{sample[self._system_column_name]}\n\n"
+                    f"### Response:\n{sample[self._assistant_column_name]}\n\n"
+                )
+            return sample
+
+        def _concat_eval(sample):
+            if sample[self._user_column_name] != "":
+                sample["concated_text"] = (
+                    "Below is an instruction that describes a task, paired with an input that provides further context. "
+                    "Write a response that appropriately completes the request.\n\n"
+                    f"### Instruction:\n{self._instruction if self._instruction else sample[self._system_column_name]}\n\n### Input:\n{sample[self._user_column_name]}\n\n"
+                    f"### Response:\n"
+                )
+            else:
+                sample["concated_text"] = (
+                    "Below is an instruction that describes a task. "
+                    "Write a response that appropriately completes the request.\n\n"
+                    f"### Instruction:\n{sample[self._system_column_name]}\n\n"
+                    f"### Response:\n"
+                )
+            return sample
 
     def _tokenize(self, samples):
         inputs = self._tokenizer(
@@ -101,17 +132,10 @@ class HuggingFaceDataLoader(Stage):
             self.extra_config.get("tokenizer_stage_id", 0), "get_tokenizer"
         )
         self._datasets = {
-            k: v.map(
-                self._concat,
-            )
-            for (k, v) in self._datasets.items()
+            k: v.map(self._concat(k == "train")) for (k, v) in self._datasets.items()
         }
         self._datasets = {
-            k: v.map(
-                self._tokenize,
-                batched=True,
-            )
-            for (k, v) in self._datasets.items()
+            k: v.map(self._tokenize, batched=True) for (k, v) in self._datasets.items()
         }
         self._datasets = {
             k: v.remove_columns(
@@ -154,6 +178,7 @@ class HuggingFaceDataLoader(Stage):
         if query.batch == 0:
             self._dataloader_iter = iter(self._dataloaders[query.split])
         next_batch = next(self._dataloader_iter)
+        print(next_batch)
         query.data = next_batch
         output = {idx: query for idx in self.output_queues}
         return output

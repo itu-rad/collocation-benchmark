@@ -1,0 +1,45 @@
+name: Gpt-J 6B implementation of MLPerf Inference v5.0
+pipelines:
+  - name: Gpt-J 6B implementation of MLPerf Inference v5.0
+    inputs: [0]
+    outputs: [1]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 10
+      max_queries: 2000
+      timeout: 20000
+      config:
+        rate: 1 # average #requests/sec
+    stages:
+      - name: CNN DailyMail dataloader
+        id: 0
+        outputs: [1]
+        component: stages.llm_huggingface.HuggingFaceDataLoader
+        config:
+          tokenizer_stage_id: 1
+          accelerator_stage_id: 1 # even if not using the accelerator
+          batch_size: 1
+          shuffle: True
+          split: ["validation"]
+          dataset:
+            name: abisee/cnn_dailymail
+            subset: "3.0.0"
+            system_column_name: instruction
+            user_column_name: article
+            assistant_column_name: highlights
+            instruction: "Summarize the following news article:"
+      - name: GPT-J 6B inference
+        id: 1
+        component: stages.llm_huggingface.Inference
+        config: 
+          dtype: torch.bfloat16
+          device: cuda
+          model:
+            name: EleutherAI/gpt-j-6b
+            quantize: False
+            gen_kwargs:
+              early_stopping: True,
+              max_new_tokens: 128,
+              min_new_tokens: 30,
+              num_beams: 4
