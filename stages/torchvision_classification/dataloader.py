@@ -60,7 +60,7 @@ class TorchVisionDataLoader(Stage):
 
         dataset_cls = get_component(self.extra_config["dataset"]["component"])
 
-        self._splits = self.extra_config.get("split", ["val"])
+        self._splits = self.extra_config["dataset"].get("split", ["val"])
         dataset_name = self.extra_config["dataset"]["component"].split(".")[-1]
         dataset_root = self.extra_config["dataset"].get(
             "root",

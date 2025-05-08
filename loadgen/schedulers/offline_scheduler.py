@@ -22,6 +22,9 @@ class OfflineLoadScheduler(LoadScheduler):
         # start the timeout timer
         self.timer.start()
 
+        print("Starting load generation")
+        print("Splits: ", self.dataset_splits)
+
         # terminate when max_queries is reached
         while counter < self.max_queries:
             for split_name, split_batches in self.dataset_splits.items():

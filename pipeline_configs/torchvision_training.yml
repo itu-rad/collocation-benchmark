@@ -7,7 +7,7 @@ pipelines:
     loadgen:
       component: loadgen.OfflineLoadScheduler
       max_queries: 200
-      timeout: 30
+      timeout: 30000
       queue_depth: 10
       config:
         rate: 10 # average #requests/sec
