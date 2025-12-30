@@ -172,7 +172,7 @@ class Finetune(Stage):
             self._lr_scheduler.step()
 
             print(
-                f"{self._current_step}/{self._max_queries} | Running loss: {self._running_loss.item()}"
+                f"{self._current_step + 1}/{self._max_queries} | Running loss: {self._running_loss.item()}"
             )
             # Reset running stats for the next step
             self._running_loss = 0
