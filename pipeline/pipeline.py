@@ -118,7 +118,7 @@ class Pipeline:
         for stage in self.stages.values():
             stage.join_thread()
 
-    def retrieve_results(self, event: Event, queries_processed: int) -> None:
+    def retrieve_results(self, event: Event) -> None:
         """
         This method continuously checks all output queues for new queries. It performs
         non-blocking retrieval from the queues and processes the queries if available.
@@ -154,7 +154,7 @@ class Pipeline:
                     new_query.batch + 1,
                 )
 
-                queries_processed += 1
+                self.queries_processed += 1
                 event.set()
 
     def run(self, query_queue: Queue, event: Event) -> None:
@@ -170,10 +170,10 @@ class Pipeline:
         """
 
         queries_sent = 0
-        queries_procesed = 0
+        self.queries_processed = 0
 
         result_retrieval_thread = Thread(
-            target=self.retrieve_results, args=[event, queries_procesed]
+            target=self.retrieve_results, args=[event]
         )
         result_retrieval_thread.start()
 
@@ -186,11 +186,11 @@ class Pipeline:
             # check if done
             if query is None:
                 # only terminate once all of the queries have been processed in order to protect the graph from circular dependencies during termination
-                while queries_sent > queries_procesed:
+                while queries_sent > self.queries_processed:
                     # print(
                     #     "Waiting for all queries to be processed, sent: %d, processed: %d",
                     #     queries_sent,
-                    #     queries_procesed,
+                    #     self.queries_processed,
                     # )
                     # wait for a query to be processed
                     event.wait(0.1)

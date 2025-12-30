@@ -7,7 +7,7 @@ pipelines:
     loadgen:
       component: loadgen.OfflineLoadScheduler
       queue_depth: 10
-      max_queries: 2000
+      max_queries: 3
       timeout: 20000
       config:
         rate: 1 # average #requests/sec
@@ -19,7 +19,7 @@ pipelines:
         config:
           tokenizer_stage_id: 1
           accelerator_stage_id: 1
-          batch_size: 1
+          batch_size: 4
           shuffle: True
           split: ["train"]
           dataset:

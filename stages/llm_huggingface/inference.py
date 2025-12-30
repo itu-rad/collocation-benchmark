@@ -9,8 +9,8 @@ import transformers
 
 # from torch.profiler import profile, record_function, ProfilerActivity
 
-from outlines.processors import JSONLogitsProcessor
-from outlines.models import TransformerTokenizer
+import outlines
+
 
 from threading import Lock
 
@@ -39,7 +39,8 @@ class Inference(Stage):
         if data_model_path:
             self._data_model = get_component(data_model_path)
 
-        self._logits_processors = []
+        self._outlines_generator = None
+
 
         self._gen_kwargs = self.extra_config["model"].get("gen_kwargs", {})
 
@@ -128,11 +129,15 @@ class Inference(Stage):
                 device_map="auto",
             )
 
-    def _setup_logit_processors(self) -> None:
-        if self._data_model:
-            outlines_tokenizer = TransformerTokenizer(self._tokenizer)
-            json_processor = JSONLogitsProcessor(self._data_model, outlines_tokenizer)
-            self._logits_processors = transformers.LogitsProcessorList([json_processor])
+    def _setup_outlines(self) -> None:
+        if self._data_model and not self._outlines_generator:
+            # outlines.models.Transformers expects (model, tokenizer)
+            self._outlines_model = outlines.models.Transformers(
+                self._model, self._tokenizer
+            )
+            self._outlines_generator = outlines.Generator(
+                self._outlines_model, self._data_model
+            )
 
     @log_phase
     def prepare(self):
@@ -141,8 +146,8 @@ class Inference(Stage):
         if not self._depends_on_id:
             print("Setting up model in ", self.name)
             self._setup_model()
+            self._setup_outlines()
 
-        self._setup_logit_processors()
 
     def pre_run(self):
 
@@ -150,42 +155,55 @@ class Inference(Stage):
             self._model, self._mutex = self.dispatch_call(
                 self._depends_on_id, "get_model_lock"
             )
+            self._setup_outlines()
 
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
 
         print("Input data:", batch)
 
-        self._tokenizer.pad_token = (
-            self._tokenizer.eos_token
-        )  # Most LLMs don't have a pad token by default
-        model_inputs = self._tokenizer(batch, return_tensors="pt", padding=True).to(
-            self._model.device
-        )
+        if self._outlines_generator:
+            if self._mutex:
+                self._mutex.acquire()
+            try:
+                # outlines generator returns the completion string directly
+                model_out = self._outlines_generator(batch, **self._gen_kwargs)
+            finally:
+                if self._mutex:
+                    self._mutex.release()
 
-        # # Acquire the lock if the model is shared
-        if self._mutex:
-            self._mutex.acquire()
+        else:
+            self._tokenizer.pad_token = (
+                self._tokenizer.eos_token
+            )  # Most LLMs don't have a pad token by default
+            model_inputs = self._tokenizer(batch, return_tensors="pt", padding=True).to(
+                self._model.device
+            )
 
-        generated_ids = self._model.generate(
-            **model_inputs,
-            **self._gen_kwargs,
-            logits_processor=self._logits_processors,
-        )
+            # # Acquire the lock if the model is shared
+            if self._mutex:
+                self._mutex.acquire()
 
-        generated_ids = [
-            output_ids[len(input_ids) :]
-            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
+            generated_ids = self._model.generate(
+                **model_inputs,
+                **self._gen_kwargs,
+                # logits_processor=self._logits_processors, # No longer used here
+            )
 
-        if self._mutex:
-            self._mutex.release()
+            generated_ids = [
+                output_ids[len(input_ids) :]
+                for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+            ]
 
-        model_out = self._tokenizer.batch_decode(
-            generated_ids, skip_special_tokens=True
-        )
+            if self._mutex:
+                self._mutex.release()
+
+            model_out = self._tokenizer.batch_decode(
+                generated_ids, skip_special_tokens=True
+            )
 
         print("Raw model output: ", model_out)
+
 
         if self._data_model:
             # the validation might fail, however, regeneration does not seem to help
