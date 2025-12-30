@@ -167,7 +167,12 @@ class Inference(Stage):
                 self._mutex.acquire()
             try:
                 # outlines generator returns the completion string directly
-                model_out = self._outlines_generator(batch, **self._gen_kwargs)
+                # The current Outlines version does not support passing a list of prompts,
+                # so we iterate over the batch.
+                model_out = [
+                    self._outlines_generator(prompt, **self._gen_kwargs)
+                    for prompt in batch
+                ]
             finally:
                 if self._mutex:
                     self._mutex.release()
