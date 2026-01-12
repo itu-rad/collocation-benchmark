@@ -1,12 +1,42 @@
-# Collocation Benchmark
+# Colocation Benchmark
 
-This is a benchmark to measure the end-to-end performance of (collocated) machine learning pipelines. In comparison to the other existing options, this benchmark focuses on:
+The Colocation Benchmark is a modular and flexible framework designed to evaluate the end-to-end performance of (colocated) machine learning pipelines. The benchmark is built on the following core principles:
 
-- Measurement of end-to-end perfomance - the alternatives often focus on quantifying the performance of DNN inference and discounting the other parts of the pipelines, such as data loading or preprocessing, which account for a significant portion of the pipeline execution.
-- Modularity - while the benchmark provides different use case scenarios, the implementation of the different stages of the pipeline is not locked. The different stages of the pipeline, such as data loading are standalone building blocks, making for easier performance evaluation.
-- Colocation - many deployments can benefit from smart colocation of machine learning workloads. Our benchmark will help researchers evaluate their new ideas for colocation schedulers and resource managers by providing multiple use case scenarios for colocation as well as detailed time breakdown for each of the colocated workloads for further analysis.
+- **End-to-End Performance**: Quantifying performance across the entire pipeline, including data loading and preprocessing.
+- **Modularity**: Stages like data loading and model execution are standalone building blocks, allowing for flexible pipeline construction.
+- **Colocation**: Facilitating research into colocation schedulers and resource managers by providing scenarios with detailed time breakdowns for colocated workloads.
 
-## Benchmark execution
+## Getting Started
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/your-repo/collocation-benchmark.git
+    cd collocation-benchmark
+    ```
+
+2.  Install dependencies:
+    ```bash
+    conda env create -f environment.yml
+    ```
+
+### Usage
+
+To run the benchmark, use the `main.py` script with a configuration file:
+
+```bash
+python main.py <path_to_config.yml>
+```
+
+Example:
+```bash
+python main.py pipeline_configs/finetune_huggingface.yml
+```
+
+## Architecture
+
+The benchmark consists of several modular components that work together to execute and measure ML pipelines.
 
 ```mermaid
 sequenceDiagram
@@ -42,24 +72,78 @@ sequenceDiagram
     end
 ```
 
-### Benchmark's building blocks and their responsibility
+### Components
 
-#### Benchmark
+- **Benchmark** (`main.py`): The entry point. It parses the configuration, initializes the global logger, and spawns processes for each pipeline's LoadGen.
+- **LoadGen** (`loadgen/`): Generates queries and submits them to the pipeline based on a scheduler (e.g., offline, poisson). It is agnostic to the specific workload.
+- **Pipeline** (`pipeline/`): Orchestrates a sequence of Stages. It manages communication between stages and logs execution times.
+- **Stage** (`stages/`): The fundamental building block. A stage performs a specific task (e.g., DataLoader, Inference, Finetuning).
+- **Logging** (`utils/logger.py`): Asynchronously records performance metrics to minimize interference with execution.
 
-Benchmark is the entry point to our benchmark. It parses configuration files, which define the pipelines as well as general settings for other building blocks of the benchmark such as the LoadGen. Based on the configuration files, initiate three other building blocks: LoadGen, Pipeline/s and Logging.
+## Configuration
 
-#### LoadGen
+The benchmark is configured via YAML files. A configuration defines the pipelines, their stages, and the load generation policy.
 
-This is the building block that issues queries to the SUT based on different policies. To make this block reusable, the LoadGen is not aware of the specific type of pipelines or datasets, but rather uses sampleIDs as an abstraction to pass to data loaders, which are the first stages of the pipelines.
+### Structure
 
-##### Logging
+See `pipeline_configs/` for examples. A typical config includes:
 
-It logs the end-to-end performance statistics of the pipeline execution, such as the run time splits of the dfferent stages of the pipeline. The logging is performed in a separate thread asynchronously in order to not interfere with the pipeline's execution.
+```yaml
+name: "benchmark_run_name"
+pipelines:
+  - name: "Pipeline Name"
+    inputs: [0] # IDs of input stages
+    outputs: [1] # IDs of output stages
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 10
+      max_queries: 100
+      config:
+        rate: 5 # requests/sec
+    stages:
+      - name: "Stage 1 (e.g., DataLoader)"
+        id: 0
+        outputs: [1]
+        component: stages.package.ClassName
+        config:
+            # Stage-specific configuration
+            batch_size: 8
+            ...
+      - name: "Stage 2 (e.g., Model)"
+        id: 1
+        component: stages.package.ClassName
+        config:
+            model_name: "..."
+            ...
+```
 
-#### Pipeline
+## Supported Stages
 
-The pipeline holds the different stages and orchestrates the communication between them, as well as, the logging of execution times of the separate stages.
+The benchmark currently supports the following families of stages:
 
-#### Stage
+- **LLM HuggingFace** (`stages/llm_huggingface`):
+    - `HuggingFaceDataLoader`: Loads text datasets.
+    - `Finetune`: Instruction tuning using PEFT/LoRA.
+    - `Inference`: Text generation.
+- **LLM Torchtune** (`stages/llm_torchtune`):
+    - Implementation of finetuning and generation using PyTorch Tune.
+- **Self RAG** (`stages/self_rag`):
+    - Retrieval-Augmented Generation workflows.
+- **Vision** (`stages/torchvision_classification`):
+    - Standard computer vision classification tasks.
 
-This is the building block of the pipelines. A stage can perform tasks such as data loading, data preprocessing or model execution. The stages are separated in order to make the development of specific part of a pipeline and subsequent evaluation as easy as possible.
+## Extensibility
+
+### Adding a New Stage
+
+1.  Create a new directory in `stages/`.
+2.  Inherit from the base `Stage` class (`stages/stage.py`).
+3.  Implement the `run` method and initialization logic.
+4.  Register your component path in the YAML config (e.g., `stages.my_new_stage.MyStage`).
+
+### Adding a Scheduler
+
+1.  Add a new scheduler class in `loadgen/schedulers/`.
+2.  Inherit from the base `LoadScheduler`.
+3.  Implement the generation logic.

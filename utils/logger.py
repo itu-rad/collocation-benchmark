@@ -51,8 +51,10 @@ class Logger:
         benchmark_name = benchmark_name.lower()
         benchmark_name = re.sub(r"\s", "_", benchmark_name)
         benchmark_name = re.sub(r"[^\w_]+", "", benchmark_name)
+        log_dir = os.path.join(os.getcwd(), "tmp")
+        os.makedirs(log_dir, exist_ok=True)
         file_handler = logging.FileHandler(
-            filename=os.path.join(os.getcwd(), "tmp", f"{benchmark_name}.csv")
+            filename=os.path.join(log_dir, f"{benchmark_name}.csv")
         )
         file_handler.setFormatter(formatter)
         file_handler.addFilter(benchmark_filter)

@@ -36,4 +36,4 @@ pipelines:
           model:
             name: microsoft/Phi-3-mini-4k-instruct
             quantize: False
-            temperature: 0
+            temperature: 1

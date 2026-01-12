@@ -114,6 +114,8 @@ class HuggingFaceDataLoader(Stage):
                 )
             return sample
 
+        return _concat_train if is_train else _concat_eval
+
     def _tokenize(self, samples):
         inputs = self._tokenizer(
             samples["concated_text"],
