@@ -29,6 +29,13 @@ def parse_args():
         default=-1,
         # help="Maximum amount of time to train for (minutes)",
     )
+    parser.add_argument(
+        "-e",
+        type=int,
+        dest="experiment_id",
+        default=0,
+        help="radT experiment id",
+    )
     return parser.parse_args()
 
 
@@ -81,7 +88,7 @@ def main(args):
     for pipeline_id in pipeline_ids:
         df_schedule.loc[pipeline_id] = pd.Series(
             {
-                "Experiment": 0,
+                "Experiment": args.experiment_id,
                 "Workload": 0,
                 "Name": benchmark_config.pipelines[pipeline_id].name,
                 "Status": "",
