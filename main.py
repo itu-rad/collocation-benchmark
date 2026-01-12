@@ -1,9 +1,12 @@
 import argparse
+import mlflow
+import sys
 
 import radt
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel
 from multiprocessing import Process, Queue
 from pydantic_yaml import parse_yaml_raw_as
 
@@ -33,6 +36,33 @@ def radt_entrypoint(args):
     with open(args.config_file_path, "r", encoding="utf-8") as file:
         yaml_config = file.read()
         benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
+
+        # Parse the .yaml and send it over as mlflow params
+        def build_mlflow_config(
+            config: dict, data: BaseModel | list | dict, directory: str
+        ) -> None:
+            if isinstance(data, BaseModel):
+                for k in data.model_fields_set:
+                    v = getattr(data, k)
+                    build_mlflow_config(config, v, f"{directory}.{k}")
+            elif isinstance(data, list):
+                for i, v in enumerate(data):
+                    build_mlflow_config(config, v, f"{directory}:{i}")
+            elif isinstance(data, dict):
+                for k, v in data.items():
+                    build_mlflow_config(config, v, f"{directory}.{k}")
+            else:
+                config[f"{directory}"] = data
+
+        # Log config
+        mlflow.log_artifact(args.config_file_path, "pipeline")
+
+        mlflow_config = {}
+        build_mlflow_config(
+            mlflow_config, benchmark_config.pipelines[args.pipeline_id], "pipeline"
+        )
+        mlflow.log_params(mlflow_config)
+
     run_loadgen(benchmark_config.pipelines[args.pipeline_id])
 
 
@@ -53,18 +83,23 @@ def main(args):
             {
                 "Experiment": 0,
                 "Workload": 0,
+                "Name": benchmark_config.pipelines[pipeline_id].name,
                 "Status": "",
                 "Run": "",
                 "Devices": 0,
                 "Collocation": "",
-                "Listeners": "smi",
+                "Listeners": "smi+top+dcgmi+iostat+free",
                 "File": "main.py",
                 "Params": f"{args.config_file_path} -p {pipeline_id}",
             }
         )
 
     # execute workload
-    radt.schedule_external(["--local"], df_schedule)
+    radt.schedule_external(
+        [],
+        df_schedule,
+        group_name=benchmark_config.name,
+    )
 
     # stop the logger
     logger.stop_queue_listener()
