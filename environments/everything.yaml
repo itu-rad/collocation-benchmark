@@ -15,6 +15,6 @@ dependencies:
       - transformers
       - datasets
       - psutil
-      - radt
+      - radt>=0.2.23
       - pydantic_yaml
       - outlines
