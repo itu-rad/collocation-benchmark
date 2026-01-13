@@ -32,5 +32,5 @@ pipelines:
         config: 
           model:
             name: stages/anemll/models/anemll-Qwen3-4B-ctx1024_0.3.0
-            max_new_tokens: 5
+            max_new_tokens: 100
             gen_kwargs: {}
