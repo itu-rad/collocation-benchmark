@@ -66,8 +66,7 @@ class Inference(Stage):
         self._model = ANE_Model(model_path)
         
         print(f"Loading Tokenizer from {model_path}")
-        # self._tokenizer = AutoTokenizer.from_pretrained(str(model_path), trust_remote_code=True)
-        self._tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B")
+        self._tokenizer = AutoTokenizer.from_pretrained(str(model_path), trust_remote_code=True)
         if hasattr(self._tokenizer, 'pad_token') and self._tokenizer.pad_token is None:
              self._tokenizer.pad_token = self._tokenizer.eos_token
 
