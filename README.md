@@ -1,24 +1,47 @@
-# Colocation Benchmark
+# Collocation Benchmark
 
-The Colocation Benchmark is a modular and flexible framework designed to evaluate the end-to-end performance of (colocated) machine learning pipelines. The benchmark is built on the following core principles:
+The Collocation Benchmark is a modular and flexible framework designed to evaluate the end-to-end performance of (colocated) machine learning pipelines. The benchmark is built on the following core principles:
 
 - **End-to-End Performance**: Quantifying performance across the entire pipeline, including data loading and preprocessing.
 - **Modularity**: Stages like data loading and model execution are standalone building blocks, allowing for flexible pipeline construction.
-- **Colocation**: Facilitating research into colocation schedulers and resource managers by providing scenarios with detailed time breakdowns for colocated workloads.
+- **Collocation**: Facilitating research into colocation schedulers and resource managers by providing scenarios with detailed time breakdowns for colocated workloads.
 
 ## Getting Started
 
 ### Installation
 
+#### NVIDIA GPU-based systems
+
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/your-repo/collocation-benchmark.git
+    git clone https://github.com/itu-rad/collocation-benchmark/
     cd collocation-benchmark
     ```
 
 2.  Install dependencies:
     ```bash
-    conda env create -f environment.yml
+    conda env create -f environments/nvidia.yml
+    conda activate benchmark_nvidia
+    ```
+
+#### Apple Silicon-based systems
+
+1.  Clone the repository:
+    ```bash
+    git clone --recurse-submodules https://github.com/itu-rad/collocation-benchmark/
+    cd collocation-benchmark
+    ```
+
+2.  Install dependencies:
+    ```bash
+    conda env create -f environments/macos.yml
+    conda activate benchmark_macos
+    ```
+
+3.  Install ANEMLL (optional, only required for inference using Apple Neural Engine):
+    ```bash
+    cd stages/anemll/Anemll
+    VIRTUAL_ENV=<path_to_conda_env> ./install_dependencies.sh
     ```
 
 ### Usage
