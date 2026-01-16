@@ -1,0 +1,37 @@
+name: "test_mlx_generation"
+pipelines:
+  - name: MLX Generation Test
+    inputs: [0]
+    outputs: [1]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 5
+      max_queries: 10 # Small number for testing
+      timeout: 60000
+      config:
+        rate: 1 
+    stages:
+      - name: Mock dataloader
+        id: 0
+        outputs: [1]
+        component: stages.llm_huggingface.MockDataLoader  
+        config:
+          tokenizer_stage_id: 1
+          batch_size: 1
+          shuffle: True
+          split: ["train"]
+          dataset:
+            name: yahma/alpaca-cleaned
+            system_column_name: instruction
+            user_column_name: input
+            assistant_column_name: output
+      - name: MLX Infer
+        id: 1
+        component: stages.llm_mlx.Inference
+        config: 
+          model:
+            name: mlx-community/Qwen3-0.6B-Base-8bit
+            gen_kwargs:
+              max_tokens: 50
+              # temperature: 0.7
