@@ -22,6 +22,7 @@ dependencies:
     - peft
     - pydantic_yaml
     - outlines
+    - tf-keras # for compatibility between transformers and tensorflow
 
     ## nvidia specific
     # possibly TensorRT or other NVIDIA/CUDA specific dependencies
