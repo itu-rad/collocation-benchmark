@@ -1,0 +1,29 @@
+name: benchmark_nvidia
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    # RadT dependencies
+    - tensorflow
+    - tensorboardX
+    - mlflow>=1.0
+    - boto3
+    - psutil
+    - radt>=0.2.23
+
+    # benchmark dependencies
+    ## general
+    - torch
+    - torchvision
+    - torchaudio
+    - torchtune
+    - transformers
+    - datasets
+    - peft
+    - pydantic_yaml
+    - outlines
+
+    ## nvidia specific
+    # possibly TensorRT or other NVIDIA/CUDA specific dependencies
+    
+   
