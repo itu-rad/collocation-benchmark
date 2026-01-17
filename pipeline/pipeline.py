@@ -1,6 +1,7 @@
 import logging
 from queue import Queue, Empty
 from threading import Event, Thread
+import mlflow
 
 from stages import Stage
 from utils.component import get_stage_component
@@ -85,6 +86,7 @@ class Pipeline:
         stage_id = self._pipeline_config.dataset_stage_id
         return self.stages[stage_id].get_dataset_splits()
 
+    @mlflow.trace
     def prepare(self) -> None:
         """
         Prepare all the stages in the pipeline.
@@ -143,6 +145,16 @@ class Pipeline:
                 if not new_query:
                     return
 
+                # End the trace for the query
+                if new_query.trace_span:
+                    print(__file__, "Ending trace span")
+                    new_query.trace_span.end()
+
+                # End the loadgen trace
+                if new_query.loadgen_span:
+                    print(__file__, "Ending loadgen span")
+                    new_query.loadgen_span.end()
+
                 # log the end of pipeline execution
                 self._logger.info(
                     "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
@@ -172,9 +184,7 @@ class Pipeline:
         queries_sent = 0
         self.queries_processed = 0
 
-        result_retrieval_thread = Thread(
-            target=self.retrieve_results, args=[event]
-        )
+        result_retrieval_thread = Thread(target=self.retrieve_results, args=[event])
         result_retrieval_thread.start()
 
         dataset_splits = self.get_dataset_splits()
@@ -206,6 +216,22 @@ class Pipeline:
                 epoch_dict[query.split] += 1
 
             query.epoch = epoch_dict[query.split]
+
+            # Use the span from loadgen as the parent
+            parent_span = query.trace_span
+            span = mlflow.start_span_no_context(
+                name=f"{self.name}.run",
+                parent_span=parent_span,
+                attributes={
+                    "pipeline_name": self.name,
+                    "split": query.split,
+                    "batch": query.batch,
+                    "epoch": query.epoch,
+                    "query_id": str(query.query_id),
+                },
+            )
+            # Retrieve the trace_id and span_id from the span
+            query.trace_span = span
 
             self._logger.info(
                 "%s, pipeline - %s, run, start, %d, %.6f, %d, %d",

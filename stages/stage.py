@@ -5,6 +5,7 @@ from functools import wraps
 import logging
 from typing import Any
 import json
+import mlflow
 
 from utils.queues.polling.polling_policy import PollingPolicy
 from utils.queues.peekable_queue import PeekableQueue
@@ -164,6 +165,7 @@ class Stage:
         """Wait for the stage thread to join."""
         self._thread.join()
 
+    @mlflow.trace
     def prepare(self) -> None:
         """
         Prepare the stage for execution.
@@ -250,9 +252,24 @@ class Stage:
             if not self.disable_logs:
                 log_phase_single(self.parent_name, self.name, "run", "start")
 
+            # add tracing window for each query and each stage.
+            parent_span = query.trace_span
+            span = mlflow.start_span_no_context(
+                name=f"{self.parent_name}.{self.name}.run",
+                parent_span=parent_span,
+                attributes={
+                    "stage_id": self.id,
+                    "stage_name": self.name,
+                    "parent_name": self.parent_name,
+                },
+            )
+
             outputs = self.run(query)
 
             self._push_to_outputs(outputs)
             if not self.disable_logs:
                 log_phase_single(self.parent_name, self.name, "run", "end")
+
+            span.end()
+
         self.post_run()

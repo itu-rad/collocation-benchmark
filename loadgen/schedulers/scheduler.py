@@ -1,5 +1,6 @@
 from threading import Timer
-from typing import Any
+from typing import Any, Optional
+from mlflow.entities import Span
 from abc import ABC, abstractmethod
 import json
 
@@ -52,11 +53,14 @@ class LoadScheduler(ABC):
         self.stop = True
 
     @abstractmethod
-    def generate(self, queue, event):
+    def generate(
+        self, queue: Queue, event: threading.Event, root_span: Optional[Span] = None
+    ):
         """Generate load based on the specified distribution.
 
         Args:
             queue (queue.Queue): Pipeline's input queue.
             event (threading.Event): Conditional variable for synchronizing between the load generation and the pipeline's execution.
+            root_span (Optional[Span]): The root span of the LoadGen execution.
         """
         pass

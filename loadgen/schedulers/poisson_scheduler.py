@@ -1,5 +1,10 @@
 from random import expovariate
 from time import sleep, time
+from queue import Queue
+import threading
+from typing import Optional
+from mlflow.entities import Span
+import mlflow
 
 from utils.schemas import Query
 from .scheduler import LoadScheduler
@@ -41,12 +46,15 @@ class PoissonLoadScheduler(LoadScheduler):
         for _ in range(self.max_queries - 1):
             self.offsets.append(expovariate(self.rate))
 
-    def generate(self, queue, event):
+    def generate(
+        self, queue: Queue, event: threading.Event, root_span: Optional[Span] = None
+    ):
         """
         Generates queries and pushes them onto the provided queue at intervals defined by offsets.
         Args:
             queue (Queue): The queue to push generated queries onto.
             event (Event): An event to signal the start of query generation.
+            root_span (Optional[Span]): The root span of the LoadGen execution.
         The method will generate queries until the maximum number of queries (`self.max_queries`) is reached or a stop signal is received.
         It uses the dataset splits defined in `self.dataset_splits` to generate queries for each split and batch.
         The method also handles timeout and stop signals to ensure proper termination of the query generation process.
@@ -69,12 +77,19 @@ class PoissonLoadScheduler(LoadScheduler):
                     # sleep until it's time to generate next query
                     sleep(self.offsets[counter])
 
+                    # Create a span for the loadgen batch
+                    span = mlflow.start_span_no_context(
+                        name="LoadGen.batch", parent_span=root_span
+                    )
+
                     # push the query onto queue
                     queue.put_nowait(
                         Query(
                             split=split_name,
                             batch=batch_idx,
                             query_submitted_timestamp=time(),
+                            loadgen_span=span,
+                            trace_span=span,
                         )
                     )
 

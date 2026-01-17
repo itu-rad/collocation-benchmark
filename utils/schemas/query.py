@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 import uuid
+from mlflow.entities import Span
 
 
 @dataclass
@@ -16,3 +17,5 @@ class Query:
     query_id: int = uuid.uuid4()
     data: Any = None
     context: Any = None
+    trace_span: Optional[Span] = None
+    loadgen_span: Optional[Span] = None

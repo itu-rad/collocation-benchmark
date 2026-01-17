@@ -3,6 +3,7 @@ from logging.handlers import QueueHandler
 from threading import Thread, Event
 from queue import Queue
 import multiprocessing
+import mlflow
 
 from loadgen.schedulers.scheduler import LoadScheduler
 from pipeline import Pipeline
@@ -51,19 +52,11 @@ class LoadGen:
         self._load_scheduler.prepare()
 
         # set up queue for passing queries from the loadgen to the pipeline
-        sample_queue = Queue(maxsize=loadgen_config.queue_depth)
+        self._sample_queue = Queue(maxsize=loadgen_config.queue_depth)
 
         # set up a conditional variable for synchronization between the pipeline
         # execution and load generation (where necessary, i.e. offline scheduler)
-        event = Event()
-
-        # set up the pipeline and scheduler threads
-        self.pipeline_thread = Thread(
-            target=self._pipeline.run, args=[sample_queue, event]
-        )
-        self.scheduler_thread = Thread(
-            target=self._load_scheduler.generate, args=[sample_queue, event]
-        )
+        self._event = Event()
 
     def __str__(self) -> str:
         s = f"---\ntitle: 'Pipeline: {self._pipeline_config.name}'\n---\nflowchart LR\n"
@@ -78,7 +71,16 @@ class LoadGen:
 
         The execution is stopped when the max_queries is reached or timer elapses.
         """
+        root_span = mlflow.start_span_no_context(name="LoadGen.run")
+        # set up the pipeline and scheduler threads
+        self.pipeline_thread = Thread(
+            target=self._pipeline.run, args=[self._sample_queue, self._event]
+        )
+        self.scheduler_thread = Thread(
+            target=self._load_scheduler.generate, args=[self._sample_queue, self._event]
+        )
         self.pipeline_thread.start()
         self.scheduler_thread.start()
         self.scheduler_thread.join()
         self.pipeline_thread.join()
+        root_span.end()
