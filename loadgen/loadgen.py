@@ -80,8 +80,17 @@ class LoadGen:
             target=self._load_scheduler.generate,
             args=[self._sample_queue, self._event, root_span],
         )
-        self.pipeline_thread.start()
-        self.scheduler_thread.start()
-        self.scheduler_thread.join()
-        self.pipeline_thread.join()
-        root_span.end()
+
+        try:
+            self.pipeline_thread.start()
+            self.scheduler_thread.start()
+            self.scheduler_thread.join()
+            self.pipeline_thread.join()
+        except BaseException as e:
+            print(f"Exception in loadgen: {e}")
+            self._pipeline.terminate()
+            print("Sent termination signal to pipeline")
+            self.scheduler_thread.join(timeout=0.01)
+            self.pipeline_thread.join(timeout=0.01)
+        finally:
+            root_span.end()

@@ -6,6 +6,7 @@ import mlflow
 from stages import Stage
 from utils.component import get_stage_component
 from utils.schemas import PipelineModel, StageModel, Query
+from utils.thread_utils import inject_exception
 
 
 class Pipeline:
@@ -119,6 +120,21 @@ class Pipeline:
         """
         for stage in self.stages.values():
             stage.join_thread()
+
+    def terminate(self) -> None:
+        """
+        Terminate the pipeline execution by terminating all stage threads.
+        """
+        print("Terminating pipeline")
+        for stage in self.stages.values():
+            thread = stage.get_thread()
+            inject_exception(thread.ident, SystemExit)
+            print(f"Thread {thread.name} ({thread.ident}) injected with exception")
+        for stage in self.stages.values():
+            thread = stage.get_thread()
+            if thread.is_alive():
+                thread.join(timeout=0.03)
+            print(f"Thread {thread.name} finished")
 
     def retrieve_results(self, event: Event) -> None:
         """

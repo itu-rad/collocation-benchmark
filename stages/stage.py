@@ -181,6 +181,10 @@ class Stage:
         self._thread = Thread(target=self.run_wrapper)
         self._thread.start()
 
+    def get_thread(self) -> Thread:
+        """Get the thread of the stage."""
+        return self._thread
+
     def _get_input_from_queues(self) -> Query | None:
         """Retrieve items from all input queues
 
@@ -264,12 +268,30 @@ class Stage:
                 },
             )
 
-            outputs = self.run(query)
+            try:
 
-            self._push_to_outputs(outputs)
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "end")
+                outputs = self.run(query)
 
-            span.end()
+                self._push_to_outputs(outputs)
+                if not self.disable_logs:
+                    log_phase_single(self.parent_name, self.name, "run", "end")
+            except SystemExit:
+                print(f"Ending stage span", flush=True)
+                span.end()
+                if query.trace_span:
+                    print(f"Ending trace span", flush=True)
+                    query.trace_span.end()
+                if query.loadgen_span:
+                    print(f"Ending loadgen span", flush=True)
+                    query.loadgen_span.end()
+                return
+
+            except BaseException as e:
+                print(f"Exception in stage {self.name}: {e}", flush=True)
+                span.end()
+                raise e
+            finally:
+                if span:
+                    span.end()
 
         self.post_run()
