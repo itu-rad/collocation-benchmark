@@ -1,5 +1,7 @@
 from threading import Timer
 from typing import Any, Optional
+from queue import Queue
+import threading
 from mlflow.entities import Span
 from abc import ABC, abstractmethod
 import json

@@ -7,7 +7,7 @@ pipelines:
     loadgen:
       component: loadgen.OfflineLoadScheduler
       queue_depth: 5
-      max_queries: 10 # minimal for testing ANE speed
+      max_queries: 2 # minimal for testing ANE speed
       timeout: 60000
       config:
         rate: 1 

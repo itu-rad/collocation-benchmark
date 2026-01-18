@@ -77,7 +77,8 @@ class LoadGen:
             target=self._pipeline.run, args=[self._sample_queue, self._event]
         )
         self.scheduler_thread = Thread(
-            target=self._load_scheduler.generate, args=[self._sample_queue, self._event]
+            target=self._load_scheduler.generate,
+            args=[self._sample_queue, self._event, root_span],
         )
         self.pipeline_thread.start()
         self.scheduler_thread.start()
