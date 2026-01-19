@@ -9,7 +9,7 @@ dependencies:
     - mlflow>=1.0
     - boto3
     - psutil
-    - radt>=0.2.23
+    - radt>=0.2.24
 
     # benchmark dependencies
     ## general
