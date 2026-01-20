@@ -16,3 +16,4 @@ class Query:
     query_id: int = uuid.uuid4()
     data: Any = None
     context: Any = None
+    out_flow_id: int = 0

@@ -2,6 +2,8 @@ import uuid
 from time import time
 from queue import Queue
 import threading
+import mlflow
+import uuid
 
 from utils.schemas import Query
 from .scheduler import LoadScheduler
@@ -39,14 +41,26 @@ class OfflineLoadScheduler(LoadScheduler):
                         event.wait()
                         event.clear()
 
-                    # push the query onto queue
-                    queue.put_nowait(
-                        Query(
-                            split=split_name,
-                            batch=batch_idx,
-                            query_submitted_timestamp=time(),
+                    flow_id = uuid.uuid4()
+                    with mlflow.start_span(
+                        name="generate query",
+                        attributes={
+                            "out_flow_id": flow_id,
+                            "thread_id": threading.get_ident(),
+                            "epoch": counter,
+                            "batch": batch_idx,
+                            "split": split_name,
+                        },
+                    ):
+                        # push the query onto queue
+                        queue.put_nowait(
+                            Query(
+                                split=split_name,
+                                batch=batch_idx,
+                                query_submitted_timestamp=time(),
+                                out_flow_id=flow_id,
+                            )
                         )
-                    )
 
                     # increment the counter and check if exceeds the max_queries
                     counter += 1

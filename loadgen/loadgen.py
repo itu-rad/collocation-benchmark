@@ -3,6 +3,9 @@ from logging.handlers import QueueHandler
 from threading import Thread, Event
 from queue import Queue
 import multiprocessing
+import mlflow
+import threading
+import time
 
 from loadgen.schedulers.scheduler import LoadScheduler
 from pipeline import Pipeline
@@ -71,6 +74,7 @@ class LoadGen:
         s += str(self._pipeline)
         return s
 
+    @mlflow.trace(attributes={"thread_id": threading.get_ident()})
     def run(self) -> None:
         """
         Start the pipeline and load generation threads and join them
@@ -78,7 +82,12 @@ class LoadGen:
 
         The execution is stopped when the max_queries is reached or timer elapses.
         """
+        # mlflow.tracing.disable()
+        # time.sleep(60)
+        start_time = time.perf_counter()
         self.pipeline_thread.start()
         self.scheduler_thread.start()
         self.scheduler_thread.join()
         self.pipeline_thread.join()
+        duration = time.perf_counter() - start_time
+        print(f"Pipeline execution completed in {duration:.2f} seconds", flush=True)

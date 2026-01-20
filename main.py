@@ -95,7 +95,7 @@ def main(args):
                 "Run": "",
                 "Devices": 0,
                 "Collocation": "",
-                "Listeners": "smi+top+dcgmi+iostat+free",
+                "Listeners": "macmon",
                 "File": "main.py",
                 "Params": f"{args.config_file_path} -p {pipeline_id}",
             }

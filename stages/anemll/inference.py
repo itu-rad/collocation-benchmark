@@ -4,6 +4,9 @@ from threading import Lock
 from pathlib import Path
 from transformers import AutoTokenizer
 import torch
+import mlflow
+import threading
+
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
@@ -103,18 +106,29 @@ class Inference(Stage):
 
         for prompt in batch:
             # Tokenize
-            inputs = self._tokenizer.encode(prompt, return_tensors="pt").to(torch.int32)
-            input_ids = inputs
+            with mlflow.start_span(
+                name="tokenizer.encode", attributes={"thread_id": threading.get_ident()}
+            ):
+                inputs = self._tokenizer.encode(prompt, return_tensors="pt").to(
+                    torch.int32
+                )
+                input_ids = inputs
             print(f"\nPrompt: '{prompt}'")
 
             # Generate
             # ANE_Model.generate returns LIST of token IDs
-            generated_ids = self._model.generate(
-                input_ids, max_new_tokens=self._max_new_tokens, **self._gen_kwargs
-            )
+            with mlflow.start_span(
+                name="model.generate", attributes={"thread_id": threading.get_ident()}
+            ):
+                generated_ids = self._model.generate(
+                    input_ids, max_new_tokens=self._max_new_tokens, **self._gen_kwargs
+                )
 
             # Decode
-            text = self._tokenizer.decode(generated_ids, skip_special_tokens=True)
+            with mlflow.start_span(
+                name="tokenizer.decode", attributes={"thread_id": threading.get_ident()}
+            ):
+                text = self._tokenizer.decode(generated_ids, skip_special_tokens=True)
             print("generated: ", text)
             model_out.append(text)
 

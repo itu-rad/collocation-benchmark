@@ -1,6 +1,9 @@
 import logging
 from queue import Queue, Empty
 from threading import Event, Thread
+import uuid
+import mlflow
+import threading
 
 from stages import Stage
 from utils.component import get_stage_component
@@ -135,7 +138,11 @@ class Pipeline:
                 # non-blocking retrieval from the queues
                 # if the queue is empty, simply move on
                 try:
-                    new_query: Query | None = output_queue.get(timeout=0.1)
+                    with mlflow.start_span(
+                        name="pipeline retrieve_results",
+                        attributes={"thread_id": threading.get_ident()},
+                    ):
+                        new_query: Query | None = output_queue.get(timeout=0.1)
                 except Empty:
                     continue
 
@@ -154,7 +161,19 @@ class Pipeline:
                     new_query.batch + 1,
                 )
 
-                self.queries_processed += 1
+                with mlflow.start_span(
+                    name="pipeline query processed",
+                    attributes={
+                        "in_flow_id": new_query.out_flow_id,
+                        "thread_id": threading.get_ident(),
+                        "pipeline": self.name,
+                        "epoch": new_query.epoch,
+                        "split": new_query.split,
+                        "batch": new_query.batch,
+                        "query_id": new_query.query_id,
+                    },
+                ):
+                    self.queries_processed += 1
                 event.set()
 
     def run(self, query_queue: Queue, event: Event) -> None:
@@ -172,9 +191,7 @@ class Pipeline:
         queries_sent = 0
         self.queries_processed = 0
 
-        result_retrieval_thread = Thread(
-            target=self.retrieve_results, args=[event]
-        )
+        result_retrieval_thread = Thread(target=self.retrieve_results, args=[event])
         result_retrieval_thread.start()
 
         dataset_splits = self.get_dataset_splits()
@@ -217,9 +234,24 @@ class Pipeline:
                 query.batch + 1,
             )
 
-            # populate the pipeline input queues / start pipeline execution
-            for input_queue in self._input_queues:
-                input_queue.put(query)
+            out_flow_id = uuid.uuid4()
+            with mlflow.start_span(
+                name="pipeline query",
+                attributes={
+                    "in_flow_id": query.out_flow_id,
+                    "out_flow_id": out_flow_id,
+                    "thread_id": threading.get_ident(),
+                    "pipeline": self.name,
+                    "epoch": query.epoch,
+                    "split": query.split,
+                    "batch": query.batch,
+                    "query_id": query.query_id,
+                },
+            ):
+                query.out_flow_id = out_flow_id
+                # populate the pipeline input queues / start pipeline execution
+                for input_queue in self._input_queues:
+                    input_queue.put(query)
 
             queries_sent += 1
 
