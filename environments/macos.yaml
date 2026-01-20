@@ -10,6 +10,10 @@ dependencies:
     - boto3
     - psutil
     - radt>=0.2.23
+    - sqlalchemy
+    - pandas
+    - psycopg2-binary
+    - perfetto
 
     # benchmark dependencies
     ## general
