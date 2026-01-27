@@ -1,6 +1,8 @@
 import argparse
 import mlflow
 import sys
+import os
+import logging
 
 import radt
 
@@ -43,6 +45,20 @@ def radt_entrypoint(args):
     with open(args.config_file_path, "r", encoding="utf-8") as file:
         yaml_config = file.read()
         benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
+
+        # Configure logging
+        pipeline_name = benchmark_config.pipelines[args.pipeline_id].name.replace(" ", "_").lower()
+        log_dir = "evaluation/results"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, f"{pipeline_name}.csv")
+        
+        formatter = logging.Formatter("%(created)f, %(message)s")
+        file_handler = logging.FileHandler(filename=log_file)
+        file_handler.setFormatter(formatter)
+        
+        logger = logging.getLogger("benchmark")
+        logger.setLevel(logging.INFO)
+        logger.addHandler(file_handler)
 
         # Parse the .yaml and send it over as mlflow params
         def build_mlflow_config(

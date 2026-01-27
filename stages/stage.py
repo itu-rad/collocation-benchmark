@@ -164,6 +164,13 @@ class Stage:
         """Wait for the stage thread to join."""
         self._thread.join()
 
+    def get_dataset_splits(self) -> dict[str, int]:
+        """
+        Get the number of batches in each dataset split.
+        Default implementation returns a single batch for 'train' split.
+        """
+        return {'train': 1}
+
     def prepare(self) -> None:
         """
         Prepare the stage for execution.
