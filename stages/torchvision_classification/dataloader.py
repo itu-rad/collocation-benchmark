@@ -126,7 +126,8 @@ class TorchVisionDataLoader(Stage):
             # add transform to cached dataset
             self._datasets[key] = PreloadedDataset(self._datasets[key], transform)
 
-    def _custom_collate_fn(self, data):
+    @staticmethod
+    def _custom_collate_fn(data):
         """Custom collate identity function, allowing us
         to perform preprocessing in a separate stage.
         """
@@ -162,7 +163,7 @@ class TorchVisionDataLoader(Stage):
                     num_workers=num_workers,
                     shuffle=True,
                     drop_last=True,
-                    collate_fn=self._custom_collate_fn,
+                    collate_fn=TorchVisionDataLoader._custom_collate_fn,
                 )
                 for (k, v) in self._datasets.items()
             }

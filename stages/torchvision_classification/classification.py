@@ -120,6 +120,13 @@ class TorchVisionClassification(Stage):
         if criterion_config:
             self._criterion = get_component(criterion_config["component"])()
 
+        trainable_params = sum(
+            p.numel() for p in self._model.parameters() if p.requires_grad
+        )
+        total_params = sum(p.numel() for p in self._model.parameters())
+        print(f"Stage {self.name}: Number of trainable parameters: {trainable_params}")
+        print(f"Stage {self.name}: Number of total parameters: {total_params}")
+
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
         [inputs, labels] = batch
@@ -133,19 +140,21 @@ class TorchVisionClassification(Stage):
             self._model.train()
 
         with torch.set_grad_enabled(query.split == "train"):
+            self._optimizer.zero_grad()
+
             outputs = self._model(inputs)
 
-            preds = torch.argmax(outputs, dim=1)
+            # preds = torch.argmax(outputs, dim=1)
 
-            print(f"Predictions: {preds}, Labels: {labels}")
+            # print(f"Predictions: {preds}, Labels: {labels}")
 
             if query.split == "train":
                 loss = self._criterion(outputs, labels)
                 loss.backward()
                 self._optimizer.step()
 
-        query.data = [
-            pred == label for pred, label in zip(preds.tolist(), labels.tolist())
-        ]
+        # query.data = [
+        #     pred == label for pred, label in zip(preds.tolist(), labels.tolist())
+        # ]
         output = {idx: query for idx in self.output_queues}
         return output

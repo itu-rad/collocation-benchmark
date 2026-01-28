@@ -1,0 +1,1284 @@
+1769611524.408986, EfficientNetv2 S Imagenette training, pipeline, prepare, start
+1769611524.409235, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, start
+1769611524.409580, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, end
+1769611524.409612, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, start
+1769611524.936362, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, end
+1769611524.936438, EfficientNetv2 S Imagenette training, pipeline, prepare, end
+1769611524.936889, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 222995893538815640551453477536018870924, 1769611524.936870, 1, 1
+1769611524.936947, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769611531.765291, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769611531.765483, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769611532.661816, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769611532.661889, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 222995893538815640551453477536018870924, 1769611524.936870, 1, 1
+1769611532.662009, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 222995893538815640551453477536018870924, 1769611532.661977, 1, 2
+1769611532.662055, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769611532.662159, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769611532.662216, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769611532.777378, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769611532.777435, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 222995893538815640551453477536018870924, 1769611532.661977, 1, 2
+1769611532.777548, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 222995893538815640551453477536018870924, 1769611532.777530, 1, 3
+1769611532.777591, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769611532.777848, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769611532.777893, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769611532.867852, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769611532.867917, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 222995893538815640551453477536018870924, 1769611532.777530, 1, 3
+1769611532.868041, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 222995893538815640551453477536018870924, 1769611532.868013, 1, 4
+1769611532.868097, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769611532.868350, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769611532.868384, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769611532.959213, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769611532.959267, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 222995893538815640551453477536018870924, 1769611532.868013, 1, 4
+1769611532.959995, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 222995893538815640551453477536018870924, 1769611532.959957, 1, 5
+1769611532.960072, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769611532.960352, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769611532.960428, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769611533.050161, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769611533.050215, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 222995893538815640551453477536018870924, 1769611532.959957, 1, 5
+1769613696.165033, EfficientNetv2 S Imagenette training, pipeline, prepare, start
+1769613696.165375, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, start
+1769613696.165589, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, end
+1769613696.165609, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, start
+1769613696.697108, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, end
+1769613696.697191, EfficientNetv2 S Imagenette training, pipeline, prepare, end
+1769613696.697625, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 154837784431789462842100714813247106959, 1769613696.697605, 1, 1
+1769613696.697687, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769613703.185068, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769613703.185325, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769613703.921992, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769613703.922052, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 154837784431789462842100714813247106959, 1769613696.697605, 1, 1
+1769613703.922163, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 154837784431789462842100714813247106959, 1769613703.922140, 1, 2
+1769613703.922206, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769613703.922491, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769613703.922534, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769613704.030955, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769613704.031013, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 154837784431789462842100714813247106959, 1769613703.922140, 1, 2
+1769613704.031099, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 154837784431789462842100714813247106959, 1769613704.031079, 1, 3
+1769613704.031133, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769613704.031398, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769613704.031480, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769613704.119924, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769613704.119982, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 154837784431789462842100714813247106959, 1769613704.031079, 1, 3
+1769613704.120062, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 154837784431789462842100714813247106959, 1769613704.120044, 1, 4
+1769613704.120104, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769613704.120371, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769613704.120427, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769613704.208134, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769613704.208190, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 154837784431789462842100714813247106959, 1769613704.120044, 1, 4
+1769613704.208314, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 154837784431789462842100714813247106959, 1769613704.208270, 1, 5
+1769613704.208401, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769613704.208715, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769613704.208743, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769613704.297371, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769613704.297450, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 154837784431789462842100714813247106959, 1769613704.208270, 1, 5
+1769614554.843427, EfficientNetv2 S Imagenette training, pipeline, prepare, start
+1769614554.843903, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, start
+1769614554.844156, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, end
+1769614554.844192, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, start
+1769614555.389983, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, end
+1769614555.390061, EfficientNetv2 S Imagenette training, pipeline, prepare, end
+1769614555.390553, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614555.390527, 1, 1
+1769614555.390615, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614561.846755, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614561.847144, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614562.588656, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614562.588719, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614555.390527, 1, 1
+1769614562.588824, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614562.588797, 1, 2
+1769614562.588869, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614562.588975, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614562.589050, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614562.704606, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614562.704664, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614562.588797, 1, 2
+1769614562.704745, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614562.704730, 1, 3
+1769614562.704783, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614562.705137, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614562.705183, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614562.793421, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614562.793515, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614562.704730, 1, 3
+1769614562.793656, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614562.793626, 1, 4
+1769614562.793723, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614562.793831, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614562.793863, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614562.882237, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614562.882291, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614562.793626, 1, 4
+1769614562.882377, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614562.882360, 1, 5
+1769614562.882416, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614562.882648, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614562.882712, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614562.970486, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614562.970541, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614562.882360, 1, 5
+1769614562.970664, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614562.970635, 1, 6
+1769614562.970705, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614562.970940, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614562.970979, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.058110, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.058164, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614562.970635, 1, 6
+1769614563.058244, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.058229, 1, 7
+1769614563.058277, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.058509, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.058534, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.147386, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.147453, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.058229, 1, 7
+1769614563.147557, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.147534, 1, 8
+1769614563.147597, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.147907, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.147985, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.235373, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.235432, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.147534, 1, 8
+1769614563.235509, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.235492, 1, 9
+1769614563.235549, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.235790, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.235826, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.323077, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.323134, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.235492, 1, 9
+1769614563.323220, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.323202, 1, 10
+1769614563.323254, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.323518, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.323561, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.412967, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.413031, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.323202, 1, 10
+1769614563.413119, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.413098, 1, 11
+1769614563.413152, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.413459, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.413534, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.503559, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.503618, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.413098, 1, 11
+1769614563.503704, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.503685, 1, 12
+1769614563.503738, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.503990, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.504058, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.592508, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.592575, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.503685, 1, 12
+1769614563.592689, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.592663, 1, 13
+1769614563.592730, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.592982, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.593015, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.681476, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.681535, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.592663, 1, 13
+1769614563.681612, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.681598, 1, 14
+1769614563.681661, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.681893, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.681922, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.768776, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.768839, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.681598, 1, 14
+1769614563.768929, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.768911, 1, 15
+1769614563.768964, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.769211, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.769241, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.856615, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.856673, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.768911, 1, 15
+1769614563.856753, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.856735, 1, 16
+1769614563.856789, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.857042, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.857071, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614563.944524, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614563.944584, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.856735, 1, 16
+1769614563.944663, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614563.944644, 1, 17
+1769614563.944704, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614563.944961, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614563.944993, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.032706, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.032763, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614563.944644, 1, 17
+1769614564.032909, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.032888, 1, 18
+1769614564.032947, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.033185, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.033217, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.121212, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.121270, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.032888, 1, 18
+1769614564.121357, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.121340, 1, 19
+1769614564.121396, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.121648, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.121716, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.209564, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.209616, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.121340, 1, 19
+1769614564.209699, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.209685, 1, 20
+1769614564.209733, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.209957, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.210054, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.297859, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.297915, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.209685, 1, 20
+1769614564.297992, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.297974, 1, 21
+1769614564.298035, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.298322, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.298411, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.385257, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.385339, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.297974, 1, 21
+1769614564.385437, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.385416, 1, 22
+1769614564.385480, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.385721, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.385800, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.472928, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.473012, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.385416, 1, 22
+1769614564.473173, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.473134, 1, 23
+1769614564.473224, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.473520, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.473613, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.561571, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.561628, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.473134, 1, 23
+1769614564.561715, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.561701, 1, 24
+1769614564.561746, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.562012, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.562092, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.648851, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.648905, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.561701, 1, 24
+1769614564.648990, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.648970, 1, 25
+1769614564.649021, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.649238, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.649265, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.736111, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.736166, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.648970, 1, 25
+1769614564.736246, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.736230, 1, 26
+1769614564.736282, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.736524, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.736590, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.823882, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.823935, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.736230, 1, 26
+1769614564.824015, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.823998, 1, 27
+1769614564.824049, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.824294, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.824362, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.911750, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.911823, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.823998, 1, 27
+1769614564.911925, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.911906, 1, 28
+1769614564.911973, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.912195, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.912237, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614564.999399, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614564.999455, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.911906, 1, 28
+1769614564.999544, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614564.999526, 1, 29
+1769614564.999580, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614564.999800, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614564.999832, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.086291, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.086344, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614564.999526, 1, 29
+1769614565.086431, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.086410, 1, 30
+1769614565.086462, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.086693, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.086721, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.173786, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.173839, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.086410, 1, 30
+1769614565.173921, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.173904, 1, 31
+1769614565.173957, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.174279, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.174384, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.261689, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.261751, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.173904, 1, 31
+1769614565.261837, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.261820, 1, 32
+1769614565.261876, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.262136, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.262165, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.349225, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.349279, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.261820, 1, 32
+1769614565.349364, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.349347, 1, 33
+1769614565.349401, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.349628, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.349695, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.436631, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.436686, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.349347, 1, 33
+1769614565.436773, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.436756, 1, 34
+1769614565.436807, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.437049, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.437079, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.525640, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.525697, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.436756, 1, 34
+1769614565.525774, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.525759, 1, 35
+1769614565.525805, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.526014, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.526038, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.613527, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.613583, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.525759, 1, 35
+1769614565.613670, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.613652, 1, 36
+1769614565.613708, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.613939, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.613968, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.700187, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.700241, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.613652, 1, 36
+1769614565.700329, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.700311, 1, 37
+1769614565.700362, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.700605, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.700677, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.787396, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.787454, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.700311, 1, 37
+1769614565.787540, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.787524, 1, 38
+1769614565.787573, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.787821, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.787847, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.874868, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.874924, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.787524, 1, 38
+1769614565.875055, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.875030, 1, 39
+1769614565.875094, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.875328, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.875357, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614565.962044, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614565.962102, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.875030, 1, 39
+1769614565.962225, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614565.962205, 1, 40
+1769614565.962269, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614565.962502, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614565.962530, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.052451, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.052515, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614565.962205, 1, 40
+1769614566.052606, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.052586, 1, 41
+1769614566.052639, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.052878, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.052906, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.140432, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.140496, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.052586, 1, 41
+1769614566.140583, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.140567, 1, 42
+1769614566.140621, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.140887, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.140931, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.229660, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.229719, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.140567, 1, 42
+1769614566.229807, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.229791, 1, 43
+1769614566.229846, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.230081, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.230108, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.317126, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.317187, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.229791, 1, 43
+1769614566.317274, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.317256, 1, 44
+1769614566.317309, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.317552, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.317585, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.405313, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.405367, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.317256, 1, 44
+1769614566.405455, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.405438, 1, 45
+1769614566.405493, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.405727, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.405754, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.493925, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.493981, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.405438, 1, 45
+1769614566.494068, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.494048, 1, 46
+1769614566.494101, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.494329, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.494357, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.580552, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.580608, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.494048, 1, 46
+1769614566.580699, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.580677, 1, 47
+1769614566.580737, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.580977, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.581039, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.669006, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.669066, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.580677, 1, 47
+1769614566.669151, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.669134, 1, 48
+1769614566.669184, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.669459, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.669537, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.757193, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.757249, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.669134, 1, 48
+1769614566.757335, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.757317, 1, 49
+1769614566.757368, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.757598, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.757697, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.844851, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.844916, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.757317, 1, 49
+1769614566.845012, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.844991, 1, 50
+1769614566.845055, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.845324, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.845362, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614566.932805, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614566.932864, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.844991, 1, 50
+1769614566.932951, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614566.932935, 1, 51
+1769614566.932987, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614566.933214, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614566.933241, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.020611, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.020669, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614566.932935, 1, 51
+1769614567.020752, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.020735, 1, 52
+1769614567.020795, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.021020, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.021046, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.108236, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.108292, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.020735, 1, 52
+1769614567.108376, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.108358, 1, 53
+1769614567.108421, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.108659, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.108732, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.195311, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.195369, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.108358, 1, 53
+1769614567.195465, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.195448, 1, 54
+1769614567.195503, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.195798, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.195872, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.282924, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.282977, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.195448, 1, 54
+1769614567.283058, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.283042, 1, 55
+1769614567.283089, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.283300, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.283327, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.369937, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.369996, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.283042, 1, 55
+1769614567.370074, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.370059, 1, 56
+1769614567.370110, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.370331, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.370358, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.457474, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.457527, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.370059, 1, 56
+1769614567.457611, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.457594, 1, 57
+1769614567.457660, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.457888, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.457934, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.546905, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.546958, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.457594, 1, 57
+1769614567.547049, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.547030, 1, 58
+1769614567.547086, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.547338, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.547365, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.634515, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.634575, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.547030, 1, 58
+1769614567.634664, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.634646, 1, 59
+1769614567.634706, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.634943, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.634971, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.722361, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.722421, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.634646, 1, 59
+1769614567.722503, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.722486, 1, 60
+1769614567.722538, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.722754, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.722781, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.809895, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.809952, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.722486, 1, 60
+1769614567.810048, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.810027, 1, 61
+1769614567.810101, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.810476, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.810584, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.897729, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.897784, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.810027, 1, 61
+1769614567.897862, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.897847, 1, 62
+1769614567.897893, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.898125, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.898181, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614567.985216, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614567.985282, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.897847, 1, 62
+1769614567.985358, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614567.985341, 1, 63
+1769614567.985398, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614567.985649, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614567.985682, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.072953, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.073007, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614567.985341, 1, 63
+1769614568.073096, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.073078, 1, 64
+1769614568.073130, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.073382, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.073439, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.160781, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.160841, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.073078, 1, 64
+1769614568.160934, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.160914, 1, 65
+1769614568.160977, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.161339, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.161413, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.248770, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.248826, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.160914, 1, 65
+1769614568.248919, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.248900, 1, 66
+1769614568.248956, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.249230, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.249300, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.336455, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.336524, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.248900, 1, 66
+1769614568.336612, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.336588, 1, 67
+1769614568.336652, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.336901, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.336931, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.424274, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.424329, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.336588, 1, 67
+1769614568.424413, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.424396, 1, 68
+1769614568.424451, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.424681, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.424767, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.512903, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.512960, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.424396, 1, 68
+1769614568.513041, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.513024, 1, 69
+1769614568.513074, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.513297, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.513323, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.600602, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.600661, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.513024, 1, 69
+1769614568.600747, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.600731, 1, 70
+1769614568.600781, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.601073, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.601137, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.688785, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.688843, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.600731, 1, 70
+1769614568.688931, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.688913, 1, 71
+1769614568.688965, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.689221, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.689249, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.778190, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.778260, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.688913, 1, 71
+1769614568.778352, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.778330, 1, 72
+1769614568.778385, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.778641, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.778708, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.867781, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.867856, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.778330, 1, 72
+1769614568.867949, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.867933, 1, 73
+1769614568.867985, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.868223, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.868277, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614568.956477, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614568.956540, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.867933, 1, 73
+1769614568.956624, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614568.956607, 1, 74
+1769614568.956668, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614568.956897, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614568.956963, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.044383, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.044449, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614568.956607, 1, 74
+1769614569.044534, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.044517, 1, 75
+1769614569.044568, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.044911, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.044994, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.133984, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.134065, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.044517, 1, 75
+1769614569.134210, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.134193, 1, 76
+1769614569.134246, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.134489, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.134538, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.223642, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.223710, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.134193, 1, 76
+1769614569.223813, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.223790, 1, 77
+1769614569.223852, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.224143, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.224229, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.313033, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.313104, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.223790, 1, 77
+1769614569.313202, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.313181, 1, 78
+1769614569.313246, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.313571, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.313638, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.400872, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.400930, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.313181, 1, 78
+1769614569.401023, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.401003, 1, 79
+1769614569.401063, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.401325, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.401396, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.488248, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.488297, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.401003, 1, 79
+1769614569.488388, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.488372, 1, 80
+1769614569.488424, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.488663, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.488712, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.575834, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.575893, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.488372, 1, 80
+1769614569.575976, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.575959, 1, 81
+1769614569.576012, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.576266, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.576333, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.664414, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.664474, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.575959, 1, 81
+1769614569.664549, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.664532, 1, 82
+1769614569.664588, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.664886, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.664914, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.752248, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.752307, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.664532, 1, 82
+1769614569.752395, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.752374, 1, 83
+1769614569.752432, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.752660, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.752692, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.840144, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.840196, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.752374, 1, 83
+1769614569.840286, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.840266, 1, 84
+1769614569.840332, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.840580, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.840647, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614569.930147, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614569.930215, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.840266, 1, 84
+1769614569.930313, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614569.930290, 1, 85
+1769614569.930362, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614569.930622, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614569.930656, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.018549, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.018607, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614569.930290, 1, 85
+1769614570.018703, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.018681, 1, 86
+1769614570.018739, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.018974, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.019000, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.106166, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.106221, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.018681, 1, 86
+1769614570.106302, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.106284, 1, 87
+1769614570.106337, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.106599, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.106659, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.194596, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.194651, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.106284, 1, 87
+1769614570.194731, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.194714, 1, 88
+1769614570.194767, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.195021, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.195089, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.282997, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.283058, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.194714, 1, 88
+1769614570.283144, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.283126, 1, 89
+1769614570.283176, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.283408, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.283434, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.371176, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.371227, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.283126, 1, 89
+1769614570.371313, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.371296, 1, 90
+1769614570.371344, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.371577, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.371604, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.458667, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.458718, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.371296, 1, 90
+1769614570.458798, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.458783, 1, 91
+1769614570.458831, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.459052, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.459093, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.546971, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.547039, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.458783, 1, 91
+1769614570.547123, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.547106, 1, 92
+1769614570.547159, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.547401, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.547430, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.634414, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.634478, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.547106, 1, 92
+1769614570.634597, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.634578, 1, 93
+1769614570.634640, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.634909, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.634990, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.725420, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.725479, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.634578, 1, 93
+1769614570.725563, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.725548, 1, 94
+1769614570.725603, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.725911, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.725970, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.816607, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.816675, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.725548, 1, 94
+1769614570.816775, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.816750, 1, 95
+1769614570.816825, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.817093, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.817161, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.906081, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.906136, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.816750, 1, 95
+1769614570.906227, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.906201, 1, 96
+1769614570.906265, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.906525, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.906552, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614570.994838, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614570.994906, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.906201, 1, 96
+1769614570.994992, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614570.994973, 1, 97
+1769614570.995038, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614570.995333, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614570.995433, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614571.083679, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614571.083743, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614570.994973, 1, 97
+1769614571.083845, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614571.083824, 1, 98
+1769614571.083884, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614571.084156, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614571.084228, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614571.172990, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614571.173044, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614571.083824, 1, 98
+1769614571.173133, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614571.173112, 1, 99
+1769614571.173169, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614571.173417, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614571.173460, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614571.261014, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614571.261076, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614571.173112, 1, 99
+1769614571.261222, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 325956402636359661800446180019783747144, 1769614571.261141, 1, 100
+1769614571.261317, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614571.261600, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614571.261636, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614571.348360, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614571.348417, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 325956402636359661800446180019783747144, 1769614571.261141, 1, 100
+1769614820.097486, EfficientNetv2 S Imagenette training, pipeline, prepare, start
+1769614820.097799, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, start
+1769614820.098005, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, prepare, end
+1769614820.098026, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, start
+1769614820.621279, EfficientNetv2 S Imagenette training, EfficientNet training, prepare, end
+1769614820.621356, EfficientNetv2 S Imagenette training, pipeline, prepare, end
+1769614820.622262, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614820.622220, 1, 1
+1769614820.622349, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614827.003817, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614827.003955, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614827.708688, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614827.708775, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614820.622220, 1, 1
+1769614827.708950, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614827.708914, 1, 2
+1769614827.709011, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614827.709341, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614827.709394, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614827.808264, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614827.809669, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614827.708914, 1, 2
+1769614827.809785, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614827.809741, 1, 3
+1769614827.809852, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614827.810202, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614827.810297, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614827.890195, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614827.890619, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614827.809741, 1, 3
+1769614827.890702, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614827.890686, 1, 4
+1769614827.890745, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614827.891016, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614827.891126, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614827.969020, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614827.969416, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614827.890686, 1, 4
+1769614827.969499, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614827.969481, 1, 5
+1769614827.969538, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614827.969800, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614827.969882, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.047502, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.047763, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614827.969481, 1, 5
+1769614828.047849, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.047826, 1, 6
+1769614828.047892, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.048136, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.048163, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.126204, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.126594, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.047826, 1, 6
+1769614828.126681, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.126662, 1, 7
+1769614828.126725, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.126964, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.126993, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.205729, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.206196, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.126662, 1, 7
+1769614828.206286, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.206263, 1, 8
+1769614828.206325, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.206614, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.206693, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.284206, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.284672, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.206263, 1, 8
+1769614828.284758, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.284737, 1, 9
+1769614828.284793, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.285104, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.285173, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.396104, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.396989, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.284737, 1, 9
+1769614828.397168, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.397121, 1, 10
+1769614828.397282, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.397877, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.397926, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.464710, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.465164, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.397121, 1, 10
+1769614828.465245, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.465220, 1, 11
+1769614828.465281, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.465496, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.465530, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.543479, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.543830, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.465220, 1, 11
+1769614828.543939, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.543916, 1, 12
+1769614828.544006, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.544269, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.544318, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.622933, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.623324, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.543916, 1, 12
+1769614828.623395, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.623373, 1, 13
+1769614828.623442, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.623701, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.623768, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.701971, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.702256, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.623373, 1, 13
+1769614828.702341, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.702313, 1, 14
+1769614828.702402, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.702740, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.702829, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.781312, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.781638, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.702313, 1, 14
+1769614828.781731, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.781701, 1, 15
+1769614828.781824, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.782102, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.782178, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.860288, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.860612, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.781701, 1, 15
+1769614828.860742, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.860720, 1, 16
+1769614828.860791, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.861081, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.861110, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614828.939243, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614828.939629, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.860720, 1, 16
+1769614828.939703, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614828.939685, 1, 17
+1769614828.939741, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614828.940005, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614828.940064, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.018536, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.018815, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614828.939685, 1, 17
+1769614829.018897, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.018877, 1, 18
+1769614829.018942, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.019180, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.019263, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.097684, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.098103, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.018877, 1, 18
+1769614829.098180, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.098160, 1, 19
+1769614829.098242, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.098571, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.098643, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.180376, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.180839, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.098160, 1, 19
+1769614829.180946, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.180922, 1, 20
+1769614829.181025, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.181317, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.181352, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.259854, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.260176, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.180922, 1, 20
+1769614829.260247, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.260225, 1, 21
+1769614829.260293, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.260524, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.260604, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.338994, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.339555, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.260225, 1, 21
+1769614829.339634, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.339613, 1, 22
+1769614829.339683, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.339950, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.339979, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.417899, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.418213, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.339613, 1, 22
+1769614829.418293, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.418267, 1, 23
+1769614829.418353, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.418631, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.418665, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.497170, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.497458, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.418267, 1, 23
+1769614829.497582, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.497551, 1, 24
+1769614829.497644, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.497935, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.497975, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.576735, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.577022, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.497551, 1, 24
+1769614829.577090, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.577069, 1, 25
+1769614829.577153, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.577415, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.577470, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.656857, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.657720, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.577069, 1, 25
+1769614829.657802, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.657779, 1, 26
+1769614829.657841, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.658127, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.658218, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.735929, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.736283, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.657779, 1, 26
+1769614829.736397, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.736375, 1, 27
+1769614829.736436, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.736746, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.736780, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.814920, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.815334, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.736375, 1, 27
+1769614829.815437, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.815417, 1, 28
+1769614829.815483, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.815772, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.815847, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.894741, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.895086, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.815417, 1, 28
+1769614829.895181, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.895161, 1, 29
+1769614829.895222, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.895438, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.895472, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614829.973572, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614829.973882, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.895161, 1, 29
+1769614829.973967, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614829.973946, 1, 30
+1769614829.974028, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614829.974289, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614829.974345, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.052759, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.053121, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614829.973946, 1, 30
+1769614830.053196, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.053175, 1, 31
+1769614830.053230, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.053507, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.053537, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.132165, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.132461, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.053175, 1, 31
+1769614830.132535, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.132516, 1, 32
+1769614830.132580, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.132858, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.132925, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.211788, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.212201, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.132516, 1, 32
+1769614830.212285, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.212263, 1, 33
+1769614830.212327, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.212565, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.212593, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.291189, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.291502, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.212263, 1, 33
+1769614830.291596, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.291571, 1, 34
+1769614830.291647, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.291933, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.292027, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.371189, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.371577, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.291571, 1, 34
+1769614830.371649, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.371629, 1, 35
+1769614830.371690, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.371955, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.371984, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.452123, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.452598, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.371629, 1, 35
+1769614830.452680, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.452657, 1, 36
+1769614830.452713, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.452979, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.453017, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.533086, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.533428, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.452657, 1, 36
+1769614830.533534, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.533511, 1, 37
+1769614830.533601, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.533840, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.533917, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.613915, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.614381, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.533511, 1, 37
+1769614830.614457, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.614433, 1, 38
+1769614830.614509, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.614776, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.614857, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.694275, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.694708, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.614433, 1, 38
+1769614830.694792, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.694773, 1, 39
+1769614830.694834, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.695096, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.695177, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.774127, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.774461, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.694773, 1, 39
+1769614830.774604, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.774572, 1, 40
+1769614830.774673, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.775071, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.775173, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.854944, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.855386, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.774572, 1, 40
+1769614830.855476, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.855452, 1, 41
+1769614830.855517, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.855783, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.855820, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614830.935082, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614830.935548, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.855452, 1, 41
+1769614830.935650, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614830.935618, 1, 42
+1769614830.935728, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614830.935999, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614830.936094, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.016241, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.016546, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614830.935618, 1, 42
+1769614831.016614, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.016592, 1, 43
+1769614831.016661, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.016949, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.017027, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.097459, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.097847, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.016592, 1, 43
+1769614831.097954, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.097933, 1, 44
+1769614831.098013, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.098297, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.098377, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.179013, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.179352, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.097933, 1, 44
+1769614831.179488, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.179464, 1, 45
+1769614831.179543, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.179838, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.179913, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.259263, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.259558, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.179464, 1, 45
+1769614831.259663, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.259635, 1, 46
+1769614831.259712, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.259999, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.260058, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.339084, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.339454, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.259635, 1, 46
+1769614831.339527, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.339505, 1, 47
+1769614831.339559, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.339860, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.339927, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.419491, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.419918, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.339505, 1, 47
+1769614831.419995, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.419971, 1, 48
+1769614831.420047, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.420300, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.420385, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.499146, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.499520, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.419971, 1, 48
+1769614831.499598, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.499576, 1, 49
+1769614831.499660, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.499908, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.499935, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.579991, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.580323, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.499576, 1, 49
+1769614831.580451, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.580416, 1, 50
+1769614831.580506, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.580784, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.580821, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.659847, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.660323, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.580416, 1, 50
+1769614831.660407, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.660387, 1, 51
+1769614831.660462, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.660711, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.660777, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.740190, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.740623, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.660387, 1, 51
+1769614831.740715, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.740693, 1, 52
+1769614831.740762, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.741020, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.741089, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.821600, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.822024, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.740693, 1, 52
+1769614831.822115, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.822093, 1, 53
+1769614831.822172, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.822439, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.822508, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.901569, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.902085, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.822093, 1, 53
+1769614831.902166, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.902145, 1, 54
+1769614831.902219, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.902487, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.902637, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614831.981753, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614831.982172, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.902145, 1, 54
+1769614831.982269, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614831.982254, 1, 55
+1769614831.982313, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614831.982641, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614831.982716, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.062808, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.063219, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614831.982254, 1, 55
+1769614832.063345, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.063316, 1, 56
+1769614832.063410, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.063640, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.063671, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.142480, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.142865, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.063316, 1, 56
+1769614832.142981, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.142958, 1, 57
+1769614832.143032, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.143334, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.143401, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.222630, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.223008, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.142958, 1, 57
+1769614832.223123, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.223082, 1, 58
+1769614832.223205, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.223474, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.223575, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.302772, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.303183, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.223082, 1, 58
+1769614832.303255, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.303233, 1, 59
+1769614832.303303, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.303559, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.303589, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.382449, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.382726, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.303233, 1, 59
+1769614832.382806, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.382788, 1, 60
+1769614832.382843, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.383148, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.383228, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.462669, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.463099, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.382788, 1, 60
+1769614832.463215, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.463186, 1, 61
+1769614832.463294, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.463611, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.463670, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.542778, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.543146, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.463186, 1, 61
+1769614832.543315, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.543288, 1, 62
+1769614832.543372, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.543637, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.543709, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.623210, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.623599, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.543288, 1, 62
+1769614832.623683, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.623664, 1, 63
+1769614832.623729, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.624010, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.624072, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.702928, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.703254, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.623664, 1, 63
+1769614832.703327, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.703308, 1, 64
+1769614832.703374, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.703649, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.703708, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.783409, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.783902, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.703308, 1, 64
+1769614832.783982, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.783962, 1, 65
+1769614832.784018, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.784385, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.784412, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.862952, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.863302, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.783962, 1, 65
+1769614832.863404, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.863383, 1, 66
+1769614832.863457, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.863785, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.863848, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614832.943660, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614832.944139, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.863383, 1, 66
+1769614832.944227, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614832.944197, 1, 67
+1769614832.944260, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614832.944517, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614832.944619, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.023557, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.023902, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614832.944197, 1, 67
+1769614833.024017, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.023990, 1, 68
+1769614833.024068, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.024342, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.024403, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.104564, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.104909, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.023990, 1, 68
+1769614833.104990, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.104965, 1, 69
+1769614833.105021, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.105252, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.105328, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.184617, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.184976, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.104965, 1, 69
+1769614833.185068, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.185042, 1, 70
+1769614833.185118, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.185460, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.185501, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.264555, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.264971, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.185042, 1, 70
+1769614833.265079, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.265052, 1, 71
+1769614833.265119, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.265378, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.265406, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.345820, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.346123, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.265052, 1, 71
+1769614833.346195, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.346178, 1, 72
+1769614833.346233, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.346554, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.346584, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.426748, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.427496, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.346178, 1, 72
+1769614833.427606, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.427581, 1, 73
+1769614833.427649, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.428133, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.428168, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.509354, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.510583, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.427581, 1, 73
+1769614833.510712, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.510688, 1, 74
+1769614833.510767, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.511074, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.511168, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.591208, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.591681, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.510688, 1, 74
+1769614833.591768, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.591746, 1, 75
+1769614833.591807, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.592089, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.592176, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.671072, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.671568, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.591746, 1, 75
+1769614833.671637, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.671619, 1, 76
+1769614833.671683, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.671933, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.671962, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.751294, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.751852, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.671619, 1, 76
+1769614833.751929, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.751908, 1, 77
+1769614833.751971, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.752235, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.752267, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.830691, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.831065, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.751908, 1, 77
+1769614833.831172, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.831150, 1, 78
+1769614833.831229, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.831536, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.831568, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.911549, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.911962, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.831150, 1, 78
+1769614833.912034, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.912015, 1, 79
+1769614833.912082, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.912307, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.912389, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614833.990833, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614833.991171, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.912015, 1, 79
+1769614833.991248, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614833.991225, 1, 80
+1769614833.991287, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614833.991582, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614833.991660, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.071455, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.071777, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614833.991225, 1, 80
+1769614834.071852, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.071833, 1, 81
+1769614834.071889, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.072142, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.072175, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.152191, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.152641, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.071833, 1, 81
+1769614834.152716, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.152699, 1, 82
+1769614834.152753, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.152993, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.153031, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.233398, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.233709, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.152699, 1, 82
+1769614834.233798, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.233777, 1, 83
+1769614834.233842, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.234113, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.234153, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.314614, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.315467, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.233777, 1, 83
+1769614834.315619, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.315582, 1, 84
+1769614834.315675, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.315973, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.316070, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.395877, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.396321, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.315582, 1, 84
+1769614834.396400, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.396382, 1, 85
+1769614834.396437, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.396744, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.396816, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.476679, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.477186, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.396382, 1, 85
+1769614834.477296, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.477264, 1, 86
+1769614834.477361, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.477610, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.477659, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.557576, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.558059, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.477264, 1, 86
+1769614834.558138, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.558119, 1, 87
+1769614834.558175, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.558441, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.558481, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.638835, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.639330, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.558119, 1, 87
+1769614834.639411, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.639392, 1, 88
+1769614834.639453, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.639711, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.639739, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.718839, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.719410, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.639392, 1, 88
+1769614834.719494, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.719473, 1, 89
+1769614834.719528, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.719768, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.719799, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.799686, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.800115, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.719473, 1, 89
+1769614834.800220, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.800199, 1, 90
+1769614834.800270, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.800530, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.800564, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.880427, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.880768, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.800199, 1, 90
+1769614834.880870, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.880848, 1, 91
+1769614834.880917, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.881160, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.881188, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614834.960496, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614834.960791, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.880848, 1, 91
+1769614834.960887, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614834.960868, 1, 92
+1769614834.960935, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614834.961241, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614834.961284, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.041105, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.041465, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614834.960868, 1, 92
+1769614835.041571, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.041552, 1, 93
+1769614835.041619, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.041863, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.041894, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.121997, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.122505, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.041552, 1, 93
+1769614835.122586, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.122564, 1, 94
+1769614835.122633, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.122872, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.122899, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.203161, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.203667, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.122564, 1, 94
+1769614835.203777, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.203748, 1, 95
+1769614835.203841, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.204096, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.204130, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.283181, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.283483, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.203748, 1, 95
+1769614835.283583, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.283554, 1, 96
+1769614835.283622, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.283888, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.283963, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.363984, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.364342, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.283554, 1, 96
+1769614835.364424, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.364399, 1, 97
+1769614835.364462, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.364705, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.364773, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.443963, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.444360, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.364399, 1, 97
+1769614835.444471, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.444436, 1, 98
+1769614835.444546, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.444826, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.444884, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.524350, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.524740, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.444436, 1, 98
+1769614835.524813, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.524797, 1, 99
+1769614835.524848, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.525092, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.525179, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.604386, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.604841, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.524797, 1, 99
+1769614835.605017, EfficientNetv2 S Imagenette training, pipeline - train, run, start, 269953892152018081952942273980300333585, 1769614835.604907, 1, 100
+1769614835.605178, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, start
+1769614835.605440, EfficientNetv2 S Imagenette training, Load Imagenette samples from TorchVision Dataset, run, end
+1769614835.605517, EfficientNetv2 S Imagenette training, EfficientNet training, run, start
+1769614835.684956, EfficientNetv2 S Imagenette training, EfficientNet training, run, end
+1769614835.685309, EfficientNetv2 S Imagenette training, pipeline - train, run, end, 269953892152018081952942273980300333585, 1769614835.604907, 1, 100
