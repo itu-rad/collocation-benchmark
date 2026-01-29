@@ -1,4 +1,6 @@
 name: "test_anemll_generation"
+listeners:
+  - Macmon
 pipelines:
   - name: Anemll Generation Test
     inputs: [0]

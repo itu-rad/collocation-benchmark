@@ -3,13 +3,14 @@ import mlflow
 import sys
 
 import radt
+from radt.run.listeners import listeners
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 from multiprocessing import Process, Queue
 from pydantic_yaml import parse_yaml_raw_as
-
+from typing import Literal
 from utils.logger import Logger
 from loadgen import run_loadgen
 from utils.schemas import BenchmarkModel
@@ -37,6 +38,10 @@ def parse_args():
         help="radT experiment id",
     )
     return parser.parse_args()
+
+
+def convert_listeners(listeners: list[Literal[listeners.keys()]]) -> str:
+    return "+".join(listeners)
 
 
 def radt_entrypoint(args):
@@ -78,6 +83,8 @@ def main(args):
         yaml_config = file.read()
         benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
 
+    print("listeners", benchmark_config.listeners)
+
     # initialize a multiprocessing-safe logger
     logger_queue = Queue()
     logger = Logger(logger_queue, benchmark_config.name)
@@ -95,7 +102,7 @@ def main(args):
                 "Run": "",
                 "Devices": 0,
                 "Collocation": "",
-                "Listeners": "smi+top+dcgmi+iostat+free+macmon",
+                "Listeners": convert_listeners(benchmark_config.listeners),
                 "File": "main.py",
                 "Params": f"{args.config_file_path} -p {pipeline_id}",
             }
