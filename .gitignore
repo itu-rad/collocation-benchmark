@@ -4,9 +4,11 @@ efficientnet_example/
 data/
 tmp/
 stages/anemll/models/
+trace*.pftrace
 
 # VSCode
 .vscode
+.DS_Store
 
 
 # Byte-compiled / optimized / DLL files
