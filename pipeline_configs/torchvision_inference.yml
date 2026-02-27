@@ -1,4 +1,9 @@
 name: "EfficientNetv2 S Imagenette single inference pipeline benchmark"
+listeners:
+  - smi
+  - dcgmi
+  - top
+  - iostat
 pipelines:
   - name: EfficientNetv2 S Imagenette inference
     inputs: [0]

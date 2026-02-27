@@ -11,5 +11,5 @@ class BenchmarkModel(BaseModel):
     """
 
     pipelines: list[PipelineModel]
-    listeners: list[Literal[tuple(radt_listeners.keys())]] = ["TOP"]
+    listeners: list[Literal[tuple([x.lower() for x in radt_listeners.keys()])]] = ["top"]
     name: str = "Unknown benchmark name"

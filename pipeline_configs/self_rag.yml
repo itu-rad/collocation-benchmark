@@ -1,4 +1,9 @@
 name: "Self RAG"
+listeners:
+  - smi
+  - dcgmi
+  - top
+  - iostat
 pipelines:
   - name: Self RAG
     inputs: [0]

@@ -1,4 +1,9 @@
 name: "test_mlx_generation"
+listeners:
+  - smi
+  - dcgmi
+  - top
+  - iostat
 pipelines:
   - name: MLX Generation Test
     inputs: [0]

@@ -1,4 +1,9 @@
 name: "phi3_alpaca_generation_huggingface"
+listeners:
+  - smi
+  - dcgmi
+  - top
+  - iostat
 pipelines:
   - name: RAG generation
     inputs: [0]

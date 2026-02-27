@@ -102,7 +102,7 @@ def main(args):
                 "Run": "",
                 "Devices": 0,
                 "Collocation": "",
-                "Listeners": convert_listeners(benchmark_config.listeners),
+                "Listeners": convert_listeners(benchmark_config.listeners).lower(),
                 "File": "main.py",
                 "Params": f"{args.config_file_path} -p {pipeline_id}",
             }
