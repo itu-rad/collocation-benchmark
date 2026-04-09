@@ -122,28 +122,30 @@ class Pipeline:
         """
         This method continuously checks all output queues for new queries. It performs
         non-blocking retrieval from the queues and processes the queries if available.
-        If a terminating character (None) is received, the method returns and stops
-        further processing. Additionally, it logs the end of the pipeline execution
+        If a terminating character (None) is received, the method increments the finished
+        outputs counter and keeps processing if there are any remaining outputs. Additionally,
+        it logs the end of the pipeline execution
         and sets the provided event to signal completion.
 
         Args:
             event (Event): An event object used to signal the completion of the pipeline.
         """
 
-        while True:
+        finished_outputs = 0
+        total_outputs = len(self._output_queues)
+
+        while finished_outputs < total_outputs:
             for output_queue in self._output_queues:
-                # non-blocking retrieval from the queues
-                # if the queue is empty, simply move on
                 try:
-                    new_query: Query | None = output_queue.get(timeout=0.1)
+                    new_query = output_queue.get(timeout=0.1)
                 except Empty:
                     continue
 
-                # if terminating character is received, return
-                if not new_query:
-                    return
+                if new_query is None:
+                    finished_outputs += 1
+                    print(f"[Pipeline] Output queue finished ({finished_outputs}/{total_outputs})")
+                    continue
 
-                # log the end of pipeline execution
                 self._logger.info(
                     "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
                     self.name,
@@ -185,16 +187,6 @@ class Pipeline:
 
             # check if done
             if query is None:
-                # only terminate once all of the queries have been processed in order to protect the graph from circular dependencies during termination
-                while queries_sent > self.queries_processed:
-                    # print(
-                    #     "Waiting for all queries to be processed, sent: %d, processed: %d",
-                    #     queries_sent,
-                    #     self.queries_processed,
-                    # )
-                    # wait for a query to be processed
-                    event.wait(0.1)
-
                 # if so, send the termination element to the following stages and join the threads
                 for input_queue in self._input_queues:
                     input_queue.put(None)
