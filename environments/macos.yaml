@@ -23,6 +23,14 @@ dependencies:
     - pydantic_yaml
     - outlines
 
+    ## multimodal VQA case study
+    - faiss-cpu
+    - coremltools
+    - Pillow
+
+    ## Rosetta RAG case study
+    - chromadb
+
     ## macos specific
     - mlx
     - mlx-lm
