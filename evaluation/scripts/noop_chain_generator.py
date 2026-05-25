@@ -2,7 +2,7 @@ import yaml
 import argparse
 import os
 
-def generate_noop_pipeline(depth: int, payload_size: int, mode: str, output_file: str):
+def generate_noop_pipeline(depth: int, payload_size: int, mode: str, max_queries: int, output_file: str):
     stages = []
     
     # Determine stage component based on mode
@@ -41,7 +41,7 @@ def generate_noop_pipeline(depth: int, payload_size: int, mode: str, output_file
         "loadgen": {
             "component": "loadgen.OfflineLoadScheduler",
             "queue_depth": 100,
-            "max_queries": 10,
+            "max_queries": max_queries,
             "timeout": 60000,
             "config": {
                 "rate": 0
@@ -65,6 +65,7 @@ if __name__ == "__main__":
     parser.add_argument("--depths", nargs="+", type=int, default=[10], help="List of pipeline depths to generate.")
     parser.add_argument("--sizes", nargs="+", type=int, default=[0], help="List of payload sizes in bytes.")
     parser.add_argument("--modes", nargs="+", type=str, default=['ref'], choices=['ref', 'copy'], help="List of modes (ref or copy).")
+    parser.add_argument("--max-queries", type=int, default=100, help="Maximum number of queries to run.")
     parser.add_argument("--out-dir", type=str, default="collocation-benchmark/evaluation/configs/noop", help="Output directory for YAML files.")
     
     args = parser.parse_args()
@@ -76,4 +77,4 @@ if __name__ == "__main__":
             for mode in args.modes:
                 suffix = f"_depth_{depth}_size_{size}_mode_{mode}"
                 filename = os.path.join(args.out_dir, f"noop{suffix}.yml")
-                generate_noop_pipeline(depth, size, mode, filename)
+                generate_noop_pipeline(depth, size, mode, args.max_queries, filename)
