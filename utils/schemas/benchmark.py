@@ -1,5 +1,8 @@
 from pydantic import BaseModel
+from typing import Literal
 from .pipeline import PipelineModel
+
+from radt.run.listeners import listeners as radt_listeners
 
 
 class BenchmarkModel(BaseModel):
@@ -8,4 +11,5 @@ class BenchmarkModel(BaseModel):
     """
 
     pipelines: list[PipelineModel]
+    listeners: list[Literal[tuple([x.lower() for x in radt_listeners.keys()])]] = ["top"]
     name: str = "Unknown benchmark name"

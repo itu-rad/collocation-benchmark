@@ -1,4 +1,9 @@
 name: "PHI3 Mini Alpaca generation pipeline"
+listeners:
+  - smi
+  - dcgmi
+  - top
+  - iostat
 pipelines:
   - name: Alpaca generation
     inputs: [0]

@@ -1,4 +1,9 @@
 name: "PHI3 Mini Alpaca finetuning pipeline"
+listeners:
+  - smi
+  - dcgmi
+  - top
+  - iostat
 pipelines:
   - name: Alpaca finetuning
     inputs: [0]

@@ -4,9 +4,11 @@ efficientnet_example/
 data/
 tmp/
 stages/anemll/models/
+trace*.pftrace
 
 # VSCode
 .vscode
+.DS_Store
 
 # Claude Code per-user overrides
 .claude/settings.local.json
