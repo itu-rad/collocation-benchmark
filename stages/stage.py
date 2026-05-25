@@ -128,7 +128,8 @@ class Stage:
     def get_input_queue(self, idx: int) -> Queue:
         """Get the input queue for the given stage ID.
 
-        If the queue does not exist yet, it is created.
+        If the queue does not exist yet, it is created. Honors
+        `max_input_queue_depth` from the stage config (None / 0 == unbounded).
 
         Args:
             id (int): The ID of the stage to get the input queue for.
@@ -137,7 +138,8 @@ class Stage:
             queue.Queue: The input queue for the given stage ID.
         """
         if idx not in self._input_queues:
-            self._input_queues[idx] = PeekableQueue()
+            maxsize = self._stage_config.max_input_queue_depth or 0
+            self._input_queues[idx] = PeekableQueue(maxsize=maxsize)
         return self._input_queues[idx]
 
     def dispatch_call(

@@ -14,3 +14,7 @@ class PipelineModel(BaseModel):
     loadgen: LoadGenModel
     stages: list[StageModel]
     name: str = "Unknown pipeline name"
+    # When True, the pipeline waits for the previous query to fully exit
+    # before admitting the next one. Useful for isolating per-query
+    # latency / removing inter-query bandwidth contention.
+    serialize_queries: bool = False
