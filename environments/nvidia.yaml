@@ -3,6 +3,10 @@ dependencies:
   - python=3.10
   - pip
   - pip:
+    # On DGX Spark (GB10, sm_121 / aarch64) the default `torch` wheel is
+    # CPU-only. Pull the CUDA build from the cu130 index instead.
+    - --extra-index-url https://download.pytorch.org/whl/cu130
+
     # RadT dependencies
     - tensorflow
     - tensorboardX
@@ -13,8 +17,8 @@ dependencies:
 
     # benchmark dependencies
     ## general
-    - torch
-    - torchvision
+    - torch==2.10.0+cu130       # GB10: CUDA build (plain `torch` is CPU-only here)
+    - torchvision==0.25.0+cu130
     - torchaudio
     - torchtune
     - transformers
@@ -23,6 +27,9 @@ dependencies:
     - pydantic_yaml
     - outlines
     - tf-keras # for compatibility between transformers and tensorflow
+
+    ## Rosetta RAG case study
+    - chromadb
 
     ## nvidia specific
     # possibly TensorRT or other NVIDIA/CUDA specific dependencies
