@@ -153,6 +153,12 @@ class TorchVisionClassification(Stage):
                 loss.backward()
                 self._optimizer.step()
 
+        # Synchronize GPU to ensure timing captures actual hardware execution
+        if self._device.type == "mps":
+            torch.mps.synchronize()
+        elif self._device.type == "cuda":
+            torch.cuda.synchronize()
+
         # query.data = [
         #     pred == label for pred, label in zip(preds.tolist(), labels.tolist())
         # ]

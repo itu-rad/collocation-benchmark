@@ -7,10 +7,10 @@ pipelines:
     loadgen:
       component: loadgen.OfflineLoadScheduler
       queue_depth: 10
-      max_queries: 100
-      timeout: 30000
+      max_queries: 1000
+      timeout: 300000
       config:
-        rate: 10 # average #requests/sec
+        rate: 0 # average #requests/sec
     stages:
       - name: Load Imagenette samples from TorchVision Dataset
         id: 0
