@@ -1,4 +1,5 @@
 from stages.stage import Stage, log_phase
+from utils.chat import apply_chat_template_safe
 from utils.schemas.query import Query
 
 
@@ -32,18 +33,20 @@ class QuestionRewriterFormatter(Stage):
         chat = [
             {
                 "role": "system",
-                "content": """
-                You a question re-writer that converts an input question to a better version that is optimized \n 
-                for sqlite retrieval. Look at the input and try to reason about the underlying semantic intent / meaning.
-                """,
+                "content": (
+                    "You are a question re-writer that converts an input question into a better version "
+                    "optimised for document retrieval. Output ONLY the rewritten question on a single line. "
+                    "Do not add quotation marks, preamble, explanation, lists, or any other text."
+                ),
             },
             {
                 "role": "user",
-                "content": f"Here is the initial question: \n\n {orig_query} \n Formulate an improved question.",
+                "content": f"Question: {orig_query}\n\nRewritten question:",
             },
         ]
 
-        query.data = self._tokenizer.apply_chat_template(
+        query.data = apply_chat_template_safe(
+            self._tokenizer,
             chat,
             tokenize=False,
             add_generation_prompt=True,

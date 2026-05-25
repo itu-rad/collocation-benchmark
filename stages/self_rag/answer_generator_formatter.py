@@ -1,4 +1,5 @@
 from stages.stage import Stage, log_phase
+from utils.chat import apply_chat_template_safe
 from utils.schemas.query import Query
 
 
@@ -33,7 +34,7 @@ class AnswerGeneratorFormatter(Stage):
             {
                 "role": "system",
                 "content": """
-                You are an answer rewriter. Given the retrieved data from a sqlite database and the original query, output an answer to the query supported by the retrieved data. \n 
+                You are an answer rewriter. Given the retrieved documents and the original query, output an answer to the query supported by the retrieved documents. \n
                 Give a concise answer.
                 """,
             },
@@ -43,7 +44,8 @@ class AnswerGeneratorFormatter(Stage):
             },
         ]
 
-        query.data = self._tokenizer.apply_chat_template(
+        query.data = apply_chat_template_safe(
+            self._tokenizer,
             chat,
             tokenize=False,
             add_generation_prompt=True,
