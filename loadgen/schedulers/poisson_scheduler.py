@@ -59,37 +59,42 @@ class PoissonLoadScheduler(LoadScheduler):
 
         counter = 0
 
-        while counter < self.max_queries:
-            for split_name, split_batches in self.dataset_splits.items():
-                for batch_idx in range(split_batches):
-                    # look for a timeout
-                    if self.stop:
-                        break
+        try:
+            while counter < self.max_queries:
+                for split_name, split_batches in self.dataset_splits.items():
+                    for batch_idx in range(split_batches):
+                        # look for a timeout
+                        if self.stop:
+                            break
 
-                    # sleep until it's time to generate next query
-                    sleep(self.offsets[counter])
+                        # sleep until it's time to generate next query
+                        sleep(self.offsets[counter])
 
-                    # push the query onto queue
-                    queue.put_nowait(
-                        Query(
-                            split=split_name,
-                            batch=batch_idx,
-                            query_submitted_timestamp=time(),
+                        # push the query onto queue (BLOCKING — if entry
+                        # queue is full because pipeline is in serialize
+                        # mode or just slow, wait for the consumer instead
+                        # of crashing with queue.Full).
+                        queue.put(
+                            Query(
+                                split=split_name,
+                                batch=batch_idx,
+                                query_submitted_timestamp=time(),
+                            )
                         )
-                    )
 
-                    # increament the counter and check that it does not exceed max_queries
-                    counter += 1
-                    if counter >= self.max_queries:
-                        self.stop = True
+                        # increament the counter and check that it does not exceed max_queries
+                        counter += 1
+                        if counter >= self.max_queries:
+                            self.stop = True
+                            break
+                    # propagate the stop signal
+                    if self.stop:
                         break
                 # propagate the stop signal
                 if self.stop:
                     break
-            # propagate the stop signal
-            if self.stop:
-                break
-
-        # push termination element onto the queue
-        queue.put(None)
-        self.timer.cancel()
+        finally:
+            # Always send terminator and cancel the timer, even on exception,
+            # so downstream stages don't hang and we don't leak a Timer thread.
+            queue.put(None)
+            self.timer.cancel()
