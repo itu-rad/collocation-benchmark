@@ -41,9 +41,9 @@ def analyze_file(filepath, step_name):
         
         latency_ms = (durations["timestamp"] - durations["prev_timestamp"]) * 1000
         
-        # Skip warmup (first 5 batches)
-        if len(latency_ms) > 5:
-            return latency_ms.iloc[5:]
+        # Skip warmup (first 100 batches)
+        if len(latency_ms) > 100:
+            return latency_ms.iloc[100:]
         return latency_ms
         
     except Exception as e:
