@@ -166,9 +166,50 @@ the monolith three *separate* calls (grade, then answer, then check) on the same
 win is from smaller-but-focused models or simply from not cramming three jobs
 into one JSON. That control is the recommended next step.
 
+### Follow-up: context-aware (multi-hop) query rewrite + evidence accumulation
+
+The first multi-hop run used the stock self-RAG rewriter, which only
+*paraphrases the original question* and never sees the retrieved documents, and
+a retriever that *replaces* documents each hop. That can't bridge — e.g. for
+*"The director of Big Stone Gap is based in what NY city?"* hop 1 finds the
+film (→ director Adriana Trigiani) but a paraphrase just re-retrieves the same
+page. So we made the rewriter **condition on the accumulated documents** (emit a
+focused follow-up/bridge query) and the retriever **accumulate evidence across
+hops** while keeping grading/answering anchored to the user's true question.
+
+The mechanism verifiably works: for *"Were Scott Derrickson and Ed Wood of the
+same nationality?"* the rewriter now emits the bridge query
+**"Scott Derrickson nationality"**, and documents accumulate 5 → 8–10 across
+hops. **But end-to-end golden hits did not move:**
+
+| HotpotQA | context-blind rewrite | context-aware + accumulation |
+|---|---:|---:|
+| T1 Monolith (9B) | 5 / 30 | 5 / 30 |
+| T2 Decomposed (3×4B) | 10 / 30 | 10 / 30 |
+
+**Why the fix didn't help (quantified from the traces):** the second hop fired
+on only **~1–2 of 30 questions** (just 1/30 accumulated >5 docs). The self-RAG
+control flow only triggers a rewrite/re-retrieval when the grader scores the
+hop-1 documents *"not relevant"* — but for multi-hop questions those documents
+are *partially* relevant (they cover one of the two entities), so the grader
+says "yes" and the pipeline **answers prematurely**, before any bridge query can
+fire. Context-aware rewriting is therefore **necessary but not sufficient**: the
+binding constraint is the control flow, not the rewrite prompt. A relevance-
+gated retry loop is not a multi-hop planner.
+
+**What would actually move multi-hop accuracy** (recommended next step): a
+control flow that performs multi-hop deliberately rather than as a fallback —
+e.g. decompose the question into sub-questions up front, or always run ≥2
+retrieval hops (Self-Ask / IRCoT proper) so the bridge query and accumulated
+evidence are *used on every question*, not just the ~5 % the grader happens to
+reject. The decomposition-vs-monolith verdict is unchanged by this (T2 still
+doubles T1).
+
 ---
 *Factoid cells `rosetta_t{1,2}_{pipe,serial}`; multi-hop cells
-`rosetta_hotpot_t{1,2}_{pipe,serial}` (30 q each). Machine timing reports:
-`rosetta_bandwidth_report.md` (factoid), `rosetta_hotpot_bandwidth_report.md`
-(multi-hop). Per-stage counts/time-share extracted from the run traces via
+`rosetta_hotpot_t{1,2}_{pipe,serial}` (context-blind rewrite) and
+`rosetta_hotpot2_t{1,2}_{pipe,serial}` (context-aware rewrite + accumulation),
+30 q each. Machine timing reports: `rosetta_bandwidth_report.md` (factoid),
+`rosetta_hotpot_bandwidth_report.md`, `rosetta_hotpot2_bandwidth_report.md`.
+Per-stage counts/time-share extracted from the run traces via
 `evaluation/scripts/bandwidth_analysis.py`'s parser.*
