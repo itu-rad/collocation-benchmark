@@ -33,6 +33,15 @@ class ChromaRetriever(Stage):
         self._corpus_text_column = corpus_config.get("text_column", "output")
         self._corpus_max_docs = corpus_config.get("max_docs", 5000)
 
+        # Optional: build the corpus from a HotpotQA-style nested context
+        # field (gold + distractor passages shipped with each question)
+        # instead of a flat text column. Enables multi-hop datasets whose
+        # supporting passages aren't in a standalone corpus.
+        self._corpus_context_column = corpus_config.get("context_column", None)
+        self._corpus_max_context_rows = corpus_config.get(
+            "max_context_rows", self._corpus_max_docs
+        )
+
         # Retrieval configuration
         self._top_k = self.extra_config.get("top_k", 3)
         self._collection_name = self.extra_config.get(
@@ -41,6 +50,31 @@ class ChromaRetriever(Stage):
 
         self._collection = None
         self._client = None
+
+    def _build_context_corpus(self, raw_dataset) -> list[str]:
+        """Build a corpus from a HotpotQA-style nested context field.
+
+        Each row's ``<context_column>["context"]`` holds
+        ``{"title": [...], "sentences": [[...], ...]}``; flatten each entry
+        into a ``"title\\n<joined sentences>"`` passage and dedup across rows
+        so the gold supporting passages sit alongside many distractors.
+        """
+        n_rows = min(len(raw_dataset), self._corpus_max_context_rows)
+        seen: set[str] = set()
+        documents: list[str] = []
+        for i in range(n_rows):
+            meta = raw_dataset[i][self._corpus_context_column]
+            ctx = meta.get("context") if isinstance(meta, dict) else None
+            if not ctx:
+                continue
+            titles = ctx.get("title", [])
+            sentences = ctx.get("sentences", [])
+            for title, sents in zip(titles, sentences):
+                passage = f"{title}\n{''.join(sents)}".strip()
+                if passage and passage not in seen:
+                    seen.add(passage)
+                    documents.append(passage)
+        return documents[: self._corpus_max_docs]
 
     @log_phase
     def prepare(self):
@@ -64,11 +98,14 @@ class ChromaRetriever(Stage):
             raw_dataset = raw_dataset.select(range(self._corpus_max_docs))
 
         # Extract text documents and filter out empty entries
-        documents = [
-            doc
-            for doc in raw_dataset[self._corpus_text_column]
-            if doc and len(doc.strip()) > 0
-        ]
+        if self._corpus_context_column:
+            documents = self._build_context_corpus(raw_dataset)
+        else:
+            documents = [
+                doc
+                for doc in raw_dataset[self._corpus_text_column]
+                if doc and len(doc.strip()) > 0
+            ]
 
         print(f"ChromaRetriever: indexing {len(documents)} documents into ChromaDB")
 
