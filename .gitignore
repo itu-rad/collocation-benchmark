@@ -20,6 +20,10 @@ evaluation/results/*.jsonl
 evaluation/results/*.md
 evaluation/results/*.tex
 
+# MLflow tracking store (created by radt_entrypoint on every pipeline run).
+mlruns/
+mlflow.db
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
