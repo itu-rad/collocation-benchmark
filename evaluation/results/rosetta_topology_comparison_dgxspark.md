@@ -118,8 +118,57 @@ monolith on a single saturated accelerator; (2) a fairer capacity-matched
 comparison would pit the 9B monolith against a 9B-class generator in the
 decomposed pipeline, isolating "specialization" from "smaller model."
 
+## Difficulty escalation: multi-hop (HotpotQA)
+
+The factoid result above is a tie on quality, so the obvious follow-up: on a
+*harder* task that needs multi-step reasoning, does the 9B monolith's extra
+capacity finally beat the 3×4B decomposition? We re-ran both topologies on
+**HotpotQA** (FlashRAG `hotpotqa` dev, 30 q), with the Chroma corpus built from
+each question's gold + distractor contexts (~3k passages) and `top_k: 5` so the
+supporting passages are *retrievable but buried*. Same models, same pipelines.
+
+| HotpotQA multi-hop | Answered | Golden hits | Serial latency | Throughput (pipe) | Wall (pipe) |
+|---|---:|---:|---:|---:|---:|
+| **T1 Monolith (9B)** | 10 / 30 | **5 / 30 (17 %)** | 6.32 s | 0.160 q/s | 187.4 s |
+| **T2 Decomposed (3×4B)** | **20 / 30** | **10 / 30 (33 %)** | **4.75 s** | **0.199 q/s** | **150.4 s** |
+
+**The harder task did not flip the verdict — it widened the decomposition
+lead.** Decomposition scored **2× the golden hits** (33 % vs 17 %), answered
+**2× as many** questions, *and* stayed faster (−25 % serial latency, +24 %
+throughput). The capacity hypothesis is not supported here.
+
+**Why the monolith loses on hard inputs (from the traces):** the monolith does
+relevance-grade + answer + hallucination-check in **one forced-JSON call**, and
+on multi-hop questions it becomes brittle — it grades the retrieved context
+"not relevant" and bails. It hit *"no satisfactory answer after retries"* on
+**19 / 30** questions (vs answering only 10). The decomposed pipeline's
+**dedicated 4B relevance grader** — a narrow yes/no prompt — is more robust at
+that one sub-task, so it passed 20/30 through to a dedicated answerer. The
+benefit of decomposition is therefore **specialization/robustness, not just
+speed**, and it *grows* with task difficulty: a small model doing one narrow job
+well beats a larger model juggling three jobs in a single structured pass.
+
+Easy → hard summary (golden hits / 30):
+
+| | T1 Monolith 9B | T2 Decomposed 3×4B |
+|---|---:|---:|
+| Factoid (rag-mini-wikipedia) | 20 | 20–21 |
+| Multi-hop (HotpotQA) | **5** | **10** |
+
+**Caveats.** (1) Absolute scores are low — multi-hop RAG is genuinely hard for
+4–9B models and the golden-hit metric is strict substring overlap. (2) Single-
+shot `top_k: 5` retrieval caps recall on 2-hop questions, so scores are partly
+retrieval-limited (the self-RAG rewrite loop only partly compensates). (3) This
+compares "one model, *combined* task" vs "three models, *split* tasks" — it
+conflates specialization with prompt decomposition. A cleaner control would give
+the monolith three *separate* calls (grade, then answer, then check) on the same
+9B, or pit the 9B monolith against 9B-class specialists, to isolate whether the
+win is from smaller-but-focused models or simply from not cramming three jobs
+into one JSON. That control is the recommended next step.
+
 ---
-*Cells `rosetta_t{1,2}_{pipe,serial}` (30 q each); per-cell timing also in the
-machine report `rosetta_bandwidth_report.md`. Per-stage counts/time-share
-extracted from the run traces via `evaluation/scripts/bandwidth_analysis.py`'s
-parser.*
+*Factoid cells `rosetta_t{1,2}_{pipe,serial}`; multi-hop cells
+`rosetta_hotpot_t{1,2}_{pipe,serial}` (30 q each). Machine timing reports:
+`rosetta_bandwidth_report.md` (factoid), `rosetta_hotpot_bandwidth_report.md`
+(multi-hop). Per-stage counts/time-share extracted from the run traces via
+`evaluation/scripts/bandwidth_analysis.py`'s parser.*
