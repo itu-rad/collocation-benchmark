@@ -60,6 +60,42 @@ DEVICE_MAP = {
     "vqa_b_serial": {**_BASE_DEVICE_MAP, "CLIP vision encoder (CoreML)": "ANE"},
 }
 
+# Rosetta RAG on a single unified-memory GPU (DGX Spark / GB10): every LLM
+# stage runs on cuda; dataloader / retriever / formatters / routers / capture
+# are CPU-side. T1 = 9B monolith, T2 = 3x 4B distributed. Stage names match
+# pipeline_configs/rosetta_topology_{1,2}_cuda.yml verbatim.
+_ROSETTA_T1_DEVICE_MAP = {
+    "Question dataloader": "CPU",
+    "Document retriever": "CPU",
+    "Monolith formatter": "CPU",
+    "Monolith LLM": "cuda",
+    "Monolith router": "CPU",
+    "End stage": "CPU",
+    "Query rewrite formatter": "CPU",
+    "Query rewrite LLM": "cuda",
+}
+_ROSETTA_T2_DEVICE_MAP = {
+    "Question dataloader": "CPU",
+    "Document retriever": "CPU",
+    "Retrieval grader formatter": "CPU",
+    "Grader LLM": "cuda",
+    "Grade router": "CPU",
+    "Answer generator formatter": "CPU",
+    "Generator LLM": "cuda",
+    "Hallucination grader formatter": "CPU",
+    "Hallucination LLM": "cuda",
+    "Hallucination router": "CPU",
+    "Query rewrite formatter": "CPU",
+    "Query rewrite LLM": "cuda",
+    "End stage": "CPU",
+}
+DEVICE_MAP.update({
+    "rosetta_t1_pipe":   _ROSETTA_T1_DEVICE_MAP,
+    "rosetta_t1_serial": _ROSETTA_T1_DEVICE_MAP,
+    "rosetta_t2_pipe":   _ROSETTA_T2_DEVICE_MAP,
+    "rosetta_t2_serial": _ROSETTA_T2_DEVICE_MAP,
+})
+
 DEFAULT_PAIR = ("vqa_mps_monolith", "vqa_heterogeneous_split")
 DEFAULT_CELLS = ("vqa_a_pipe", "vqa_a_serial", "vqa_b_pipe", "vqa_b_serial")
 
@@ -275,18 +311,23 @@ def _render_pair_comparison(label_a: str, trace_a: PipelineTrace,
     return out
 
 
-def _render_2x2(cells: dict[str, PipelineTrace]) -> str:
+def _render_2x2(cells: dict[str, PipelineTrace],
+                pipeline_key_for: dict[str, str] | None = None) -> str:
     """Render full 2x2 report from 4 cell traces.
 
     cells keys: "A_pipelined", "A_serial", "B_pipelined", "B_serial"
-    Mapping from cell labels → pipeline_key in DEVICE_MAP.
+    pipeline_key_for maps those cell labels → the DEVICE_MAP key (i.e. the
+    actual run label/stem). Defaults to the VQA labels for backward
+    compatibility; callers pass the real stems so non-VQA experiments
+    (e.g. Rosetta) resolve their own DEVICE_MAP entries.
     """
-    pipeline_key_for = {
-        "A_pipelined": "vqa_a_pipe",
-        "A_serial":    "vqa_a_serial",
-        "B_pipelined": "vqa_b_pipe",
-        "B_serial":    "vqa_b_serial",
-    }
+    if pipeline_key_for is None:
+        pipeline_key_for = {
+            "A_pipelined": "vqa_a_pipe",
+            "A_serial":    "vqa_a_serial",
+            "B_pipelined": "vqa_b_pipe",
+            "B_serial":    "vqa_b_serial",
+        }
     out: list[str] = ["# Bandwidth-contention 2×2 experiment", ""]
     out.append(
         "Four cells across two orthogonal axes:\n\n"
@@ -399,27 +440,34 @@ def main() -> None:
     parser.add_argument("--cells", action="store_true",
                         help=f"Run the full 4-cell 2x2 report on default labels "
                              f"({', '.join(DEFAULT_CELLS)}).")
+    parser.add_argument("--out", default=None,
+                        help=f"Output report path (default: {REPORT_PATH}). "
+                             f"Use a distinct path for non-VQA experiments so "
+                             f"the default report is not clobbered.")
     args = parser.parse_args()
+    out_path = Path(args.out) if args.out else REPORT_PATH
 
     if args.cells or len(args.pipelines) == 4:
         labels = args.pipelines if len(args.pipelines) == 4 else list(DEFAULT_CELLS)
         cell_keys = ("A_pipelined", "A_serial", "B_pipelined", "B_serial")
         cells: dict[str, PipelineTrace] = {}
+        pipeline_key_for: dict[str, str] = {}
         for cell, stem in zip(cell_keys, labels):
+            pipeline_key_for[cell] = stem
             path = RESULTS_DIR / f"{stem}.csv"
             try:
                 cells[cell] = _parse_csv(path)
             except FileNotFoundError:
                 print(f"  WARN: missing {path}")
-        report = _render_2x2(cells)
+        report = _render_2x2(cells, pipeline_key_for)
     else:
         keys = args.pipelines if len(args.pipelines) == 2 else list(DEFAULT_PAIR)
         trace_a = _parse_csv(RESULTS_DIR / f"{keys[0]}.csv")
         trace_b = _parse_csv(RESULTS_DIR / f"{keys[1]}.csv")
         report = _render_simple_pair(trace_a, trace_b, keys[0], keys[1])
 
-    REPORT_PATH.write_text(report, encoding="utf-8")
-    print(f"Wrote {REPORT_PATH}")
+    out_path.write_text(report, encoding="utf-8")
+    print(f"Wrote {out_path}")
 
 
 if __name__ == "__main__":
