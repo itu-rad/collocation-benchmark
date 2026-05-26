@@ -99,6 +99,11 @@ DEVICE_MAP.update({
     "rosetta_hotpot_t1_serial": _ROSETTA_T1_DEVICE_MAP,
     "rosetta_hotpot_t2_pipe":   _ROSETTA_T2_DEVICE_MAP,
     "rosetta_hotpot_t2_serial": _ROSETTA_T2_DEVICE_MAP,
+    # HotpotQA with context-aware (multi-hop) rewrite + evidence accumulation.
+    "rosetta_hotpot2_t1_pipe":   _ROSETTA_T1_DEVICE_MAP,
+    "rosetta_hotpot2_t1_serial": _ROSETTA_T1_DEVICE_MAP,
+    "rosetta_hotpot2_t2_pipe":   _ROSETTA_T2_DEVICE_MAP,
+    "rosetta_hotpot2_t2_serial": _ROSETTA_T2_DEVICE_MAP,
 })
 
 DEFAULT_PAIR = ("vqa_mps_monolith", "vqa_heterogeneous_split")

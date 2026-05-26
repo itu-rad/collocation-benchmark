@@ -130,33 +130,39 @@ class ChromaRetriever(Stage):
     def run(self, query: Query) -> dict[int, Query]:
         """Retrieve top_k documents for the incoming query."""
 
-        # Handle both string and list inputs
+        # Handle both string and list inputs. On a retry loop-back the query
+        # rewriter sends a follow-up ("bridge") query in query.data; use it
+        # for retrieval but do NOT overwrite original_query — downstream
+        # grading/answering must stay anchored to the user's true question
+        # (kept stable in context["question"] by the dataloader).
         question = query.data
         if isinstance(question, list):
             question = question[0]
-
-        # Handle retries: on loopback from query rewriter, the rewritten
-        # question arrives in query.data
-        if query.context.get("is_retry", False):
-            query.context["is_retry"] = False
-            query.context["original_query"] = question
+        query.context.pop("is_retry", None)
 
         # Query ChromaDB
         results = self._collection.query(
             query_texts=[question],
             n_results=self._top_k,
         )
+        new_docs = results["documents"][0] if results["documents"] else []
 
-        # Extract retrieved documents as a list of strings
-        retrieved_docs = results["documents"][0] if results["documents"] else []
+        # Accumulate evidence across hops (dedup, preserve order) so the answer
+        # stage sees documents gathered from every hop, not just the latest —
+        # required for multi-hop questions whose answer spans several passages.
+        accumulated = list(query.context.get("retrieved_documents", []) or [])
+        seen = set(accumulated)
+        for doc in new_docs:
+            if doc not in seen:
+                seen.add(doc)
+                accumulated.append(doc)
 
-        # Store retrieved documents in context for downstream stages
-        query.context["retrieved_documents"] = retrieved_docs
-        query.data = retrieved_docs
+        query.context["retrieved_documents"] = accumulated
+        query.data = accumulated
 
         print(
             f"ChromaRetriever: query='{question[:80]}...' "
-            f"retrieved {len(retrieved_docs)} docs"
+            f"retrieved {len(new_docs)} new, {len(accumulated)} accumulated docs"
         )
 
         output = {idx: query for idx in self.output_queues}
