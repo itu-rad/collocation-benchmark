@@ -139,36 +139,29 @@ python evaluation/scripts/bandwidth_analysis.py --cells
 Reports land at `results/verification_report.md` and
 `results/bandwidth_report.md`.
 
-### 4. Rosetta RAG — topology comparison (monolith vs distributed)
+### 4. Self-RAG — topology comparison (monolith vs decomposed)
 
-**What:** two Self-RAG pipelines over `rag-datasets/rag-mini-wikipedia`
-that do the same job with different decompositions:
+**What:** two Self-RAG pipelines that do the same job with different
+decompositions:
 
-- **T1 — Monolith** (`rosetta_topology_1.yml`): one Qwen 3.5-9B-OptiQ
-  does grade + answer + hallucination-check in a single JSON pass.
-  `MonolithRouter` validates the JSON and optionally loops through a
-  query rewriter.
-- **T2 — Pipeline** (`rosetta_topology_2.yml`): four distinct
-  Qwen 3.5-4B-OptiQ instances split the same job into separate stages
-  (grader / generator / hallucination-grader / rewriter), sharing models
-  across stages via `llm_mlx`'s `depends_on_id` where possible.
+- **Monolith:** one large model (9B) does grade + answer +
+  hallucination-check in a single JSON pass. `MonolithRouter` validates
+  the JSON and optionally loops through a query rewriter.
+- **Decomposed:** three distinct 4B instances split the same job into
+  separate stages (grader / generator / hallucination-grader, with the
+  rewriter sharing the grader), overlapping under load.
 
-Both run on the same dataset with the same loadgen config; the
-comparison is whether decomposition gives or costs anything.
+The comparison is whether decomposition gives or costs anything, on both
+an easy (factoid) and a hard (multi-hop HotpotQA) task. Configs, run
+commands, and the results report all live in
+[`self_rag/`](self_rag/README.md).
 
-**Run:**
+**Run:** see [`self_rag/README.md`](self_rag/README.md) for the full
+per-experiment commands. In brief, from the repo root:
 ```bash
-python main.py pipeline_configs/rosetta_topology_1.yml -p 0
-python main.py pipeline_configs/rosetta_topology_2.yml -p 0
-```
-
-Each emits `rosetta_monolith.csv` / `rosetta_pipeline.csv` and the
-matching `_outputs.jsonl`.
-
-**Analyze:**
-```bash
+python main.py evaluation/self_rag/configs/factoid_monolith_cuda.yml   -p 0 --label self_rag_monolith
+python main.py evaluation/self_rag/configs/factoid_decomposed_cuda.yml -p 0 --label self_rag_decomposed
 python evaluation/scripts/verify_complex_cases.py
-# (use bandwidth_analysis.py with custom labels to compare T1 vs T2)
 ```
 
 ## How runs work in general
@@ -203,7 +196,7 @@ same directory. No execution side effects beyond the report file.
 | `breakdown_overhead.py` | any single pipeline CSV | per-stage breakdown |
 | `true_overhead_analysis.py` | one pipeline + one baseline CSV | choreo-vs-baseline delta |
 | `generate_latex_results.py` | depth-sweep CSVs + monolith CSVs | `depth_scaling_results.tex`, `monolithic_comparison.tex` |
-| `verify_complex_cases.py` | `<pipeline>_outputs.jsonl` (VQA, Rosetta) | `verification_report.md` |
+| `verify_complex_cases.py` | `<pipeline>_outputs.jsonl` (VQA, Self-RAG) | `verification_report.md` |
 | `bandwidth_analysis.py` | timing CSVs (default `vqa_a/b_pipe/serial`) | `bandwidth_report.md` |
 
 ## Output format reference

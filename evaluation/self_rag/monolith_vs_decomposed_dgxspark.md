@@ -1,4 +1,4 @@
-# Rosetta RAG: monolith vs decomposition — DGX Spark (GB10)
+# Self-RAG: monolith vs decomposition — DGX Spark (GB10)
 
 **Question.** For an agentic RAG pipeline, is it better to use **one large model
 that does everything** (relevance grade + answer + hallucination check in a
@@ -12,8 +12,8 @@ generation — genuinely on GB10, not CPU).
 
 | Topology | Models | Per query |
 |---|---|---|
-| **T1 — Monolith** | 1× `Qwen/Qwen3.5-9B` (rewriter shares it) | one 256-tok structured call that grades + answers + self-checks |
-| **T2 — Decomposed** | 3× `Qwen/Qwen3.5-4B` (grader · generator · hallucination; rewriter shares the grader) | grade (16 tok) → generate (256 tok) → hallucination-check (16 tok) → optional rewrite (128 tok) + retry |
+| **Monolith** | 1× `Qwen/Qwen3.5-9B` (rewriter shares it) | one 256-tok structured call that grades + answers + self-checks |
+| **Decomposed** | 3× `Qwen/Qwen3.5-4B` (grader · generator · hallucination; rewriter shares the grader) | grade (16 tok) → generate (256 tok) → hallucination-check (16 tok) → optional rewrite (128 tok) + retry |
 
 Workload: 30 questions from `rag-mini-wikipedia`, top-3 ChromaDB retrieval,
 self-RAG retry loop (max 2). Each topology run both pipelined
@@ -21,17 +21,17 @@ self-RAG retry loop (max 2). Each topology run both pipelined
 
 ## Headline comparison
 
-| Metric | T1 Monolith (9B) | T2 Decomposed (3×4B) | Winner |
+| Metric | Monolith (9B) | Decomposed (3×4B) | Winner |
 |---|---:|---:|:---:|
-| Per-query latency (serial) | 8.76 s | **5.15 s** (−41 %) | T2 |
-| Throughput (pipelined) | 0.115 q/s | **0.214 q/s** (+86 %) | T2 |
-| Throughput (serial) | 0.114 q/s | **0.194 q/s** (+70 %) | T2 |
-| Wall time, 30 q (pipe / serial) | 260 / 263 s | **140 / 154 s** | T2 |
+| Per-query latency (serial) | 8.76 s | **5.15 s** (−41 %) | Decomp |
+| Throughput (pipelined) | 0.115 q/s | **0.214 q/s** (+86 %) | Decomp |
+| Throughput (serial) | 0.114 q/s | **0.194 q/s** (+70 %) | Decomp |
+| Wall time, 30 q (pipe / serial) | 260 / 263 s | **140 / 154 s** | Decomp |
 | Golden-answer hits | 20 / 30 | **20–21 / 30** | tie |
-| Answered (not retry-exhausted) | 25 / 30 | **27–28 / 30** | T2 |
-| LLM calls per query | **1.13** | 3.1 | T1 |
-| Model memory (BF16) | **~18 GB** | ~24 GB | T1 |
-| Distinct models to operate | **1** | 3 | T1 |
+| Answered (not retry-exhausted) | 25 / 30 | **27–28 / 30** | Decomp |
+| LLM calls per query | **1.13** | 3.1 | Mono |
+| Model memory (BF16) | **~18 GB** | ~24 GB | Mono |
+| Distinct models to operate | **1** | 3 | Mono |
 
 Answer **quality is a tie** (same golden-hit rate), and decomposition actually
 *answered slightly more* questions (fewer hit the retry ceiling). So at this
@@ -41,14 +41,14 @@ task difficulty the smaller models lose nothing on accuracy.
 
 This is the mechanism behind the result — measured from the run traces:
 
-**T1 Monolith (pipelined):**
+**Monolith (pipelined):**
 | Stage | runs | busy | % wall |
 |---|---:|---:|---:|
 | Monolith LLM (9B, 256 tok) | 32 | 260.2 s | **100 %** |
 | Query-rewrite LLM (retries) | 2 | 13.8 s | 5 % |
 | all CPU stages (retrieve/format/route) | — | 3.5 s | ~1 % |
 
-**T2 Decomposed (pipelined):**
+**Decomposed (pipelined):**
 | Stage | runs | busy | % wall |
 |---|---:|---:|---:|
 | Generator LLM (4B, 256 tok) | 30 | 138.1 s | **98 %** |
@@ -68,7 +68,7 @@ cost moved from a 9B to a 4B and the extra calls are tiny and overlap-able.
 
 ## Behaviour under load (pipelined vs serial)
 
-| | T1 Monolith | T2 Decomposed |
+| | Monolith | Decomposed |
 |---|---:|---:|
 | Stage concurrency, mean / max (pipe) | 1.07 / 3 | **1.49 / 5** |
 | Throughput gain from pipelining | +1.0 % | **+10.0 %** |
@@ -129,8 +129,8 @@ supporting passages are *retrievable but buried*. Same models, same pipelines.
 
 | HotpotQA multi-hop | Answered | Golden hits | Serial latency | Throughput (pipe) | Wall (pipe) |
 |---|---:|---:|---:|---:|---:|
-| **T1 Monolith (9B)** | 10 / 30 | **5 / 30 (17 %)** | 6.32 s | 0.160 q/s | 187.4 s |
-| **T2 Decomposed (3×4B)** | **20 / 30** | **10 / 30 (33 %)** | **4.75 s** | **0.199 q/s** | **150.4 s** |
+| **Monolith (9B)** | 10 / 30 | **5 / 30 (17 %)** | 6.32 s | 0.160 q/s | 187.4 s |
+| **Decomposed (3×4B)** | **20 / 30** | **10 / 30 (33 %)** | **4.75 s** | **0.199 q/s** | **150.4 s** |
 
 **The harder task did not flip the verdict — it widened the decomposition
 lead.** Decomposition scored **2× the golden hits** (33 % vs 17 %), answered
@@ -150,7 +150,7 @@ well beats a larger model juggling three jobs in a single structured pass.
 
 Easy → hard summary (golden hits / 30):
 
-| | T1 Monolith 9B | T2 Decomposed 3×4B |
+| | Monolith 9B | Decomposed 3×4B |
 |---|---:|---:|
 | Factoid (rag-mini-wikipedia) | 20 | 20–21 |
 | Multi-hop (HotpotQA) | **5** | **10** |
@@ -184,8 +184,8 @@ hops. **But end-to-end golden hits did not move:**
 
 | HotpotQA | context-blind rewrite | context-aware + accumulation |
 |---|---:|---:|
-| T1 Monolith (9B) | 5 / 30 | 5 / 30 |
-| T2 Decomposed (3×4B) | 10 / 30 | 10 / 30 |
+| Monolith (9B) | 5 / 30 | 5 / 30 |
+| Decomposed (3×4B) | 10 / 30 | 10 / 30 |
 
 **Why the fix didn't help (quantified from the traces):** the second hop fired
 on only **~1–2 of 30 questions** (just 1/30 accumulated >5 docs). The self-RAG
@@ -202,14 +202,13 @@ control flow that performs multi-hop deliberately rather than as a fallback —
 e.g. decompose the question into sub-questions up front, or always run ≥2
 retrieval hops (Self-Ask / IRCoT proper) so the bridge query and accumulated
 evidence are *used on every question*, not just the ~5 % the grader happens to
-reject. The decomposition-vs-monolith verdict is unchanged by this (T2 still
-doubles T1).
+reject. The decomposition-vs-monolith verdict is unchanged by this (decomposition
+still doubles the monolith).
 
 ---
-*Factoid cells `rosetta_t{1,2}_{pipe,serial}`; multi-hop cells
-`rosetta_hotpot_t{1,2}_{pipe,serial}` (context-blind rewrite) and
-`rosetta_hotpot2_t{1,2}_{pipe,serial}` (context-aware rewrite + accumulation),
-30 q each. Machine timing reports: `rosetta_bandwidth_report.md` (factoid),
-`rosetta_hotpot_bandwidth_report.md`, `rosetta_hotpot2_bandwidth_report.md`.
+*Factoid cells `self_rag_factoid_{monolith,decomposed}_{pipe,serial}`; multi-hop
+cells `self_rag_multihop_{monolith,decomposed}_{pipe,serial}`, 30 q each (configs
+in `evaluation/self_rag/configs/`). The two multi-hop rows above (context-blind
+vs context-aware rewrite) are successive code states of the same configs.
 Per-stage counts/time-share extracted from the run traces via
 `evaluation/scripts/bandwidth_analysis.py`'s parser.*
