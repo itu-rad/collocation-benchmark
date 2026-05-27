@@ -60,11 +60,11 @@ DEVICE_MAP = {
     "vqa_b_serial": {**_BASE_DEVICE_MAP, "CLIP vision encoder (CoreML)": "ANE"},
 }
 
-# Rosetta RAG on a single unified-memory GPU (DGX Spark / GB10): every LLM
+# Self-RAG on a single unified-memory GPU (DGX Spark / GB10): every LLM
 # stage runs on cuda; dataloader / retriever / formatters / routers / capture
-# are CPU-side. T1 = 9B monolith, T2 = 3x 4B distributed. Stage names match
-# pipeline_configs/rosetta_topology_{1,2}_cuda.yml verbatim.
-_ROSETTA_T1_DEVICE_MAP = {
+# are CPU-side. Monolith = 9B single model, Decomposed = 3x 4B specialists.
+# Stage names match evaluation/self_rag/configs/*_cuda.yml verbatim.
+_SELFRAG_MONOLITH_DEVICE_MAP = {
     "Question dataloader": "CPU",
     "Document retriever": "CPU",
     "Monolith formatter": "CPU",
@@ -74,7 +74,7 @@ _ROSETTA_T1_DEVICE_MAP = {
     "Query rewrite formatter": "CPU",
     "Query rewrite LLM": "cuda",
 }
-_ROSETTA_T2_DEVICE_MAP = {
+_SELFRAG_DECOMPOSED_DEVICE_MAP = {
     "Question dataloader": "CPU",
     "Document retriever": "CPU",
     "Retrieval grader formatter": "CPU",
@@ -90,20 +90,17 @@ _ROSETTA_T2_DEVICE_MAP = {
     "End stage": "CPU",
 }
 DEVICE_MAP.update({
-    "rosetta_t1_pipe":   _ROSETTA_T1_DEVICE_MAP,
-    "rosetta_t1_serial": _ROSETTA_T1_DEVICE_MAP,
-    "rosetta_t2_pipe":   _ROSETTA_T2_DEVICE_MAP,
-    "rosetta_t2_serial": _ROSETTA_T2_DEVICE_MAP,
-    # HotpotQA multi-hop variant — identical stage→device layout.
-    "rosetta_hotpot_t1_pipe":   _ROSETTA_T1_DEVICE_MAP,
-    "rosetta_hotpot_t1_serial": _ROSETTA_T1_DEVICE_MAP,
-    "rosetta_hotpot_t2_pipe":   _ROSETTA_T2_DEVICE_MAP,
-    "rosetta_hotpot_t2_serial": _ROSETTA_T2_DEVICE_MAP,
-    # HotpotQA with context-aware (multi-hop) rewrite + evidence accumulation.
-    "rosetta_hotpot2_t1_pipe":   _ROSETTA_T1_DEVICE_MAP,
-    "rosetta_hotpot2_t1_serial": _ROSETTA_T1_DEVICE_MAP,
-    "rosetta_hotpot2_t2_pipe":   _ROSETTA_T2_DEVICE_MAP,
-    "rosetta_hotpot2_t2_serial": _ROSETTA_T2_DEVICE_MAP,
+    # Factoid (rag-mini-wikipedia) — configs factoid_{monolith,decomposed}_cuda.yml
+    "self_rag_factoid_monolith_pipe":     _SELFRAG_MONOLITH_DEVICE_MAP,
+    "self_rag_factoid_monolith_serial":   _SELFRAG_MONOLITH_DEVICE_MAP,
+    "self_rag_factoid_decomposed_pipe":   _SELFRAG_DECOMPOSED_DEVICE_MAP,
+    "self_rag_factoid_decomposed_serial": _SELFRAG_DECOMPOSED_DEVICE_MAP,
+    # Multi-hop (HotpotQA) — configs multihop_{monolith,decomposed}_cuda.yml.
+    # Identical stage→device layout as factoid.
+    "self_rag_multihop_monolith_pipe":     _SELFRAG_MONOLITH_DEVICE_MAP,
+    "self_rag_multihop_monolith_serial":   _SELFRAG_MONOLITH_DEVICE_MAP,
+    "self_rag_multihop_decomposed_pipe":   _SELFRAG_DECOMPOSED_DEVICE_MAP,
+    "self_rag_multihop_decomposed_serial": _SELFRAG_DECOMPOSED_DEVICE_MAP,
 })
 
 DEFAULT_PAIR = ("vqa_mps_monolith", "vqa_heterogeneous_split")
@@ -329,7 +326,7 @@ def _render_2x2(cells: dict[str, PipelineTrace],
     pipeline_key_for maps those cell labels → the DEVICE_MAP key (i.e. the
     actual run label/stem). Defaults to the VQA labels for backward
     compatibility; callers pass the real stems so non-VQA experiments
-    (e.g. Rosetta) resolve their own DEVICE_MAP entries.
+    (e.g. Self-RAG) resolve their own DEVICE_MAP entries.
     """
     if pipeline_key_for is None:
         pipeline_key_for = {

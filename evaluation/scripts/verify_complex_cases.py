@@ -1,4 +1,4 @@
-"""Semantic verification of the VQA and Rosetta complex case pipelines.
+"""Semantic verification of the VQA and Self-RAG complex case pipelines.
 
 Reads `evaluation/results/<pipeline>_outputs.jsonl` produced by the
 TerminalCapture sidecar stage, applies per-pipeline pass/fail criteria,
@@ -7,7 +7,7 @@ and writes a Markdown report to
 
 Usage:
     python evaluation/scripts/verify_complex_cases.py            # all pipelines
-    python evaluation/scripts/verify_complex_cases.py rosetta_monolith
+    python evaluation/scripts/verify_complex_cases.py self_rag_monolith
 """
 
 from __future__ import annotations
@@ -30,8 +30,8 @@ REPORT_PATH = RESULTS_DIR / "verification_report.md"
 PIPELINES = {
     "vqa_mps_monolith":         {"label": "VQA Mapping A (MPS monolith)",      "family": "vqa"},
     "vqa_heterogeneous_split":  {"label": "VQA Mapping B (heterogeneous CoreML)", "family": "vqa"},
-    "rosetta_monolith":         {"label": "Rosetta Topology 1 (monolith)",     "family": "rosetta"},
-    "rosetta_pipeline":         {"label": "Rosetta Topology 2 (pipeline)",     "family": "rosetta"},
+    "self_rag_monolith":        {"label": "Self-RAG Monolith",                 "family": "self_rag"},
+    "self_rag_decomposed":      {"label": "Self-RAG Decomposed",               "family": "self_rag"},
 }
 
 # Hard-failure markers placed in final_data by routers when retries exhaust.
@@ -266,7 +266,7 @@ def main():
                 out.append(f"- {n}")
             out.append("")
 
-    # Cross-pipeline parity: A vs B for VQA, T1 vs T2 for Rosetta.
+    # Cross-pipeline parity: A vs B for VQA, monolith vs decomposed for Self-RAG.
     out.append("## Cross-pipeline parity")
     out.append("")
     if {"vqa_mps_monolith", "vqa_heterogeneous_split"}.issubset(summaries):
@@ -279,13 +279,13 @@ def main():
             f"compared {compared} shared questions; "
             f"{matched} matched (Jaccard ≥ 0.5); avg Jaccard = {avg:.2f}"
         )
-    if {"rosetta_monolith", "rosetta_pipeline"}.issubset(summaries):
+    if {"self_rag_monolith", "self_rag_decomposed"}.issubset(summaries):
         compared, matched, avg = _parity(
-            summaries["rosetta_monolith"]["rows"],
-            summaries["rosetta_pipeline"]["rows"],
+            summaries["self_rag_monolith"]["rows"],
+            summaries["self_rag_decomposed"]["rows"],
         )
         out.append(
-            f"- **Rosetta T1 vs T2** (different decomposition, different model sizes — moderate parity expected):  "
+            f"- **Self-RAG monolith vs decomposed** (different decomposition, different model sizes — moderate parity expected):  "
             f"compared {compared} shared questions; "
             f"{matched} matched (Jaccard ≥ 0.5); avg Jaccard = {avg:.2f}"
         )
