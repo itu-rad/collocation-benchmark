@@ -1,26 +1,22 @@
-name: "Rosetta Stone - Topology Comparison (CUDA)"
-listeners:
-  - dcgmi
-  - top
-  - iostat
+name: "Self-RAG Monolith (factoid, MLX)"
 pipelines:
-  - name: Rosetta Monolith
+  - name: Self-RAG Monolith
     inputs: [0]
     outputs: [5]
     dataset_stage_id: 0
     loadgen:
       component: loadgen.PoissonLoadScheduler
-      queue_depth: 50
-      max_queries: 30
+      queue_depth: 5
+      max_queries: 5
       timeout: 600000
       config:
-        rate: 4.0
+        rate: 0.1
     stages:
       # --- Stage 0: Question DataLoader ---
       - name: Question dataloader
         id: 0
         outputs: [1]
-        component: stages.rosetta_rag.RosettaDataLoader
+        component: stages.self_rag.SelfRAGDataLoader
         config:
           batch_size: 1
           dataset:
@@ -34,7 +30,7 @@ pipelines:
       - name: Document retriever
         id: 1
         outputs: [2]
-        component: stages.rosetta_rag.ChromaRetriever
+        component: stages.self_rag.ChromaRetriever
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
         config:
           corpus_dataset:
@@ -44,13 +40,13 @@ pipelines:
             text_column: passage
             max_docs: 3200
           top_k: 3
-          collection_name: rosetta_monolith_corpus
+          collection_name: self_rag_factoid_monolith_corpus
 
       # --- Stage 2: Monolith Prompt Formatter ---
       - name: Monolith formatter
         id: 2
         outputs: [3]
-        component: stages.rosetta_rag.MonolithFormatter
+        component: stages.self_rag.MonolithFormatter
         config:
           tokenizer_stage_id: 3
 
@@ -58,22 +54,18 @@ pipelines:
       - name: Monolith LLM
         id: 3
         outputs: [4]
-        component: stages.llm_huggingface.Inference
+        component: stages.llm_mlx.Inference
         config:
-          dtype: torch.bfloat16
-          device: cuda
           model:
-            name: Qwen/Qwen3.5-9B
-            quantize: false
+            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
             gen_kwargs:
-              max_new_tokens: 256
-              do_sample: false
+              max_tokens: 256
 
       # --- Stage 4: Monolith Router (JSON parser + routing) ---
       - name: Monolith router
         id: 4
         outputs: [5, 6]
-        component: stages.rosetta_rag.MonolithRouter
+        component: stages.self_rag.MonolithRouter
         config:
           accept_stage_id: 5
           retry_stage_id: 6
@@ -86,7 +78,7 @@ pipelines:
         component: stages.TerminalCapture
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
 
-      # --- Stage 6: Query Rewrite Formatter (reuse self_rag) ---
+      # --- Stage 6: Query Rewrite Formatter ---
       - name: Query rewrite formatter
         id: 6
         outputs: [7]
@@ -98,14 +90,10 @@ pipelines:
       - name: Query rewrite LLM
         id: 7
         outputs: [1]
-        component: stages.llm_huggingface.Inference
+        component: stages.llm_mlx.Inference
         config:
-          dtype: torch.bfloat16
-          device: cuda
           model:
-            name: Qwen/Qwen3.5-9B
-            quantize: false
+            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
             gen_kwargs:
-              max_new_tokens: 128
-              do_sample: false
+              max_tokens: 128
           depends_on_id: 3

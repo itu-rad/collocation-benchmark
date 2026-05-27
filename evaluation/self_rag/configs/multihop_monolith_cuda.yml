@@ -1,52 +1,57 @@
-name: "Rosetta Stone - Topology Comparison"
+name: "Self-RAG Monolith (multi-hop / HotpotQA, CUDA)"
+listeners:
+  - dcgmi
+  - top
+  - iostat
 pipelines:
-  - name: Rosetta Monolith
+  - name: Self-RAG Monolith (multi-hop)
     inputs: [0]
     outputs: [5]
     dataset_stage_id: 0
     loadgen:
       component: loadgen.PoissonLoadScheduler
-      queue_depth: 5
-      max_queries: 5
+      queue_depth: 50
+      max_queries: 30
       timeout: 600000
       config:
-        rate: 0.1
+        rate: 4.0
     stages:
-      # --- Stage 0: Question DataLoader ---
+      # --- Stage 0: Question DataLoader (HotpotQA multi-hop) ---
       - name: Question dataloader
         id: 0
         outputs: [1]
-        component: stages.rosetta_rag.RosettaDataLoader
+        component: stages.self_rag.SelfRAGDataLoader
         config:
           batch_size: 1
           dataset:
-            name: rag-datasets/rag-mini-wikipedia
-            subset: question-answer
-            split: test
+            name: RUC-NLPIR/FlashRAG_datasets
+            subset: hotpotqa
+            split: dev
             question_column: question
-            answers_column: answer
+            answers_column: golden_answers
 
-      # --- Stage 1: ChromaDB Retriever ---
+      # --- Stage 1: ChromaDB Retriever (corpus from HotpotQA contexts) ---
       - name: Document retriever
         id: 1
         outputs: [2]
-        component: stages.rosetta_rag.ChromaRetriever
+        component: stages.self_rag.ChromaRetriever
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
         config:
           corpus_dataset:
-            name: rag-datasets/rag-mini-wikipedia
-            subset: text-corpus
-            split: passages
-            text_column: passage
-            max_docs: 3200
-          top_k: 3
-          collection_name: rosetta_monolith_corpus
+            name: RUC-NLPIR/FlashRAG_datasets
+            subset: hotpotqa
+            split: dev
+            context_column: metadata   # build corpus from gold+distractor contexts
+            max_context_rows: 300       # harvest contexts from first 300 questions
+            max_docs: 20000
+          top_k: 5
+          collection_name: self_rag_multihop_monolith_corpus
 
       # --- Stage 2: Monolith Prompt Formatter ---
       - name: Monolith formatter
         id: 2
         outputs: [3]
-        component: stages.rosetta_rag.MonolithFormatter
+        component: stages.self_rag.MonolithFormatter
         config:
           tokenizer_stage_id: 3
 
@@ -54,18 +59,22 @@ pipelines:
       - name: Monolith LLM
         id: 3
         outputs: [4]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+            name: Qwen/Qwen3.5-9B
+            quantize: false
             gen_kwargs:
-              max_tokens: 256
+              max_new_tokens: 256
+              do_sample: false
 
       # --- Stage 4: Monolith Router (JSON parser + routing) ---
       - name: Monolith router
         id: 4
         outputs: [5, 6]
-        component: stages.rosetta_rag.MonolithRouter
+        component: stages.self_rag.MonolithRouter
         config:
           accept_stage_id: 5
           retry_stage_id: 6
@@ -78,7 +87,7 @@ pipelines:
         component: stages.TerminalCapture
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
 
-      # --- Stage 6: Query Rewrite Formatter (reuse self_rag) ---
+      # --- Stage 6: Query Rewrite Formatter ---
       - name: Query rewrite formatter
         id: 6
         outputs: [7]
@@ -90,10 +99,14 @@ pipelines:
       - name: Query rewrite LLM
         id: 7
         outputs: [1]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+            name: Qwen/Qwen3.5-9B
+            quantize: false
             gen_kwargs:
-              max_tokens: 128
+              max_new_tokens: 128
+              do_sample: false
           depends_on_id: 3

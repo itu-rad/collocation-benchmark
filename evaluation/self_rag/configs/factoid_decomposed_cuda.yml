@@ -1,22 +1,26 @@
-name: "Rosetta Stone - Topology Comparison"
+name: "Self-RAG Decomposed (factoid, CUDA)"
+listeners:
+  - dcgmi
+  - top
+  - iostat
 pipelines:
-  - name: Rosetta Pipeline
+  - name: Self-RAG Decomposed
     inputs: [0]
     outputs: [12]
     dataset_stage_id: 0
     loadgen:
       component: loadgen.PoissonLoadScheduler
-      queue_depth: 5
-      max_queries: 5
+      queue_depth: 50
+      max_queries: 30
       timeout: 600000
       config:
-        rate: 0.1
+        rate: 4.0
     stages:
       # --- Stage 0: Question DataLoader ---
       - name: Question dataloader
         id: 0
         outputs: [1]
-        component: stages.rosetta_rag.RosettaDataLoader
+        component: stages.self_rag.SelfRAGDataLoader
         config:
           batch_size: 1
           dataset:
@@ -30,7 +34,7 @@ pipelines:
       - name: Document retriever
         id: 1
         outputs: [2]
-        component: stages.rosetta_rag.ChromaRetriever
+        component: stages.self_rag.ChromaRetriever
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
         config:
           corpus_dataset:
@@ -40,9 +44,9 @@ pipelines:
             text_column: passage
             max_docs: 3200
           top_k: 3
-          collection_name: rosetta_pipeline_corpus
+          collection_name: self_rag_factoid_decomposed_corpus
 
-      # --- Stage 2: Retrieval Grader Formatter (reuse self_rag) ---
+      # --- Stage 2: Retrieval Grader Formatter ---
       - name: Retrieval grader formatter
         id: 2
         outputs: [3]
@@ -54,14 +58,18 @@ pipelines:
       - name: Grader LLM
         id: 3
         outputs: [4]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-4B-OptiQ-4bit
+            name: Qwen/Qwen3.5-4B
+            quantize: false
             gen_kwargs:
-              max_tokens: 16
+              max_new_tokens: 16
+              do_sample: false
 
-      # --- Stage 4: Grade Router (reuse self_rag BinaryRouter) ---
+      # --- Stage 4: Grade Router ---
       - name: Grade router
         id: 4
         outputs: [5, 10, 12]
@@ -73,7 +81,7 @@ pipelines:
           no_stage_id: 10
           end_stage_id: 12
 
-      # --- Stage 5: Answer Generator Formatter (reuse self_rag) ---
+      # --- Stage 5: Answer Generator Formatter ---
       - name: Answer generator formatter
         id: 5
         outputs: [6]
@@ -86,14 +94,18 @@ pipelines:
       - name: Generator LLM
         id: 6
         outputs: [7]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-4B-OptiQ-4bit
+            name: Qwen/Qwen3.5-4B
+            quantize: false
             gen_kwargs:
-              max_tokens: 256
+              max_new_tokens: 256
+              do_sample: false
 
-      # --- Stage 7: Hallucination Grader Formatter (reuse self_rag) ---
+      # --- Stage 7: Hallucination Grader Formatter ---
       - name: Hallucination grader formatter
         id: 7
         outputs: [8]
@@ -105,14 +117,18 @@ pipelines:
       - name: Hallucination LLM
         id: 8
         outputs: [9]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-4B-OptiQ-4bit
+            name: Qwen/Qwen3.5-4B
+            quantize: false
             gen_kwargs:
-              max_tokens: 16
+              max_new_tokens: 16
+              do_sample: false
 
-      # --- Stage 9: Hallucination Router (reuse self_rag BinaryRouter) ---
+      # --- Stage 9: Hallucination Router ---
       - name: Hallucination router
         id: 9
         outputs: [5, 12, 12]
@@ -124,7 +140,7 @@ pipelines:
           no_stage_id: 12
           end_stage_id: 12
 
-      # --- Stage 10: Query Rewrite Formatter (reuse self_rag) ---
+      # --- Stage 10: Query Rewrite Formatter ---
       - name: Query rewrite formatter
         id: 10
         outputs: [11]
@@ -136,12 +152,16 @@ pipelines:
       - name: Query rewrite LLM
         id: 11
         outputs: [1]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-4B-OptiQ-4bit
+            name: Qwen/Qwen3.5-4B
+            quantize: false
             gen_kwargs:
-              max_tokens: 128
+              max_new_tokens: 128
+              do_sample: false
           depends_on_id: 3
 
       # --- Stage 12: End Stage (capture sidecar) ---
