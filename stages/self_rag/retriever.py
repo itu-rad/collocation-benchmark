@@ -19,7 +19,7 @@ class ChromaRetriever(Stage):
             text_column: output
             max_docs: 5000
           top_k: 3
-          collection_name: rosetta_corpus
+          collection_name: self_rag_corpus
     """
 
     def __init__(self, stage_config, pipeline_config):
@@ -45,7 +45,7 @@ class ChromaRetriever(Stage):
         # Retrieval configuration
         self._top_k = self.extra_config.get("top_k", 3)
         self._collection_name = self.extra_config.get(
-            "collection_name", "rosetta_corpus"
+            "collection_name", "self_rag_corpus"
         )
 
         self._collection = None

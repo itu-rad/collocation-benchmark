@@ -28,7 +28,7 @@ dependencies:
     - outlines
     - tf-keras # for compatibility between transformers and tensorflow
 
-    ## Rosetta RAG case study
+    ## Self-RAG case study
     - chromadb
 
     ## nvidia specific

@@ -28,7 +28,7 @@ dependencies:
     - coremltools
     - Pillow
 
-    ## Rosetta RAG case study
+    ## Self-RAG case study
     - chromadb
 
     ## macos specific

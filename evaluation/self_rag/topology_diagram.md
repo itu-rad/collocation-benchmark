@@ -13,7 +13,7 @@ subgraph Stages
 {
 &emsp;'id': 0,
 &emsp;'name': 'Question dataloader',
-&emsp;'component': 'stages.rosetta_rag.RosettaDataLoader',
+&emsp;'component': 'stages.self_rag.SelfRAGDataLoader',
 &emsp;'outputs': [
 &emsp;&emsp;1
 &emsp;],
@@ -35,7 +35,7 @@ style 0 text-align:left
 {
 &emsp;'id': 1,
 &emsp;'name': 'Document retriever',
-&emsp;'component': 'stages.rosetta_rag.ChromaRetriever',
+&emsp;'component': 'stages.self_rag.ChromaRetriever',
 &emsp;'outputs': [
 &emsp;&emsp;2
 &emsp;],
@@ -49,7 +49,7 @@ style 0 text-align:left
 &emsp;&emsp;&emsp;'max_docs': 5000
 &emsp;&emsp;},
 &emsp;&emsp;'top_k': 3,
-&emsp;&emsp;'collection_name': 'rosetta_pipeline_corpus'
+&emsp;&emsp;'collection_name': 'self_rag_decomposed_corpus'
 &emsp;}
 }`"]
 style 1 text-align:left

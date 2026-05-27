@@ -5,8 +5,8 @@ from stages.stage import Stage, log_phase
 from utils.schemas import Query
 
 
-class RosettaDataLoader(Stage):
-    """Configurable question dataloader for the Rosetta Stone case study.
+class SelfRAGDataLoader(Stage):
+    """Configurable question dataloader for the Self-RAG case study.
 
     Loads a HuggingFace dataset specified in YAML config and serves
     questions in batches. Fully parametrized — no hardcoded dataset paths.
@@ -62,7 +62,7 @@ class RosettaDataLoader(Stage):
 
         self._dataset = raw
         print(
-            f"RosettaDataLoader: loaded {len(self._dataset)} samples "
+            f"SelfRAGDataLoader: loaded {len(self._dataset)} samples "
             f"from {self._dataset_name}/{self._dataset_subset or ''}"
         )
 
