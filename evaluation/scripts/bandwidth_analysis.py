@@ -318,6 +318,70 @@ def _render_pair_comparison(label_a: str, trace_a: PipelineTrace,
     return out
 
 
+def _framing_for(pipeline_key_for: dict[str, str]) -> dict:
+    """Pick report prose based on which experiment the run stems belong to.
+
+    VQA compares two hardware *mappings* of one model (bandwidth-contention
+    thesis: A = MPS monolith, B = CLIP-on-ANE heterogeneous). Self-RAG compares
+    two *topologies* (A = monolith, B = decomposed). The numbers are identical
+    either way; only the axis description, pair interpretations, and verdict
+    wording change so each report reads sensibly on its own.
+    """
+    stems = " ".join(pipeline_key_for.values())
+    if "self_rag" in stems:
+        return {
+            "kind": "selfrag",
+            "title": "# Self-RAG monolith vs decomposed — 2×2 experiment",
+            "intro": (
+                "- **Topology**: A = monolith (one large model does "
+                "grade+answer+check) · B = decomposed (smaller specialists, "
+                "one sub-task each)\n"
+                "- **Schedule**: pipelined = multiple queries in flight · "
+                "serial = `serialize_queries: True` (one query end-to-end at a time)\n"
+            ),
+            "pairs": [
+                ("A_serial", "A_pipelined",
+                 "Same topology, pipelining ON vs OFF — the monolith is one model "
+                 "behind one mutex, so overlapping queries can't share the GPU; "
+                 "expect little throughput gain."),
+                ("B_serial", "B_pipelined",
+                 "Same topology, pipelining ON vs OFF — the decomposed pipeline has "
+                 "independent model instances, so a cheap grade/check for one query "
+                 "can overlap the generator for another; pipelining may lift throughput."),
+                ("A_pipelined", "B_pipelined",
+                 "Pipelined throughput: monolith vs decomposed."),
+                ("A_serial", "B_serial",
+                 "Serial latency: monolith vs decomposed — which topology answers a "
+                 "single query faster, with no queueing."),
+            ],
+        }
+    return {
+        "kind": "vqa",
+        "title": "# Bandwidth-contention 2×2 experiment",
+        "intro": (
+            "- **Mapping**: A = all stages on MPS · B = CLIP on ANE/CoreML, LLM on MPS\n"
+            "- **Schedule**: pipelined = multiple queries in flight · "
+            "serial = `serialize_queries: True` (one query end-to-end at a time)\n"
+        ),
+        "pairs": [
+            ("A_serial", "A_pipelined",
+             "Same hardware, pipelining ON vs OFF — contention cost on the MPS-monolith mapping. "
+             "If pipelining helps (B faster), parallelism payoff > contention cost. "
+             "If it hurts/no-change, MPS is fully saturated already."),
+            ("B_serial", "B_pipelined",
+             "Same hardware, pipelining ON vs OFF — contention cost on the heterogeneous mapping. "
+             "CLIP on ANE and LLM on MPS *could* run in parallel; the question is whether shared "
+             "unified memory lets them."),
+            ("A_pipelined", "B_pipelined",
+             "Pipelined throughput: monolith vs heterogeneous. The bandwidth thesis predicts "
+             "B ≈ A here (heterogeneity advantage collapses under shared-memory contention)."),
+            ("A_serial", "B_serial",
+             "Serial latency: monolith vs heterogeneous. Without contention, B should win by "
+             "the CLIP-on-ANE-vs-MPS speed difference."),
+        ],
+    }
+
+
 def _render_2x2(cells: dict[str, PipelineTrace],
                 pipeline_key_for: dict[str, str] | None = None) -> str:
     """Render full 2x2 report from 4 cell traces.
@@ -335,13 +399,9 @@ def _render_2x2(cells: dict[str, PipelineTrace],
             "B_pipelined": "vqa_b_pipe",
             "B_serial":    "vqa_b_serial",
         }
-    out: list[str] = ["# Bandwidth-contention 2×2 experiment", ""]
-    out.append(
-        "Four cells across two orthogonal axes:\n\n"
-        "- **Mapping**: A = all stages on MPS · B = CLIP on ANE/CoreML, LLM on MPS\n"
-        "- **Schedule**: pipelined = multiple queries in flight · "
-        "serial = `serialize_queries: True` (one query end-to-end at a time)\n"
-    )
+    framing = _framing_for(pipeline_key_for)
+    out: list[str] = [framing["title"], ""]
+    out.append("Four cells across two orthogonal axes:\n\n" + framing["intro"])
 
     out.append("## Per-cell summary")
     out.append("")
@@ -351,23 +411,7 @@ def _render_2x2(cells: dict[str, PipelineTrace],
 
     out.append("## Pairwise comparisons")
     out.append("")
-    pairs = [
-        ("A_serial", "A_pipelined",
-         "Same hardware, pipelining ON vs OFF — contention cost on the MPS-monolith mapping. "
-         "If pipelining helps (B faster), parallelism payoff > contention cost. "
-         "If it hurts/no-change, MPS is fully saturated already."),
-        ("B_serial", "B_pipelined",
-         "Same hardware, pipelining ON vs OFF — contention cost on the heterogeneous mapping. "
-         "CLIP on ANE and LLM on MPS *could* run in parallel; the question is whether shared "
-         "unified memory lets them."),
-        ("A_pipelined", "B_pipelined",
-         "Pipelined throughput: monolith vs heterogeneous. The bandwidth thesis predicts "
-         "B ≈ A here (heterogeneity advantage collapses under shared-memory contention)."),
-        ("A_serial", "B_serial",
-         "Serial latency: monolith vs heterogeneous. Without contention, B should win by "
-         "the CLIP-on-ANE-vs-MPS speed difference."),
-    ]
-    for la, lb, interp in pairs:
+    for la, lb, interp in framing["pairs"]:
         if la in cells and lb in cells:
             out.extend(_render_pair_comparison(la, cells[la], lb, cells[lb], interp))
 
@@ -385,34 +429,66 @@ def _render_2x2(cells: dict[str, PipelineTrace],
             adv_serial = (qa_s["mean_s"] - qb_s["mean_s"]) / qa_s["mean_s"] * 100
             adv_pipe = (qa_p["mean_s"] - qb_p["mean_s"]) / qa_p["mean_s"] * 100
             collapse = adv_serial - adv_pipe
-            lines = [
-                f"- Heterogeneity advantage **without** contention "
-                f"(serial): B is {adv_serial:+.1f}% faster than A.",
-                f"- Heterogeneity advantage **under** contention "
-                f"(pipelined): B is {adv_pipe:+.1f}% faster than A.",
-                f"- **Advantage collapse**: {collapse:+.1f} pp lost when contention turned on.",
-                "",
-            ]
-            if collapse > 5 and adv_pipe < adv_serial * 0.5:
-                lines.append(
-                    "**Verdict: bandwidth-bound under load.** Heterogeneity gives a real "
-                    "single-query speedup but most of that advantage disappears once multiple "
-                    "queries contend for shared unified memory — consistent with the thesis "
-                    "that bandwidth is the binding constraint."
-                )
-            elif adv_pipe > 0.7 * adv_serial:
-                lines.append(
-                    "**Verdict: compute-bound.** Heterogeneity advantage persists under "
-                    "contention, suggesting MPS compute (not bandwidth) was the bottleneck. "
-                    "Bandwidth contention is not yet the dominant cost at this workload size."
-                )
+            if framing["kind"] == "selfrag":
+                widen = adv_pipe - adv_serial
+                lines = [
+                    f"- Decomposition advantage **without** contention (serial): "
+                    f"B (decomposed) is {adv_serial:+.1f}% faster per query than A (monolith).",
+                    f"- Decomposition advantage **under** load (pipelined): "
+                    f"B is {adv_pipe:+.1f}% faster than A.",
+                    f"- **Change under pipelining**: {widen:+.1f} pp "
+                    f"(positive = decomposition's lead widens when queries overlap).",
+                    "",
+                ]
+                if adv_serial <= 0:
+                    lines.append(
+                        "**Verdict: the monolith is faster.** The single large model answers "
+                        "a query quicker than the decomposed pipeline at this workload, so "
+                        "decomposition's extra calls aren't paying off on speed."
+                    )
+                elif widen >= 0:
+                    lines.append(
+                        "**Verdict: decomposition wins, and its lead grows under load.** It is "
+                        "faster per query, and its independent model instances overlap across "
+                        "in-flight queries — pipelining widens the gap because the monolith's "
+                        "single mutex can't exploit concurrency."
+                    )
+                else:
+                    lines.append(
+                        "**Verdict: decomposition wins, but the lead narrows under load.** It "
+                        "is faster per query; under pipelining both topologies saturate the "
+                        "single GPU, so some of the advantage erodes to queueing."
+                    )
+                out.extend(lines)
             else:
-                lines.append(
-                    "**Verdict: mixed.** Some erosion of heterogeneity advantage under "
-                    "contention, but not enough to confidently call it bandwidth-bound. "
-                    "Try larger queries-in-flight or a heavier per-stage workload."
-                )
-            out.extend(lines)
+                lines = [
+                    f"- Heterogeneity advantage **without** contention "
+                    f"(serial): B is {adv_serial:+.1f}% faster than A.",
+                    f"- Heterogeneity advantage **under** contention "
+                    f"(pipelined): B is {adv_pipe:+.1f}% faster than A.",
+                    f"- **Advantage collapse**: {collapse:+.1f} pp lost when contention turned on.",
+                    "",
+                ]
+                if collapse > 5 and adv_pipe < adv_serial * 0.5:
+                    lines.append(
+                        "**Verdict: bandwidth-bound under load.** Heterogeneity gives a real "
+                        "single-query speedup but most of that advantage disappears once multiple "
+                        "queries contend for shared unified memory — consistent with the thesis "
+                        "that bandwidth is the binding constraint."
+                    )
+                elif adv_pipe > 0.7 * adv_serial:
+                    lines.append(
+                        "**Verdict: compute-bound.** Heterogeneity advantage persists under "
+                        "contention, suggesting MPS compute (not bandwidth) was the bottleneck. "
+                        "Bandwidth contention is not yet the dominant cost at this workload size."
+                    )
+                else:
+                    lines.append(
+                        "**Verdict: mixed.** Some erosion of heterogeneity advantage under "
+                        "contention, but not enough to confidently call it bandwidth-bound. "
+                        "Try larger queries-in-flight or a heavier per-stage workload."
+                    )
+                out.extend(lines)
     else:
         missing = sorted(needed - set(cells))
         out.append(f"_Missing cells: {missing}_")
