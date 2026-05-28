@@ -30,8 +30,19 @@ REPORT_PATH = RESULTS_DIR / "verification_report.md"
 PIPELINES = {
     "vqa_mps_monolith":         {"label": "VQA Mapping A (MPS monolith)",      "family": "vqa"},
     "vqa_heterogeneous_split":  {"label": "VQA Mapping B (heterogeneous CoreML)", "family": "vqa"},
+    # Smoke-test labels (single run per topology):
     "self_rag_monolith":        {"label": "Self-RAG Monolith",                 "family": "self_rag"},
     "self_rag_decomposed":      {"label": "Self-RAG Decomposed",               "family": "self_rag"},
+    # 2x2 cell labels for the factoid (rag-mini-wikipedia) and multi-hop (HotpotQA)
+    # task families. Each topology gets two schedule cells (pipelined / serial).
+    "self_rag_factoid_monolith_pipe":      {"label": "Self-RAG Factoid Monolith (pipelined)",        "family": "self_rag"},
+    "self_rag_factoid_monolith_serial":    {"label": "Self-RAG Factoid Monolith (serial)",           "family": "self_rag"},
+    "self_rag_factoid_decomposed_pipe":    {"label": "Self-RAG Factoid Decomposed (pipelined)",      "family": "self_rag"},
+    "self_rag_factoid_decomposed_serial":  {"label": "Self-RAG Factoid Decomposed (serial)",         "family": "self_rag"},
+    "self_rag_multihop_monolith_pipe":     {"label": "Self-RAG Multi-hop Monolith (pipelined)",      "family": "self_rag"},
+    "self_rag_multihop_monolith_serial":   {"label": "Self-RAG Multi-hop Monolith (serial)",         "family": "self_rag"},
+    "self_rag_multihop_decomposed_pipe":   {"label": "Self-RAG Multi-hop Decomposed (pipelined)",    "family": "self_rag"},
+    "self_rag_multihop_decomposed_serial": {"label": "Self-RAG Multi-hop Decomposed (serial)",       "family": "self_rag"},
 }
 
 # Hard-failure markers placed in final_data by routers when retries exhaust.
