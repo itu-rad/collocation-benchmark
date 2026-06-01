@@ -1,13 +1,18 @@
 import logging
+import threading
+import time
 from logging.handlers import QueueHandler
 from threading import Thread, Event
 from queue import Queue
 import multiprocessing
 
+import mlflow
+
 from loadgen.schedulers.scheduler import LoadScheduler
 from pipeline import Pipeline
 from utils.component import get_component
 from utils.schemas import PipelineModel
+from utils.tracing import flush_traces
 
 
 def run_loadgen(pipeline_config: PipelineModel) -> None:
@@ -78,7 +83,19 @@ class LoadGen:
 
         The execution is stopped when the max_queries is reached or timer elapses.
         """
-        self.pipeline_thread.start()
-        self.scheduler_thread.start()
-        self.scheduler_thread.join()
-        self.pipeline_thread.join()
+        with mlflow.start_span(
+            name="LoadGen.run",
+            attributes={"thread_id": threading.get_ident()},
+        ):
+            start_time = time.perf_counter()
+            self.pipeline_thread.start()
+            self.scheduler_thread.start()
+            self.scheduler_thread.join()
+            self.pipeline_thread.join()
+            duration = time.perf_counter() - start_time
+            print(f"Pipeline execution completed in {duration:.2f} seconds", flush=True)
+
+        # Drain spans synchronously now that both threads have joined. main.py
+        # follows up with os._exit(0), which skips atexit handlers — if we
+        # don't flush here, the last query's spans never reach the backend.
+        flush_traces()

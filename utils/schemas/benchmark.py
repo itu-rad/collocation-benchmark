@@ -11,5 +11,7 @@ class BenchmarkModel(BaseModel):
     """
 
     pipelines: list[PipelineModel]
-    listeners: list[Literal[tuple([x.lower() for x in radt_listeners.keys()])]] = ["top"]
+    # macmon is the macOS-compatible RadT listener (Apple Silicon power /
+    # thermals). NVIDIA hosts should override per-config with smi+top+...
+    listeners: list[Literal[tuple([x.lower() for x in radt_listeners.keys()])]] = ["macmon"]
     name: str = "Unknown benchmark name"

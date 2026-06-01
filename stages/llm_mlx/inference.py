@@ -1,6 +1,7 @@
 from threading import Lock
 import mlx.core as mx
 from mlx_lm import load, generate
+from transformers import AutoTokenizer
 
 from stages.stage import Stage, log_phase
 from utils.component import get_component
@@ -27,12 +28,27 @@ class Inference(Stage):
             self._data_model = get_component(data_model_path)
 
         self._model = None
-        self._tokenizer = None
 
+        # Load tokenizer eagerly in __init__ (matching HuggingFace Inference pattern)
+        # so that get_tokenizer() is available immediately for other stages'
+        # prepare() calls. The full model is loaded later in prepare().
         self._depends_on_id = self.extra_config.get("depends_on_id")
+        if not self._depends_on_id:
+            self._tokenizer = AutoTokenizer.from_pretrained(self._model_path)
+        else:
+            self._tokenizer = None
+
         self._mutex = None
         if not self._depends_on_id:
             self._mutex = Lock()
+
+    def get_tokenizer(self):
+        """Getter for the tokenizer, matching the HuggingFace Inference interface.
+
+        Returns:
+            The tokenizer loaded by mlx_lm.
+        """
+        return self._tokenizer
 
     def get_model_lock(self):
         return self._model, self._mutex
@@ -46,22 +62,29 @@ class Inference(Stage):
 
     @log_phase
     def prepare(self):
-        super().prepare()
-
+        # Load the model BEFORE starting the worker thread (super().prepare()),
+        # because other stages' prepare() methods may dispatch_call
+        # get_tokenizer() which requires the tokenizer to be ready.
         if not self._depends_on_id:
             print("Setting up model in ", self.name)
             self._setup_model()
 
+        super().prepare()
+
     def pre_run(self):
         if self._depends_on_id:
-            # If we were sharing models across stages (e.g. prefill/decode split), we'd grab it here.
-            # MLX sharing might be different, but keeping structure consistent.
             self._model, self._mutex = self.dispatch_call(
                 self._depends_on_id, "get_model_lock"
             )
+            self._tokenizer = self.dispatch_call(self._depends_on_id, "get_tokenizer")
 
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
+
+        # Normalize: formatter stages set query.data to a single string
+        # via apply_chat_template, but we need a list to iterate over.
+        if isinstance(batch, str):
+            batch = [batch]
 
         if self._mutex:
             self._mutex.acquire()

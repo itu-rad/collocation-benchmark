@@ -1,4 +1,5 @@
 from stages.stage import Stage, log_phase
+from utils.chat import apply_chat_template_safe
 from utils.schemas.query import Query
 
 
@@ -46,7 +47,8 @@ class RetrievalGraderFormatter(Stage):
             },
         ]
 
-        query.data = self._tokenizer.apply_chat_template(
+        query.data = apply_chat_template_safe(
+            self._tokenizer,
             chat,
             tokenize=False,
             add_generation_prompt=True,

@@ -1,4 +1,5 @@
 from stages.stage import Stage, log_phase
+from utils.chat import apply_chat_template_safe
 from utils.schemas.query import Query
 
 
@@ -34,8 +35,8 @@ class HallucinationGraderFormatter(Stage):
             {
                 "role": "system",
                 "content": """
-                You are a grader assessing whether an LLM generation is grounded in / supported by a set of retrieved facts. \n 
-                Give a binary score 'yes' or 'no'. 'Yes' means that the answer is grounded in / supported by the set of facts. Output nothing but the 'yes' or 'no' score. \n
+                You are a grader assessing whether an LLM generation contains hallucinations (claims not supported by a set of retrieved facts). \n
+                Give a binary score 'yes' or 'no'. 'Yes' means the answer contains unsupported claims (i.e. is hallucinated). 'No' means the answer is fully grounded in the retrieved facts. Output nothing but the 'yes' or 'no' score. \n
                 """,
             },
             {
@@ -44,7 +45,8 @@ class HallucinationGraderFormatter(Stage):
             },
         ]
 
-        query.data = self._tokenizer.apply_chat_template(
+        query.data = apply_chat_template_safe(
+            self._tokenizer,
             chat,
             tokenize=False,
             add_generation_prompt=True,

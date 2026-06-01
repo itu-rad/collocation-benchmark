@@ -160,6 +160,12 @@ class Inference(Stage):
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data
 
+        # Normalize: formatter stages set query.data to a single string
+        # via apply_chat_template, but the generation paths below iterate
+        # over a list of prompts. Mirrors stages/llm_mlx/inference.py.
+        if isinstance(batch, str):
+            batch = [batch]
+
         print("Input data:", batch)
 
         if self._outlines_generator:

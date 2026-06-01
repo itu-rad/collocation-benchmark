@@ -1,4 +1,5 @@
 from stages.stage import Stage, log_phase
+from utils.chat import apply_chat_template_safe
 from utils.schemas.query import Query
 
 
@@ -27,23 +28,51 @@ class QuestionRewriterFormatter(Stage):
         """
 
         print("QuestionRewriterFormatter: ", query)
-        orig_query = query.context["original_query"]
+        # Anchor on the user's true question (stable), not original_query which
+        # could in principle be mutated by upstream stages.
+        orig_query = query.context.get("question") or query.context["original_query"]
+
+        # Condition the rewrite on the evidence gathered so far so it can issue
+        # a *follow-up* (bridge) query for multi-hop questions, rather than just
+        # paraphrasing the same question and re-retrieving the same documents.
+        docs = query.context.get("retrieved_documents", []) or []
+        if isinstance(docs, list):
+            docs_text = (
+                "\n\n".join(
+                    f"Document {i+1}: {str(d)[:400]}" for i, d in enumerate(docs)
+                )
+                or "(no documents retrieved yet)"
+            )
+        else:
+            docs_text = str(docs)[:2000]
 
         chat = [
             {
                 "role": "system",
-                "content": """
-                You a question re-writer that converts an input question to a better version that is optimized \n 
-                for sqlite retrieval. Look at the input and try to reason about the underlying semantic intent / meaning.
-                """,
+                "content": (
+                    "You help answer a possibly multi-hop question by issuing better "
+                    "retrieval queries. Given the user's question and the documents "
+                    "retrieved so far, identify what information is still MISSING to "
+                    "fully answer the question, and write ONE focused search query to "
+                    "retrieve that missing information. For a multi-hop question this is "
+                    "usually the next entity or fact to look up (a bridge query). If the "
+                    "documents look irrelevant, rephrase the question for better retrieval "
+                    "instead. Output ONLY the search query on a single line — no quotation "
+                    "marks, preamble, explanation, or lists."
+                ),
             },
             {
                 "role": "user",
-                "content": f"Here is the initial question: \n\n {orig_query} \n Formulate an improved question.",
+                "content": (
+                    f"Question: {orig_query}\n\n"
+                    f"Documents retrieved so far:\n{docs_text}\n\n"
+                    f"Next search query:"
+                ),
             },
         ]
 
-        query.data = self._tokenizer.apply_chat_template(
+        query.data = apply_chat_template_safe(
+            self._tokenizer,
             chat,
             tokenize=False,
             add_generation_prompt=True,
