@@ -6,10 +6,16 @@ dependencies:
     # RadT dependencies
     - tensorflow
     - tensorboardX
-    - mlflow>=1.0
+    - mlflow>=3.0
     - boto3
     - psutil
     - radt>=0.2.24
+
+    # Tracing + Perfetto export
+    - sqlalchemy
+    - pandas
+    - psycopg2-binary
+    - perfetto
 
     # benchmark dependencies
     ## general

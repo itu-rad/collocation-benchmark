@@ -1,6 +1,10 @@
 import logging
+import threading
+import uuid
 from queue import Queue, Empty
 from threading import Event, Thread
+
+import mlflow
 
 from stages import Stage
 from utils.component import get_stage_component
@@ -133,17 +137,29 @@ class Pipeline:
             event (Event): An event object used to signal the completion of the pipeline.
         """
 
+        _EMPTY = object()
+
         while True:
             for output_queue in self._output_queues:
-                # non-blocking retrieval from the queues
-                # if the queue is empty, simply move on
-                try:
-                    new_query: Query | None = output_queue.get(timeout=0.1)
-                except Empty:
+                # Span every poll so the polling overhead shows up in the
+                # trace. Catch Empty INSIDE the span — an empty queue is
+                # the expected polling case, not an error, and letting it
+                # propagate makes MLflow tag the span as failed.
+                new_query = _EMPTY
+                with mlflow.start_span(
+                    name="pipeline retrieve_results",
+                    attributes={"thread_id": threading.get_ident()},
+                ):
+                    try:
+                        new_query = output_queue.get(timeout=0.1)
+                    except Empty:
+                        pass
+
+                if new_query is _EMPTY:
                     continue
 
                 # if terminating character is received, return
-                if not new_query:
+                if new_query is None:
                     return
 
                 # log the end of pipeline execution
@@ -157,7 +173,19 @@ class Pipeline:
                     new_query.batch + 1,
                 )
 
-                self.queries_processed += 1
+                with mlflow.start_span(
+                    name="pipeline query processed",
+                    attributes={
+                        "in_flow_id": str(new_query.out_flow_id) if new_query.out_flow_id else None,
+                        "thread_id": threading.get_ident(),
+                        "pipeline": self.name,
+                        "epoch": new_query.epoch,
+                        "split": new_query.split,
+                        "batch": new_query.batch,
+                        "query_id": new_query.query_id,
+                    },
+                ):
+                    self.queries_processed += 1
                 event.set()
 
     def run(self, query_queue: Queue, event: Event) -> None:
@@ -247,9 +275,24 @@ class Pipeline:
                 query.batch + 1,
             )
 
-            # populate the pipeline input queues / start pipeline execution
-            for input_queue in self._input_queues:
-                input_queue.put(query)
+            out_flow_id = uuid.uuid4()
+            with mlflow.start_span(
+                name="pipeline query",
+                attributes={
+                    "in_flow_id": str(query.out_flow_id) if query.out_flow_id else None,
+                    "out_flow_id": str(out_flow_id),
+                    "thread_id": threading.get_ident(),
+                    "pipeline": self.name,
+                    "epoch": query.epoch,
+                    "split": query.split,
+                    "batch": query.batch,
+                    "query_id": query.query_id,
+                },
+            ):
+                query.out_flow_id = out_flow_id
+                # populate the pipeline input queues / start pipeline execution
+                for input_queue in self._input_queues:
+                    input_queue.put(query)
 
             queries_sent += 1
 

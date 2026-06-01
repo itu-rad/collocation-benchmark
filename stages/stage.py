@@ -3,8 +3,12 @@ from queue import Queue
 from threading import Thread
 from functools import wraps
 import logging
+import threading
+import uuid
 from typing import Any
 import json
+
+import mlflow
 
 from utils.queues.polling.polling_policy import PollingPolicy
 from utils.queues.peekable_queue import PeekableQueue
@@ -212,8 +216,12 @@ class Stage:
             outputs (dict[int, any]): dictionary of outputs, where keys are the stage IDs
                 and values are the outputs to be pushed to the corresponding output queue.
         """
-        for idx, output in outputs.items():
-            self.output_queues[idx].put(output)
+        with mlflow.start_span(
+            name=f"{self.name}.push_to_outputs",
+            attributes={"thread_id": threading.get_ident()},
+        ):
+            for idx, output in outputs.items():
+                self.output_queues[idx].put(output)
 
     def run(self, query: Query) -> dict[int, Query]:
         """
@@ -250,7 +258,11 @@ class Stage:
         perform actions on them and push the results onto the output queues."""
         self.pre_run()
         while True:
-            query = self._get_input_from_queues()
+            with mlflow.start_span(
+                name=f"{self.name}.get_input",
+                attributes={"thread_id": threading.get_ident()},
+            ):
+                query = self._get_input_from_queues()
             if not query:
                 # received terminating element (None)
                 self._push_to_all_outputs(None)
@@ -259,7 +271,22 @@ class Stage:
             if not self.disable_logs:
                 log_phase_single(self.parent_name, self.name, "run", "start")
 
-            outputs = self.run(query)
+            out_flow_id = uuid.uuid4()
+            with mlflow.start_span(
+                name=f"{self.name}.run",
+                attributes={
+                    "in_flow_id": str(query.out_flow_id) if query.out_flow_id else None,
+                    "out_flow_id": str(out_flow_id),
+                    "thread_id": threading.get_ident(),
+                    "stage": self.name,
+                    "epoch": query.epoch,
+                    "split": query.split,
+                    "batch": query.batch,
+                    "query_id": query.query_id,
+                },
+            ):
+                query.out_flow_id = out_flow_id
+                outputs = self.run(query)
 
             self._push_to_outputs(outputs)
             if not self.disable_logs:

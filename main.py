@@ -1,8 +1,10 @@
 import argparse
 import mlflow
+import signal
 import sys
 import os
 import logging
+import time
 
 import radt
 from radt.run.listeners import listeners
@@ -15,7 +17,9 @@ from pydantic_yaml import parse_yaml_raw_as
 from typing import Literal
 from utils.logger import Logger
 from loadgen import run_loadgen
+from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
+from utils.tracing import configure_sync_export, flush_traces
 
 
 def parse_args():
@@ -63,6 +67,21 @@ def convert_listeners(listeners: list[Literal[listeners.keys()]]) -> str:
 
 
 def radt_entrypoint(args):
+    # Force MLflow span export to run synchronously. Must happen before any
+    # mlflow.start_span call (i.e. before importing/constructing the pipeline)
+    # because the async/sync flag is read at exporter init time.
+    configure_sync_export()
+
+    # Belt-and-braces for the prior "RadT killed the subprocess before MLflow
+    # drained" issue: catch SIGTERM, flush spans, then re-raise so the
+    # default handler still terminates us.
+    def _on_sigterm(signum, frame):  # pylint: disable=unused-argument
+        flush_traces()
+        signal.signal(signum, signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    signal.signal(signal.SIGTERM, _on_sigterm)
+
     with open(args.config_file_path, "r", encoding="utf-8") as file:
         yaml_config = file.read()
         benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
@@ -143,15 +162,39 @@ def radt_entrypoint(args):
         logger.removeHandler(file_handler)
     except Exception:  # pylint: disable=broad-except
         pass
+
+    # Drain MLflow trace spans BEFORE os._exit. atexit handlers don't fire
+    # on os._exit, so this is the last chance to push pending spans.
+    # NOTE: we do NOT call mlflow.end_run() here — RadT listeners (macmon,
+    # smi, top, etc.) attach to the active run and stream metrics. Calling
+    # end_run from under them closes the run, drops in-flight metric
+    # writes, and can also race with mlflow.log_artifact for the yaml.
+    # RadT marks the run FINISHED itself via RADTBenchmark.__exit__.
+    flush_traces()
     os._exit(0)
 
 
 def main(args):
+    process_start_time = time.time()
+
     with open(args.config_file_path, "r", encoding="utf-8") as file:
         yaml_config = file.read()
         benchmark_config = parse_yaml_raw_as(BenchmarkModel, yaml_config)
 
     print("listeners", benchmark_config.listeners)
+
+    # Watchdog: bounded cleanup if radt.schedule_external hangs in its
+    # post-loop HTTPS uploads. See utils/orchestrator_watchdog.py for
+    # the full rationale. Started before schedule_external, notified
+    # immediately after if it returns naturally — daemon thread, so a
+    # clean main() exit kills it automatically.
+    watchdog = OrchestratorWatchdog(
+        experiment_id=args.experiment_id,
+        parent_name=benchmark_config.name,
+        pipeline_names=[p.name for p in benchmark_config.pipelines],
+        process_start_time=process_start_time,
+    )
+    watchdog.start()
 
     # initialize a multiprocessing-safe logger
     logger_queue = Queue()
@@ -182,6 +225,7 @@ def main(args):
         df_schedule,
         group_name=benchmark_config.name,
     )
+    watchdog.notify_schedule_returned()
 
     # stop the logger
     logger.stop_queue_listener()
