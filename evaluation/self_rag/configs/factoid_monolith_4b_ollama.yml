@@ -71,7 +71,10 @@ pipelines:
             engine: ollama
             model: qwen3:4b
             port: 0                      # auto-pick a free port
+            # Ollama only batches concurrent requests up to OLLAMA_NUM_PARALLEL
+            # (set it via server.env if you want more than the default).
           tokenizer_name: Qwen/Qwen3.5-4B
+          concurrency: 4
           model:
             gen_kwargs:
               max_new_tokens: 256
@@ -108,6 +111,7 @@ pipelines:
         outputs: [1]
         component: stages.llm_server.Inference
         config:
+          concurrency: 4
           model:
             gen_kwargs:
               max_new_tokens: 128

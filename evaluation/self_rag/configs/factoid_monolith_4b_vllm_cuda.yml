@@ -73,6 +73,7 @@ pipelines:
             model: Qwen/Qwen3.5-4B
             port: 0                      # auto-pick a free port
             gpu_memory_utilization: 0.9
+          concurrency: 8                 # in-flight requests -> vLLM dynamic batching
           model:
             gen_kwargs:
               max_new_tokens: 256
@@ -109,6 +110,7 @@ pipelines:
         outputs: [1]
         component: stages.llm_server.Inference
         config:
+          concurrency: 8
           model:
             gen_kwargs:
               max_new_tokens: 128

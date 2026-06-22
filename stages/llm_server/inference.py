@@ -1,4 +1,8 @@
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 import litellm
+import mlflow
 from transformers import AutoTokenizer
 
 from stages.stage import Stage, log_phase
@@ -64,6 +68,12 @@ class Inference(Stage):
 
         self._depends_on_id = self.extra_config.get("depends_on_id")
 
+        # Phase 2: number of requests this stage keeps in flight against the
+        # server at once. >1 lets the engine apply continuous/dynamic batching.
+        # Per-stage; for a shared server (depends_on_id) the total load is the
+        # sum of each stage's concurrency. Default 1 == sequential (Phase 1).
+        self._concurrency = int(self.extra_config.get("concurrency", 1))
+
         self._server: ServerManager | None = None
         self._litellm_model: str | None = None
         self._litellm_api_base: str | None = None
@@ -111,6 +121,46 @@ class Inference(Stage):
                 self._depends_on_id, "get_server_handle"
             )
             self._tokenizer = self.dispatch_call(self._depends_on_id, "get_tokenizer")
+
+    def run_wrapper(self):
+        """Concurrent dispatcher (overrides Stage.run_wrapper).
+
+        Keeps up to ``concurrency`` requests in flight against the server so it
+        can apply continuous/dynamic batching — the throughput win over the
+        in-process HF/MLX backends. Each query is handled by a pool worker via
+        the inherited ``_process_query``, preserving the exact per-query
+        span/flow/logging contract (each worker shows as its own Perfetto
+        track). On the terminator, stop pulling, drain in-flight requests, then
+        propagate ``None`` so downstream stages terminate only after all real
+        work has been pushed.
+
+        ``concurrency == 1`` is equivalent to the base sequential loop.
+        """
+        self.pre_run()
+        executor = ThreadPoolExecutor(max_workers=self._concurrency)
+        pending = []
+        try:
+            while True:
+                with mlflow.start_span(
+                    name=f"{self.name}.get_input",
+                    attributes={"thread_id": threading.get_ident()},
+                ):
+                    query = self._get_input_from_queues()
+                if not query:
+                    break
+                pending.append(executor.submit(self._process_query, query))
+                # Reap finished workers: bounds the list and surfaces a worker
+                # exception promptly instead of swallowing it.
+                for done in [f for f in pending if f.done()]:
+                    done.result()
+                pending = [f for f in pending if not f.done()]
+        finally:
+            # Drain in-flight requests before terminating downstream stages.
+            executor.shutdown(wait=True)
+        for f in pending:
+            f.result()
+        self._push_to_all_outputs(None)
+        self.post_run()
 
     def run(self, query: Query) -> dict[int, Query]:
         batch = query.data

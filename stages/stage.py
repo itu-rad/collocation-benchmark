@@ -253,6 +253,39 @@ class Stage:
         """
         pass
 
+    def _process_query(self, query: Query) -> None:
+        """Run a single query through self.run, wrapped in its tracing span,
+        and push the results to the output queues.
+
+        Factored out of run_wrapper so stages that dispatch queries
+        concurrently (e.g. stages.llm_server.Inference) can reuse the exact
+        same span/flow/logging contract from a worker thread.
+        """
+        if not self.disable_logs:
+            log_phase_single(self.parent_name, self.name, "run", "start")
+
+        in_flow_id = str(query.out_flow_id) if query.out_flow_id else None
+        out_flow_id = uuid.uuid4()
+        with mlflow.start_span(
+            name=f"{self.name}.run",
+            attributes={
+                "in_flow_id": in_flow_id,
+                "out_flow_id": str(out_flow_id),
+                "thread_id": threading.get_ident(),
+                "stage": self.name,
+                "epoch": query.epoch,
+                "split": query.split,
+                "batch": query.batch,
+                "query_id": query.query_id,
+            },
+        ):
+            query.out_flow_id = out_flow_id
+            outputs = self.run(query)
+
+        self._push_to_outputs(outputs)
+        if not self.disable_logs:
+            log_phase_single(self.parent_name, self.name, "run", "end")
+
     def run_wrapper(self) -> None:
         """Continuously poll for the incoming data in the input queues,
         perform actions on them and push the results onto the output queues."""
@@ -268,27 +301,5 @@ class Stage:
                 self._push_to_all_outputs(None)
                 break
 
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "start")
-
-            out_flow_id = uuid.uuid4()
-            with mlflow.start_span(
-                name=f"{self.name}.run",
-                attributes={
-                    "in_flow_id": str(query.out_flow_id) if query.out_flow_id else None,
-                    "out_flow_id": str(out_flow_id),
-                    "thread_id": threading.get_ident(),
-                    "stage": self.name,
-                    "epoch": query.epoch,
-                    "split": query.split,
-                    "batch": query.batch,
-                    "query_id": query.query_id,
-                },
-            ):
-                query.out_flow_id = out_flow_id
-                outputs = self.run(query)
-
-            self._push_to_outputs(outputs)
-            if not self.disable_logs:
-                log_phase_single(self.parent_name, self.name, "run", "end")
+            self._process_query(query)
         self.post_run()
