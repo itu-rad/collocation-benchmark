@@ -69,7 +69,10 @@ pipelines:
         config:
           server:
             engine: ollama
-            model: qwen3:4b
+            # qwen3.5:4b = the same Qwen3.5-4B weights the HF/vLLM arms serve,
+            # so the engines are compared on identical weights. Ollama runs it
+            # with reasoning in a separate channel; the response is clean JSON.
+            model: qwen3.5:4b
             port: 0                      # auto-pick a free port
             # Ollama only batches concurrent requests up to OLLAMA_NUM_PARALLEL
             # (set it via server.env if you want more than the default).
@@ -79,6 +82,9 @@ pipelines:
             gen_kwargs:
               max_new_tokens: 256
               do_sample: false
+              think: false   # qwen3.5:4b reasons by default; disable so the
+                             # JSON answer fits the token budget (HF/vLLM serve
+                             # these weights non-thinking)
 
       # --- Stage 4: Monolith Router (JSON parser + routing) ---
       - name: Monolith router
@@ -116,4 +122,7 @@ pipelines:
             gen_kwargs:
               max_new_tokens: 128
               do_sample: false
+              think: false   # qwen3.5:4b reasons by default; disable so the
+                             # JSON answer fits the token budget (HF/vLLM serve
+                             # these weights non-thinking)
           depends_on_id: 3

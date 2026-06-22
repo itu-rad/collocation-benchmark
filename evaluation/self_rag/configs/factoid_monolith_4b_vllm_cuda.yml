@@ -72,7 +72,12 @@ pipelines:
             engine: vllm
             model: Qwen/Qwen3.5-4B
             port: 0                      # auto-pick a free port
-            gpu_memory_utilization: 0.9
+            # GB10 unified memory is shared with the host + this pipeline
+            # process, so 0.9 over-subscribes. 0.5 of 119.7 GiB is ample for a
+            # 4B + KV cache. max_model_len bounds the KV cache (Qwen3.5-4B
+            # defaults to a 256K context we never use).
+            gpu_memory_utilization: 0.5
+            max_model_len: 8192
           concurrency: 8                 # in-flight requests -> vLLM dynamic batching
           model:
             gen_kwargs:
