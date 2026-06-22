@@ -37,6 +37,11 @@ dependencies:
     ## Self-RAG case study
     - chromadb
 
+    ## local inference engines (stages.llm_server)
+    # litellm talks to a local Ollama server over its HTTP API. vLLM is
+    # NVIDIA-only, so only the Ollama engine is usable on macOS.
+    - litellm
+
     ## macos specific
     - mlx
     - mlx-lm

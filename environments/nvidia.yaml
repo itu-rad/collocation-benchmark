@@ -37,6 +37,15 @@ dependencies:
     ## Self-RAG case study
     - chromadb
 
+    ## local inference engines (stages.llm_server)
+    # litellm is the OpenAI-compatible client used to talk to the local server.
+    - litellm
+    # vLLM provides the dynamic/continuous-batching server. NOTE: verify the
+    # wheel builds/serves on this GB10 (aarch64, sm_121 / cu130) box — it may
+    # need a specific nightly or a source build. Ollama (external binary) is
+    # the cross-platform fallback and needs no pip dependency.
+    - vllm
+
     ## nvidia specific
     # possibly TensorRT or other NVIDIA/CUDA specific dependencies
     
