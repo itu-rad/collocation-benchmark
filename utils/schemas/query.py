@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 import uuid
 
@@ -13,7 +13,12 @@ class Query:
     batch: int
     query_submitted_timestamp: float
     epoch: int = 0
-    query_id: int = uuid.uuid4()
+    # Use a factory so each Query instance gets a FRESH id. A bare
+    # `= uuid.uuid4()` default is evaluated once at class-definition time, so
+    # every query in a process would share one id — which also collapses the
+    # routers' per-query retry budgets (they key on query_id) into a single
+    # global budget. See REPLICATION_NOTES.md (Hurdle 5).
+    query_id: uuid.UUID = field(default_factory=uuid.uuid4)
     data: Any = None
     context: Any = None
     # Per-query flow id carried between consecutive tracing spans so Perfetto

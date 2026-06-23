@@ -1,33 +1,42 @@
+# Versions pinned to match the verified-working nvidia env (see nvidia.yaml and
+# REPLICATION_NOTES.md). The original macos.yaml left torch/torchaudio/
+# transformers/datasets/etc. un-pinned; on a fresh install pip resolved them to
+# newer, mutually-incompatible versions that broke model loading. These are the
+# same pins that fixed the nvidia env, minus the CUDA-only bits (the plain
+# `torch` wheel already targets Apple Silicon Metal/MPS). mlx / mlx-lm are left
+# un-pinned on purpose: the case-study models (Qwen3.5 "OptiQ" quants) use a new
+# architecture that only the latest mlx-lm understands.
 name: benchmark_macos
 dependencies:
   - python=3.10
   - pip
   - pip:
     # RadT dependencies
-    - tensorflow
-    - tensorboardX
-    - mlflow>=3.0
-    - boto3
-    - psutil
-    - radt>=0.2.24
+    - tensorflow==2.20.0
+    - tensorboardX==2.6.4
+    - mlflow==3.10.0
+    - boto3==1.42.57
+    - psutil==7.2.2
+    - radt==0.2.28
 
     # Tracing + Perfetto export
-    - sqlalchemy
-    - pandas
-    - psycopg2-binary
-    - perfetto
+    - sqlalchemy==2.0.47
+    - pandas==2.3.3
+    - psycopg2-binary==2.9.12
+    - perfetto==0.56.0
 
     # benchmark dependencies
     ## general
-    - torch
-    - torchvision
-    - torchaudio
-    - torchtune
-    - transformers
-    - datasets
-    - peft
-    - pydantic_yaml
-    - outlines
+    - torch==2.10.0
+    - torchvision==0.25.0
+    - torchaudio==2.10.0        # MUST match torch 2.10; un-pinned drifts and breaks transformers
+    - torchtune==0.6.1
+    - transformers==5.2.0
+    - datasets==4.6.0
+    - peft==0.18.1
+    - pydantic_yaml==1.6.0
+    - outlines==1.2.11
+    - tf-keras==2.20.1          # compatibility between transformers and tensorflow
 
     ## multimodal VQA case study
     - faiss-cpu
@@ -35,10 +44,9 @@ dependencies:
     - Pillow
 
     ## Self-RAG case study
-    - chromadb
+    - chromadb==1.5.9
 
     ## macos specific
     - mlx
     - mlx-lm
     # ANEMLL will be installed from source
-   
