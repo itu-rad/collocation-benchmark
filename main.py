@@ -19,6 +19,7 @@ from utils.logger import Logger
 from loadgen import run_loadgen
 from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
+from utils.server_manager import kill_all as kill_all_servers
 from utils.tracing import configure_sync_export, flush_traces
 
 
@@ -76,6 +77,10 @@ def radt_entrypoint(args):
     # drained" issue: catch SIGTERM, flush spans, then re-raise so the
     # default handler still terminates us.
     def _on_sigterm(signum, frame):  # pylint: disable=unused-argument
+        # Kill any local inference servers first so a RadT timeout/kill can't
+        # leak a vLLM/Ollama subprocess holding the GPU. This is the path that
+        # skips stage post_run(), so it must happen here.
+        kill_all_servers()
         flush_traces()
         signal.signal(signum, signal.SIG_DFL)
         os.kill(os.getpid(), signum)
@@ -170,6 +175,9 @@ def radt_entrypoint(args):
     # end_run from under them closes the run, drops in-flight metric
     # writes, and can also race with mlflow.log_artifact for the yaml.
     # RadT marks the run FINISHED itself via RADTBenchmark.__exit__.
+    # Reap any local inference servers before os._exit (which skips atexit), so
+    # the GPU is freed even if a stage's post_run() didn't run.
+    kill_all_servers()
     flush_traces()
     os._exit(0)
 
