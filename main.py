@@ -82,6 +82,10 @@ def radt_entrypoint(args):
         # skips stage post_run(), so it must happen here.
         kill_all_servers()
         flush_traces()
+        # Stop RadT listeners/loggers and mark the run FINISHED. os._exit (and
+        # this re-raised signal) skip RADTBenchmark.__exit__, so without this the
+        # run stays RUNNING and the listener children orphan.
+        radt.shutdown()
         signal.signal(signum, signal.SIG_DFL)
         os.kill(os.getpid(), signum)
 
@@ -179,6 +183,12 @@ def radt_entrypoint(args):
     # the GPU is freed even if a stage's post_run() didn't run.
     kill_all_servers()
     flush_traces()
+    # Stop RadT listeners/loggers and mark the run FINISHED before the hard
+    # exit. os._exit skips RADTBenchmark.__exit__, so without this the run
+    # stays RUNNING in mlflow and the listener children orphan (and wedge the
+    # orchestrator by holding its stdout pipe open). Done after flush_traces so
+    # spans are out before end_run closes the run.
+    radt.shutdown()
     os._exit(0)
 
 
