@@ -38,7 +38,8 @@ def configure_sync_export() -> None:
     ``mlflow.start_span`` call).
     """
     # setdefault: an explicit user override in the shell wins.
-    os.environ.setdefault(_ASYNC_TRACE_ENV_VAR, "false")
+    os.environ.setdefault(_ASYNC_TRACE_ENV_VAR, "true")
+    print("Blocked from configuring trace export. Set to ASYNC TRUE")
 
 
 def flush_traces() -> None:
