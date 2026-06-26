@@ -2,6 +2,45 @@ import logging
 from logging.handlers import QueueListener
 import os
 import re
+import time
+
+
+# The trace's first column stays wall-clock (``%(created)`` = ``time.time()``)
+# because RadT aligns host-listener samples and cross-process/cross-pipeline
+# spans on wall-clock. Wall-clock is, however, unsuitable for microsecond-scale
+# per-stage latency: it is not monotonic (NTP slew) and its resolution varies.
+# We therefore stamp every LogRecord with a monotonic ``perf_counter_ns`` at the
+# moment the record is created -- the same instant ``created`` is set, inside the
+# record factory -- and emit it as the trailing column. Stages of one pipeline
+# run as threads in one process, so this clock is monotonic and directly
+# comparable across stages within a pipeline (exactly the quantity per-stage
+# latency needs); it is process-local and never used for cross-process work.
+PERF_FORMAT = "%(created)f, %(message)s, %(perf)d"
+
+_perf_clock_installed = False
+
+
+def install_perf_clock():
+    """Install a LogRecord factory that adds ``record.perf`` (perf_counter_ns).
+
+    Idempotent and process-global: must be called once per process (the pipeline
+    subprocess and the orchestrator) before any record is formatted with
+    ``PERF_FORMAT``. Stamping in the factory (vs. a handler filter) means ``perf``
+    is set at record-creation time with no handler/queue lag and survives pickling
+    through the multiprocessing log queue.
+    """
+    global _perf_clock_installed
+    if _perf_clock_installed:
+        return
+    _orig_factory = logging.getLogRecordFactory()
+
+    def _factory(*args, **kwargs):
+        record = _orig_factory(*args, **kwargs)
+        record.perf = time.perf_counter_ns()
+        return record
+
+    logging.setLogRecordFactory(_factory)
+    _perf_clock_installed = True
 
 
 class BenchmarkFilter(logging.Filter):
@@ -37,7 +76,8 @@ class Logger:
     def __init__(self, queue, benchmark_name):
         self.queue = queue
 
-        formatter = logging.Formatter("%(created)f, %(message)s")
+        install_perf_clock()
+        formatter = logging.Formatter(PERF_FORMAT)
         # formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
 
         # Create filter to only allow logs from benchmark logger

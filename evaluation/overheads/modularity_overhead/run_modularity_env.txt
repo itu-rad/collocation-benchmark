@@ -1,0 +1,22 @@
+# modularity-overhead run environment
+timestamp_wall = 1782435927.840023
+device = cuda
+runs_per_cell = 5
+max_batches = 1100
+num_workers = 0
+cooldown_s = 0
+interleaved = true
+
+[perf_counter]
+resolution = 1e-09
+monotonic = True
+implementation = clock_gettime(CLOCK_MONOTONIC)
+
+[platform]
+python = 3.10.19
+system = Linux 6.14.0-1013-nvidia
+machine = aarch64
+torch = 2.11.0+cu130
+torch_cuda = 13.0
+cuda_device = NVIDIA GB10
+nvidia_smi = NVIDIA GB10, 580.95.05

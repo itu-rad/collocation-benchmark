@@ -1,0 +1,570 @@
+% =====================================================================
+%  METHODOLOGY / EXPERIMENTAL SETUP  (rev. 2 — post-review)
+%  Drop-in LaTeX for the McBenchface/Choreo paper (acmart).
+%
+%  REQUIRES: \usepackage{siunitx}; and a single definition of the
+%  framework name, e.g. \newcommand{\sysname}{McBenchface}. The name is
+%  currently inconsistent across the paper (prose "McBenchface", Table 2
+%  and code "Choreo"): pick ONE and define \sysname once. Table 2's
+%  "Choreo Pipeline" must be changed to match.
+%
+%  CROSS-REFS: this section cites \ref{sec:framework} (->§3 "The McBenchface
+%  framework"), \ref{sec:background} (->§2), \ref{sec:intro} (->§1),
+%  \ref{sec:conclusion} (->§7), and \ref{sec:results} (->the unwritten Results
+%  section). The current PDF's §4/§5 are outlines with no \label{}s, so confirm
+%  each \label{} exists (esp. sec:framework on the §3 heading) before submission.
+%
+%  Scope agreed: Devices = M2 Pro + DGX Spark (GB10) only; four
+%  experiments (NoOp overhead, modularity overhead, VQA bandwidth
+%  contention, Self-RAG topology). Collocation is presented as a
+%  framework capability exercised inside the case studies, NOT as a
+%  separate independent-workload interference experiment.
+%
+%  NO RESULTS are stated here. Numbers/tables/verdicts go in Results.
+%
+%  Placeholders marked [[FILL: ...]] need a value only the authors can
+%  confirm (core counts, bandwidths, software/model/dataset versions,
+%  Poisson rate, run counts, seeds).
+%
+%  --- OPEN DECISIONS FOR AUTHORS (raised by reviewers; reconcile before submission) ---
+%  D1 (claim/evidence, HIGH): the Introduction sells "collocation-aware
+%     profiling of concurrent pipelines" and "scalability" as headline
+%     contributions, but this section runs neither as a first-class
+%     experiment. Either (a) add the independent-workload collocation cell
+%     (torchvision_mixed.yml exists) + a no-code model-size sweep +
+%     an MLPerf end-to-end-vs-isolated contrast (pipeline_configs/mlperf/
+%     exists), or (b) soften the Intro/Contribution-4 claims to match.
+%     This file currently takes a defensible middle path (relabels
+%     "scalability"->"portability"; collocation = capability) and flags
+%     the remaining gap with %REVIEWER comments inline.
+%  D2 (confound, MED): Self-RAG monolith(1x9B) vs decomposed(3x4B)
+%     conflates model size, specialization, and call count. A size-matched
+%     control arm is recommended; below it is described as a control and
+%     marked [[FILL: confirm control arm run]].
+% =====================================================================
+
+\section{Experimental Methodology}
+\label{sec:methodology}
+
+This section describes how we evaluate \sysname{}: the devices we run on
+(\S\ref{sec:duts}), the instrumentation and the metrics derived from it
+(\S\ref{sec:metrics}), and four experiments, each stated with the question it
+answers (\S\ref{sec:experiments}). Results are deferred to
+Section~\ref{sec:results}. The first two experiments characterize \sysname{} as
+an instrument, bounding the measurement overhead the framework itself
+introduces (\S\ref{sec:exp-noop},~\S\ref{sec:exp-modularity}); the latter two
+apply it to end-to-end, graph-structured measurements --- including collocation
+exercised \emph{within} a workload --- that accelerator-centric, single-stream
+benchmarks do not capture (\S\ref{sec:exp-bandwidth},~\S\ref{sec:exp-topology}).
+
+% ---------------------------------------------------------------------
+\subsection{Devices Under Test}
+\label{sec:duts}
+
+We evaluate on two single-node machines drawn from opposite extremes of the
+unified-memory design space. Both let an accelerator and the host CPU address a
+shared pool of physical memory, but they differ by roughly an order of
+magnitude in capacity and by their entire software stack. This contrast lets us
+test \emph{portability} across the ``mid-range gap'' that rigid
+\emph{Tiny}/\emph{Edge}/\emph{Datacenter} tracks leave uncovered
+(Section~\ref{sec:background}), and lets us check whether a measured systems
+effect is intrinsic to a workload or specific to one platform. We do \emph{not}
+treat the pair as a controlled capacity axis. Capacity differs by \num{8}$\times$
+(\SI{16}{\giga\byte} vs.\ \SI{128}{\giga\byte}), but memory bandwidth by only
+${\approx}\num{1.4}\times$ ([[FILL: confirm SKU --- ${\approx}\SI{200}{\giga\byte\per\second}$
+for a standard M2~Pro vs.\ \SI{273}{\giga\byte\per\second}]]). Device class,
+power envelope, runtime, and numerical precision all change together as well.
+
+\begin{description}
+  \item[Apple M2 Pro (edge / consumer).] A \SI{16}{\giga\byte}
+    unified-memory laptop SoC
+    %
+    ([[FILL: CPU core split, e.g.\ 10-core 6P+4E; GPU core count, e.g.\ 16-core; memory bandwidth ${\approx}\SI{200}{\giga\byte\per\second}$]]),
+    %
+    in which the GPU, Neural Engine, and CPU share one physical memory and its
+    bandwidth. It runs three accelerator backends over that shared memory: the
+    GPU via Apple MLX/Metal (the PyTorch \texttt{mps} device --- Apple's Metal
+    backend, not to be confused with NVIDIA's Multi-Process Service), the
+    Neural Engine (\texttt{ane}) via Core~ML, and the CPU. Software:
+    Python~3.10, MLX/\texttt{mlx-lm}, Core~ML Tools, \texttt{faiss-cpu}
+    ([[FILL: macOS and package versions]]). LLM weights are 4-bit quantized to
+    fit comfortably within the \SI{16}{\giga\byte} budget alongside the other
+    resident stages. This machine represents the resource-constrained edge
+    devices the paper argues are poorly served by existing suites.
+
+  \item[NVIDIA DGX~Spark (large unified memory).] A GB10 Grace--Blackwell
+    platform with \SI{128}{\giga\byte} of LPDDR5X at
+    [[FILL: ${\approx}\SI{273}{\giga\byte\per\second}$]], presenting a single
+    CUDA GPU to the workload. Unlike the M2~Pro, GB10 is not a single shared
+    bus: the Grace CPU and Blackwell GPU are separate dies joined by a coherent
+    NVLink-C2C interconnect, so it is a coherent unified-memory \emph{system}
+    rather than one physical pool
+    %
+    ([[FILL: GPU SM count; CPU core count]]).
+    %
+    Software: PyTorch \texttt{2.10.0+cu130} and \texttt{torchvision
+    0.25.0+cu130} (the CUDA \texttt{cu130} wheels required for the
+    \texttt{sm\_121}/aarch64 target; the default wheel is CPU-only),
+    \texttt{transformers~5.2}, BF16 (no quantization). We confirm GPU residency
+    of every model stage with \texttt{nvidia-smi pmon}
+    ([[FILL: observed per-process SM activity during generation]]).
+\end{description}
+
+\sysname{} runs the same declarative pipeline definitions on both machines,
+changing only the per-stage backend and \texttt{device} fields in the
+configuration; no code changes are required (Section~\ref{sec:framework}).
+Because the M2~Pro runs 4-bit MLX weights while DGX~Spark runs BF16 PyTorch
+weights, the two backends are \emph{not} numerically identical models. We
+therefore draw cross-device conclusions only about the \emph{direction} of a
+systems effect (e.g.\ whether decomposition helps), never about absolute
+latency or quality across devices; absolute comparisons are reported within a
+device. All model weights and datasets are pre-fetched before measured runs, so
+no first-run download is timed. We monitor package power and temperature
+(\texttt{macmon} on the M2~Pro; \texttt{nvidia-smi}/\texttt{dcgmi} on the NVIDIA
+host) and exclude runs that show thermal throttling, so sustained-load results
+are not confounded. [[FILL: confirm discard-vs-report throttling policy.]]
+
+\paragraph{Scope.} We restrict the evaluation to these two single-node
+machines. Larger discrete-memory datacenter accelerators (e.g.\ A100/H100) and
+multi-node scaling are out of scope and discussed as future work
+(Section~\ref{sec:conclusion}); the datacenter end of the spectrum invoked in
+Section~\ref{sec:intro} is represented here by the GB10's large unified memory
+rather than a discrete-memory server accelerator.
+% REVIEWER (D1): reconcile this with the Intro's "high-performance data center
+% nodes" framing -- consider softening the Intro to "high-capacity single-node
+% platforms," or add a discrete-memory GPU.
+
+% ---------------------------------------------------------------------
+\subsection{Instrumentation and Metrics}
+\label{sec:metrics}
+
+\paragraph{Measurement pipeline.} Every run emits two artifacts. (i)~A
+\emph{timing trace}: each stage and the pipeline driver log
+\texttt{start}/\texttt{end} events for their \texttt{prepare} and \texttt{run}
+phases as timestamped lines; per-query events additionally carry the query id,
+submission timestamp, epoch, and batch index. (ii)~For the case studies, a
+per-query JSONL sidecar written by \texttt{TerminalCapture}, a built-in sink
+stage that records the question, golden answers, retrieved documents, and
+generated answer; the instrument experiments
+(\S\ref{sec:exp-noop},~\S\ref{sec:exp-modularity}) emit only the timing trace.
+All durations are taken from a single monotonic clock (\texttt{time.perf\_counter};
+\texttt{time.get\_clock\_info} reports a resolution of [[FILL: value]] on the
+M2~Pro and \SI{1}{\nano\second} (\texttt{clock\_gettime(CLOCK\_MONOTONIC)}) on
+GB10); wall-clock time (\texttt{time.time}) is
+used only for cross-process trace alignment, never for per-stage latency.
+
+In parallel, RadT attaches host-level resource listeners to each pipeline
+\emph{process} (\texttt{macmon} for Apple-silicon power/thermals;
+\texttt{nvidia-smi}, \texttt{dcgmi}, \texttt{iostat}, and \texttt{top} on the
+NVIDIA host), and \sysname{} records MLflow trace spans whose flow identifiers
+link a query's per-stage slices into a single Perfetto trace. Because isolation
+is at the process boundary --- one OS process per pipeline, with the stages of
+a pipeline running as threads inside it --- these listeners attribute resource
+use per pipeline even when pipelines are collocated. All quantitative metrics
+below are computed offline from the timing traces and JSONL sidecars by the
+analysis scripts in \texttt{evaluation/scripts/}.
+
+\paragraph{Performance metrics.} From the per-query timing intervals we report:
+\begin{itemize}
+  \item \textbf{Per-query latency} --- wall time from a query's pipeline
+    \texttt{run}-start to its \texttt{run}-end; we report median (with the
+    bootstrap CI below), mean, and max, and report p95/p99 only when the pooled
+    sample across the $R$ runs reaches at least \num{100} queries,
+    since tail quantiles are not estimable at smaller sizes.
+  \item \textbf{Throughput} --- completed queries divided by the run's
+    makespan, $\max(\text{end}) - \min(\text{start})$ over all queries. This is
+    MLPerf Inference's \emph{Offline} throughput; we do not report MLPerf
+    \emph{Server} (SLO-constrained sustainable QPS). The Poisson scheduler is
+    used to induce stage overlap, not to certify a sustained service rate.
+  \item \textbf{Stage concurrency} --- a sweep line over all stage \texttt{run}
+    intervals yields the number of stages whose intervals overlap in
+    wall-clock time. Because stages run as Python threads, this measures
+    temporal \emph{overlap}, not CPU parallelism: pure-Python work is
+    serialized by the GIL, whereas the model and retrieval stages spend their
+    time inside GIL-releasing native kernels (Torch/MLX/Metal, FAISS) and so
+    overlap genuinely. We therefore read concurrency together with the
+    per-device occupancy below, which attributes work to hardware engines.
+  \item \textbf{Per-device occupancy} --- for each device (CPU / GPU via
+    \texttt{mps} / ANE on Apple; CPU / CUDA GPU on NVIDIA) we take the
+    \emph{union} of the run intervals of the stages mapped to it and report the
+    merged time and its fraction of makespan. We label this \emph{occupancy}
+    (residency), not hardware utilization: it measures how long a device hosts
+    a running stage, not how busy its execution units are. For true compute
+    utilization we cross-reference \texttt{nvidia-smi}/\texttt{dcgmi}
+    SM-activity counters on the NVIDIA host; the Apple Neural Engine exposes no
+    per-process utilization counter, so on the M2~Pro occupancy is the only
+    available per-engine signal (a stated limitation). Occupancy fractions can
+    exceed 100\% in aggregate across devices when collocated stages run
+    concurrently.
+\end{itemize}
+
+\paragraph{Framework-overhead metrics.} For the instrument-fidelity experiments
+we additionally report per-stage overhead (mean per-query latency divided by
+pipeline depth, in \si{\micro\second}), the inter-stage transition cost (the
+gap between one stage's \texttt{end} and the next stage's \texttt{start}), and,
+for the modularity study, the relative overhead
+$(\,t_{\text{\sysname}} - t_{\text{baseline}})/t_{\text{baseline}}$ of per-step
+latency against a hand-written baseline. Here the unit of work is one training
+\emph{step} (one batch) driven by a single in-flight query, so ``per-step
+latency'' is the per-query latency above measured at batch granularity. Warm-up
+is handled per experiment and stated with each
+(\S\ref{sec:exp-noop},~\S\ref{sec:exp-modularity}) rather than by a single
+global rule.
+
+\paragraph{Quality metrics (RAG case studies).} For pipelines that produce
+answers we report, from the JSONL sidecar, the standard accuracy metric for each
+task family: \textbf{exact match (EM)} and \textbf{token-level F1} for the
+text-RAG tasks~\cite{rajpurkar2016squad,yang2018hotpotqa}, and the standard
+\textbf{VQA accuracy} (soft match over the annotator answer
+set)~\cite{antol2015vqa,goyal2017vqav2} for the OK-VQA pipeline. Our current
+analysis scripts compute an \textbf{answer-containment rate} --- the fraction of
+queries whose normalized golden answer appears as a substring of the normalized
+generated answer --- which we report as a lenient secondary proxy; the EM/F1 and
+VQA-accuracy scorers extend this pass over the same captured golden answers.
+Containment is gameable by verbosity (a longer answer is more likely to contain
+the golden string), and the topology study compares models of different
+verbosity, so we report it alongside mean answer length and flag any advantage
+that co-varies with length; it is a coarse regression detector, not an accuracy
+score. We also report the \textbf{answered rate} (queries yielding a non-empty
+answer that does not hit the retry-exhaustion sentinel) and, to confirm two
+topologies attempt the same task, a \textbf{cross-pipeline parity} score: the
+mean token-level Jaccard overlap of answers to shared questions (we also report
+the count matched at Jaccard${\ge}0.5$). Parity measures \emph{agreement}, not
+correctness: two arms may agree on the same wrong answer. Read together with
+EM/F1, it flags whether a faster configuration has silently degraded answers,
+but it does not certify equal quality across the 9B and 4B models of
+\S\ref{sec:exp-topology}.
+
+\paragraph{Statistical methodology.} Each configuration is run $R$ times
+($R=5$) with fixed, distinct seeds controlling query order and the
+Poisson arrival process. Latency distributions are pooled across the queries of
+all $R$ runs; we report the median and, where the pooled sample size permits, a
+nonparametric bootstrap 95\% confidence interval ($10^4$ resamples) rather than
+the mean, since per-query latency is heavy-tailed. For rate metrics (answered
+rate, containment rate, EM/accuracy) we report Wilson 95\% intervals on the
+underlying counts and call a difference between two arms significant only when
+their intervals are disjoint. Throughput is reported as the across-run median
+with its CI. Unless stated otherwise, generation is greedy: we set
+\texttt{do\_sample=false} (temperature~0) explicitly, independent of backend
+defaults, so answers are deterministic given the model and prompt; we verify
+determinism with a repeat-run identical-output check and use the same decoding
+policy for every arm of a comparison. This removes sampling as a confound in the
+topology and parity comparisons.
+
+\paragraph{Reproducibility.} Models are pinned by Hugging Face commit revision
+([[FILL: hashes for Qwen3.5-9B and Qwen3.5-4B, CLIP-ViT-L/14]]); the 4-bit MLX
+weights are produced from those revisions with [[FILL: quantization recipe /
+bit-layout]]. Datasets are pinned by version and snapshot date
+([[FILL: rag-mini-wikipedia, HotpotQA/FlashRAG split, OK-VQA, COCO-Karpathy]]);
+FAISS and ChromaDB indices are built with [[FILL: index type, metric, build
+params]]. The Poisson load generator uses a per-experiment arrival rate, chosen
+so the entry queue backs up in pipelined mode (VQA $\lambda=2.0$; Self-RAG
+$\lambda=4.0$ on the CUDA host and $\lambda=1.0$ on the 4-bit MLX host),
+confirmed by the measured stage-concurrency mean; serial runs set
+\texttt{serialize\_queries=true}. All configurations, seeds, and analysis
+scripts are released at [[FILL: URL]] so that the reported numbers are
+reproducible from the released traces.
+
+% ---------------------------------------------------------------------
+\subsection{Experiments}
+\label{sec:experiments}
+
+We run four experiments. Two are instrument-fidelity checks that bound the
+measurement overhead \sysname{} introduces, so that overhead reported for real
+workloads can be attributed to the workload rather than the harness; the other
+two --- our primary evidence --- use \sysname{} to surface end-to-end,
+collocation-aware behavior that single-stream, single-engine benchmarks cannot
+observe. Each is specified by its \textbf{Question}, \textbf{Design}, and
+\textbf{Metrics}; results appear in Section~\ref{sec:results}.
+
+% .....................................................................
+\subsubsection{Framework overhead}
+\label{sec:exp-noop}
+
+\textbf{Question.} \sysname{} executes every stage in its own thread and moves
+data between stages through queues. Before trusting any end-to-end number, we
+bound the cost of that machinery: how much latency does each additional stage
+add, and does passing data by reference avoid per-stage copy cost?
+
+\textbf{Design.} We construct synthetic pipelines of pass-through (no-op)
+stages that perform no computation, so all measured time is framework overhead.
+Two sweeps: (i)~a \emph{depth} sweep over chain length
+$N \in \{1,2,3,4,5,6,7,8,9,10,16,32,50,64,100\}$ to isolate per-stage dispatch
+and queue hand-off cost; and (ii)~a \emph{payload} sweep at fixed depth~10 that
+passes payloads of \SI{1}{\kibi\byte}, \SI{1}{\mebi\byte}, and
+\SI{10}{\mebi\byte} under two regimes --- reference passing vs.\ a stage that
+deep-copies its payload each hop --- to isolate data-movement cost.
+Configurations are generated programmatically
+(\texttt{noop\_chain\_generator.py}). The load generator runs \emph{closed-loop}
+(\texttt{OfflineLoadScheduler}, exactly one query in flight at a time), so this
+experiment measures per-stage dispatch and reference-vs-copy cost in isolation;
+it deliberately does \emph{not} measure queue backlog (queueing), which is
+exercised in the contention case studies below. We separate the framework's
+overhead into two costs and measure both: its \emph{core dispatch} (thread
+wake-up, queue hand-off, and the timing log), measured with the MLflow tracing
+layer disabled (\texttt{CHOREO\_DISABLE\_TRACING}); and the \emph{tracing layer}
+itself (three spans per stage per query), measured with tracing on, so its cost
+can be read against real stage latencies (Section~\ref{sec:results}). All
+per-stage timings use the monotonic \texttt{perf\_counter\_ns} clock emitted
+alongside the wall-clock trace; because the stages of a pipeline are threads in
+one process, this clock is directly comparable across stages. We discard the
+first query of each run as warm-up, pool the remainder across the $R$ runs, and
+report the median with the bootstrap CI of Section~\ref{sec:metrics}. Because
+no accelerator kernel runs in a no-op stage, this overhead is a property of the
+framework and the CPython interpreter rather than of the device; we therefore
+bound it on a single representative machine (the M2~Pro), which also avoids
+conflating interpreter and OS-scheduler differences with the quantity of
+interest.
+
+\textbf{Metrics.} Median per-query latency, per-stage overhead
+(\si{\micro\second}), inter-stage transition cost, and the reference-vs-copy
+latency ratio across payload sizes. We read these against three claims.
+\emph{(i)~Depth-flatness:} per-query latency is linear in depth and the
+inter-stage transition cost does not grow with depth, so per-stage overhead does
+not accumulate and arbitrarily deep, non-linear graphs incur no measurement
+distortion. \emph{(ii)~Zero-copy:} reference passing is constant in payload size
+($O(1)$) while the deep-copy arm grows linearly ($O(\text{payload})$); the
+copy arm is the counterfactual for a framework that serializes data between
+stages. \emph{(iii)~Overhead-in-context:} the core-dispatch tax, and even the
+heavier tracing-layer cost, are a negligible fraction of a single real model or
+retrieval stage (Section~\ref{sec:results}), so overhead in the case studies is
+attributable to the workload rather than the harness. \emph{Threats to validity.}
+Because no-op
+stages never release the GIL, the per-stage figure is a worst-case,
+GIL-serialized hand-off cost and an upper bound on what real
+(native-kernel-bound) stages incur; the copy arm measures in-process
+\texttt{deepcopy} (memory-copy) cost and therefore lower-bounds the
+serialization cost of the process-level isolation the case studies rely on.
+This experiment tests whether per-stage overhead is small and flat in depth and
+whether reference passing is constant in payload size; if so, overhead in real
+workloads is attributable to the workload rather than the harness.
+
+% .....................................................................
+\subsubsection{Modularity overhead}
+\label{sec:exp-modularity}
+
+\textbf{Question.} Empty stages being cheap (\S\ref{sec:exp-noop}) does not
+guarantee that wrapping a \emph{real} workload in \sysname{}'s graph, queue, and
+thread structure is cheap. We measure whether this structure inflates runtime
+relative to a monolithic, hand-written implementation.
+
+\textbf{Design.} We express the same training workload two ways and compare
+per-step latency distributions: (a)~a standalone PyTorch script with no
+framework, and (b)~an equivalent \sysname{} pipeline. The workload is
+transfer-learning fine-tuning of EfficientNetV2-S~\cite{tan2021efficientnetv2}
+on Imagenette~\cite{imagenette} (frozen backbone, replaced classifier head,
+Adam, batch size~8). The two implementations share identical data loading
+(\texttt{batch\_size}=8, \texttt{shuffle}, \texttt{drop\_last}, and matched
+\texttt{num\_workers}), the identically frozen backbone, and the same Adam /
+cross-entropy step (the same \num{12810} trainable parameters); both run the
+\texttt{train} split exclusively and both call
+\texttt{torch.\{mps,cuda\}.synchronize()} at the end of each step, so logged time
+reflects hardware completion rather than asynchronous kernel dispatch, leaving the
+surrounding framework as the only difference. The measured per-step bracket
+excludes data loading in both implementations. To isolate the wrapper rather than a
+data-path execution difference, we set \texttt{num\_workers}=0 in both, so neither
+prefetches a batch concurrently with the measured step (with background prefetch the
+serialized pipeline and the monolith contend for memory bandwidth differently, which
+confounds the per-step comparison); the \sysname{} data loader remains a separate,
+independently-measured stage. Per-step latency is taken from the monotonic
+\texttt{perf\_counter\_ns} clock. Each run is a single continuous epoch; we verified
+that the per-step latency is \emph{flat} within a run (the device reaches a stable
+clock state immediately and does not drift), so we simply discard the first
+\num{200} steps as warm-up (kernel autotuning and first-call compilation), pool the
+remainder across $R{=}5$ runs, and report the median with a two-sample bootstrap CI.
+As in \S\ref{sec:exp-noop} we measure two arms --- the framework's \emph{core
+dispatch} (MLflow tracing disabled) and the full \emph{instrumented} cost (tracing
+on); the hand-written baseline carries no tracing. We \emph{interleave} the arms run
+by run so they see identical conditions, and run on both DUTs (M2~Pro \texttt{mps}
+and DGX~Spark \texttt{cuda}), reading overhead within a device. Because batch-8
+EfficientNetV2-S is strongly GPU-bound (per-step compute $\gg$ framework
+overhead), the overhead is naturally a small fraction of step time; rather than
+contrive a stress configuration, we report the overhead in \emph{absolute} terms
+(\si{\micro\second}) as well as a ratio, so it reads as a fixed, step-size-%
+independent cost, and we rely on \S\ref{sec:exp-noop}, which establishes directly
+that the per-stage framework cost is fixed and does not scale with the work a
+stage does.
+
+\textbf{Metrics.} Pooled per-step latency (median, with a nonparametric bootstrap
+95\% CI) for each implementation, and the overhead of \sysname{} over the
+baseline as both an \emph{absolute} cost (\si{\micro\second}) and a ratio, with a
+two-independent-sample bootstrap CI. We report the absolute cost alongside the
+ratio so its magnitude is explicit: a per-step overhead whose CI excludes zero is
+statistically real, yet at \si{\micro\second} scale against a multi-millisecond
+step it is practically negligible. \emph{Threats to validity.} A modularity
+wrapper can only add work, so the overhead must be non-negative; a measured
+\emph{negative} value therefore signals a confound rather than a framework
+speedup, and we treat it as a bug to be found, not a result. We encountered two:
+an earlier wall-clock-based reading was corrupted by differencing non-monotonic
+timestamps across the pipeline's threads (removed by the monotonic
+\texttt{perf\_counter}); and an earlier run schedule (all baseline runs first,
+with background DataLoader prefetch) let a data-path execution difference, not the
+wrapper, dominate (removed by interleaving the arms, matching \texttt{num\_workers},
+and measuring at steady state). With those controlled, the overhead is a small,
+correctly-signed positive. This experiment tests whether end-to-end modularity
+overhead is a negligible fraction of the step it wraps.
+
+% .....................................................................
+\subsubsection{Unified-memory bandwidth contention (multimodal VQA)}
+\label{sec:exp-bandwidth}
+
+\textbf{Question.} On an Apple-silicon unified-memory SoC, the GPU, Neural
+Engine, and CPU share one physical memory and its bandwidth. Single-engine
+accelerator-throughput benchmarks cannot see the resulting contention. When we
+map the stages of one workload across different engines, is the apparent benefit
+of that heterogeneity real, or does it evaporate once queries overlap and the
+engines contend for shared memory bandwidth? (This experiment runs on the
+M2~Pro only; the Neural Engine has no GB10 analogue.)
+
+\textbf{Design.} A single image-grounded VQA pipeline ---
+CLIP-ViT-L/14~\cite{radford2021clip} vision encoding $\rightarrow$ FAISS
+retrieval~\cite{johnson2019faiss} over \num{10000} COCO-Karpathy
+captions~\cite{lin2014coco,karpathy2015deepvs} (top-3) $\rightarrow$ 4-bit MLX
+Qwen3.5-9B (\texttt{mlx-community/Qwen3.5-9B-OptiQ-4bit}~\cite{qwen35}) answer
+generation on the GPU via MLX --- over OK-VQA~\cite{marino2019okvqa} questions.
+We run it as a $2\times2$ over \emph{accelerator mapping} and \emph{schedule}:
+\begin{itemize}
+  \item \emph{Mapping~A (collocated):} CLIP and the LLM both on the GPU
+    (\texttt{mps}); retrieval on CPU.
+  \item \emph{Mapping~B (heterogeneous):} CLIP exported to Core~ML and run on
+    the Neural Engine (\texttt{ane}); the LLM on the GPU; retrieval on CPU.
+  \item \emph{Schedule:} \emph{pipelined} (Poisson arrivals at
+    \texttt{rate}=2.0~queries/s, above the ${\approx}3$~s/query LLM service
+    time, so several queries stay in flight) vs.\ \emph{serial} (one query
+    end-to-end at a time). The serial cells are produced with the load
+    generator's \texttt{-{}-serialize} override; the configurations are
+    otherwise identical.
+\end{itemize}
+\emph{Confound.} Mapping~B changes more than placement: the encoder switches
+from a PyTorch/Metal model (\texttt{mps}) to a Core~ML FP16 package on the ANE,
+so engine, runtime, and numerical precision co-vary, and the ANE incurs a
+first-call compilation cost. A raw B-vs-A delta therefore conflates these
+factors. We read the bandwidth signal primarily \emph{within} a mapping (serial
+vs.\ pipelined for the same encoder), discard the ANE first-call compilation
+query as warm-up and report it separately, and use cross-pipeline answer parity
+(matched per question id from the JSONL sidecar) as a coarse check on downstream
+divergence from the FP16 embeddings --- it does not directly measure
+retrieval-set overlap. Each cell runs \texttt{max\_queries}=30; we report tail
+latencies only on the distribution pooled across the $R$ runs
+(\S\ref{sec:metrics}), never per run.
+
+\textbf{Metrics.} Per-query latency, throughput, stage concurrency, and
+per-device occupancy (CPU/GPU/ANE) for each cell; VQA accuracy and answer parity
+to confirm the arms are comparable. The diagnostic of interest is whether the
+heterogeneity advantage collapses from serial to pipelined --- behavior
+\emph{consistent with} a bandwidth-bound rather than compute-bound regime. We
+corroborate it with a direct DRAM-bandwidth/power read
+([[FILL: \texttt{powermetrics}/\texttt{macmon}]]) where available; absent that,
+we rule out the principal alternatives (non-overlapping ANE/GPU execution,
+command-buffer queueing) using the per-stage concurrency and occupancy traces.
+
+% .....................................................................
+\subsubsection{Pipeline topology: monolithic vs.\ decomposed agentic RAG}
+\label{sec:exp-topology}
+
+\textbf{Question.} For an agentic, self-reflective RAG
+workload~\cite{asai2024selfrag}, is it better to use one large model that
+performs every sub-task (relevance grading, answering, hallucination checking)
+in a single call, or several smaller specialist models composed into a graph?
+Such exploratory, ablation-style restructuring is difficult to express in
+fixed-topology benchmarks but is directly supported by \sysname{}'s declarative,
+non-linear graphs.
+
+\textbf{Design.} We implement a Self-RAG pipeline in two topologies that target
+the same task and swap between them by changing only the configuration:
+\begin{itemize}
+  \item \emph{Monolith:} one large model (Qwen3.5-9B) does grade + answer +
+    hallucination-check in a single structured pass; a router validates the
+    output and optionally loops through a query rewriter (a back-edge in the
+    graph, bounded by a retry budget).
+  \item \emph{Decomposed:} three smaller specialist instances (Qwen3.5-4B;
+    grader / generator / hallucination-checker, with the rewriter sharing the grader)
+    split the job into separate stages connected by routers, so cheap
+    grade/check calls for one query can overlap the expensive generation for
+    another.
+\end{itemize}
+The decomposed topology exercises \sysname{}'s fan-out routing, fan-in merge
+policies, and a feedback cycle (the retrieve--grade--rewrite loop), and is a
+within-pipeline collocation case: three models co-resident on one accelerator,
+profiled per stage. We run both topologies on two task difficulties (factoid:
+\texttt{rag-mini-wikipedia}; multi-hop: HotpotQA~\cite{yang2018hotpotqa}),
+retrieving from ChromaDB~\cite{chroma}, on both DUTs (DGX~Spark with BF16
+HF/PyTorch models; M2~Pro with 4-bit MLX models). Retrieval is configured per
+difficulty and held fixed across both topologies: factoid retrieves top-3 over
+3{,}200 \texttt{rag-mini-wikipedia} passages, while multi-hop retrieves top-5
+over a 20{,}000-passage corpus built from the gold and distractor contexts of
+the first 300 HotpotQA-dev questions (via the FlashRAG redistribution). Because
+retrieval depth and corpus size differ across difficulties, the
+monolith-vs-decomposed contrast is read within a difficulty, not across.
+
+\emph{Confound and control.} The monolith uses one 9B model while the
+decomposed graph uses three 4B instances, so topology, model \emph{size}, and
+\emph{call count} (one long generation vs.\ three short, overlappable ones)
+co-vary. To attribute an effect to topology rather than to using a smaller
+model, we add a size-matched control --- a 4B monolith issuing the three calls
+sequentially --- so the decomposed-vs-control contrast isolates
+overlap/specialization at fixed parameter size [[FILL: confirm control arm
+run]]. Load generation is \emph{not} identical across DUTs: the CUDA host uses
+\texttt{rate}=4.0 with 30~queries, while the slower 4-bit MLX host uses
+\texttt{rate}=1.0 with 10~queries, each chosen so the entry queue backs up in
+pipelined mode. We therefore compare topologies \emph{within} a DUT and treat
+cross-DUT numbers as portability checks, not head-to-head latency. Serial cells
+use the \texttt{-{}-serialize} override.
+
+\textbf{Metrics.} The full performance set (per-query latency, throughput, stage
+concurrency, per-device occupancy, LLM calls per query, resident model memory)
+and the quality set (EM/F1, answered rate, answer parity). Because the arms use
+different model sizes, we condition every speed comparison on the EM/F1 of the
+two arms: a speed result obtained at degraded accuracy is reported as a
+trade-off, not as a free win. The contribution here is methodological as much as
+empirical: a single declarative reconfiguration, profiled end-to-end and
+per-stage across two machines, yields a trade-off study that an isolated,
+single-graph benchmark cannot produce.
+
+\paragraph{On collocation.} We do not run a separate independent-workload
+interference experiment in this paper. Collocation is instead exercised
+\emph{within} the case studies --- the VQA pipeline collocates CLIP and the LLM
+on one GPU (\S\ref{sec:exp-bandwidth}), and the decomposed Self-RAG pipeline
+collocates three model instances on one accelerator
+(\S\ref{sec:exp-topology}) --- and \sysname{}'s per-process, per-stage
+instrumentation is what makes the resulting contention measurable. A controlled
+study of independent collocated workloads (e.g.\ foreground inference contending
+with a background fine-tune) is a natural next use of the framework and is left
+to future work.
+% REVIEWER (D1, HIGH): the Intro headlines "collocation-aware profiling" and
+% "launching an arbitrary number of concurrently running pipelines" as a core
+% contribution; declining the inter-pipeline experiment here reads as the main
+% claim being unsupported. Strongest fix: add ONE cell launching a Poisson VQA
+% inference pipeline collocated with the offline EfficientNet fine-tune
+% (torchvision_mixed.yml exists), reporting foreground p95 degradation vs.
+% isolation and per-PROCESS occupancy. Otherwise soften Contribution 4 and the
+% framework prose. Also unaddressed: no first-class scalability sweep (Intro
+% claims "no-code scalability"/"stress hardware of any size" -- a model-size
+% sweep via the declarative `model` field would substantiate it), and no
+% baseline-tool (MLPerf) end-to-end-vs-isolated contrast despite the paper's
+% "MLPerf falls short" thesis (pipeline_configs/mlperf/ configs exist).
+
+% =====================================================================
+%  REQUIRED CITATIONS (add to .bib; keys used above are placeholders):
+%   rajpurkar2016squad  - SQuAD (EM/F1)                 - Rajpurkar+ EMNLP'16
+%   yang2018hotpotqa    - HotpotQA                       - Yang+ EMNLP'18
+%   antol2015vqa        - VQA accuracy metric (OK-VQA)    - Antol+ ICCV'15
+%   goyal2017vqav2      - VQA v2 accuracy                 - Goyal+ CVPR'17
+%   tan2021efficientnetv2 - EfficientNetV2               - Tan & Le ICML'21
+%   imagenette          - Imagenette dataset             - Howard (fast.ai)
+%   radford2021clip     - CLIP                           - Radford+ ICML'21
+%   johnson2019faiss    - FAISS                          - Johnson+ IEEE BigData'19
+%   lin2014coco         - MS COCO                        - Lin+ ECCV'14
+%   karpathy2015deepvs  - Karpathy caption split         - Karpathy & Fei-Fei CVPR'15
+%   marino2019okvqa     - OK-VQA                         - Marino+ CVPR'19
+%   qwen35              - Qwen3.5 + OptiQ-4bit MLX card
+%   asai2024selfrag     - Self-RAG                        - Asai+ ICLR'24
+%   chroma              - ChromaDB (project/docs)
+%  ALSO cite where referenced elsewhere in the paper:
+%   MLPerf Inference (Reddi+ ISCA'20; Offline/Server scenarios), MLPerf Tiny
+%   (Banbury+ MLSys'21), TPCx-AI (Brücke+ VLDB'23), AIBench (Gao+), DAWNBench
+%   (Coleman+ '17), MLX (Apple ml-explore), Core ML/ANE (Apple docs), Perfetto,
+%   MLflow (Zaharia+ '18), Phi-3-mini (Abdin+ '24), RAG (Lewis+ '20),
+%   DGX Spark/GB10 datasheet (128GB LPDDR5X, 273 GB/s, NVLink-C2C), and the
+%   draft's own margin TODOs: AISBench + the HPI TPCx-AI VLDB preprint.
+% =====================================================================

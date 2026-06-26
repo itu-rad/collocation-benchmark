@@ -17,7 +17,9 @@ dependencies:
     - mlflow==3.10.0
     - boto3==1.42.57
     - psutil==7.2.2
-    - radt==0.2.28
+    # radt async_tracing branch (non-blocking MLflow span export -> realistic tracing
+    # overhead). Pinned to commit 3ba61cb of feat/Sipondo/async_tracing; package in radt/ subdir.
+    - git+https://github.com/Resource-Aware-Data-systems-RAD/radt.git@3ba61cb1b541a38b531bd90d05843ef97f86b995#subdirectory=radt
 
     # Tracing + Perfetto export
     - sqlalchemy==2.0.47

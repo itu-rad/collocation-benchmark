@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from multiprocessing import Process, Queue
 from pydantic_yaml import parse_yaml_raw_as
 from typing import Literal
-from utils.logger import Logger
+from utils.logger import Logger, PERF_FORMAT, install_perf_clock
 from loadgen import run_loadgen
 from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
@@ -73,6 +73,14 @@ def radt_entrypoint(args):
     # because the async/sync flag is read at exporter init time.
     configure_sync_export()
 
+    # Measurement knob for the framework-overhead microbenchmark: when set, turn
+    # MLflow tracing into a no-op so per-stage spans (3 per stage per query) do
+    # not dominate the measured cost. This isolates the framework's CORE dispatch
+    # (thread wake + queue hand-off + CSV log) from the optional profiling layer.
+    # Unset in all normal runs, so it has no effect on the case studies.
+    if os.environ.get("CHOREO_DISABLE_TRACING", "").lower() in ("1", "true", "yes"):
+        mlflow.tracing.disable()
+
     # Belt-and-braces for the prior "RadT killed the subprocess before MLflow
     # drained" issue: catch SIGTERM, flush spans, then re-raise so the
     # default handler still terminates us.
@@ -106,7 +114,8 @@ def radt_entrypoint(args):
         # JSONL filename matches the CSV filename.
         os.environ["CHOREO_OUTPUT_LABEL"] = pipeline_name
 
-        formatter = logging.Formatter("%(created)f, %(message)s")
+        install_perf_clock()
+        formatter = logging.Formatter(PERF_FORMAT)
         file_handler = logging.FileHandler(filename=log_file)
         file_handler.setFormatter(formatter)
 
