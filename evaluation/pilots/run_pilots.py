@@ -175,9 +175,13 @@ def _git_sha() -> str:
         return "unknown"
 
 
-def make_pilot_config(base_cfg_path: Path, n_queries: int, timeout_s: int) -> str:
+def make_pilot_config(base_cfg_path: Path, n_queries: int, timeout_s: int,
+                      device: str) -> str:
     """Copy the base config with the loadgen block overridden to serial pilot
-    mode (closed-loop, one in flight). Returns the temp file path."""
+    mode (closed-loop, one in flight). On the mlx device, device-agnostic
+    torch configs (E5 resnet, E6 torchvision) get their stage `device: cuda`
+    remapped to `mps` (same device patching run_modularity.py does).
+    Returns the temp file path."""
     doc = yaml.safe_load(base_cfg_path.read_text(encoding="utf-8"))
     for pipe in doc["pipelines"]:
         pipe["loadgen"] = {
@@ -187,6 +191,11 @@ def make_pilot_config(base_cfg_path: Path, n_queries: int, timeout_s: int) -> st
             "timeout": timeout_s,
             "config": {"rate": 0},
         }
+        if device == "mlx":
+            for stage in pipe.get("stages", []):
+                cfg = stage.get("config") or {}
+                if cfg.get("device") == "cuda":
+                    cfg["device"] = "mps"
     fd, tmp = tempfile.mkstemp(suffix=".yml", prefix="pilot_")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         yaml.safe_dump(doc, f, sort_keys=False)
@@ -212,7 +221,7 @@ def run_cell(cell: PilotCell, device: str, force: bool,
         if target.exists() and not force:
             print(f"[skip] {label} (exists)")
             continue
-        tmp = make_pilot_config(base, n_q, cell.timeout_s)
+        tmp = make_pilot_config(base, n_q, cell.timeout_s, device)
         env = dict(os.environ, CHOREO_DISABLE_TRACING="1")
         print(f"[run ] {label}  (config {cfg_rel}, N={n_q})")
         t0 = time.time()
