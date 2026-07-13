@@ -63,6 +63,17 @@ class PoissonLoadScheduler(LoadScheduler):
 
         counter = 0
 
+        # Coordinated-omission telemetry (does NOT change the load behavior):
+        # queue.put() below is blocking, so if the bounded entry queue fills the
+        # generator stalls and the realized arrivals are silently throttled below
+        # the intended Poisson rate. A put() that takes longer than this threshold
+        # means the queue was full; we count it and warn at the end so the arrival
+        # process can be validated at collection time.
+        _block_threshold_s = 0.005
+        _blocked_puts = 0
+        _total_block_s = 0.0
+        _max_block_s = 0.0
+
         try:
             while counter < self.max_queries:
                 for split_name, split_batches in self.dataset_splits.items():
@@ -89,6 +100,7 @@ class PoissonLoadScheduler(LoadScheduler):
                             # queue is full because pipeline is in serialize
                             # mode or just slow, wait for the consumer instead
                             # of crashing with queue.Full).
+                            _t_put = time()
                             queue.put(
                                 Query(
                                     split=split_name,
@@ -97,6 +109,14 @@ class PoissonLoadScheduler(LoadScheduler):
                                     out_flow_id=flow_id,
                                 )
                             )
+                            _put_s = time() - _t_put
+
+                        # A slow put() means the entry queue was full → the
+                        # open-loop arrival stream was throttled (coordinated omission).
+                        if _put_s > _block_threshold_s:
+                            _blocked_puts += 1
+                            _total_block_s += _put_s
+                            _max_block_s = max(_max_block_s, _put_s)
 
                         # increament the counter and check that it does not exceed max_queries
                         counter += 1
@@ -114,3 +134,12 @@ class PoissonLoadScheduler(LoadScheduler):
             # so downstream stages don't hang and we don't leak a Timer thread.
             queue.put(None)
             self.timer.cancel()
+            if _blocked_puts:
+                print(
+                    f"[loadgen] WARNING coordinated omission: {_blocked_puts}/{counter} "
+                    f"submits blocked on a full entry queue "
+                    f"(total {_total_block_s:.3f}s, max {_max_block_s * 1000:.1f}ms). "
+                    f"The realized arrival process was throttled below the intended "
+                    f"Poisson rate={self.rate}; raise queue_depth or lower the rate for a "
+                    f"valid open-loop latency measurement."
+                )

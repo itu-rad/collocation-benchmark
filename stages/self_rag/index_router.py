@@ -20,7 +20,7 @@ class IndexRouter(Stage):
         """
 
         if type(query.data[0]) is not str:
-            query.data = [x.dump_model_json() for x in query.data] 
+            query.data = [x.model_dump_json() for x in query.data]
 
         sqllite_idx = query.data[0].lower().find("sqlite")
 

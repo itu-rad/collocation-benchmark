@@ -1,6 +1,3 @@
-from ast import parse
-from os import replace
-from pandas import lreshape
 import torch
 from torch.nn import Linear, CrossEntropyLoss
 from torch.optim import SGD
@@ -140,7 +137,11 @@ class TorchVisionClassification(Stage):
             self._model.train()
 
         with torch.set_grad_enabled(query.split == "train"):
-            self._optimizer.zero_grad()
+            # Only the training path has (and needs) an optimizer; guarding here
+            # avoids an AttributeError on inference configs that omit `optimizer`
+            # (e.g. mlperf/resnet_inference.yml) and a wasted zero_grad on val.
+            if query.split == "train" and self._optimizer is not None:
+                self._optimizer.zero_grad()
 
             outputs = self._model(inputs)
 

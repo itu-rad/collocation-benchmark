@@ -82,6 +82,10 @@ class Stage:
         self.extra_config = stage_config.config
         self._stage_dict: dict[int, Stage] = {}
         self._input_queues: dict[int, PeekableQueue] = {}
+        # One condition per consuming stage, shared by all of its input queues
+        # (which notify it on put) and its polling policy (which waits on it),
+        # so fan-in polling blocks instead of busy-waiting.
+        self._input_cond = threading.Condition()
         self.output_queues: dict[int, Queue] = {}
         self._logger = logging.getLogger("benchmark")
 
@@ -143,7 +147,9 @@ class Stage:
         """
         if idx not in self._input_queues:
             maxsize = self._stage_config.max_input_queue_depth or 0
-            self._input_queues[idx] = PeekableQueue(maxsize=maxsize)
+            self._input_queues[idx] = PeekableQueue(
+                maxsize=maxsize, notify_condition=self._input_cond
+            )
         return self._input_queues[idx]
 
     def dispatch_call(
@@ -187,7 +193,7 @@ class Stage:
         ):
             raise ValueError("SingleQueuePolicy only works with one input queue")
         self._polling_policy_obj: PollingPolicy = get_component(self._polling_policy)(
-            self._input_queues
+            self._input_queues, self._input_cond
         )
         self._thread = Thread(target=self.run_wrapper)
         self._thread.start()

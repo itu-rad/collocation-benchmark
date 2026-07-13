@@ -25,8 +25,6 @@ def run_loadgen(pipeline_config: PipelineModel) -> None:
         pipeline_config (PipelineModel): Pipeline configuration (parsed from YAML file)
     """
     loadgen = LoadGen(pipeline_config)
-    # TODO: Write this to a .md file
-    print(loadgen)
     loadgen.run()
 
 
