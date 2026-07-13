@@ -151,10 +151,16 @@ def select(runs, depth=None, size=None, mode=None, trace=None):
     return out
 
 
+# Warm-up drop count (epochs per run). Default 1 = historical behavior; the
+# pilot protocol derives the canonical k (rule R-WARMUP) into
+# evaluation/pilots/knobs.yml — analyzers set this module global from there.
+WARMUP_K = 1
+
+
 def _drop_warmup(run):
-    """Epochs of a run with the first (smallest) epoch dropped as warm-up."""
+    """Epochs of a run with the first WARMUP_K epochs dropped as warm-up."""
     eps = run.epochs
-    return eps[1:] if len(eps) > 1 else eps
+    return eps[WARMUP_K:] if len(eps) > WARMUP_K else eps
 
 
 def pool_latency(runs):

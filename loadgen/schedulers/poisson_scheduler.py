@@ -6,6 +6,7 @@ from time import sleep, time
 import mlflow
 
 from utils.schemas import Query
+from .arrival_log import ArrivalLog
 from .scheduler import LoadScheduler
 
 
@@ -74,6 +75,14 @@ class PoissonLoadScheduler(LoadScheduler):
         _total_block_s = 0.0
         _max_block_s = 0.0
 
+        # Intended-vs-actual arrival sidecar (<label>_arrivals.csv): the
+        # intended arrival of query i is t0 + sum(offsets[:i+1]); comparing it
+        # against the realized enqueue time makes the "queue never blocked" and
+        # "arrival process matches the scenario" checks data-backed.
+        _arrivals = ArrivalLog()
+        _t0 = None
+        _intended = 0.0
+
         try:
             while counter < self.max_queries:
                 for split_name, split_batches in self.dataset_splits.items():
@@ -101,11 +110,12 @@ class PoissonLoadScheduler(LoadScheduler):
                             # mode or just slow, wait for the consumer instead
                             # of crashing with queue.Full).
                             _t_put = time()
+                            _submitted = time()
                             queue.put(
                                 Query(
                                     split=split_name,
                                     batch=batch_idx,
-                                    query_submitted_timestamp=time(),
+                                    query_submitted_timestamp=_submitted,
                                     out_flow_id=flow_id,
                                 )
                             )
@@ -117,6 +127,11 @@ class PoissonLoadScheduler(LoadScheduler):
                             _blocked_puts += 1
                             _total_block_s += _put_s
                             _max_block_s = max(_max_block_s, _put_s)
+
+                        if _t0 is None:
+                            _t0 = _submitted
+                        _intended += self.offsets[counter]
+                        _arrivals.record(counter, _t0 + _intended, _submitted, _put_s)
 
                         # increament the counter and check that it does not exceed max_queries
                         counter += 1
@@ -134,6 +149,7 @@ class PoissonLoadScheduler(LoadScheduler):
             # so downstream stages don't hang and we don't leak a Timer thread.
             queue.put(None)
             self.timer.cancel()
+            _arrivals.write()
             if _blocked_puts:
                 print(
                     f"[loadgen] WARNING coordinated omission: {_blocked_puts}/{counter} "

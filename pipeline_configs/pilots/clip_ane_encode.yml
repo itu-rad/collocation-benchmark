@@ -1,0 +1,39 @@
+# Pilot workload: CLIP-L/14 image encode loop on the Neural Engine (CoreML).
+# Serves: E3 mapping-B encoder service time (+ first-call compile outlier,
+# reported separately); E3' co-runner C2 R_max + AMC ANE calibration load.
+# Requires the exported CoreML package (stages/multimodal_vqa/export_clip_coreml.py).
+name: "pilot_clip_ane_encode"
+pipelines:
+  - name: CLIP ANE encode pilot
+    inputs: [0]
+    outputs: [1]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 4
+      max_queries: 100
+      timeout: 900
+      config:
+        rate: 0
+    stages:
+      - name: VQA dataloader
+        id: 0
+        outputs: [1]
+        component: stages.multimodal_vqa.VQADataLoader
+        config:
+          dataset:
+            name: Multimodal-Fatima/OK-VQA_train
+            split: train
+            image_column: image
+            question_column: question
+            answers_column: answers
+            max_samples: 100
+          batch_size: 1
+      - name: CLIP vision encoder (CoreML)
+        id: 1
+        component: stages.multimodal_vqa.CLIPVisionEncoderCoreML
+        config:
+          model:
+            coreml_path: tmp/clip_vit_l14_vision.mlpackage
+            hf_name: openai/clip-vit-large-patch14
+          device: ane

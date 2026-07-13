@@ -165,8 +165,10 @@ def main():
     ap.add_argument("--device", choices=["cuda", "mps"], required=True,
                     help="cpu is refused (no GPU sync -> meaningless step timing)")
     ap.add_argument("--runs", type=int, default=5)
-    ap.add_argument("--max-batches", type=int, default=400,
-                    help="steps per run (100 dropped as warmup); baseline and "
+    ap.add_argument("--max-batches", type=int, default=1100,
+                    help="steps per run - one continuous epoch (200 dropped as "
+                         "warm-up by the analyzers; canonical value, see "
+                         "evaluation/pilots/knobs.yml R-WARMUP); baseline and "
                          "Choreo use the same count for an apples-to-apples N")
     ap.add_argument("--num-workers", type=int, default=0,
                     help="DataLoader workers for BOTH arms. Default 0 removes the "

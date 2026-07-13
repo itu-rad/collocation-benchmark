@@ -1,0 +1,37 @@
+# Pilot workload: CLIP-L/14 image encode loop on the GPU (mps).
+# Serves: E3 mapping-A encoder service time; E3' co-runner C1 R_max.
+# Encode-only truncation of multimodal_vqa_mapping_a.yml (stages 0->1).
+name: "pilot_clip_gpu_encode"
+pipelines:
+  - name: CLIP GPU encode pilot
+    inputs: [0]
+    outputs: [1]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 4
+      max_queries: 100
+      timeout: 900
+      config:
+        rate: 0
+    stages:
+      - name: VQA dataloader
+        id: 0
+        outputs: [1]
+        component: stages.multimodal_vqa.VQADataLoader
+        config:
+          dataset:
+            name: Multimodal-Fatima/OK-VQA_train
+            split: train
+            image_column: image
+            question_column: question
+            answers_column: answers
+            max_samples: 100
+          batch_size: 1
+      - name: CLIP vision encoder
+        id: 1
+        component: stages.multimodal_vqa.CLIPVisionEncoder
+        config:
+          model:
+            name: openai/clip-vit-large-patch14
+          device: mps
