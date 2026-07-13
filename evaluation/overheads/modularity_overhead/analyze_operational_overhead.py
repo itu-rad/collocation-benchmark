@@ -3,11 +3,12 @@
 in Choreo's graph/queue/thread structure measurably slower than a hand-written
 monolith?
 
-Per-step TRAINING-STAGE latency (monotonic perf column), pooled over R runs with
-the first 100 steps/run dropped as warmup. Reports baseline vs Choreo(tracing
-off) vs Choreo(tracing on), the overhead as both an absolute cost (us) and a
-ratio (%), each with a two-independent-sample bootstrap 95% CI, and an explicit
-"within noise" verdict (ratio CI contains 0).
+Per-step TRAINING-STAGE latency (monotonic perf column) over R runs with the
+first 200 steps/run dropped as warmup. Statistics follow the paper's rules:
+per-arm medians carry a HIERARCHICAL bootstrap CI (resample runs, then steps)
+with the raw per-run medians printed beside it; the overhead of record is the
+PAIRED across-run difference (the arms were interleaved run-by-run), with an
+explicit "within noise" verdict (CI contains 0).
 
     python analyze_operational_overhead.py [--results-dir DIR] --device cuda|mps
 """
@@ -36,40 +37,54 @@ def main():
         sys.exit(f"No mod_*_d{args.device}_*.csv in {args.results_dir}")
 
     w = args.warmup
-    base = ml.pool_steps(ml.select(metas, impl="baseline"), ml.parse_baseline_steps, warmup=w)
-    off = ml.pool_steps(ml.select(metas, impl="choreo", trace=0), ml.parse_choreo_train_steps, warmup=w)
-    on = ml.pool_steps(ml.select(metas, impl="choreo", trace=1), ml.parse_choreo_train_steps, warmup=w)
+    base = ml.steps_by_run(ml.select(metas, impl="baseline"), ml.parse_baseline_steps, warmup=w)
+    off = ml.steps_by_run(ml.select(metas, impl="choreo", trace=0), ml.parse_choreo_train_steps, warmup=w)
+    on = ml.steps_by_run(ml.select(metas, impl="choreo", trace=1), ml.parse_choreo_train_steps, warmup=w)
 
     print(f"\n## Modularity overhead -- per-step training latency ({args.device})\n")
-    print("| arm | N | median (ms) | 95% CI (ms) | p95 (ms) |")
-    print("|---|--:|------------:|:-----------:|---------:|")
-    for name, vec in (("baseline (monolith)", base),
-                      ("Choreo (tracing off)", off),
-                      ("Choreo (tracing on)", on)):
-        if not vec:
-            print(f"| {name} | 0 | — | — | — |")
+    print("| arm | N | median (ms) | 95% CI (ms, hier.) | p95 (ms) | per-run medians (ms) |")
+    print("|---|--:|------------:|:------------------:|---------:|:---|")
+    for name, by_run in (("baseline (monolith)", base),
+                         ("Choreo (tracing off)", off),
+                         ("Choreo (tracing on)", on)):
+        if not by_run:
+            print(f"| {name} | 0 | — | — | — | — |")
             continue
-        s = ml.summarize(vec, ml.NS_PER_MS)
+        s = ml.summarize(by_run, ml.NS_PER_MS)
         p95 = f"{s['p95']:.3f}" if s['p95'] == s['p95'] else "n/a"
+        rm = " / ".join(f"{v:.3f}" for v in s["run_medians"])
         print(f"| {name} | {s['n']} | {s['median']:.3f} | "
-              f"[{s['ci_lo']:.3f}, {s['ci_hi']:.3f}] | {p95} |")
+              f"[{s['ci_lo']:.3f}, {s['ci_hi']:.3f}] | {p95} | {rm} |")
 
-    print("\n### Overhead vs the hand-written baseline\n")
-    print("| comparison | abs overhead (µs) | 95% CI (µs) | ratio | 95% CI | within noise? |")
-    print("|---|---:|:---:|---:|:---:|:---:|")
-    for name, vec in (("Choreo(off) − baseline", off), ("Choreo(on) − baseline", on)):
-        if not (base and vec):
+    print("\n### Overhead vs the hand-written baseline "
+          "(paired across-run difference — arms interleaved run-by-run)\n")
+    print("| comparison | abs overhead (µs) | 95% CI (µs) | ratio | 95% CI | "
+          "within noise? | per-pair d (µs) |")
+    print("|---|---:|:---:|---:|:---:|:---:|:---|")
+    for name, by_run in (("Choreo(off) − baseline", off), ("Choreo(on) − baseline", on)):
+        if not (base and by_run):
             continue
-        o = ml.overhead_ratio_ci(base, vec)
-        print(f"| {name} | {o['abs_ns'] / ml.NS_PER_US:.1f} | "
-              f"[{o['abs_lo'] / ml.NS_PER_US:.1f}, {o['abs_hi'] / ml.NS_PER_US:.1f}] | "
-              f"{o['ratio'] * 100:+.2f}% | [{o['ratio_lo'] * 100:+.2f}%, {o['ratio_hi'] * 100:+.2f}%] | "
-              f"{'YES' if o['within_noise'] else 'no'} |")
-    print("\n*Within noise = the ratio CI contains 0 ⇒ Choreo is statistically "
-          "indistinguishable from the monolith. A non-positive overhead (upper CI "
-          "≤ 0) means the framework adds no measurable per-step cost — Choreo "
-          "matches or marginally beats the monolith — not that it is a deliberate "
-          "speedup. Read absolute overhead (µs) as the fixed framework cost.*")
+        p = ml.paired_overhead_ci(base, by_run)
+        if p is None:
+            o = ml.overhead_ratio_ci(base, by_run)
+            print(f"| {name} (UNPAIRED — run ids don't align) | "
+                  f"{o['abs_ns'] / ml.NS_PER_US:.1f} | "
+                  f"[{o['abs_lo'] / ml.NS_PER_US:.1f}, {o['abs_hi'] / ml.NS_PER_US:.1f}] | "
+                  f"{o['ratio'] * 100:+.2f}% | [{o['ratio_lo'] * 100:+.2f}%, "
+                  f"{o['ratio_hi'] * 100:+.2f}%] | {'YES' if o['within_noise'] else 'no'} | — |")
+            continue
+        ds = " / ".join(f"{d / ml.NS_PER_US:+.0f}" for d in p["d_runs_ns"])
+        print(f"| {name} | {p['d_ns'] / ml.NS_PER_US:.1f} | "
+              f"[{p['d_lo'] / ml.NS_PER_US:.1f}, {p['d_hi'] / ml.NS_PER_US:.1f}] | "
+              f"{p['ratio'] * 100:+.2f}% | [{p['ratio_lo'] * 100:+.2f}%, {p['ratio_hi'] * 100:+.2f}%] | "
+              f"{'YES' if p['within_noise'] else 'no'} | {ds} |")
+    print("\n*Overhead = mean paired per-run difference of medians (pairs share a "
+          "run slot in the interleaved schedule); CI from a pair-resampling "
+          "bootstrap with within-run resampling. Within noise = the CI contains "
+          "0 ⇒ Choreo is statistically indistinguishable from the monolith. A "
+          "non-positive overhead means no measurable per-step cost, not a "
+          "deliberate speedup. Read absolute overhead (µs) as the fixed "
+          "framework cost.*")
 
 
 if __name__ == "__main__":

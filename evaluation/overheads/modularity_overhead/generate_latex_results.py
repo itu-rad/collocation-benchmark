@@ -27,13 +27,21 @@ def main():
     if not metas:
         sys.exit(f"No mod_*_d{args.device}_*.csv in {args.results_dir}")
     w = args.warmup
-    base = ml.pool_steps(ml.select(metas, impl="baseline"), ml.parse_baseline_steps, warmup=w)
-    off = ml.pool_steps(ml.select(metas, impl="choreo", trace=0), ml.parse_choreo_train_steps, warmup=w)
-    on = ml.pool_steps(ml.select(metas, impl="choreo", trace=1), ml.parse_choreo_train_steps, warmup=w)
+    base = ml.steps_by_run(ml.select(metas, impl="baseline"), ml.parse_baseline_steps, warmup=w)
+    off = ml.steps_by_run(ml.select(metas, impl="choreo", trace=0), ml.parse_choreo_train_steps, warmup=w)
+    on = ml.steps_by_run(ml.select(metas, impl="choreo", trace=1), ml.parse_choreo_train_steps, warmup=w)
 
     sb = ml.summarize(base, ml.NS_PER_MS)
     so = ml.summarize(off, ml.NS_PER_MS)
-    o_off = ml.overhead_ratio_ci(base, off)
+    # Statistic of record: paired across-run difference (interleaved arms);
+    # falls back to the unpaired hierarchical CI if run ids don't align.
+    o_off = ml.paired_overhead_ci(base, off)
+    if o_off is None:
+        o_off = ml.overhead_ratio_ci(base, off)
+        o_off.update(d_ns=o_off["abs_ns"], d_lo=o_off["abs_lo"],
+                     d_hi=o_off["abs_hi"], d_runs_ns=[], paired=False)
+    else:
+        o_off["paired"] = True
 
     if o_off["within_noise"]:
         verdict = "indistinguishable from zero"
@@ -45,12 +53,20 @@ def main():
         verdict = "significant"
     print(f"% --- Table 2: modularity overhead ({args.device}, EfficientNetV2-S "
           f"batch 8, tracing off, steady state) ---")
+    print(f"% per-run medians (ms) — monolith: "
+          + ", ".join(f"{v:.3f}" for v in sb["run_medians"])
+          + " | Choreo: " + ", ".join(f"{v:.3f}" for v in so["run_medians"]))
+    if o_off.get("paired") and o_off.get("d_runs_ns"):
+        print("% paired per-run differences (us): "
+              + ", ".join(f"{d / ml.NS_PER_US:+.0f}" for d in o_off["d_runs_ns"]))
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Wrapping a real EfficientNetV2-S Imagenette training step in "
           "Choreo's graph/queue/thread structure adds a negligible, fixed per-step "
           "overhead vs.\\ a hand-written monolith. Per-step training latency at "
-          f"steady state, median over $R$ runs, \\SI{{95}}{{\\percent}} bootstrap "
-          f"CI; {args.device}.}}")
+          "steady state, median over $R$ runs with a hierarchical bootstrap "
+          "\\SI{95}{\\percent} CI (runs resampled first, then steps); overhead is "
+          f"the paired across-run difference (interleaved arms); {args.device}. "
+          "Raw per-run values in the artifact.}")
     print("\\label{tab:modularity}")
     print("\\begin{tabular}{lrr}\n\\toprule")
     print("& Monolith & Choreo \\\\\n\\midrule")
@@ -58,9 +74,9 @@ def main():
     print(f"\\quad 95\\% CI & [{sb['ci_lo']:.3f}, {sb['ci_hi']:.3f}] & "
           f"[{so['ci_lo']:.3f}, {so['ci_hi']:.3f}] \\\\")
     print("\\midrule")
-    print(f"\\multicolumn{{3}}{{l}}{{Overhead: "
-          f"{o_off['abs_ns'] / ml.NS_PER_US:+.1f}\\,\\si{{\\micro\\second}} "
-          f"[{o_off['abs_lo'] / ml.NS_PER_US:+.1f}, {o_off['abs_hi'] / ml.NS_PER_US:+.1f}], "
+    print(f"\\multicolumn{{3}}{{l}}{{Overhead (paired): "
+          f"{o_off['d_ns'] / ml.NS_PER_US:+.1f}\\,\\si{{\\micro\\second}} "
+          f"[{o_off['d_lo'] / ml.NS_PER_US:+.1f}, {o_off['d_hi'] / ml.NS_PER_US:+.1f}], "
           f"{o_off['ratio'] * 100:+.2f}\\% "
           f"[{o_off['ratio_lo'] * 100:+.2f}, {o_off['ratio_hi'] * 100:+.2f}] "
           f"--- {verdict}}} \\\\")
@@ -68,7 +84,9 @@ def main():
     if on:
         son = ml.summarize(on, ml.NS_PER_MS)
         print(f"% tracing-on per-step median: {son['median']:.3f} ms "
-              f"(N={son['n']}); overhead-in-context in true_overhead_analysis.py")
+              f"(N={son['n']}; per-run: "
+              + ", ".join(f"{v:.3f}" for v in son["run_medians"])
+              + "); overhead-in-context in true_overhead_analysis.py")
 
 
 if __name__ == "__main__":

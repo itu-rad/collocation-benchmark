@@ -33,9 +33,9 @@ def main():
         sys.exit(f"No mod_*_d{args.device}_*.csv in {args.results_dir}")
 
     w = args.warmup
-    base = ml.pool_steps(ml.select(metas, impl="baseline"), ml.parse_baseline_steps, warmup=w)
-    off = ml.pool_steps(ml.select(metas, impl="choreo", trace=0), ml.parse_choreo_train_steps, warmup=w)
-    on = ml.pool_steps(ml.select(metas, impl="choreo", trace=1), ml.parse_choreo_train_steps, warmup=w)
+    base = ml.steps_by_run(ml.select(metas, impl="baseline"), ml.parse_baseline_steps, warmup=w)
+    off = ml.steps_by_run(ml.select(metas, impl="choreo", trace=0), ml.parse_choreo_train_steps, warmup=w)
+    on = ml.steps_by_run(ml.select(metas, impl="choreo", trace=1), ml.parse_choreo_train_steps, warmup=w)
     if not base or not off:
         sys.exit("Need baseline + Choreo(off) data.")
 
@@ -45,8 +45,8 @@ def main():
     print("| layer | per-step cost (µs) | as % of a real step |")
     print("|---|---:|---:|")
 
-    core = ml.overhead_ratio_ci(base, off)
-    core_us = core["abs_ns"] / ml.NS_PER_US
+    core = ml.paired_overhead_ci(base, off) or ml.overhead_ratio_ci(base, off)
+    core_us = core.get("d_ns", core.get("abs_ns")) / ml.NS_PER_US
     print(f"| core dispatch (Choreo off − baseline) | {core_us:.1f} | "
           f"{core_us / 1e3 / step_ms * 100:+.3f}% |")
     if on:

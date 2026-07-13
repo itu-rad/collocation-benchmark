@@ -150,58 +150,163 @@ def select(metas, impl=None, trace=None):
     return out
 
 
-def pool_steps(metas, parse_fn, warmup=100):
-    """Pool per-step durations across runs, dropping the first `warmup` steps/run."""
+def pool_steps(metas, parse_fn, warmup=200):
+    """Pool per-step durations across runs, dropping the first `warmup` steps/run.
+
+    Default warmup=200 matches the setup text (E2: drop the first 200 steps as
+    kernel-autotuning/first-call warm-up over the 1,100-step epoch)."""
     vec = []
-    for m in metas:
-        d = parse_fn(m["path"])
-        vec.extend(d[warmup:])
+    for _, run_vec in sorted(steps_by_run(metas, parse_fn, warmup).items()):
+        vec.extend(run_vec)
     return vec
+
+
+def steps_by_run(metas, parse_fn, warmup=200):
+    """Per-run step durations keyed by run id: {run: [ns, ...]}.
+
+    Preserves the cluster structure for the hierarchical bootstrap and the run
+    pairing (interleaved arms share run ids) for the paired difference."""
+    out = {}
+    for m in metas:
+        d = parse_fn(m["path"])[warmup:]
+        if d:
+            out[m["run"]] = d
+    return out
 
 
 # --- statistics --------------------------------------------------------------
 
-def summarize(vec_ns, unit_ns=NS_PER_US, n_boot=10000, seed=0):
-    """median/mean/p95 + bootstrap 95% CI on the median, scaled to unit_ns."""
-    a = np.asarray(vec_ns, dtype=np.float64)
-    n = a.size
-    if n == 0:
-        return {"n": 0, "median": float("nan"), "mean": float("nan"),
-                "p95": float("nan"), "ci_lo": float("nan"), "ci_hi": float("nan")}
+_BOOT_WORK_BUDGET = 5e7  # cap replicates x pooled size; floor 1000 replicates
+
+
+def _as_run_arrays(steps):
+    """Normalize input to a list of per-run float arrays.
+
+    Accepts {run: vec} (from steps_by_run), list-of-vectors, or a flat vector
+    (legacy — treated as ONE cluster, which degenerates to the pooled CI)."""
+    if isinstance(steps, dict):
+        vecs = [steps[k] for k in sorted(steps)]
+    elif steps and isinstance(steps[0], (list, tuple, np.ndarray)):
+        vecs = list(steps)
+    else:
+        vecs = [steps] if len(steps) else []
+    return [np.asarray(v, dtype=np.float64) for v in vecs if len(v)]
+
+
+def _hier_boot_medians(arrs, n_boot, seed):
+    """Bootstrap replicates of the pooled median: resample runs, then steps."""
+    pooled_n = int(sum(a.size for a in arrs))
+    n_eff = int(min(n_boot, max(1000, _BOOT_WORK_BUDGET // max(pooled_n, 1))))
     rng = np.random.default_rng(seed)
-    boots = np.median(a[rng.integers(0, n, size=(n_boot, n))], axis=1)
+    R = len(arrs)
+    out = np.empty(n_eff)
+    for i in range(n_eff):
+        parts = [arrs[j][rng.integers(0, arrs[j].size, arrs[j].size)]
+                 for j in rng.integers(0, R, R)]
+        out[i] = np.median(np.concatenate(parts))
+    return out
+
+
+def summarize(steps, unit_ns=NS_PER_US, n_boot=10000, seed=0):
+    """median/mean/p95 + 95% CI on the median, scaled to unit_ns.
+
+    Pass run-structured data ({run: vec} from steps_by_run, or list of per-run
+    vectors) to get the hierarchical (cluster) bootstrap CI of record — runs are
+    resampled first, then steps within runs — plus the raw per-run medians
+    (``run_medians``), which the paper prints beside every CI. A flat vector is
+    legacy query-pooled behavior (``ci_kind`` reports which). p95 gates at
+    >= 500 pooled steps.
+    """
+    arrs = _as_run_arrays(steps)
+    if not arrs:
+        return {"n": 0, "median": float("nan"), "mean": float("nan"),
+                "p95": float("nan"), "ci_lo": float("nan"), "ci_hi": float("nan"),
+                "ci_kind": "none", "run_medians": []}
+    a = np.concatenate(arrs)
+    n = a.size
+    hierarchical = len(arrs) > 1
+    boots = _hier_boot_medians(arrs, n_boot, seed)
     lo, hi = np.percentile(boots, [2.5, 97.5])
     return {
         "n": int(n),
         "median": float(np.median(a)) / unit_ns,
         "mean": float(a.mean()) / unit_ns,
-        "p95": float(np.percentile(a, 95)) / unit_ns if n >= 100 else float("nan"),
-        "ci_lo": lo / unit_ns,
-        "ci_hi": hi / unit_ns,
+        "p95": float(np.percentile(a, 95)) / unit_ns if n >= 500 else float("nan"),
+        "ci_lo": float(lo) / unit_ns,
+        "ci_hi": float(hi) / unit_ns,
+        "ci_kind": "hierarchical" if hierarchical else "pooled-single-cluster",
+        "run_medians": [float(np.median(v)) / unit_ns for v in arrs],
     }
 
 
-def overhead_ratio_ci(base_ns, choreo_ns, n_boot=10000, seed=0):
-    """Two-independent-sample bootstrap of (median_c-median_b)/median_b and the
-    absolute difference. CIs come from resampling EACH pool independently (the two
-    arms are separate process executions; not paired). 'Within noise' = ratio CI
-    contains 0 (abs CI contains 0)."""
-    b = np.asarray(base_ns, dtype=np.float64)
-    c = np.asarray(choreo_ns, dtype=np.float64)
+def overhead_ratio_ci(base, choreo, n_boot=10000, seed=0):
+    """Unpaired overhead CI: (median_c - median_b) / median_b + absolute diff.
+
+    Accepts run-structured input ({run: vec} / list of per-run vectors), in
+    which case each arm is resampled with the HIERARCHICAL bootstrap (runs
+    first, then steps) — the CI of record for unpaired comparisons. Flat
+    vectors fall back to the legacy pooled resampling (pseudoreplication;
+    kept for compatibility only). 'Within noise' = ratio CI contains 0."""
+    ab = _as_run_arrays(base)
+    ac = _as_run_arrays(choreo)
+    b = np.concatenate(ab)
+    c = np.concatenate(ac)
     med_b, med_c = float(np.median(b)), float(np.median(c))
-    ratio = (med_c - med_b) / med_b
-    abs_ns = med_c - med_b
-    rng = np.random.default_rng(seed)
-    mb = np.median(b[rng.integers(0, b.size, size=(n_boot, b.size))], axis=1)
-    mc = np.median(c[rng.integers(0, c.size, size=(n_boot, c.size))], axis=1)
-    ratios = np.sort((mc - mb) / mb)
-    absds = np.sort(mc - mb)
+    mb = _hier_boot_medians(ab, n_boot, seed)
+    mc = _hier_boot_medians(ac, n_boot, seed + 1)
+    m = min(mb.size, mc.size)
+    ratios = np.sort((mc[:m] - mb[:m]) / mb[:m])
+    absds = np.sort(mc[:m] - mb[:m])
     rlo, rhi = np.percentile(ratios, [2.5, 97.5])
     alo, ahi = np.percentile(absds, [2.5, 97.5])
-    within_noise = bool(rlo <= 0.0 <= rhi)
     return {
         "median_base_ns": med_b, "median_choreo_ns": med_c,
-        "ratio": ratio, "ratio_lo": float(rlo), "ratio_hi": float(rhi),
-        "abs_ns": abs_ns, "abs_lo": float(alo), "abs_hi": float(ahi),
-        "within_noise": within_noise,
+        "ratio": (med_c - med_b) / med_b,
+        "ratio_lo": float(rlo), "ratio_hi": float(rhi),
+        "abs_ns": med_c - med_b, "abs_lo": float(alo), "abs_hi": float(ahi),
+        "within_noise": bool(rlo <= 0.0 <= rhi),
+        "ci_kind": "hierarchical" if (len(ab) > 1 and len(ac) > 1) else "pooled-legacy",
+    }
+
+
+def paired_overhead_ci(base_by_run, choreo_by_run, n_boot=10000, seed=0):
+    """Paired across-run overhead — the statistic of record for E2.
+
+    The arms were interleaved run-by-run (shared conditions), so runs pair by
+    id: d_i = median(choreo_i) - median(base_i). Reports the mean paired
+    difference (and its ratio to the pooled baseline median) with a bootstrap
+    CI that resamples PAIRS with replacement and re-resamples steps within each
+    chosen run — more powerful than comparing two marginal intervals for small
+    fixed effects. The raw per-pair differences are returned for printing.
+    """
+    shared = sorted(set(base_by_run) & set(choreo_by_run))
+    if len(shared) < 2:
+        return None
+    b = {r: np.asarray(base_by_run[r], dtype=np.float64) for r in shared}
+    c = {r: np.asarray(choreo_by_run[r], dtype=np.float64) for r in shared}
+    med_base = float(np.median(np.concatenate(list(b.values()))))
+    d_runs = {r: float(np.median(c[r])) - float(np.median(b[r])) for r in shared}
+    d_point = float(np.mean(list(d_runs.values())))
+
+    rng = np.random.default_rng(seed)
+    R = len(shared)
+    boots = np.empty(n_boot)
+    for i in range(n_boot):
+        idx = rng.integers(0, R, R)
+        ds = []
+        for j in idx:
+            r = shared[j]
+            rb = b[r][rng.integers(0, b[r].size, b[r].size)]
+            rc = c[r][rng.integers(0, c[r].size, c[r].size)]
+            ds.append(np.median(rc) - np.median(rb))
+        boots[i] = np.mean(ds)
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    return {
+        "pairs": R,
+        "d_ns": d_point, "d_lo": float(lo), "d_hi": float(hi),
+        "ratio": d_point / med_base,
+        "ratio_lo": float(lo) / med_base, "ratio_hi": float(hi) / med_base,
+        "within_noise": bool(lo <= 0.0 <= hi),
+        "d_runs_ns": [d_runs[r] for r in shared],
+        "run_ids": shared,
     }

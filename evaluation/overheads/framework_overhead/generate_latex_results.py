@@ -32,17 +32,21 @@ def depth_table(runs):
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Per-stage framework overhead is flat in pipeline depth "
           "(no-op chains, tracing disabled, Apple~M2~Pro). Median over "
-          "$R$ runs; \\SI{95}{\\percent} bootstrap CI in brackets.}")
+          "$R$ runs; hierarchical bootstrap \\SI{95}{\\percent} CI in brackets "
+          "(runs resampled first, then queries). Raw per-run values in the "
+          "artifact.}")
     print("\\label{tab:noop-depth}")
     print("\\begin{tabular}{rrr}\n\\toprule")
     print("Depth & Per-query latency (\\si{\\milli\\second}) & "
           "Per-stage (\\si{\\micro\\second}) \\\\\n\\midrule")
     for d in depths:
-        lat = nl.pool_latency(nl.select(sel, depth=d))
-        if not lat:
+        lat_runs = nl.pool_latency_by_run(nl.select(sel, depth=d))
+        if not lat_runs:
             continue
-        lq = nl.summarize(lat, nl.NS_PER_MS)
-        od = nl.summarize([v / d for v in lat], nl.NS_PER_US)
+        lq = nl.summarize(lat_runs, nl.NS_PER_MS)
+        od = nl.summarize([[v / d for v in run] for run in lat_runs], nl.NS_PER_US)
+        print(f"% d={d} per-stage per-run medians (us): "
+              + ", ".join(f"{v:.1f}" for v in od["run_medians"]))
         print(f"{d} & {lq['median']:.3f} & "
               f"{od['median']:.1f} [{od['ci_lo']:.1f}, {od['ci_hi']:.1f}] \\\\")
     print("\\bottomrule\n\\end{tabular}\n\\end{table}\n")
@@ -53,16 +57,17 @@ def payload_table(runs):
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Reference passing is constant in payload size while "
           "deep-copy is linear (no-op chains, depth~10, tracing disabled). "
-          "Per-stage duration, \\si{\\micro\\second}, median [95\\% CI].}")
+          "Per-stage duration, \\si{\\micro\\second}, median [hierarchical "
+          "bootstrap 95\\% CI].}")
     print("\\label{tab:noop-zerocopy}")
     print("\\begin{tabular}{lrr}\n\\toprule")
     print("Payload & Reference (\\si{\\micro\\second}) & "
           "Deep-copy (\\si{\\micro\\second}) \\\\\n\\midrule")
     for size in SIZES:
-        r = nl.pool_stage_dur(nl.select(runs, trace=0, depth=10, size=size,
-                                        mode="ref"), min_idx=1)
-        c = nl.pool_stage_dur(nl.select(runs, trace=0, depth=10, size=size,
-                                        mode="copy"), min_idx=1)
+        r = nl.pool_stage_dur_by_run(nl.select(runs, trace=0, depth=10, size=size,
+                                               mode="ref"), min_idx=1)
+        c = nl.pool_stage_dur_by_run(nl.select(runs, trace=0, depth=10, size=size,
+                                               mode="copy"), min_idx=1)
         rs = nl.summarize(r, nl.NS_PER_US) if r else None
         cs = nl.summarize(c, nl.NS_PER_US) if c else None
         r_txt = (f"{rs['median']:.1f} [{rs['ci_lo']:.1f}, {rs['ci_hi']:.1f}]"

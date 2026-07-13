@@ -26,27 +26,29 @@ def _depth_table(runs, arm_label):
     sel_arm = nl.select(runs, size=0, mode="ref")
     depths = sorted({r.meta["depth"] for r in sel_arm})
     print(f"\n## Depth sweep -- {arm_label} (size 0, mode ref)\n")
-    print(f"| depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us) | "
-          f"transition (us) | p95 O(d) (us) |")
-    print("|------:|--:|----------------:|----------------:|:-----------:|"
-          "----------------:|--------------:|")
+    print(f"| depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | "
+          f"transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |")
+    print("|------:|--:|----------------:|----------------:|:------------------:|"
+          "----------------:|--------------:|:---|")
     xs, lq_ns = [], []
     od_by_depth = {}
     for d in depths:
         sel = nl.select(sel_arm, depth=d)
-        lat = nl.pool_latency(sel)
-        if not lat:
+        lat_runs = nl.pool_latency_by_run(sel)
+        if not lat_runs:
             continue
-        lq = nl.summarize(lat, nl.NS_PER_MS)
-        od = nl.summarize([v / d for v in lat], nl.NS_PER_US)
-        tr = nl.summarize(nl.pool_transition(sel), nl.NS_PER_US)
+        od_runs = [[v / d for v in run] for run in lat_runs]
+        lq = nl.summarize(lat_runs, nl.NS_PER_MS)
+        od = nl.summarize(od_runs, nl.NS_PER_US)
+        tr = nl.summarize(nl.pool_transition_by_run(sel), nl.NS_PER_US)
         od_by_depth[d] = od
         xs.append(d)
-        lq_ns.append(nl.median(lat))
+        lq_ns.append(nl.median([v for run in lat_runs for v in run]))
         tr_s = f"{tr['median']:.2f}" if tr['n'] else "—"
         p95_s = f"{od['p95']:.2f}" if od['p95'] == od['p95'] else "n/a"
+        rm = " / ".join(f"{v:.1f}" for v in od["run_medians"])
         print(f"| {d} | {lq['n']} | {lq['median']:.4f} | {od['median']:.2f} | "
-              f"[{od['ci_lo']:.1f}, {od['ci_hi']:.1f}] | {tr_s} | {p95_s} |")
+              f"[{od['ci_lo']:.1f}, {od['ci_hi']:.1f}] | {tr_s} | {p95_s} | {rm} |")
 
     # Marginal per-stage cost = slope of L_q (ns) vs depth -> us/stage.
     slope_ns, intercept_ns = nl.ols_slope(xs, lq_ns)

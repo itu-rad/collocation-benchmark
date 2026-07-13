@@ -30,21 +30,23 @@ SIZE_LABEL = {0: "0", 1024: "1 KiB", 1048576: "1 MiB", 10485760: "10 MiB"}
 
 
 def collect(runs):
-    """Return {mode: {size: summary}} of stage self-duration (us)."""
+    """Return {mode: {size: summary}} of stage self-duration (us).
+
+    Run-structured pooling -> hierarchical bootstrap CI + per-run medians."""
     out = {"ref": {}, "copy": {}}
     for mode in ("ref", "copy"):
         for size in SIZES:
             sel = nl.select(runs, depth=10, size=size, mode=mode, trace=0)
-            dur = nl.pool_stage_dur(sel, min_idx=1)
-            if dur:
-                out[mode][size] = nl.summarize(dur, nl.NS_PER_US)
+            dur_runs = nl.pool_stage_dur_by_run(sel, min_idx=1)
+            if dur_runs:
+                out[mode][size] = nl.summarize(dur_runs, nl.NS_PER_US)
     return out
 
 
 def print_table(data):
     print("\n## Zero-copy: per-stage duration vs payload (depth 10, tracing OFF)\n")
-    print("| payload | ref (us) | ref 95% CI | copy (us) | copy 95% CI | copy/ref |")
-    print("|--------:|---------:|:----------:|----------:|:-----------:|---------:|")
+    print("| payload | ref (us) | ref 95% CI (hier.) | copy (us) | copy 95% CI (hier.) | copy/ref |")
+    print("|--------:|---------:|:------------------:|----------:|:-------------------:|---------:|")
     for size in SIZES:
         r = data["ref"].get(size)
         c = data["copy"].get(size)
@@ -56,6 +58,12 @@ def print_table(data):
         c_ci = f"[{c['ci_lo']:.1f}, {c['ci_hi']:.1f}]" if c else "—"
         ratio = f"{c['median'] / r['median']:.1f}x" if (r and c and r['median']) else "—"
         print(f"| {SIZE_LABEL[size]} | {r_s} | {r_ci} | {c_s} | {c_ci} | {ratio} |")
+    for mode in ("ref", "copy"):
+        for size in SIZES:
+            s = data[mode].get(size)
+            if s and s.get("run_medians"):
+                rm = " / ".join(f"{v:.2f}" for v in s["run_medians"])
+                print(f"- per-run medians (us), {mode} @ {SIZE_LABEL[size]}: {rm}")
 
     # Fit copy-arm cost vs bytes (exclude size 0, which does no copy).
     cx = [s for s in SIZES if s > 0 and s in data["copy"]]

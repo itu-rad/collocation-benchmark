@@ -159,31 +159,57 @@ def _drop_warmup(run):
 
 def pool_latency(runs):
     """Pooled per-query latency (ns) across runs, warm-up dropped."""
-    vec = []
-    for r in runs:
-        for e in _drop_warmup(r):
-            vec.append(r.latency_ns[e])
-    return vec
+    return [v for run in pool_latency_by_run(runs) for v in run]
 
 
 def pool_transition(runs):
     """Pooled per-stage transition cost (ns) across runs, warm-up dropped."""
-    vec = []
-    for r in runs:
-        for e in _drop_warmup(r):
-            vec.extend(r.transition_ns.get(e, {}).values())
-    return vec
+    return [v for run in pool_transition_by_run(runs) for v in run]
 
 
 def pool_stage_dur(runs, min_idx=0):
     """Pooled stage self-duration (ns); min_idx skips e.g. the injector stage 0."""
-    vec = []
+    return [v for run in pool_stage_dur_by_run(runs, min_idx) for v in run]
+
+
+# Run-structured variants: one vector per run, preserving the cluster structure
+# the hierarchical bootstrap needs (the run, not the query, is the unit of
+# replication — see experimental_setup.tex §Statistics).
+
+def pool_latency_by_run(runs):
+    """Per-run per-query latency vectors (ns), warm-up dropped, empties removed."""
+    out = []
     for r in runs:
+        vec = [r.latency_ns[e] for e in _drop_warmup(r)]
+        if vec:
+            out.append(vec)
+    return out
+
+
+def pool_transition_by_run(runs):
+    """Per-run per-stage transition vectors (ns), warm-up dropped."""
+    out = []
+    for r in runs:
+        vec = []
+        for e in _drop_warmup(r):
+            vec.extend(r.transition_ns.get(e, {}).values())
+        if vec:
+            out.append(vec)
+    return out
+
+
+def pool_stage_dur_by_run(runs, min_idx=0):
+    """Per-run stage self-duration vectors (ns); min_idx skips the injector."""
+    out = []
+    for r in runs:
+        vec = []
         for e in _drop_warmup(r):
             for k, d in r.stage_dur_ns.get(e, {}).items():
                 if k >= min_idx:
                     vec.append(d)
-    return vec
+        if vec:
+            out.append(vec)
+    return out
 
 
 # --- statistics --------------------------------------------------------------
@@ -208,10 +234,11 @@ def p95(vec):
 
 
 def bootstrap_ci(vec, stat=median, n=10000, alpha=0.05, seed=0):
-    """Percentile bootstrap CI for ``stat``. Deterministic via fixed seed.
+    """LEGACY query-pooled percentile bootstrap CI for ``stat``.
 
-    Uses the stdlib RNG (no numpy dependency). Returns (lo, hi); (nan, nan) when
-    the sample is too small to resample meaningfully.
+    Treats pooled per-query values as independent — pseudoreplication when they
+    come from R correlated runs; kept only for flat-vector callers. New code
+    passes run-structured data to :func:`summarize` (-> hierarchical CI).
     """
     import random
     if len(vec) < 2:
@@ -226,20 +253,94 @@ def bootstrap_ci(vec, stat=median, n=10000, alpha=0.05, seed=0):
     return (_percentile(stats, alpha / 2), _percentile(stats, 1 - alpha / 2))
 
 
+# Cap on (replicates x pooled size) so deep-pipeline cells stay tractable; the
+# replicate count never drops below 1000 (Monte-Carlo error << 5-cluster
+# uncertainty) nor rises above 10^4.
+_BOOT_WORK_BUDGET = 5e7
+
+
+def hier_bootstrap_ci(run_vecs, alpha=0.05, seed=0, n=10000):
+    """Hierarchical (cluster) bootstrap CI for the pooled median.
+
+    Resamples RUNS with replacement first, then queries within each resampled
+    run, pools, and takes the median (experimental_setup.tex §Statistics). This
+    is the CI of record; query-pooled bootstrapping understates variance.
+    Deterministic via fixed seed. Uses numpy when available (the torch envs all
+    ship it); pure-stdlib fallback with a reduced work budget otherwise.
+    """
+    run_vecs = [v for v in run_vecs if v]
+    if not run_vecs or sum(len(v) for v in run_vecs) < 2:
+        return (float("nan"), float("nan"))
+    pooled_n = sum(len(v) for v in run_vecs)
+    try:
+        import numpy as np
+        n_eff = int(min(n, max(1000, _BOOT_WORK_BUDGET // max(pooled_n, 1))))
+        rng = np.random.default_rng(seed)
+        arrs = [np.asarray(v, dtype=np.float64) for v in run_vecs]
+        R = len(arrs)
+        stats = np.empty(n_eff)
+        for i in range(n_eff):
+            parts = []
+            for j in rng.integers(0, R, R):
+                a = arrs[j]
+                parts.append(a[rng.integers(0, a.size, a.size)])
+            stats[i] = np.median(np.concatenate(parts))
+        lo, hi = np.percentile(stats, [100 * alpha / 2, 100 * (1 - alpha / 2)])
+        return (float(lo), float(hi))
+    except ImportError:
+        import random
+        n_eff = int(min(n, max(200, (_BOOT_WORK_BUDGET / 10) // max(pooled_n, 1))))
+        rng = random.Random(seed)
+        R = len(run_vecs)
+        stats = []
+        for _ in range(n_eff):
+            pooled = []
+            for _ in range(R):
+                run = run_vecs[rng.randrange(R)]
+                pooled.extend(rng.choices(run, k=len(run)))
+            stats.append(median(pooled))
+        stats.sort()
+        return (_percentile(stats, alpha / 2), _percentile(stats, 1 - alpha / 2))
+
+
 def summarize(vec, unit_ns=NS_PER_US):
-    """median/mean/p95 + bootstrap CI on the median, scaled to ``unit_ns``."""
-    n = len(vec)
+    """median/mean/p95 + 95% CI on the median, scaled to ``unit_ns``.
+
+    Pass RUN-STRUCTURED data (list of per-run vectors, from the ``*_by_run``
+    helpers) to get the hierarchical bootstrap CI of record plus the raw
+    per-run medians (``run_medians``, printed beside every CI per the paper's
+    statistics rules). A flat vector falls back to the legacy query-pooled CI
+    (``ci_kind`` says which you got). p95 is gated at >= 500 pooled queries.
+    """
+    nested = bool(vec) and isinstance(vec[0], (list, tuple))
+    if nested:
+        run_vecs = [list(v) for v in vec if v]
+        flat = [x for v in run_vecs for x in v]
+    else:
+        run_vecs = None
+        flat = list(vec)
+    n = len(flat)
     if n == 0:
         return {"n": 0, "median": float("nan"), "mean": float("nan"),
-                "p95": float("nan"), "ci_lo": float("nan"), "ci_hi": float("nan")}
-    lo, hi = bootstrap_ci(vec)
+                "p95": float("nan"), "ci_lo": float("nan"), "ci_hi": float("nan"),
+                "ci_kind": "none", "run_medians": []}
+    if nested:
+        lo, hi = hier_bootstrap_ci(run_vecs)
+        ci_kind = "hierarchical"
+        run_medians = [median(v) / unit_ns for v in run_vecs]
+    else:
+        lo, hi = bootstrap_ci(flat)
+        ci_kind = "pooled-legacy"
+        run_medians = []
     return {
         "n": n,
-        "median": median(vec) / unit_ns,
-        "mean": (sum(vec) / n) / unit_ns,
-        "p95": (p95(vec) / unit_ns) if n >= 100 else float("nan"),
+        "median": median(flat) / unit_ns,
+        "mean": (sum(flat) / n) / unit_ns,
+        "p95": (p95(flat) / unit_ns) if n >= 500 else float("nan"),
         "ci_lo": lo / unit_ns,
         "ci_hi": hi / unit_ns,
+        "ci_kind": ci_kind,
+        "run_medians": run_medians,
     }
 
 

@@ -23,10 +23,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import modularity_lib as ml  # noqa: E402
 
 
-def _row(name, vec, unit=ml.NS_PER_MS):
-    if not vec:
+def _row(name, by_run, unit=ml.NS_PER_MS):
+    if not by_run:
         return f"| {name} | 0 | — | — |"
-    s = ml.summarize(vec, unit)
+    s = ml.summarize(by_run, unit)
     return (f"| {name} | {s['n']} | {s['median']:.3f} | "
             f"[{s['ci_lo']:.3f}, {s['ci_hi']:.3f}] |")
 
@@ -51,10 +51,10 @@ def main():
     print(f"\n## End-to-end breakdown ({args.device}, tracing off, median [95% CI] in ms)\n")
     print("| component | N | median (ms) | 95% CI (ms) |")
     print("|---|--:|------------:|:-----------:|")
-    print(_row("baseline training step", ml.pool_steps(base, ml.parse_baseline_steps, warmup=w)))
-    print(_row("Choreo training stage", ml.pool_steps(off, ml.parse_choreo_train_steps, warmup=w)))
-    print(_row("Choreo dataloader stage", ml.pool_steps(off, ml.parse_choreo_load_steps, warmup=w)))
-    print(_row("Choreo end-to-end per query", ml.pool_steps(off, ml.parse_pipeline_latency, warmup=w)))
+    print(_row("baseline training step", ml.steps_by_run(base, ml.parse_baseline_steps, warmup=w)))
+    print(_row("Choreo training stage", ml.steps_by_run(off, ml.parse_choreo_train_steps, warmup=w)))
+    print(_row("Choreo dataloader stage", ml.steps_by_run(off, ml.parse_choreo_load_steps, warmup=w)))
+    print(_row("Choreo end-to-end per query", ml.steps_by_run(off, ml.parse_pipeline_latency, warmup=w)))
 
     # Throughput over the steady-state pooled window (steps / total measured time).
     train = ml.pool_steps(off, ml.parse_choreo_train_steps, warmup=w)
