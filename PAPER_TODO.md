@@ -178,24 +178,35 @@ monolith pass vs many short decomposed calls burn the shared budget differently)
   over the per-run rates.
 - [ ] Unit-test the scorers on a tiny fixture (known EM/F1/VQA values).
 
-### 2.2 Missing load generators & config generators — **P0 [dev]**
-- [ ] **Saturating-Offline scheduler** in `loadgen/` (all samples enqueued at once) — E5
-  Offline row. Only `OfflineLoadScheduler` (closed-loop, 1-in-flight = SingleStream) and
-  `PoissonLoadScheduler` exist today.
-- [ ] **Fixed-interval MultiStream scheduler** (fixed N-sample query every fixed interval)
-  — E5 MultiStream row. Until both exist, 2 of 4 rows of the E5 reduction table have no arm.
-- [ ] **N-in-flight closed-loop scheduler** (generalize OfflineLoadScheduler from 1 to N
-  in flight) — gives E3 a *stationary* contended operating point (§2.6 rate rule);
-  open-loop Poisson at 6× capacity is not a well-defined latency regime.
-- [ ] **E6 B-sweep config generator — REQUIRED** — foreground + B∈{0,1,2} background
-  pipelines, each an **independent OS process with its own dataset stage**
-  (torchvision_mixed.yml shares `dataset_stage_id: 0` — must NOT be reused as-is, or
-  per-process attribution is contaminated).
-- [ ] **E7 size-ladder configs** — the base monolith config with a swept `model` field:
-  `Qwen3.5-{0.8B,2B}-OptiQ-4bit` (fit) + `Qwen3.5-27B-OptiQ-4bit` (ceiling) on M2 Pro;
-  BF16 counterparts on GB10. (4B/9B already exist as E4 controls.)
-- [ ] **4 multi-hop Self-RAG control configs** —
-  `multihop_{monolith_4b,decomposed_shared}_{cuda,mlx}.yml` (do not exist yet).
+### 2.2 Missing load generators & config generators — **P0 [dev]** (unconditional slice DONE 2026-07-13)
+- [x] **Saturating-Offline scheduler** — `loadgen/schedulers/saturating_offline_scheduler.py`
+  (`SaturatingOfflineScheduler`, registered in `loadgen/__init__.py`). All samples enqueued
+  up front, no pacing, no completion wait → MLPerf **Offline** throughput. Unit-tested
+  (50 queries clustered in 0.4 ms, event set, terminator sent). Naming hazard documented
+  (the old `OfflineLoadScheduler` is actually SingleStream).
+- [x] **~~Fixed-interval MultiStream scheduler~~ — DROPPED** (decision 2026-07-13). E5 does
+  NOT need to replicate all of MLPerf: the reduction is structural and the substantive
+  claim (below) targets the *Offline throughput* number. MultiStream is a niche
+  (multi-camera) scenario that maps to none of our workloads (ResNet/RAG/VQA) and is the
+  fiddliest to get faithful. In the E5 table it is marked "expressible (constant-offset
+  special case of the Poisson generator)" without an instantiated arm.
+- [ ] **N-in-flight closed-loop scheduler** — **still pending, contingent on the E3′/E6′
+  redesign** (`CONTENTION_EXPERIMENTS_REDESIGN.md`): it's the recommended E3 stationary
+  contended operating point, but E3′ may replace the VQA 2×2 with a bandwidth
+  dose–response experiment. Build once that decision lands.
+- [ ] **E6 B-sweep config generator — still pending, contingent on E6′** (the redesign may
+  swap the EfficientNet foreground/background for RAG-serving; the generator *mechanism* is
+  workload-agnostic but the configs it wires depend on the call). Independent bg processes,
+  each own dataset stage (torchvision_mixed.yml shares `dataset_stage_id: 0`).
+- [x] **E7 size-ladder configs** — `factoid_monolith_{0.8b,2b,27b}_{mlx,cuda}.yml` created
+  (6 files; 4B/9B already exist). Model-field-only swaps off `factoid_monolith_*`
+  (verified diff = name label + 2 model fields → the "no-code" artifact). 27B is the M2 Pro
+  OOM ceiling rung; BF16 cuda counterparts for GB10. All parse against `BenchmarkModel`.
+- [x] **4 multi-hop Self-RAG control configs** —
+  `multihop_{monolith_4b,decomposed_shared}_{cuda,mlx}.yml` created. monolith_4b = 9B→4B
+  swap; decomposed_shared = shared transform (`depends_on_id:3` on stages 6 & 8,
+  `tokenizer_stage_id` 6→3 & 8→3). Retrieval held fixed (reuse base `collection_name`).
+  All parse against `BenchmarkModel` (8 / 13 stages).
 
 ### 2.3 Statistics harness — **P0 [dev]** (touches every experiment)
 - [x] **Hierarchical (cluster) bootstrap implemented (2026-07-13)** in `noop_lib.py`
@@ -384,22 +395,38 @@ Arms: Monolith-9B, Decomposed-3×4B, Monolith-4B (size control), Decomposed-Shar
   report serial-only and state pooled N (pipelined story carried by GB10).
 - [ ] **[M2]** Collect **multi-hop** for all core arms — incl. **Monolith-4B on multi-hop**
   (the size control that decides whether the multi-hop quality gap is topology or size;
-  **must be core**, configs to be created §2.2).
+  **must be core**, configs **created** §2.2).
 - [ ] **[GB10, Ties] Full matrix** (BF16, §2.6-derived rate) — factoid + multi-hop, all
   core arms + the 4 new multi-hop controls, pipelined + serial + quality runs.
 - [ ] **[GB10, Ties] Engine overlay** (HF vs **vLLM** vs Ollama) on the single-instance
   arms — vLLM is CUDA-only; **[M2]** Ollama cross-platform.
 - [ ] **Top-k sensitivity:** one top_k=10 column on the multi-hop core arms (§2.6).
-- [ ] **[M2/GB10] E7-merge:** add the size-sweep rungs (0.8B/2B, optional 27B) (§3.7).
+- [ ] **[M2/GB10] E7-merge:** run the size-sweep rungs — configs **created**
+  (`factoid_monolith_{0.8b,2b,27b}_{mlx,cuda}.yml`, §2.2/§3.7); 27B is the M2 ceiling.
 - [ ] Score all runs with **EM/F1** (+ answered rate, parity, LLM-calls-per-query,
   resident model memory); every speed claim conditioned on EM/F1.
 - [ ] Commit/release the raw CSVs (with perf column) + JSONL behind every reported
   number (§7) — the current repo carries only a 10-query smoke pair.
 
-### 3.5 E5 — MLPerf reduction — **P0 [M2] + [GB10]**
-- [ ] Build/confirm the 4 scenario configs on ResNet-50-v1.5 (SingleStream, MultiStream,
-  Server, Offline) — 3 of 4 to create (§2.2); the committed resnet config is the
-  Server-like Poisson cell.
+### 3.5 E5 — MLPerf reduction + "isolated inference misleads" — **P0 [M2] + [GB10]**
+> **E5 has TWO jobs (framing locked 2026-07-13):** (1) *positioning* — MLPerf's scenarios
+> are recoverable as Choreo scheduler configs (the superset); (2) *substantive critique* —
+> MLPerf's **isolated single-model** number can **mislead** as a proxy for real
+> performance, because it excludes the surrounding pipeline (retrieval, pre/post-process,
+> data movement, cross-stage handoff). The evidence is a **contrast**, not a scenario
+> matrix: same ResNet-50, measured the MLPerf way (Offline, model in isolation → throughput
+> X) vs the Choreo way (full end-to-end pipeline with per-stage occupancy → effective
+> Y, inference is only a fraction). E2's breakdown already supports this (dataloader ~34 ms
+> vs model ~39 ms). **Keep E5's core the end-to-end / whole-pipeline critique so it stays
+> distinct from E6 (inter-pipeline collocation) — E6 is the amplifier, not a duplicate.**
+> Scenario coverage: SingleStream + Server exist; **Offline built (§2.2)**; **MultiStream
+> dropped** (niche, no workload fit) — table marks it "expressible" without an arm.
+- [ ] Instantiate the ResNet-50 scenario configs actually used: SingleStream
+  (`OfflineLoadScheduler`), Server (`PoissonLoadScheduler`), Offline
+  (`SaturatingOfflineScheduler`). The committed resnet config is the Server-like Poisson
+  cell; add the SingleStream + Offline `loadgen` variants.
+- [ ] **Isolated-vs-end-to-end contrast run:** ResNet-50 Offline in isolation (throughput
+  X) vs the same model in a full Choreo pipeline with per-stage occupancy (effective Y).
 - [ ] Enforce the `queue_depth` never-blocks rule (§2.6) so the arrival-trace
   verification is honest (Offline: depth ≥ total samples).
 - [ ] Collect each scenario on both DUTs (R=5) and confirm the arrival process matches the
@@ -610,9 +637,10 @@ hierarchical bootstrap + E3/E4 CIs (§2.3); post-fix E4 data on both DUTs (§3.4
 minimal E6 (§3.6 — now non-negotiable); E1 provenance verification (§3.1 — possibly
 already satisfied).
 
-**Build work (before the GB10 pass):** framework fixes (§2.5); saturating-Offline +
-fixed-interval MultiStream + N-in-flight schedulers (§2.2); E6 B-sweep generator;
-4 multi-hop Self-RAG control configs; E7 size rungs; §2.6 pilots + locked knobs.
+**Build work (before the GB10 pass):** ✅ framework fixes (§2.5); ✅ saturating-Offline
+scheduler; ✅ 4 multi-hop control configs; ✅ E7 size rungs (all §2.2, done 2026-07-13);
+MultiStream **dropped**. *Remaining:* N-in-flight scheduler + E6 B-sweep generator (both
+contingent on the E3′/E6′ redesign); §2.6 pilots + locked knobs.
 
 **Smaller:** E3 DRAM-bandwidth read (§3.3); synchronous tracing cost (§3.1); top-k
 sensitivity column (§3.4); stale result-doc regeneration (§4.1); artifact landmines (§7.1).
@@ -634,7 +662,10 @@ sensitivity column (§3.4); stale result-doc regeneration (§4.1); artifact land
   committed CSVs lack perf column, and **all of it is suspect pending the query_id
   provenance check** — assume full re-collection with §2.6 knobs, split timing/quality
   runs, + 4 multi-hop controls + top-k sensitivity + EM/F1.
-- **E5 MLPerf:** 2 of 4 schedulers to build; 3 configs are 0-byte stubs; one config has
+- **E5 MLPerf:** Offline scheduler **built** + SingleStream/Server exist; MultiStream
+  **dropped** (niche); SingleStream/Offline resnet `loadgen` variants to add; framing
+  locked = superset + "isolated inference misleads" contrast (§3.5); 3 configs are 0-byte
+  stubs; one config has
   a hardcoded home path; queue_depth rule needed for the trace check.
 - **E6 collocation:** not built; **ships in minimal form** — generator + GB10 B∈{0,1,2}
   with per-process attribution.
