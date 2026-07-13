@@ -1,4 +1,5 @@
 from stages.stage import Stage, log_phase
+from stages.self_rag.prompt_style import SHORT_ANSWER_STYLE
 from utils.chat import apply_chat_template_safe
 from utils.schemas.query import Query
 
@@ -33,10 +34,12 @@ class AnswerGeneratorFormatter(Stage):
         chat = [
             {
                 "role": "system",
-                "content": """
-                You are an answer rewriter. Given the retrieved documents and the original query, output an answer to the query supported by the retrieved documents. \n
-                Give a concise answer.
-                """,
+                "content": (
+                    "You are an answer generator. Given the retrieved documents "
+                    "and the original query, output an answer to the query "
+                    "supported by the retrieved documents.\n"
+                    + SHORT_ANSWER_STYLE
+                ),
             },
             {
                 "role": "user",
@@ -50,8 +53,6 @@ class AnswerGeneratorFormatter(Stage):
             tokenize=False,
             add_generation_prompt=True,
         )
-
-        print("Final query", query)
 
         output = {idx: query for idx in self.output_queues}
         return output
