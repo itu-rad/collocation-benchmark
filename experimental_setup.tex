@@ -1,0 +1,857 @@
+% =====================================================================
+%  EXPERIMENTAL SETUP  —  standalone working draft (v4, post 3 review rounds)
+%  Fresh draft (companion to / eventual replacement for methodology.tex).
+%
+%  Dual purpose:
+%    (1) preliminary version of the paper's Experimental Setup section;
+%    (2) an internal GUIDE — for each experiment we separate what we
+%        want to COLLECT (the full arm matrix) from what we intend to
+%        SHOW in the paper (a curated subset) and say WHY.
+%
+%  Convention (from methodology.tex): NO result numbers here; "What it
+%  shows" states the intended claim / diagnostic, not a value.
+%
+%  \sysname{} = the framework name. The repo is inconsistent
+%  (prose "McBenchface", code/tables "Choreo"); define ONCE upstream.
+\providecommand{\sysname}{Choreo}
+%  Requires: siunitx, booktabs, wasysym (for \CIRCLE \LEFTcircle \Circle).
+%
+%  RECONCILE (cross-file, HIGH): methodology.tex §exp-topology still says
+%  "We do NOT run a separate independent-workload interference experiment
+%  ... left to future work" and carries reviewer TODO D1. This draft now
+%  DELIVERS that experiment (E6) and the MLPerf contrast (E5). When this
+%  file replaces the methodology's Experiments subsection, retire that
+%  paragraph and soften the Intro's scalability wording to match E7.
+% =====================================================================
+
+\section{Experimental Setup}
+\label{sec:setup}
+
+We evaluate \sysname{} with seven experiments in three tiers.
+Two \emph{instrument-fidelity} experiments bound the measurement overhead
+the framework itself introduces, so that any overhead we later attribute
+to a workload is the workload's and not the harness's
+(E1--E2). Two \emph{application case studies} then use \sysname{} to
+surface end-to-end behaviour that single-stream, single-engine benchmarks
+cannot observe --- a unified-memory bandwidth-contention study (E3) and a
+pipeline-topology study of agentic RAG (E4). Finally, three
+\emph{capability} experiments substantiate the framework's distinguishing
+claims directly: that the prevailing methodology (MLPerf Inference) is a
+\emph{special case} of \sysname{}'s configuration space (E5), that
+collocated concurrent pipelines are a \emph{first-class, measurable}
+regime (E6), and that stressing hardware of any capacity is a
+\emph{no-code} change (E7). E5--E7 are the direct response to the concern
+that collocation-aware profiling and no-code scalability, headlined in the
+introduction, must be \emph{demonstrated} rather than asserted.
+
+Because this document also guides our own data collection, each experiment
+adds to its \textbf{Question}, \textbf{Design}, \textbf{Configurations},
+and \textbf{Metrics} a \textbf{Collect vs.\ report} note separating the
+full arm matrix we run from the curated subset we intend to publish, with
+the rationale for the cut. Results are deferred to
+Section~\ref{sec:results}; nothing below states a measured value.
+
+% ---------------------------------------------------------------------
+\subsection{Devices Under Test}
+\label{sec:setup-duts}
+
+We use two single-node machines from opposite extremes of the
+unified-memory design space, chosen to test whether a measured systems
+effect is intrinsic to a workload or specific to one platform, and to
+exercise \emph{portability} across the ``mid-range gap'' between the rigid
+\emph{Tiny}/\emph{Edge}/\emph{Datacenter} tracks of existing suites
+(Section~\ref{sec:background}). We do \emph{not} treat the pair as a
+controlled capacity axis: capacity differs by \num{8}$\times$ but
+bandwidth by only ${\approx}\num{1.4}\times$, and device class, runtime,
+and numerical precision all co-vary.
+
+\begin{description}
+  \item[Apple M2~Pro (edge / consumer).] A \SI{16}{\giga\byte}
+    unified-memory laptop SoC in which GPU, Neural Engine, and CPU share
+    one physical memory and its bandwidth
+    ([[FILL: core split; GPU cores; ${\approx}\SI{200}{\giga\byte\per\second}$]]).
+    Three backends over that shared memory: GPU via Apple MLX/Metal
+    (PyTorch \texttt{mps}), Neural Engine (\texttt{ane}) via Core~ML, and
+    CPU. Software: Python~3.10, \texttt{mlx}/\texttt{mlx-lm}, Core~ML
+    Tools, \texttt{faiss-cpu} ([[FILL: macOS + package versions]]). LLM
+    weights are 4-bit quantized to fit the \SI{16}{\giga\byte} budget
+    alongside other resident stages.
+  \item[NVIDIA DGX~Spark (GB10, large unified memory).] A
+    Grace--Blackwell platform with \SI{128}{\giga\byte} LPDDR5X
+    ([[FILL: ${\approx}\SI{273}{\giga\byte\per\second}$]]), presenting one
+    CUDA GPU. Grace CPU and Blackwell GPU are separate dies joined by a
+    coherent NVLink-C2C interconnect --- a coherent unified-memory
+    \emph{system} rather than one physical pool. Software: PyTorch
+    \texttt{2.10.0+cu130}, \texttt{transformers~5.2}, BF16.
+\end{description}
+
+\sysname{} runs the same declarative pipeline definitions on both
+machines, changing only the per-stage \texttt{device}/backend field; no
+code changes are required (Section~\ref{sec:framework}). Because the
+M2~Pro runs 4-bit MLX weights and DGX~Spark runs BF16 PyTorch weights, the
+two are not numerically identical models: we draw cross-device conclusions
+only about the \emph{direction} of a systems effect, never about absolute
+latency or quality across devices. All weights and datasets are
+pre-fetched before measured runs. \textbf{Reproducibility.} Models are
+pinned by Hugging Face commit revision and datasets by version/snapshot
+date; the 4-bit MLX weights are produced from those revisions with a fixed
+quantization recipe ([[FILL: Qwen3.5-9B/4B + CLIP-ViT-L/14 hashes; MLX
+quant recipe; dataset snapshots; FAISS/ChromaDB index params]]). We
+monitor package power/temperature (\texttt{macmon};
+\texttt{nvidia-smi}/\texttt{dcgmi}, sampled at [[FILL: period]]) and
+\emph{exclude} any run whose sustained clock or package temperature
+crosses [[FILL: pre-registered throttle threshold]]; the threshold and
+discard-vs-report policy are fixed before collection to remove
+researcher-degrees-of-freedom.
+
+% ---------------------------------------------------------------------
+\subsection{Instrumentation and Metrics}
+\label{sec:setup-metrics}
+
+\paragraph{Measurement pipeline.} Every run emits a \emph{timing trace}
+(each stage and the driver log \texttt{start}/\texttt{end} for their
+\texttt{prepare}/\texttt{run} phases; per-query events carry the query id,
+submission time, epoch, and batch index) and, for the case studies, a
+per-query JSONL sidecar written by \texttt{TerminalCapture} (question,
+golden answers, retrieved documents, generated answer). All durations use
+a single monotonic clock (\texttt{perf\_counter\_ns};
+resolution \SI{41.7}{\nano\second} on M2~Pro, \SI{1}{\nano\second} on
+GB10); wall-clock time is used only for cross-process trace alignment.
+RadT attaches per-\emph{process} resource listeners (\texttt{macmon} on
+Apple; \texttt{nvidia-smi}, \texttt{dcgmi}, \texttt{iostat}, \texttt{top}
+on NVIDIA), sampled at [[FILL: period]]; because isolation is at the
+process boundary (one process per pipeline, stages as threads within it),
+these attribute resource use per pipeline even under collocation. All
+metrics are computed offline by \texttt{evaluation/scripts/}.
+
+\paragraph{Performance metrics.} \textbf{Per-query latency} (run-start to
+run-end); \textbf{throughput} (completed queries over makespan --- MLPerf's
+\emph{Offline} throughput, not SLO-constrained \emph{Server});
+\textbf{stage concurrency} (sweep-line count of overlapping \texttt{run}
+intervals --- temporal overlap, not CPU parallelism, since pure-Python work
+is GIL-serialized while native kernels overlap); \textbf{per-device
+occupancy} (union of the run intervals of stages mapped to each device, as
+a fraction of makespan --- residency, not hardware utilization; can exceed
+100\% in aggregate under collocation). For the topology and collocation
+studies we additionally report \textbf{LLM calls per query} (count of
+generation invocations a query triggers, including retry/rewrite loops)
+and \textbf{resident model memory} (peak device memory attributable to
+loaded model weights + KV cache, from the resource listeners), the latter
+being what the ${\approx}3\times$-weights cost of physical decomposition is
+measured against.
+
+\paragraph{Framework-overhead metrics.} Per-stage overhead (per-query
+latency / depth, \si{\micro\second}), inter-stage transition cost (gap
+between one stage's \texttt{end} and the next stage's \texttt{start}),
+and, for the modularity study, relative overhead
+$(t_{\text{\sysname}}-t_{\text{base}})/t_{\text{base}}$ against a
+hand-written baseline.
+
+\paragraph{Quality metrics (RAG/VQA).} The standard accuracy metric per
+task family: \textbf{exact match (EM)} and \textbf{token-level F1} for
+text RAG, and \textbf{VQA accuracy} (soft match over the annotator set)
+for OK-VQA. These scorers are the gate on every accuracy-conditioned
+comparison below and are \emph{required before those tables ship}.
+% BLOCKER(collect): EM/F1 + VQA-accuracy scorers are NOT yet implemented;
+% the released analysis computes only the containment proxy. No
+% accuracy-conditioned result (E3, E4) may be reported until they exist.
+As a coarse secondary signal we also compute an \textbf{answer-containment
+rate} (normalized golden answer is a substring of the normalized
+generation); because containment is gameable by verbosity and the topology
+arms differ in verbosity, we report it only alongside mean answer length
+and never as the accuracy of record. We also report \textbf{answered rate}
+(non-empty, non-retry-exhausted) and a \textbf{cross-pipeline parity}
+score (mean token-level Jaccard on shared questions; count at
+Jaccard${\geq}0.5$) as an agreement --- not correctness --- check.
+
+\paragraph{Statistics.} Each configuration is run $R{=}5$ times with
+fixed, distinct seeds controlling query order and the Poisson arrival
+process. \emph{The unit of replication is the run, not the query.} Within-run
+per-query latencies are correlated (shared warm state, thermal drift,
+scheduler phase), so we do \emph{not} pool raw queries and bootstrap them
+as if independent --- that pseudoreplication understates variance. Instead
+we summarise each run by its statistic of interest (e.g.\ median per-query
+latency, or median per-step latency in E2), report the across-run
+distribution over the $R{=}5$ run-level values, and form CIs with a
+\emph{hierarchical (cluster) bootstrap} that resamples runs first and then
+queries within a resampled run ($10^4$ resamples); we report run-to-run
+variance explicitly and print the $R{=}5$ raw run-level values alongside
+every CI, since with only five clusters the interval alone is not to be
+over-trusted and the actual spread should be visible. Because $R{=}5$ is small, we treat run-level CIs as
+indicative and, where a paired design exists (E2's interleaved arms,
+shared seeds), also report a paired across-run difference, which is more
+powerful for small fixed effects than comparing two marginal intervals.
+For rate metrics (answered, containment, EM/accuracy) we report Wilson
+95\% intervals on the pooled counts \emph{and} a run-level interval over
+the $R{=}5$ per-run rates; because pooled Wilson ignores run-to-run rate
+variance it is anti-conservative when that variance is non-trivial, and
+the run-level interval then governs. Tail quantiles (p95) are reported
+only for cells whose pooled sample reaches $\geq\num{500}$ queries; p99 is
+not estimated at our sample sizes. Generation is greedy (\texttt{do\_sample=false},
+temperature~0) for every arm of a comparison, verified with a repeat-run
+identical-output check, so sampling is not a confound.
+
+\paragraph{Experiment overview.} Table~\ref{tab:exp-overview} lists the
+seven experiments, their tier, device(s), and the single claim each is
+designed to support.
+
+\begin{table}[t]\centering\small
+\caption{The seven experiments. Tier: I = instrument-fidelity,
+A = application case study, C = capability demonstration.}
+\label{tab:exp-overview}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Exp & Tier & Device(s) & Claim it supports \\
+\midrule
+E1 NoOp overhead      & I & M2~Pro          & harness cost is small, flat, $O(1)$-copy \\
+E2 Modularity         & I & M2~Pro, GB10    & wrapping real work is $\ll$ the work \\
+E3 VQA contention     & A & M2~Pro          & heterogeneity gain is contention-bound \\
+E4 Self-RAG topology  & A & M2~Pro, GB10    & decomposition is a real, config-only trade-off \\
+E5 MLPerf reduction   & C & M2~Pro, GB10    & MLPerf scenarios are \sysname{} configurations \\
+E6 Collocation scaling& C & M2~Pro, GB10    & inter-pipeline interference is first-class \& measurable \\
+E7 Capacity sweep     & C & M2~Pro, GB10    & stressing any-size hardware is a no-code change \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\subsection{E1 --- Framework overhead (NoOp microbenchmark)}
+\label{sec:e1-noop}
+
+\textbf{Question.} \sysname{} runs every stage in its own thread and moves
+data between stages through queues. Before trusting any end-to-end number
+we bound that machinery: (i) how much latency does each added stage
+contribute, and does it \emph{accumulate} with depth? (ii) does passing
+data by reference avoid per-hop copy cost? (iii) what does the optional
+MLflow tracing layer add on top of core dispatch?
+
+\textbf{Design.} We build synthetic pipelines of pass-through (no-op)
+stages that perform no computation, so all measured time is framework
+overhead. Two sweeps, generated programmatically
+(\texttt{noop\_chain\_generator.py}):
+\begin{itemize}
+  \item \emph{Depth sweep:} chain length
+    $N\in\{1,\dots,10,16,32,50,64,100\}$, payload~0, isolating per-stage
+    dispatch and queue hand-off. \emph{Crossed with a tracing factor}
+    (off / on), giving the two arms below.
+  \item \emph{Payload sweep:} fixed depth~10, payloads
+    $\{0, \SI{1}{\kibi\byte}, \SI{1}{\mebi\byte}, \SI{10}{\mebi\byte}\}$
+    under \emph{reference} vs.\ \emph{deep-copy} passing, isolating data
+    movement. This sweep is run tracing-\emph{off} only (the copy cost is
+    independent of the span layer).
+\end{itemize}
+The load generator is \emph{closed-loop}
+(\texttt{OfflineLoadScheduler}, exactly one query in flight), so this
+measures dispatch and reference-vs-copy cost in isolation and deliberately
+not queueing (exercised in E3/E4/E6). The two tracing arms are: \emph{off}
+(\texttt{CHOREO\_DISABLE\_TRACING=1}: core dispatch = thread wake + queue
+hand-off + CSV log) and \emph{on} (three MLflow spans per stage per query).
+$R{=}5$, \texttt{max\_queries}=101; we drop the first [[FILL: $k$; justify
+$k$ absorbs import / thread-pool spin-up --- likely $>1$]] queries as
+warm-up. Run on the M2~Pro only: with no accelerator kernel in a no-op
+stage this is a property of the framework and CPython interpreter, not the
+device, so a single quiet machine bounds it.
+\emph{Provenance note (blocker):} the committed 185-CSV matrix was
+collected on a busy shared aarch64 Linux box (visible as a depth-50
+contention outlier), which contradicts the ``single quiet machine''
+premise; it must be \textbf{re-collected on an idle M2~Pro} before any
+number is quoted.
+
+\textbf{Configurations.} \texttt{noop\_depth\_*\_mode\_ref.yml} $\times$
+2 tracing arms (depth sweep) and
+\texttt{noop\_d10\_s\{0,1024,1048576,10485760\}\_m\{ref,copy\}} tracing-off
+(payload sweep); $R{=}5$. Committed matrix: 185 CSVs (110 tracing-off,
+75 tracing-on --- the tracing-on set covers the 15-point depth sweep, not
+the payload/copy cells).
+
+\textbf{Metrics.} Median per-query latency, per-stage overhead
+(\si{\micro\second}), inter-stage transition cost, reference-vs-copy
+latency ratio. Read against three claims: \emph{(i) depth-flatness} ---
+latency linear in depth, transition cost flat in depth; \emph{(ii)
+zero-copy} --- reference passing $O(1)$, copy arm $O(\text{payload})$;
+\emph{(iii) overhead-in-context} --- core dispatch, and the tracing layer,
+are a negligible fraction of one real model or retrieval stage.
+
+\textbf{Threats to validity.} No-op stages never release the GIL, so the
+per-stage figure is a GIL-serialized \emph{worst case} and an upper bound
+on native-kernel-bound stages; the copy arm measures in-process
+\texttt{deepcopy} and therefore \emph{lower}-bounds process-level
+serialization. The tracing-on cost on the \texttt{-p 0} path uses
+\emph{async} local-store export, an async proxy for the case studies'
+\emph{synchronous} server export; since claim (iii) licenses attributing
+case-study overhead to the workload, we quote the canonical synchronous
+tracing cost from an orchestrated run rather than the proxy
+([[FILL: sync tracing cost/stage]]).
+
+\textbf{Collect vs.\ report.} \emph{Collect:} depth$\times$tracing plus the
+tracing-off payload$\times$copy sweep, re-collected on an idle M2~Pro.
+\emph{Report:} the depth-flatness curve (transition cost vs.\ depth), the
+zero-copy ref-vs-copy figure, and one overhead-in-context line using the
+\emph{synchronous} tracing cost against a real LLM-stage latency. No device
+sweep (instrument property, not portability).
+
+% =====================================================================
+\subsection{E2 --- Modularity overhead (real workload vs.\ monolith)}
+\label{sec:e2-modularity}
+
+\textbf{Question.} Empty stages being cheap (E1) does not prove that
+wrapping a \emph{real} workload in \sysname{}'s graph/queue/thread
+structure is cheap. Does expressing a training workload as a \sysname{}
+pipeline inflate per-step latency relative to a hand-written monolith?
+
+\textbf{Design.} One workload, two implementations: (a) a standalone
+PyTorch script (\texttt{baseline\_finetune.py}); (b) an equivalent
+\sysname{} pipeline (\texttt{torchvision\_training.yml}). Workload:
+transfer-learning fine-tuning of EfficientNetV2-S~\cite{tan2021efficientnetv2}
+on Imagenette~\cite{imagenette} --- frozen backbone, replaced 10-class head,
+Adam (lr $10^{-3}$), cross-entropy, batch~8, the same \num{12810}
+trainable parameters. Both share identical data loading, run the
+\texttt{train} split only, and call \texttt{torch.\{mps,cuda\}.synchronize()}
+at step end so logged time reflects hardware completion; the measured
+per-step bracket excludes data loading. To isolate the wrapper we set
+\texttt{num\_workers}=0 in both arms (no prefetch overlap); the \sysname{}
+data loader remains a separate, independently measured stage. Each run is
+one continuous epoch (1{,}100 steps); we drop the first \num{200} as
+warm-up, summarise each run by its median per-step latency, and
+\emph{interleave} the arms run-by-run so both see identical conditions. As
+in E1 we measure core dispatch (tracing off) and full instrumented cost
+(tracing on); the baseline carries no tracing. Run on both DUTs, reading
+overhead within a device.
+
+\textbf{Configurations.}
+\texttt{run\_modularity.py --device \{mps,cuda\} --runs 5 --max-batches 1100}
+(\texttt{--num-workers 0}, interleaved, both tracing arms); baseline via
+\texttt{baseline\_finetune.py --no-radt}. Tracing-on uses the
+\texttt{async\_tracing} RadT branch (commit \texttt{3ba61cb}), whose
+off-critical-path span export is what makes the tracing number realistic.
+
+\textbf{Metrics.} Run-level median per-step latency per implementation
+(across-run distribution, $n{=}5$), and \sysname{}'s overhead over the
+baseline as both an \emph{absolute} cost (\si{\micro\second}) and a ratio,
+reported as a \emph{paired} across-run difference (interleaved arms, shared
+seeds) with its bootstrap CI. Reporting the absolute cost makes the
+magnitude explicit: an overhead whose CI excludes zero is real yet, at
+\si{\micro\second} scale against a multi-\si{\milli\second} step,
+practically negligible.
+
+\textbf{Threats to validity.} A modularity wrapper can only add work, so
+overhead must be non-negative; a measured \emph{negative} value signals a
+confound, not a speedup, and we treat it as a bug. We hit and fixed two:
+(i) an earlier wall-clock reading differenced non-monotonic timestamps
+across threads (fixed by the monotonic clock); (ii) an earlier schedule
+(all baselines first, \texttt{num\_workers}=2 prefetch) let a data-path
+difference dominate (fixed by interleaving and matching
+\texttt{num\_workers}). Both are documented as evidence the metric is
+correctly signed. Single batch size / model is deliberate ---
+step-size-independence of the overhead is carried by E1.
+
+\textbf{Collect vs.\ report.} \emph{Collect:} baseline + two tracing arms
+$\times R{=}5$ on both DUTs (mps done; the \texttt{cuda}/GB10 half is
+authoritative and [[FILL: confirm GB10 collection]]). \emph{Report:} the
+per-step median table (baseline / off / on) with paired absolute + ratio
+overhead per device. Until the GB10 half exists the portability read is
+one-sided --- a blocker, not a footnote.
+
+% =====================================================================
+\subsection{E3 --- Unified-memory bandwidth contention (multimodal VQA)}
+\label{sec:e3-vqa}
+
+\textbf{Question.} On an Apple-silicon unified-memory SoC the GPU, Neural
+Engine, and CPU share one memory and its bandwidth; single-engine
+accelerator benchmarks cannot see the resulting contention. When we map
+the stages of one workload across different engines, is the apparent
+benefit of that heterogeneity real, or does it evaporate once queries
+overlap and the engines contend for shared bandwidth? (M2~Pro only --- the
+Neural Engine has no GB10 analogue.)
+
+\textbf{Design.} A single image-grounded VQA pipeline over
+OK-VQA~\cite{marino2019okvqa}: CLIP-ViT-L/14~\cite{radford2021clip} vision
+encoding $\rightarrow$ FAISS~\cite{johnson2019faiss} retrieval (top-3) over
+\num{10000} COCO-Karpathy captions~\cite{lin2014coco,karpathy2015deepvs}
+$\rightarrow$ 4-bit MLX Qwen3.5-9B answer generation on the GPU. A
+$2\times2$ over \emph{mapping} and \emph{schedule}:
+\begin{itemize}
+  \item \emph{Mapping~A (collocated):} CLIP and LLM both on GPU
+    (\texttt{mps}); retrieval on CPU (\texttt{..._mapping\_a.yml}).
+  \item \emph{Mapping~B (heterogeneous):} CLIP on the Neural Engine via
+    Core~ML (\texttt{ane}); LLM on GPU; retrieval on CPU
+    (\texttt{..._mapping\_b.yml}).
+  \item \emph{Schedule:} \emph{pipelined} (Poisson \texttt{rate}=2.0~q/s,
+    above the ${\approx}3$~s/query LLM service time) vs.\ \emph{serial}
+    (\texttt{-{}-serialize}). \texttt{max\_queries}=30 [[FILL: raise toward
+    the p95 gate ($\geq\num{500}$ pooled) or drop p95 for E3]].
+\end{itemize}
+
+\textbf{Configurations.} \texttt{multimodal\_vqa\_mapping\_\{a,b\}.yml}
+$\times$ \{pipelined, serial\} $\times R{=}5$. We record measured
+stage-concurrency mean per cell to confirm the entry queue actually backs
+up (otherwise throughput at fixed Poisson rate reflects offered load, not
+capacity).
+
+\emph{Confound.} Mapping~B changes more than placement: the encoder
+switches from PyTorch/Metal to a Core~ML FP16 package on the ANE, so
+engine, runtime, and precision co-vary and the ANE has a first-call
+compilation cost. We read the signal primarily \emph{within} a mapping
+(serial vs.\ pipelined for the same encoder), discard the ANE first-call
+query (reported separately), and use answer parity as a coarse divergence
+check on the FP16 embeddings.
+
+\textbf{Metrics.} The full performance set (\S\ref{sec:setup-metrics}) per
+cell; VQA accuracy and answer parity for comparability. The diagnostic is
+whether the heterogeneity advantage \emph{collapses} from serial to
+pipelined. \emph{Mechanism attribution (strengthened):} occupancy is
+residency, not utilization, and the ANE exposes no per-process utilization
+counter, so occupancy/concurrency traces can show \emph{that} the
+advantage collapses but cannot alone distinguish bandwidth contention from
+command-buffer serialization. We therefore make a direct DRAM-bandwidth /
+power read (\texttt{powermetrics}/\texttt{macmon}) a \textbf{required}
+part of this experiment; the ``bandwidth-bound'' claim rests on it. Absent
+that read we downgrade the claim to ``the heterogeneity gain collapses
+under overlap, consistent with a shared-memory-contention regime.''
+
+\textbf{Collect vs.\ report.} \emph{Collect:} the full $2\times2 \times
+R{=}5$ plus the DRAM-bandwidth trace. \emph{Report:} the within-mapping
+serial$\to$pipelined deltas for both mappings, the DRAM read that
+adjudicates the mechanism, and accuracy+parity showing the arms answer the
+same task. The raw B-vs-A delta appears only with the co-varying-factor
+caveat.
+
+% =====================================================================
+\subsection{E4 --- Pipeline topology: monolithic vs.\ decomposed agentic RAG}
+\label{sec:e4-selfrag}
+
+\textbf{Question.} For an agentic, self-reflective RAG
+workload~\cite{asai2024selfrag}, is one large model that performs every
+sub-task (grading, answering, hallucination checking) in a single call
+better than several smaller specialists composed into a graph? And ---
+since ``decomposition'' bundles several changes --- how much of any effect
+is \emph{model size}, how much \emph{physical} (separate resident
+instances) vs.\ \emph{logical} (one shared instance) decomposition, and how
+much the \emph{inference engine}? Such ablation-style restructuring is what
+fixed-topology benchmarks cannot express but \sysname{}'s declarative,
+non-linear graphs support directly.
+
+\textbf{Design.} One Self-RAG task in a family of topologies that swap by
+changing only configuration:
+\begin{itemize}
+  \item \emph{Monolith-9B:} one Qwen3.5-9B does grade+answer+check in a
+    single structured pass; a router validates and optionally loops
+    through a query rewriter (a bounded back-edge).
+  \item \emph{Decomposed (3$\times$4B):} three separate Qwen3.5-4B
+    instances (grader / generator / hallucination-checker; rewriter shares
+    the grader) split the job, so cheap grade/check calls for one query
+    overlap the expensive generation for another.
+  \item \emph{Monolith-4B (size control):} one Qwen3.5-4B issues the three
+    calls sequentially --- size-matched to Decomposed, isolating
+    overlap/specialization at fixed parameter size.
+  \item \emph{Decomposed-Shared (logical):} the same decomposed graph and
+    per-role prompts, but all stages share \emph{one} resident 4B instance
+    behind one mutex --- contrasted with Decomposed, isolates what the
+    extra physical instances buy (cross-query overlap) against their
+    ${\approx}3\times$ resident-memory cost.
+\end{itemize}
+The decomposed topology exercises fan-out routing, fan-in merge, and a
+feedback cycle (retrieve--grade--rewrite), and is a within-pipeline
+collocation case: multiple model instances co-resident on one accelerator,
+profiled per stage. We run on two task difficulties --- factoid
+(\texttt{rag-mini-wikipedia}, top-3 over 3{,}200 passages) and multi-hop
+(HotpotQA~\cite{yang2018hotpotqa}, top-5 over a 20{,}000-passage corpus
+from the gold+distractor contexts of the first 300 HotpotQA-dev
+questions) --- retrieving from ChromaDB~\cite{chroma}, on both DUTs (GB10
+BF16; M2~Pro 4-bit MLX). Retrieval differs across difficulties, so the
+topology contrast is read \emph{within} a difficulty.
+
+\emph{Engine comparison.} The two single-instance arms (Monolith-4B and
+Decomposed-Shared) are additionally served on \emph{identical 4B weights}
+by three backends --- HF Transformers (in-process), a local vLLM server
+(continuous batching, via litellm), and a local Ollama server (via
+litellm) --- to compare engines under identical work. vLLM is CUDA-only;
+Ollama runs on both platforms.
+
+\emph{Confounds and controls.} Monolith-9B-vs-Decomposed conflates size,
+specialization, and call count; Monolith-4B (size) and Decomposed-Shared
+(physical-vs-logical) are the controls that separate them.
+\textbf{Because a multi-hop quality gap between 9B and 3$\times$4B is
+exactly what a size difference alone would produce, the Monolith-4B
+control must be run \emph{on multi-hop}, not only on factoid} --- otherwise
+the headline ``quality-on-multi-hop'' result is unfalsifiable as a size
+artifact. The four multi-hop control configs
+(\texttt{multihop\_\{monolith\_4b,decomposed\_shared\}\_\{cuda,mlx\}}) do
+not yet exist and are an explicit collection item.
+% BLOCKER(collect): create multihop_monolith_4b_{cuda,mlx}.yml and
+% multihop_decomposed_shared_{cuda,mlx}.yml — absent from configs/ today.
+
+\emph{Load matching.} Load generation is not identical across DUTs: the
+CUDA host uses \texttt{rate}=4.0 / 30 queries, the slower MLX host
+\texttt{rate}=1.0 / 10 queries, each chosen so the entry queue backs up in
+pipelined mode (confirmed by the measured stage-concurrency mean). On the
+16\,GB M2~Pro the decomposed-pipelined cells can hit
+\texttt{[METAL] Insufficient Memory} (3$\times$4B $\times$ in-flight KV
+caches). \textbf{The fix must not confound topology with offered load:} we
+re-run \emph{all} MLX topology arms at the same reduced load
+(\texttt{rate}=0.4 / \texttt{max\_queries}=8) so every arm sees identical
+arrivals, and we verify the queue still backs up at that rate; where it
+does not, we restrict the MLX comparison to the serial cells and state the
+pooled $N$ per arm (10--40 queries $\times R{=}5$, below the p95 gate --- so
+no MLX tail latencies are reported). We expect this to be the common case:
+at \texttt{rate}=0.4 against a seconds-scale LLM the entry queue usually
+will not back up, so on the MLX host the \emph{pipelined} topology story
+largely reduces to serial-only. We state this up front rather than as a
+contingency --- the pipelined-overlap claim is carried by the GB10 cells.
+Serial cells use \texttt{-{}-serialize}.
+
+\textbf{Configurations.} The arm$\times$task$\times$backend matrix is in
+\texttt{evaluation/self\_rag/configs/} (16 configs today; +4 multi-hop
+controls to add). Each timing arm runs pipelined and serial $\times R{=}5$
+per DUT. Table~\ref{tab:selfrag-matrix} lists arms and the report subset.
+
+\begin{table}[t]\centering\small
+\caption{Self-RAG arms. \CIRCLE\ = core (report); \LEFTcircle\ = extended
+(collect, report if space/signal); \Circle\ = engine-comparison overlay;
+\texttt{+} = config to be created. Every reported timing arm runs
+pipelined + serial, $R{=}5$, per DUT.}
+\label{tab:selfrag-matrix}
+\begin{tabular}{@{}lllcc@{}}
+\toprule
+Arm & Models & Isolates & Factoid & Multi-hop \\
+\midrule
+Monolith-9B        & 1$\times$9B & (reference)           & \CIRCLE & \CIRCLE \\
+Decomposed         & 3$\times$4B & topology              & \CIRCLE & \CIRCLE \\
+Monolith-4B        & 1$\times$4B & model size            & \CIRCLE & \CIRCLE\texttt{+} \\
+Decomposed-Shared  & 1$\times$4B & physical vs.\ logical & \CIRCLE & \LEFTcircle\texttt{+} \\
+\midrule
+\multicolumn{2}{@{}l}{Engine overlay (HF / vLLM / Ollama)} & inference engine & \Circle & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Metrics.} The full performance set (\S\ref{sec:setup-metrics}),
+plus LLM calls per query and resident model memory (defined there); and
+the quality set (EM/F1, answered rate, answer parity). Every speed
+comparison is \emph{conditioned on} the EM/F1 of the two arms: a speed
+result at degraded accuracy is a trade-off, not a free win. This
+conditioning is unevaluable on the containment proxy (the arms differ in
+verbosity), so the EM/F1 scorer of \S\ref{sec:setup-metrics} is a hard
+prerequisite for every E4 table.
+
+\textbf{Collect vs.\ report.} \emph{Collect:} all configs (incl.\ the 4 new
+multi-hop controls), both schedules, both DUTs, $R{=}5$, plus the engine
+overlay on the single-instance arms. \emph{Report (core):} Monolith-9B
+vs.\ Decomposed on \emph{both} tasks and DUTs (the
+speed-on-factoid / quality-on-multi-hop trade-off), with Monolith-4B as a
+\emph{core} control on both tasks and Decomposed-Shared as a control on
+factoid (and multi-hop if collected clean). \emph{Report if clean:} the
+Decomposed-Shared multi-hop cell and the engine overlay --- cut first if
+space is tight or the MPS ceiling muddies comparability.
+
+% =====================================================================
+\subsection{E5 --- MLPerf Inference as a special case (scenario reduction)}
+\label{sec:e5-mlperf}
+
+\textbf{Question.} The paper argues single-stream suites miss end-to-end
+and collocation effects (Section~\ref{sec:intro}). Rather than compete with
+MLPerf, we show it is a \emph{special case}: each MLPerf Inference load
+scenario is recoverable as a \sysname{} scheduler configuration. Two of the
+four scenario generators exist today (SingleStream = closed-loop,
+Server = Poisson); once the saturating-Offline and fixed-interval
+MultiStream generators are added (Table~\ref{tab:mlperf-map}), \sysname{}
+is a strict superset of the measurement MLPerf performs.
+
+\textbf{Design.} We do \emph{not} claim a certified-throughput parity
+number against published LoadGen results on other silicon --- that is
+apples-to-oranges and unattributable. Instead the claim is a
+\emph{reduction}: MLPerf's four scenarios map onto \sysname{}'s load
+generators (Table~\ref{tab:mlperf-map}). We demonstrate the reduction on a
+canonical MLPerf vision workload, ResNet-50-v1.5
+(\texttt{pipeline\_configs/mlperf/resnet\_inference.yml}), by instantiating
+each scenario as a config and confirming \sysname{} reproduces the
+scenario's load pattern (verified from the arrival/served-timestamp trace)
+and reports the scenario's native metric. \emph{Note:} the committed
+resnet config uses \texttt{PoissonLoadScheduler rate=10} --- a
+\emph{Server}-like stream, not \emph{Offline}; the Offline cell requires
+the saturating all-at-once scheduler. Fixing this mapping is part of the
+experiment.
+
+\begin{table}[t]\centering\small
+\caption{MLPerf Inference scenarios as \sysname{} configurations. The
+reduction, not a throughput comparison, is the claim.}
+\label{tab:mlperf-map}
+\begin{tabular}{@{}lll@{}}
+\toprule
+MLPerf scenario & \sysname{} load generator & Native metric \\
+\midrule
+SingleStream & closed-loop, 1 query in flight (\texttt{OfflineLoadScheduler}$^\dagger$) & p90 latency \\
+MultiStream  & fixed $N$-sample query at fixed interval [[FILL: component]] & p99 query latency \\
+Server       & Poisson at target QPS (\texttt{PoissonLoadScheduler})     & SLO-bounded QPS \\
+Offline      & saturating: all samples enqueued at once [[FILL: component]] & throughput \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\raggedright\footnotesize $^\dagger$Naming hazard: \sysname{}'s
+\texttt{OfflineLoadScheduler} is the \emph{closed-loop, one-in-flight}
+generator, so it maps to MLPerf \emph{SingleStream} --- \emph{not} MLPerf
+\emph{Offline}. The Offline row needs a distinct saturating
+(all-at-once) generator and the MultiStream row a fixed-interval
+$N$-sample generator; both must exist as \texttt{loadgen/} components or
+those rows are claims without an arm ([[FILL: confirm or list to-build]]).
+\end{table}
+
+\emph{Optional parity check.} On a single DUT we additionally run the
+official MLPerf LoadGen in Offline mode against the same
+model/backend and report \sysname{}-within-$X\%$ of the certified
+harness on the \emph{same hardware} --- the only parity comparison that
+speaks to measurement fidelity ([[FILL: run or explicitly scope out]]).
+
+\textbf{Configurations.}
+\texttt{pipeline\_configs/mlperf/resnet\_inference.yml} instantiated once
+per scenario by swapping only the \texttt{loadgen} block
+(Table~\ref{tab:mlperf-map}); $R{=}5$ per scenario, both DUTs. Three of the
+four scenario configs (SingleStream, MultiStream, Offline) are to be
+created --- the committed config is the Server-like Poisson cell.
+[[FILL: confirm a saturating-Offline and a fixed-interval MultiStream
+scheduler exist under \texttt{loadgen/}, else build them.]]
+
+\textbf{Metrics.} Per scenario, the scenario's native metric plus a
+trace-level confirmation that the arrival process matches the scenario
+definition. If the parity check is run: same-DUT throughput delta vs.\
+certified LoadGen.
+
+\textbf{What it shows.} MLPerf Inference is the single-model, isolated
+corner of \sysname{}'s configuration space: the \emph{load pattern} of each
+scenario is reproducible as a \sysname{} config (confirmed from the arrival
+trace), while the end-to-end and collocated regimes (E3, E4, E6) lie
+outside MLPerf's expressible space entirely. This is the concrete form of
+the paper's ``MLPerf falls short'' thesis.
+
+\textbf{Threats to validity.} The reduction is a claim about the
+\emph{load pattern}, verified from the arrival/served-timestamp trace ---
+not about bit-exact equivalence with the certified harness, whose
+coalescing, tie-break, and warm-up rules differ; recovering a scenario's
+certified \emph{number} is exactly what the optional same-DUT LoadGen run
+checks. The MultiStream and saturating-Offline generators must exist as
+components or the corresponding rows are unbacked. The native-metric column
+of Table~\ref{tab:mlperf-map} names MLPerf's certified per-scenario
+percentiles (p90 SingleStream, p99 MultiStream); these are the certified
+harness's definitions, distinct from \sysname{}'s own pooled-quantile
+reporting gate (\S\ref{sec:setup-metrics}, which does not estimate p99 at
+our sample sizes) --- computing them at MLPerf's percentiles is part of the
+optional parity run, not the reduction itself.
+
+\textbf{Collect vs.\ report.} \emph{Collect:} the four scenario configs on
+ResNet-50 both DUTs; optionally the LoadGen parity run. \emph{Report:} the
+reduction table with trace-confirmation, and the parity line if collected.
+Deliberately small --- a pointed methodological demonstration, not a second
+benchmark suite.
+
+% =====================================================================
+\subsection{E6 --- Collocation scaling (inter-pipeline interference)}
+\label{sec:e6-collocation}
+
+\textbf{Question.} The framework's headline claim is that it can launch and
+profile an arbitrary number of concurrent pipelines and attribute
+resource use \emph{per process}. E3/E4 collocate stages \emph{within} one
+pipeline; here we test the \emph{inter}-pipeline case directly: as an
+independent background workload is added to a foreground inference service
+on shared hardware, how does foreground quality-of-service degrade, and
+can \sysname{} attribute the interference to each pipeline? This is the
+capability single-stream, single-workload suites structurally cannot
+express.
+
+\textbf{Design.} A single latency-sensitive \emph{foreground} pipeline ---
+the EfficientNetV2-S \emph{inference} stream (the inference arm of the
+committed \texttt{torchvision\_mixed.yml}), driven by a fixed Poisson rate
+--- runs while we vary a \emph{background} load along two axes:
+\begin{itemize}
+  \item \emph{Concurrency count:} $B\in\{0,1,2,4,\dots\}$ background
+    pipelines, each a \emph{separate OS process with its own
+    data-loading stage} (the E2 EfficientNetV2-S fine-tune). This
+    independence matters for attribution: \texttt{torchvision\_mixed.yml}
+    co-locates its inference and training pipelines but they share
+    \texttt{dataset\_stage\_id: 0}, so the $B$-generator must give each
+    background its own data pipeline, or per-process attribution is
+    contaminated by a shared stage.
+  \item \emph{Background intensity} (secondary): at fixed $B{=}1$, sweep
+    the background batch size / arrival rate to separate ``a co-runner
+    exists'' from ``how hard it pushes''.
+\end{itemize}
+We fix a \emph{single} foreground workload for the reported curve (chosen
+once, not ``ResNet-50 or VQA''). The foreground Poisson rate is
+\emph{held fixed} across all cells so only the background changes; each
+cell runs $R{=}5$ with $\geq\num{500}$ pooled foreground queries so the
+p95-vs-$B$ tail points clear the quantile gate of
+\S\ref{sec:setup-metrics}. Both DUTs (the 128\,GB GB10 admits far higher
+$B$ before saturation than the 16\,GB M2~Pro --- itself a portability data
+point).
+
+\textbf{Configurations.} \texttt{torchvision\_mixed.yml} generalised to a
+foreground + $B$ \emph{independent} background pipelines, each with its own
+dataset stage [[FILL: config generator for the $B$ sweep]]. Per-process
+listeners give per-pipeline resource use.
+
+\textbf{Metrics.} Foreground \textbf{p95 and median latency and
+throughput} as a function of $B$ (the degradation \emph{curve}, not a
+single pair), background throughput, and per-pipeline resource
+attribution. The isolation baseline is the $B{=}0$ foreground run at the
+same Poisson rate. \emph{Attribution caveat (as in E3).} Per-process
+occupancy is \emph{residency}, not utilization: two processes sharing one
+GPU are both resident, so occupancy evidences co-residency and bounds
+interference but does not causally partition the slowdown. We therefore
+report the causal per-pipeline share on GB10 from \texttt{nvidia-smi pmon}
+per-process SM activity, and cross-check that the per-process shares
+reconcile against the aggregate device counter (a faithfulness check on
+the attribution). On the M2~Pro --- which exposes no per-process GPU/ANE
+utilization counter --- the degradation \emph{curve} stands but attribution
+is explicitly residency-only.
+
+\textbf{What it shows.} A degradation \emph{curve} with \emph{validated}
+per-process attribution characterises the collocation-aware-profiling
+capability generally (not as one existence-proof cell), and directly
+exercises the ``arbitrary number of concurrent pipelines'' claim. It is the
+load-bearing evidence for the collocation contribution that
+methodology.tex's reviewer note D1 flags as otherwise only asserted.
+
+\textbf{Threats to validity.} The $B$ ceiling is bounded by device memory
+and reported, never extrapolated. Attribution is causal only where a
+per-process utilization counter exists (GB10); on the M2~Pro it is
+residency-only. Backgrounds must be independent processes with independent
+dataset stages, or attribution is contaminated. The foreground rate is
+held fixed so the $x$-axis is purely $B$.
+
+\textbf{Collect vs.\ report.} \emph{Collect:} the full $B$ sweep on both
+DUTs plus the intensity sub-sweep. \emph{Report:} the foreground p95-vs-$B$
+degradation curve with per-process occupancy on both DUTs; the intensity
+sub-sweep if space allows. \emph{Scope honesty:} $B$ ranges are bounded by
+device memory --- we report the ceiling reached on each DUT rather than
+implying unbounded scaling.
+
+% =====================================================================
+\subsection{E7 --- Capacity portability sweep (no-code scalability)}
+\label{sec:e7-sweep}
+
+\textbf{Question.} The paper claims one can stress hardware of any capacity
+by editing a declarative \texttt{model} field --- no code change. E4's
+9B-vs-4B is two points and confounded with topology. Here we test the
+scalability claim cleanly: does a \emph{single} pipeline, reconfigured only
+by its model field, sweep from comfortably-resident to
+capacity-saturating on each DUT, and where does each device's ceiling fall?
+
+\textbf{Design.} We do \emph{not} run a separate pipeline for this: E7 is
+the Self-RAG \emph{monolith} arm of E4 read along the size axis. The two
+monolith configs (\texttt{factoid\_monolith\_*} at 9B and
+\texttt{factoid\_monolith\_4b\_*} at 4B) are \emph{byte-identical except the
+\texttt{model} field} --- same stages, same retrieval collection, same
+loadgen --- so they already constitute a config-only, same-pipeline
+2-point size comparison at fixed topology (this is exactly the ``size vs.\
+topology'' control of E4). E7 extends that ladder with additional rungs by
+swapping \emph{only} the \texttt{model} field. Quantization is matched
+\emph{within} each DUT (M2~Pro all-4-bit MLX; GB10 all-BF16) and the ladder
+is read \emph{within} a device; context length and in-flight concurrency
+are held fixed so the size axis is not confounded. To make the
+\emph{no-code} claim concrete we show the literal config diff between the
+smallest and largest rung --- it is the \texttt{model} field and nothing
+else (verified for the committed 4B/9B pair). On each DUT the ceiling is
+the largest size that fits with \emph{zero} OOM across all $R{=}5$ runs.
+
+\emph{The ladder is concrete and genuinely config-only.} The Qwen3.5
+family ships OptiQ-4bit MLX builds across a full dense range that
+\emph{share one chat template and architecture}, so a rung change is only
+the \texttt{model} field --- no tokenizer, template, or recipe change. On
+the M2~Pro (4-bit) the dense ladder is 0.8B (\SI{0.5}{\giga\byte}), 2B
+(\SI{1.4}{\giga\byte}), 4B (\SI{2.8}{\giga\byte}), 9B
+(\SI{5.6}{\giga\byte}), 27B (\SI{15.7}{\giga\byte}): the first four fit and
+\textbf{27B is the ceiling rung --- its \SI{15.7}{\giga\byte} of weights
+alone exceed the usable \SI{16}{\giga\byte} budget, so it OOMs} while GB10
+runs it with headroom. The 4B/9B rungs come free from E4's size control;
+0.8B, 2B, and 27B are one-line additions. We keep the sparse
+\texttt{35B-A3B} MoE \emph{off} the dense ladder --- mixing an MoE into a
+dense parameter-size axis would confound size with sparsity --- and report
+it, if at all, as a separate point. The free 4B/9B pair already
+substantiates the \emph{no-code} half; the 27B rung supplies the capacity
+\emph{ceiling}. Because the monolith carries the retry/rewrite loop,
+per-query \emph{latency} is not a clean function of size on this pipeline:
+the clean Self-RAG size axes are \textbf{resident memory} and
+\textbf{answer quality} vs.\ size (the latter corroborated by the family's
+published capability scores, which rise $36.0\!\to\!79.1$ from 0.8B to
+27B). A clean throughput/latency-vs-size \emph{curve}, if wanted, is better
+taken from the non-agentic VQA or a plain-generation pipeline.
+
+\textbf{Configurations.} The E4 monolith configs at 4B and 9B (already
+collected), plus three added \texttt{model}-field rungs on M2~Pro ---
+\texttt{Qwen3.5-\{0.8B,2B\}-OptiQ-4bit} (fit) and
+\texttt{Qwen3.5-27B-OptiQ-4bit} (the \SI{15.7}{\giga\byte} ceiling rung,
+expected to OOM) --- and their BF16 counterparts on GB10; $R{=}5$ per size
+that fits.
+
+\textbf{Metrics.} Per size: resident model memory, per-query latency,
+throughput; and per DUT the ceiling (largest size with zero OOM across
+$R{=}5$ runs at fixed context/concurrency) --- the 16\,GB M2~Pro ceiling
+vs.\ the 128\,GB GB10 headroom.
+
+\textbf{What it shows.} A config-only size ladder that saturates the small
+device while the large one still has headroom is the most direct evidence
+for the ``mid-range gap / portability'' argument (Section~\ref{sec:background})
+and the ``no-code scalability'' contribution --- currently asserted from the
+8$\times$/1.4$\times$ capacity/bandwidth framing but never exercised to a
+limit.
+
+\textbf{Threats to validity.} ``Fits'' is a (model, quant, context,
+concurrency) property, not a device constant; we pin quant (within DUT),
+context, and concurrency so the reported ceiling is reproducible and the
+size axis is unconfounded. The ``no-code'' claim is substantiated by the
+literal config diff \emph{and} by the family sharing one chat
+template/architecture across the dense ladder, so a rung change is
+genuinely only the \texttt{model} field. The sparse MoE is kept off the
+dense size axis to avoid confounding parameter count with sparsity.
+
+\textbf{Collect vs.\ report.} \emph{Collect:} the 4B/9B points come free
+from E4's monolith arm; only the \emph{added rungs} (and the
+ceiling-reaching large rung, if a 4-bit build exists) are new collection.
+\emph{Report:} the resident-memory- and quality-vs-size points with each
+device's ceiling marked. \emph{Reviewer-driven addition:} E7 exists to
+back the scalability claim; if the Intro is instead softened to drop
+``any-size hardware,'' E7 can fold into E4's discussion rather than stand
+alone.
+
+% =====================================================================
+\subsection{Summary: what we collect vs.\ what we report}
+\label{sec:setup-summary}
+
+The collection plan is broader than the paper. We \emph{collect}: the
+re-collected NoOp matrix (E1); baseline+tracing arms on both DUTs (E2); the
+VQA $2\times2$ plus DRAM-bandwidth trace (E3); the full Self-RAG matrix
+with the size, logical-decomposition, and engine controls --- including the
+four multi-hop control configs to be created --- on both DUTs (E4); the
+ResNet-50 scenario configs (E5); the collocation $B$-sweep (E6); and the
+model-size ladder (E7). We \emph{report}, as the paper's spine: two
+instrument-fidelity bounds (E1, E2) that license attributing later
+overhead to workloads; two case studies whose primary claims are the
+contention-bound heterogeneity collapse (E3) and the config-only
+monolith-vs-decomposition trade-off with its size and physical-vs-logical
+controls (E4); and three capability results --- the MLPerf reduction (E5),
+the collocation degradation curve (E6, the load-bearing collocation
+evidence), and the no-code capacity sweep (E7). Secondary arms (the
+Self-RAG engine overlay, the Decomposed-Shared multi-hop cell, the E6
+intensity sub-sweep) are reported only where the signal is clean.
+
+Collection dependencies gate the final tables and are tracked as blockers.
+\emph{Hard (a claim is unreportable without it):} the \textbf{EM/F1 (and
+VQA-accuracy) scorers}, without which no accuracy-conditioned comparison
+(E3, E4) can be reported; the \textbf{GB10 halves} of E2/E4/E6/E7, without
+which every cross-device direction claim is one-sided; and the
+\textbf{re-collection of E1} on an idle M2~Pro, since the committed matrix
+violates the single-quiet-machine premise. \emph{Build work (new framework
+code / config generators the capability tier needs):} the two missing
+\textbf{\texttt{loadgen/} scheduler components} --- a saturating-Offline and
+a fixed-interval MultiStream generator --- which back 2 of the 4 rows of the
+E5 reduction table; the \textbf{E6 $B$-sweep config generator} that spawns
+independent background processes each with its own dataset stage; and the
+\textbf{E7 model-size ladder configs}. \emph{Smaller items:} the
+\textbf{four multi-hop Self-RAG control configs} (E4), the
+\textbf{E3 DRAM-bandwidth read} (without which E3 drops from
+``contention-bound'' to ``consistent with contention''), and the
+\textbf{synchronous tracing cost} from an orchestrated run
+(E1/E2 overhead-in-context). Finally, this draft delivers
+the collocation (E6) and MLPerf-contrast (E5) experiments that
+\texttt{methodology.tex} currently defers to future work; that file's
+Experiments subsection and the Intro's scalability wording must be
+reconciled when this draft replaces it.

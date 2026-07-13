@@ -148,7 +148,8 @@ stage that records the question, golden answers, retrieved documents, and
 generated answer; the instrument experiments
 (\S\ref{sec:exp-noop},~\S\ref{sec:exp-modularity}) emit only the timing trace.
 All durations are taken from a single monotonic clock (\texttt{time.perf\_counter};
-\texttt{time.get\_clock\_info} reports a resolution of [[FILL: value]] on the
+\texttt{time.get\_clock\_info} reports a resolution of \SI{41.7}{\nano\second}
+(\texttt{mach\_absolute\_time()}) on the
 M2~Pro and \SI{1}{\nano\second} (\texttt{clock\_gettime(CLOCK\_MONOTONIC)}) on
 GB10); wall-clock time (\texttt{time.time}) is
 used only for cross-process trace alignment, never for per-stage latency.
