@@ -1,22 +1,20 @@
-# modularity-overhead run environment
-timestamp_wall = 1782454609.259673
-device = mps
+# framework-overhead run environment
+timestamp_wall = 1782444307.641812
 runs_per_cell = 5
-max_batches = 1100
-num_workers = 0
-cooldown_s = 0
-interleaved = true
+max_queries = 101
 
 [perf_counter]
 resolution = 4.166666666666667e-08
 monotonic = True
+adjustable = False
 implementation = mach_absolute_time()
 
 [platform]
 python = 3.10.20
 system = Darwin 25.5.0
 machine = arm64
-torch = 2.10.0
-torch_cuda = None
+processor = arm
 machdep.cpu.brand_string = Apple M2 Pro
 hw.memsize = 17179869184
+hw.perflevel0.physicalcpu = 8
+hw.perflevel1.physicalcpu = 4
