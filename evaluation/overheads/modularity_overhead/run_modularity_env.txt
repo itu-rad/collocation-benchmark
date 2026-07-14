@@ -1,7 +1,7 @@
 # modularity-overhead run environment
-timestamp_wall = 1782454609.259673
+timestamp_wall = 1783993661.555983
 device = mps
-runs_per_cell = 5
+runs_per_cell = 10
 max_batches = 1100
 num_workers = 0
 cooldown_s = 0

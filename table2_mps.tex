@@ -1,6 +1,6 @@
 % --- Table 2: modularity overhead (mps, EfficientNetV2-S batch 8, tracing off, steady state) ---
-% per-run medians (ms) — monolith: 90.180, 90.106, 90.176, 90.175, 90.399 | Choreo: 120.250, 96.521, 90.198, 90.278, 89.372
-% paired per-run differences (us): +30070, +6415, +22, +104, -1027
+% per-run medians (ms) — monolith: 90.757, 89.392, 89.295, 89.375, 90.159, 89.472, 90.480, 89.975, 90.091, 90.358 | Choreo: 89.553, 89.349, 89.296, 89.763, 89.167, 89.378, 90.556, 90.220, 90.263, 90.682
+% paired per-run differences (us): -1204, -43, +1, +388, -992, -95, +76, +244, +171, +323
 \begin{table}[t]
 \centering
 \caption{Wrapping a real EfficientNetV2-S Imagenette training step in Choreo's graph/queue/thread structure adds a negligible, fixed per-step overhead vs.\ a hand-written monolith. Per-step training latency at steady state, median over $R$ runs with a hierarchical bootstrap \SI{95}{\percent} CI (runs resampled first, then steps); overhead is the paired across-run difference (interleaved arms); mps. Raw per-run values in the artifact.}
@@ -9,12 +9,12 @@
 \toprule
 & Monolith & Choreo \\
 \midrule
-Per-step latency (\si{\milli\second}) & 90.233 & 90.726 \\
-\quad 95\% CI & [90.128, 90.341] & [89.492, 114.196] \\
+Per-step latency (\si{\milli\second}) & 89.893 & 89.700 \\
+\quad 95\% CI & [89.486, 90.207] & [89.397, 90.219] \\
 \midrule
-\multicolumn{3}{l}{Overhead (paired): +7116.7\,\si{\micro\second} [-385.6, +19101.1], +7.89\% [-0.43, +21.17] --- indistinguishable from zero} \\
+\multicolumn{3}{l}{Overhead (paired): -113.1\,\si{\micro\second} [-460.3, +171.7], -0.13\% [-0.51, +0.19] --- indistinguishable from zero} \\
 \bottomrule
 \end{tabular}
 \end{table}
-% tracing-on per-step median: 91.999 ms (N=4500; per-run: 92.438, 91.816, 91.766, 92.071, 91.983); overhead-in-context in true_overhead_analysis.py
+% tracing-on per-step median: 92.008 ms (N=9000; per-run: 91.525, 91.094, 91.368, 91.234, 92.446, 92.584, 92.674, 92.848, 93.128, 92.378); overhead-in-context in true_overhead_analysis.py
 
