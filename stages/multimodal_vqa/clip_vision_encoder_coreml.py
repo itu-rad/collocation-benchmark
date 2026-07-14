@@ -110,12 +110,14 @@ class CLIPVisionEncoderCoreML(Stage):
         """
         pil_image, question = query.data
 
-        # Preprocess image using HF processor, then extract pixel
-        # values as numpy for CoreML.
+        # Preprocess image using HF processor, then extract pixel values as
+        # numpy for CoreML. transformers 5.x fast image processors only emit
+        # torch tensors (return_tensors="np" raises ValueError), so request
+        # "pt" and convert.
         inputs = self._processor(
-            images=pil_image, return_tensors="np"
+            images=pil_image, return_tensors="pt"
         )
-        pixel_values = inputs["pixel_values"].astype(np.float32)
+        pixel_values = inputs["pixel_values"].numpy().astype(np.float32)
 
         prediction = self._coreml_model.predict(
             {"pixel_values": pixel_values}

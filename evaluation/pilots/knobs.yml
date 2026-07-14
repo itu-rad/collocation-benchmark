@@ -1,5 +1,5 @@
 schema_version: 1
-generated: 2026-07-14 02:15:01 -0700
+generated: 2026-07-14 02:20:24 -0700
 git_commit: unknown
 variants:
   e3: dose_response
@@ -48,6 +48,27 @@ pilots:
       max: 0.2455
     per_run_medians_s:
     - 0.054
+  e3p_c2_rmax_mlx:
+    cell: e3p_c2_rmax
+    device: m2pro
+    csvs:
+    - pilot_e3p_c2_rmax_mlx_r1.csv
+    n_pooled: 99
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: true
+      note: ''
+      outlier_idxs: []
+    service_s:
+      median: 0.0499
+      mean: 0.0498
+      min: 0.046
+      max: 0.0542
+    per_run_medians_s:
+    - 0.05
   e3p_c3_rmax_mlx:
     cell: e3p_c3_rmax
     device: m2pro
@@ -502,11 +523,18 @@ experiments:
         rmax_per_s: 18.416
         median_op_s: 0.0543
     - knob: corunner_c2_ane_levels
-      value: null
+      value:
+      - 5.01
+      - 10.02
+      - 15.03
+      - 20.04
       rule: R-INTENSITY
       scope: driver
       verified: null
-      note: pending pilot
+      inputs:
+        pilot: e3p_c2_rmax
+        rmax_per_s: 20.04
+        median_op_s: 0.0499
     - knob: corunner_c3_levels
       value:
       - 4.202
