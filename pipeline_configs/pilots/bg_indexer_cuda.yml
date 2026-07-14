@@ -1,0 +1,43 @@
+# Pilot workload: background indexing pipeline (Stage A/B co-runner),
+# standalone + serial. Measures per-chunk (32-doc) service time -> the
+# indexer's R_max for Stage B's intensity levels. MLX/M2 variant (cuda embed).
+name: "pilot_bg_indexer_cuda"
+pipelines:
+  - name: BG indexer pilot
+    inputs: [0]
+    outputs: [2]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.OfflineLoadScheduler
+      queue_depth: 4
+      max_queries: 50
+      timeout: 1800
+      config:
+        rate: 0
+    stages:
+      - name: Corpus chunk loader (shard 0/1)
+        id: 0
+        outputs: [1]
+        component: stages.rag_indexing.CorpusChunkLoader
+        config:
+          dataset:
+            name: rag-datasets/rag-mini-wikipedia
+            subset: text-corpus
+            split: passages
+            text_column: passage
+          docs_per_query: 32
+          shard: {index: 0, count: 1}
+      - name: Embed passages
+        id: 1
+        outputs: [2]
+        component: stages.rag_indexing.EmbedStage
+        config:
+          model:
+            name: sentence-transformers/all-MiniLM-L6-v2
+          device: cuda
+          max_length: 256
+      - name: Chroma indexer
+        id: 2
+        component: stages.rag_indexing.ChromaIndexer
+        config:
+          collection_name: pilot_bg_index

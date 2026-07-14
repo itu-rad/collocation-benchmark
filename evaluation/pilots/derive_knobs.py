@@ -278,7 +278,8 @@ def derive_e3(pilots: dict, device: str, variant: str, p95_policy: str) -> list[
             entries.append(K("loadgen.max_queries", None, "R-NTIMING", "config",
                              note="pending pilot"))
     else:  # dose_response (E3')
-        for cell, label in (("e3p_c1_rmax", "c1_gpu"), ("e3p_c2_rmax", "c2_ane")):
+        for cell, label in (("e3p_c1_rmax", "c1_gpu"), ("e3p_c2_rmax", "c2_ane"),
+                            ("e3p_c3_rmax", "c3")):
             p = pilots.get((cell, device))
             if p:
                 rmax = round(1.0 / p["service_s"]["median"], 3)
@@ -337,6 +338,7 @@ def derive_e5(pilots: dict, device: str) -> list[dict]:
 
 def derive_e6(pilots: dict, device: str, variant: str) -> list[dict]:
     cell = "e6p_fg_ragserve" if variant == "rag_indexing" else "e6_fg_effnet"
+    bg = pilots.get(("e6p_bg_index_rmax", device))
     cfg = ("pipeline_configs/rag_serve_plain*.yml" if variant == "rag_indexing"
            else "pipeline_configs/torchvision_inference.yml")
     p = pilots.get((cell, device))
@@ -361,6 +363,17 @@ def derive_e6(pilots: dict, device: str, variant: str) -> list[dict]:
     else:
         entries.append(K("fg.loadgen.config.rate", None, "R-E6-HEADROOM",
                          "config", note="pending pilot"))
+    if variant == "rag_indexing":
+        if bg:
+            rmax = round(1.0 / bg["service_s"]["median"], 4)
+            entries.append(K("bg_index_rmax_qps", rmax, "R-INTENSITY", "driver",
+                             inputs={"pilot": "e6p_bg_index_rmax",
+                                     "median_chunk_s": bg["service_s"]["median"],
+                                     "docs_per_query": 32},
+                             note="Stage-B fixed-interval levels = {25,50,75,100}% of this"))
+        else:
+            entries.append(K("bg_index_rmax_qps", None, "R-INTENSITY", "driver",
+                             note="pending pilot e6p_bg_index_rmax"))
     entries += [
         K("B_sweep", [0, 1, 2], "R-PRECEDENT", "driver",
           note="minimal E6; ceiling reported, never extrapolated"),

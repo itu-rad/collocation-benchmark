@@ -107,9 +107,10 @@ CELLS = [
     PilotCell("e3p_c2_rmax", {"mlx": f"{PC}/pilots/clip_ane_encode.yml"},
               n_queries=100,
               serves=["E3' co-runner C2 R_max", "AMC ANE calibration"]),
-    PilotCell("e3p_c3_rmax", {}, n_queries=100,
-              serves=["E3' co-runner C3 R_max"],
-              blocked_on="CPU memory-streaming stage (CONTENTION_EXPERIMENTS_REDESIGN.md §1)"),
+    PilotCell("e3p_c3_rmax",
+              {"mlx": f"{PC}/pilots/memory_stream.yml",
+               "cuda": f"{PC}/pilots/memory_stream.yml"},
+              n_queries=100, serves=["Stage-C co-runner C3 R_max (cpu stream)"]),
     # --- E5 ------------------------------------------------------------------
     PilotCell("e5_resnet_serial",
               {"mlx": f"{PC}/mlperf/resnet_inference.yml",
@@ -124,9 +125,10 @@ CELLS = [
               {"mlx": f"{PC}/rag_serve_plain.yml",
                "cuda": f"{PC}/rag_serve_plain_cuda.yml"},
               n_queries=20, serves=["E6' foreground λ (R-E6-HEADROOM)"]),
-    PilotCell("e6p_bg_index_rmax", {}, n_queries=0,
-              serves=["E6' background intensity axis"],
-              blocked_on="EmbedStage + ChromaIndexer (CONTENTION_EXPERIMENTS_REDESIGN.md §2)"),
+    PilotCell("e6p_bg_index_rmax",
+              {"mlx": f"{PC}/pilots/bg_indexer_mlx.yml",
+               "cuda": f"{PC}/pilots/bg_indexer_cuda.yml"},
+              n_queries=50, serves=["Stage-A/B background R_max (indexer)"]),
 ]
 
 
