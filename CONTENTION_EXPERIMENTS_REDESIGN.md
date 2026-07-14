@@ -46,17 +46,38 @@ single-engine, single-stream benchmarks structurally cannot make; (c) justify th
 M2 Pro's heterogeneous engines being in the paper. It does **not** need to be
 multimodal or a QA task — the VQA framing was incidental to the claim.
 
-### 0.3 The replacement pair, and the narrative they form
+### 0.3 The replacement: ONE staged experiment (system → mechanism zoom)
 
-- **E3′ — Bandwidth-interference dose–response** (the *mechanism* experiment):
-  engine-level, microbenchmark-shaped, cross-device, counter-corroborated.
-- **E6′ — RAG serving under index refresh** (the *consequence* experiment): the E6
-  inter-pipeline degradation curve, with a realistic LLM-era workload pair whose
-  interference E3′ has already mechanistically explained.
+**Decision update (2026-07-13, author's design):** E6′ and E3′ are presented as a
+single staged experiment. The big-picture inter-pipeline result comes first, and
+each subsequent stage *zooms toward the mechanism by changing exactly one thing in
+the configuration* — so the section simultaneously delivers the collocation
+evidence, the bandwidth law, and a live demonstration of the framework's
+declarative reconfigurability (the paper shows the literal YAML diff at each
+stage transition, the same "config is the experiment" move E7 makes):
 
-Together they give the paper one escalating contention narrative — *engine-level →
-pipeline-level, both bandwidth-attributed, on both extremes of the unified-memory
-design space* — instead of two disconnected case studies. Target abstract sentence:
+- **Stage A — system view (= E6′ below):** RAG-serve foreground + B∈{0,1,2}
+  indexing pipelines; degradation curve + per-process attribution. Planted
+  observation: foreground loss tracks background *bandwidth*, not compute.
+- **Stage B — isolate intensity:** B=1, sweep background rate.
+  *Diff: loadgen block only.* X-axis becomes GB/s via the counters.
+- **Stage C — purify the co-runner (= E3′ co-runners):** swap the indexer for
+  single-resource co-runners (CPU stream / GPU encode / ANE encode if unblocked)
+  at the same intensities. *Diff: background stage list.* Dose–response per engine.
+- **Stage D — purify the foreground (= E3′ foreground):** swap RAG-serve for bare
+  decode; split prefill/decode. *Diff: drop the retriever stage.* The negative
+  control (compute-bound prefill flat, bandwidth-bound decode degrades) → the law.
+- **Closing figure:** Stage-A points plotted ON the Stage-C/D dose–response curve —
+  the system symptom sitting on the mechanism's prediction.
+
+**Discipline rule:** every stage transition changes exactly ONE config element
+(loadgen → background stages → foreground stages); a transition that changes two
+things breaks the causal chain and is not allowed.
+
+The cell matrices, pilot inputs, and knob rules of E3′/E6′ below are UNCHANGED —
+the combination is presentational (Stage D's foreground doubles as E3′'s isolation
+baseline, a mild collection saving). Tooling keeps the e3p_/e6p_ cell ids.
+Target abstract sentence:
 
 > On unified-memory systems from a 16 GB laptop SoC to a 128 GB Grace–Blackwell
 > node, memory bandwidth — not compute — is the binding resource under collocation;
