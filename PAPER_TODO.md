@@ -63,14 +63,17 @@ hyperparameter protocol must all land *before* that re-collection so we only col
    warm-up k=22 (was 1-of-101); `table1.tex` regenerated — depth-flatness
    robust to the change (<1.5% shift). Remaining E1 item: synchronous tracing
    cost (§3.1).
-7. **[~] P0 [dev] Build the delta of missing arms** (§2.2) — remaining after the
-   2026-07-13 sweep (saturating-Offline scheduler, 4 multi-hop controls, and E7
-   size rungs are DONE): **fixed-interval MultiStream scheduler** (E5);
-   the **staged-contention apparatus** — C3 CPU memory-streaming stage,
-   EmbedStage + ChromaIndexer, and the Stage-A–D config generator (single-diff
-   transitions, redesign doc §0.3); **ANE-hang diagnosis (timeboxed)** — Stage C
-   ships with CPU+GPU co-runners if unfixed. The N-in-flight scheduler is
-   **DROPPED** (its only consumer was the cut VQA contended cells).
+7. **[x] P0 [dev] Build delta COMPLETE (2026-07-14, overnight).** MultiStream
+   scheduler (absolute-deadline, arrivals sidecar); staged-contention apparatus
+   (MemoryStream C3, EmbedStage + ChromaIndexer, Stage A–D generator + DIFFS.md,
+   31 configs, all mlx intensity ladders pilot-derived: GPU 18.4/s, ANE 20/s,
+   CPU-stream 16.8/s ≈ 54 GB/s, indexer 9.1 chunks/s). **ANE fully healed** —
+   root-cause chain: mlpackage never exported here → old-env coremltools stalled
+   on the missing path → post-export, transformers-5.x dropped
+   return_tensors="np" (thread death masked as hang). All fixed; ANE encodes at
+   49.9 ms. Bonus robustness fixes: Query.context dict factory (None default
+   killed stage threads), fail-fast run_wrapper (a dead stage can never again
+   hang a run to timeout), HF-vs-MLX gen_kwargs naming in cuda pilot configs.
 8. **[ ] P0 [GB10, Ties] Full GB10 collection pass** — E4 matrix (post-fix, locked knobs),
    E2 cuda half (cheap to re-run rather than argue provenance), E5 scenarios, E6 minimal
    sweep, E7 rungs. One pass, one protocol, one env capture.
