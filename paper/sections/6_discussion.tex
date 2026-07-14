@@ -1,27 +1,28 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{When does decomposition pay?} The topology study suggests a
-systems answer rather than an ML one: physical decomposition buys cross-query
-overlap, so its value scales with the ratio of cheap to expensive calls per
-query and with the hardware's ability to interleave them --- and it costs
-resident memory in proportion to the instance count. The shared-instance
-control is the diagnostic practitioners can run on their own workloads: if
-Decomposed-Shared recovers most of Decomposed's throughput, buy the graph and
-skip the replicas. That a benchmark framework can answer this question with
-a configuration diff, per-stage attribution, and a quality gate is the
-capability we set out to demonstrate.
+\paragraph{When does decomposition pay?} The topology study is designed to
+give a systems answer rather than an ML one: if decomposition helps, the
+controls locate the help --- graph structure (Shared retains it) or
+physical residency (only Decomposed has it) --- and the cost side is
+resident memory in proportion to instance count. The shared-instance
+control doubles as a diagnostic practitioners can run on their own
+workloads, with the batch-1 scoping of \S\ref{sec:setup-topology}
+attached.
 
 \paragraph{What collocation-aware measurement reveals.} The staged study's
-descent --- from ``the indexer slows my service'' to a dose--response priced
-in bytes per second --- is only expressible because collocation, per-process
-attribution, and reconfiguration are first-class. On our unified-memory
-testbeds the contended resource turned out to be memory bandwidth, and the
-prefill/decode split localizes the damage to bandwidth-bound phases; on
+descent --- from ``the indexer slows my service'' toward a dose--response
+priced in bytes per second --- is only expressible because collocation,
+per-process attribution, and reconfiguration are first-class. Whether the
+descent confirms H1 on these testbeds is a pending measurement
+(\S\ref{sec:results-staged}); the method is indifferent to the verdict.
+If H1 survives, the deliverable is a platform-scoped bandwidth pricing of
+interference; if it falls to engine-dependent slopes, the same
+instrumentation localizes contention in engine-specific paths instead. On
 platforms with different contention surfaces (discrete-GPU time slicing,
-storage) the same staged method applies with different co-runners. We offer
-the method as the contribution and the bandwidth law as its first, and
-platform-scoped, instantiation.
+storage) the staged method applies with different co-runners. We offer the
+method as the contribution and the unified-memory study as its first
+instantiation.
 
 \paragraph{Instrument honesty.} Several of our findings began as
 instrument errors --- among them a pooled bootstrap that hid a contaminated
