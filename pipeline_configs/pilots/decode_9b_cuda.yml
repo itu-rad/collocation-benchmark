@@ -38,4 +38,5 @@ pipelines:
             name: Qwen/Qwen3.5-9B
             quantize: False
             gen_kwargs:
-              max_tokens: 256
+              do_sample: false
+              max_new_tokens: 256

@@ -68,7 +68,8 @@ pipelines:
             name: Qwen/Qwen3.5-4B
             quantize: False
             gen_kwargs:
-              max_tokens: 128
+              do_sample: false
+              max_new_tokens: 128
 
       - name: End stage
         id: 4
