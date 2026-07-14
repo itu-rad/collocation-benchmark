@@ -97,66 +97,6 @@ values themselves are inputs, not results: they exist so that no reported
 number depends on an unexplained constant.
 
 \begin{table}[t]\centering\small
-\caption{E1 (NoOp framework overhead) configuration knobs. Every value derives from the stated pre-registered rule; pilot inputs and verification traces are in the artifact.}
-\label{tab:knobs-e1}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llll}
-\toprule
-Knob & Value & Rule & Verification \\
-\midrule
-R & 10 & runs are the replication unit: 10 cheap / 5 expensive & --- \\
-warmup\_k & 22 & $2\times$ rolling-median flatness point (pilot) & --- \\
-loadgen.max\_queries & 122 & 30--50 queries $\times R$ per timing cell & --- \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-% --- E2 (modularity overhead) knobs (derive_knobs.py @ unknown, 2026-07-14 08:02:51 -0700) ---
-\begin{table}[t]\centering\small
-\caption{E2 (modularity overhead) configuration knobs. Every value derives from the stated pre-registered rule; pilot inputs and verification traces are in the artifact.}
-\label{tab:knobs-e2}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llll}
-\toprule
-Knob & Value & Rule & Verification \\
-\midrule
-R & 10 & runs are the replication unit: 10 cheap / 5 expensive & --- \\
-max\_batches & 1100 & 30--50 queries $\times R$ per timing cell & --- \\
-warmup\_k & 200 & $2\times$ rolling-median flatness point (pilot) & --- \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-% --- E3 (contention study) knobs (derive_knobs.py @ unknown, 2026-07-14 08:02:51 -0700) ---
-% m2pro/corunner_c1_gpu_levels: pilot e3p_c1_rmax
-% m2pro/corunner_c2_ane_levels: pilot e3p_c2_rmax
-% m2pro/corunner_c3_levels: pilot e3p_c3_rmax
-% m2pro/fg_decode_median_s: pilot e3p_fg_decode
-% gb10/corunner_c1_gpu_levels: pilot e3p_c1_rmax
-% gb10/corunner_c3_levels: pilot e3p_c3_rmax
-% gb10/fg_decode_median_s: pilot e3p_fg_decode
-\begin{table}[t]\centering\small
-\caption{E3 (contention study) configuration knobs. Every value derives from the stated pre-registered rule; pilot inputs and verification traces are in the artifact.}
-\label{tab:knobs-e3}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lllll}
-\toprule
-Knob & M2~Pro & GB10 & Rule & Verification \\
-\midrule
-corunner\_c1\_gpu\_levels & 4.604, 9.208, 13.812, 18.416 & 7.463, 14.925, 22.388, 29.851 & $\{25,50,75,100\}\%$ of pilot $R_{max}$ & --- \\
-corunner\_c2\_ane\_levels & 5.01, 10.02, 15.03, 20.04 & --- & $\{25,50,75,100\}\%$ of pilot $R_{max}$ & --- \\
-corunner\_c3\_levels & 4.202, 8.403, 12.605, 16.807 & 2.425, 4.849, 7.274, 9.699 & $\{25,50,75,100\}\%$ of pilot $R_{max}$ & --- \\
-fg\_decode\_median\_s & 10.3648 & 31.6367 & saturating; throughput-only & --- \\
-R & 10 & 10 & runs are the replication unit: 10 cheap / 5 expensive & --- \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-% --- E4 (Self-RAG topology) knobs (derive_knobs.py @ unknown, 2026-07-14 08:02:51 -0700) ---
-% m2pro/loadgen.config.rate: pilot e4_factoid_decomp (median 5.1395s)
-% m2pro/loadgen.config.rate: pilot e4_multihop_mono9b (median 27.5959s)
-% m2pro/warmup_k: pilot e4_factoid_mono9b
-% gb10/loadgen.config.rate: pilot e4_factoid_mono9b (median 3.893s)
-% gb10/loadgen.config.rate: pilot e4_multihop_mono9b (median 13.0487s)
-% gb10/warmup_k: pilot e4_factoid_mono9b
-\begin{table}[t]\centering\small
 \caption{E4 (Self-RAG topology) configuration knobs. Every value derives from the stated pre-registered rule; pilot inputs and verification traces are in the artifact.}
 \label{tab:knobs-e4}
 \resizebox{\columnwidth}{!}{\begin{tabular}{lllll}
