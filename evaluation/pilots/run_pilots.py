@@ -183,6 +183,9 @@ def make_pilot_config(base_cfg_path: Path, n_queries: int, timeout_s: int,
     remapped to `mps` (same device patching run_modularity.py does).
     Returns the temp file path."""
     doc = yaml.safe_load(base_cfg_path.read_text(encoding="utf-8"))
+    # Some configs declare platform-specific radt listeners (e.g. 'smi') that
+    # fail schema validation elsewhere; pilots need none of them.
+    doc["listeners"] = ["macmon"] if device == "mlx" else ["top"]
     for pipe in doc["pipelines"]:
         pipe["loadgen"] = {
             "component": "loadgen.OfflineLoadScheduler",

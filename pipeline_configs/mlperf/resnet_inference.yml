@@ -2,7 +2,7 @@ name: "ResNet50-v1.5 implementation of MLPerf Inference v5.0"
 pipelines:
   - name: ResNet50-v1.5 inference
     inputs: [0]
-    outputs: [1]
+    outputs: [2]
     dataset_stage_id: 0
     loadgen:
       component: loadgen.PoissonLoadScheduler
@@ -12,29 +12,42 @@ pipelines:
       config:
         rate: 10 # average #requests/sec
     stages:
-      - name: Load Imagenet samples from TorchVision Dataset
+      # Dataset: Imagenette (auto-downloadable ImageNet subset). Deliberate
+      # deviation from MLPerf's official ImageNet-val: E5's claim is the
+      # LOAD-PATTERN reduction (arrival process + native metric), not accuracy
+      # certification, and ImageNet requires a manual, non-redistributable
+      # download (artifact-evaluation landmine). Samples are preloaded to
+      # memory, matching MLPerf LoadGen's QSL preload semantics.
+      - name: Load Imagenette samples from TorchVision Dataset
         id: 0
         outputs: [1]
         component: stages.torchvision_classification.TorchVisionDataLoader
         polling_policy: utils.queues.polling.SingleQueuePolicy
         disable_logs: false
         config:
-          batch_size: 8
-          preprocess: True
-          preload: False
-          num_workers: 0 # if 0 no prefetching else prefetches 2*num_workers samples
+          batch_size: 1   # one sample per query (SingleStream/Server shape)
+          preprocess: False
+          preload: True
+          num_workers: 0
           dataset:
-            component: torchvision.datasets.ImageNet
-            weights: ResNet50_Weights.IMAGENET1K_V2
+            component: torchvision.datasets.Imagenette
             split: [val]
-      - name: EfficientNet inference
+      - name: Preprocess samples with ResNet50 weights transforms
         id: 1
+        outputs: [2]
+        component: stages.torchvision_classification.TorchVisionPreprocessFromWeights
+        polling_policy: utils.queues.polling.SingleQueuePolicy
+        disable_logs: false
+        config:
+          weights: ResNet50_Weights.IMAGENET1K_V2
+      - name: ResNet50 inference
+        id: 2
         outputs: []
         component: stages.torchvision_classification.TorchVisionClassification
         polling_policy: utils.queues.polling.SingleQueuePolicy
         disable_logs: false
         config:
-          model: 
+          model:
             component: torchvision.models.resnet50
             weights: ResNet50_Weights.IMAGENET1K_V2
           device: cuda
