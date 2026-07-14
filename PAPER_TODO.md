@@ -97,6 +97,37 @@ from released traces (which must actually be released — see §7).
 
 ---
 
+## 0.5 Schedule — LOCKED (2026-07-13): submit-ready in 6 weeks
+
+**Collection closes Fri Aug 1. Writing Aug 1 → Aug 24 (back half + three full
+rewrite passes — the author's process). Analysis/tables are generated AS data
+lands, never batched to August.**
+
+- **Week 1 (Jul 14–20):** [dev] staged-contention apparatus (C3 stage,
+  EmbedStage/ChromaIndexer, Stage A–D generator, MultiStream scheduler), ANE
+  timebox, hygiene fixes. **[Ties] GB10 pre-flight + pilots MUST land this
+  week** — the cuda knob lock gates his main pass. [M2] second pilot session +
+  first overnight collection (factoid timing 2×2).
+- **Week 2 (Jul 21–27):** [GB10] main pass (E4 matrix + quality, E2 cuda, E5
+  scenarios, staged contention, E7 rungs — ~2–4 machine-days). [M2] overnight
+  sessions: multihop timing (~20 h — the weekend job), quality runs, staged
+  contention Stages A–D. [dev] analysis + draft Results subsections per
+  experiment as its data completes; third-edition setup text drafted in
+  parallel (does not depend on data).
+- **Week 3 (Jul 28–Aug 1):** stragglers, verify_knobs over everything,
+  reconciliation figure, all tables/figures final. **Collection freeze Aug 1.**
+- **Weeks 4–6 (Aug 1–24):** back half written from the per-experiment drafts →
+  full draft ~Aug 8 → rewrite 1 (claims↔evidence pass) ~Aug 13 → rewrite 2
+  (reviewer-rubric pass) ~Aug 18 → rewrite 3 (polish, anonymization, artifact
+  package) ~Aug 24.
+
+**Deadline-driven cuts (decided now):** E4 engine overlay (HF/vLLM/Ollama) is
+DEMOTED to "only if the GB10 pass finishes early" — first thing dropped.
+Kept: top-k=10 sensitivity column (cheap, protects the multihop headline),
+optional 27B ceiling rung, Stage B intensity sweep (core to the staged design).
+
+---
+
 ## 1. Author decisions — RESOLVED (updated 2026-07-12)
 
 - [x] **Framework name → Choreo.** Keep `\sysname{}=Choreo`, sweep prose
