@@ -100,8 +100,10 @@ def render_experiment(exp: str, devices: dict, knobs: dict) -> None:
     print("Knob & " + " & ".join(hdr[d] for d in dev_names)
           + " & Rule & Verification \\\\\n\\midrule")
     for name in order:
-        vals = [_fmt_value(by_dev[d].get(name, {}).get("value")
-                           if name in by_dev[d] else None)
+        # absent on a device = not applicable there (render ---);
+        # present with value None = genuinely pending pilot
+        vals = [(_fmt_value(by_dev[d][name].get("value"))
+                 if name in by_dev[d] else "---")
                 for d in dev_names]
         first = next((by_dev[d][name] for d in dev_names if name in by_dev[d]), {})
         rule = RULE_TEXT.get(first.get("rule", ""), _tex_escape(first.get("rule", "")))
