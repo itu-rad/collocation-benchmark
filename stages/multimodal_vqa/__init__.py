@@ -4,5 +4,8 @@ try:  # CoreML/ANE is Apple-only; keep the package importable on Linux (GB10)
     from .clip_vision_encoder_coreml import CLIPVisionEncoderCoreML
 except ImportError:
     CLIPVisionEncoderCoreML = None
-from .faiss_retriever import FAISSImageRetriever
+try:  # faiss-cpu is only pinned in the macOS env; VQA retrieval is cut anyway
+    from .faiss_retriever import FAISSImageRetriever
+except ImportError:
+    FAISSImageRetriever = None
 from .vqa_formatter import VQAPromptFormatter
