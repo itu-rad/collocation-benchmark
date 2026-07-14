@@ -22,6 +22,26 @@ device activity (GB10, per-process counters) to the backgrounds. Greedy
 decoding yields byte-identical foreground answers across $B$, confirming the
 separate-stores control: the coupling is hardware, not behavior.
 
+\begin{figure}[t]
+\small
+\begin{verbatim}
+ # Stage A(B=1) -> Stage B: the background
+ # loadgen block is the entire diff
+ loadgen:
+-  component: loadgen.SaturatingOfflineScheduler
++  component: loadgen.MultiStreamScheduler
+   queue_depth: 100
+   max_queries: 100
+   config:
+-    rate: 0
++    interval: 0.2198  # 50% of pilot R_max
+\end{verbatim}
+\caption{One stage transition of the contention study: the descent from
+system to mechanism is a sequence of single-element configuration diffs
+(all transitions in the artifact's \texttt{DIFFS.md}).}
+\label{fig:staged-diffs}
+\end{figure}
+
 \paragraph{Stage B --- intensity, isolated by one loadgen edit.} Holding
 $B{=}1$ and sweeping only the background's arrival schedule
 (Figure~\ref{fig:staged-diffs} shows the four-line diff), foreground
