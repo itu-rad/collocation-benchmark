@@ -244,7 +244,9 @@ def derive_e4(pilots: dict, device: str) -> list[dict]:
 
 
 def derive_e3(pilots: dict, device: str, variant: str, p95_policy: str) -> list[dict]:
-    if device != "mlx":
+    # vqa variant was M2-only; the dose_response (staged experiment) runs on
+    # BOTH DUTs — co-runner ladders derive per device (no ANE on gb10).
+    if variant == "vqa" and device != "mlx":
         return []
     entries = []
     if variant == "vqa":

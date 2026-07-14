@@ -1,0 +1,9 @@
+date: 2026-07-14 11:22:45 +0200
+git_commit: 466a03fd97b3246d87f561db438bd52276c007f9
+device_arg: cuda
+python: 3.10.19
+platform: Linux-6.14.0-1013-nvidia-aarch64-with-glibc2.39
+perf_counter: namespace(implementation='clock_gettime(CLOCK_MONOTONIC)', monotonic=True, adjustable=False, resolution=1e-09)
+radt: 0.2.29
+torch: 2.10.0+cu130
+nvidia-smi: NVIDIA GB10, 580.95.05

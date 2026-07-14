@@ -1,0 +1,408 @@
+1784022297.315426, BG indexer pilot, pipeline, prepare, start, 6141363153502549
+1784022297.315541, BG indexer pilot, Corpus chunk loader (shard 0/1), prepare, start, 6141363153603013
+1784022303.649737, BG indexer pilot, Corpus chunk loader (shard 0/1), prepare, end, 6141369487809551
+1784022303.649801, BG indexer pilot, Embed passages, prepare, start, 6141369487861951
+1784022307.787261, BG indexer pilot, Embed passages, prepare, end, 6141373625347543
+1784022307.787369, BG indexer pilot, Chroma indexer, prepare, start, 6141373625432823
+1784022307.819551, BG indexer pilot, Chroma indexer, prepare, end, 6141373657621724
+1784022307.819611, BG indexer pilot, pipeline, prepare, end, 6141373657674972
+1784022307.820490, BG indexer pilot, pipeline - passages, run, start, 29101426851818397521454891675116886583, 1784022307.820270, 1, 1, 6141373658572846
+1784022307.820693, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141373658772510
+1784022307.820927, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141373658998879
+1784022307.821007, BG indexer pilot, Embed passages, run, start, 6141373659086815
+1784022308.154098, BG indexer pilot, Embed passages, run, end, 6141373992185570
+1784022308.154597, BG indexer pilot, Chroma indexer, run, start, 6141373992696419
+1784022308.172020, BG indexer pilot, Chroma indexer, run, end, 6141374010087247
+1784022308.172094, BG indexer pilot, pipeline - passages, run, end, 29101426851818397521454891675116886583, 1784022307.820270, 1, 1, 6141374010171599
+1784022308.172688, BG indexer pilot, pipeline - passages, run, start, 149861621065511213732558779695128312296, 1784022308.172568, 1, 2, 6141374010758704
+1784022308.172836, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374010912657
+1784022308.173043, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374011110801
+1784022308.173103, BG indexer pilot, Embed passages, run, start, 6141374011182161
+1784022308.202670, BG indexer pilot, Embed passages, run, end, 6141374040754449
+1784022308.202902, BG indexer pilot, Chroma indexer, run, start, 6141374040990370
+1784022308.216372, BG indexer pilot, Chroma indexer, run, end, 6141374054443784
+1784022308.216445, BG indexer pilot, pipeline - passages, run, end, 149861621065511213732558779695128312296, 1784022308.172568, 1, 2, 6141374054525112
+1784022308.216919, BG indexer pilot, pipeline - passages, run, start, 41984433558488372628586579751799580862, 1784022308.216796, 1, 3, 6141374054992201
+1784022308.217160, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374055238713
+1784022308.217366, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374055435706
+1784022308.217480, BG indexer pilot, Embed passages, run, start, 6141374055549786
+1784022308.246403, BG indexer pilot, Embed passages, run, end, 6141374084487273
+1784022308.246515, BG indexer pilot, Chroma indexer, run, start, 6141374084595306
+1784022308.260415, BG indexer pilot, Chroma indexer, run, end, 6141374098483632
+1784022308.260522, BG indexer pilot, pipeline - passages, run, end, 41984433558488372628586579751799580862, 1784022308.216796, 1, 3, 6141374098600705
+1784022308.260926, BG indexer pilot, pipeline - passages, run, start, 339449692547843752483456143150209169497, 1784022308.260804, 1, 4, 6141374098996817
+1784022308.261090, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374099166482
+1784022308.261293, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374099362722
+1784022308.261443, BG indexer pilot, Embed passages, run, start, 6141374099523906
+1784022308.283211, BG indexer pilot, Embed passages, run, end, 6141374121299350
+1784022308.283461, BG indexer pilot, Chroma indexer, run, start, 6141374121531670
+1784022308.297625, BG indexer pilot, Chroma indexer, run, end, 6141374135692941
+1784022308.297687, BG indexer pilot, pipeline - passages, run, end, 339449692547843752483456143150209169497, 1784022308.260804, 1, 4, 6141374135763102
+1784022308.298132, BG indexer pilot, pipeline - passages, run, start, 128727009875029207448979170600067856584, 1784022308.298009, 1, 5, 6141374136204862
+1784022308.298380, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374136457999
+1784022308.298581, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374136650655
+1784022308.298661, BG indexer pilot, Embed passages, run, start, 6141374136743407
+1784022308.317591, BG indexer pilot, Embed passages, run, end, 6141374155677710
+1784022308.317824, BG indexer pilot, Chroma indexer, run, start, 6141374155917775
+1784022308.337468, BG indexer pilot, Chroma indexer, run, end, 6141374175539519
+1784022308.337578, BG indexer pilot, pipeline - passages, run, end, 128727009875029207448979170600067856584, 1784022308.298009, 1, 5, 6141374175656303
+1784022308.338038, BG indexer pilot, pipeline - passages, run, start, 258572722223907006966624586686723221884, 1784022308.337903, 1, 6, 6141374176112400
+1784022308.338294, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374176373120
+1784022308.338511, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374176581393
+1784022308.338595, BG indexer pilot, Embed passages, run, start, 6141374176678561
+1784022308.354182, BG indexer pilot, Embed passages, run, end, 6141374192261722
+1784022308.354409, BG indexer pilot, Chroma indexer, run, start, 6141374192493467
+1784022308.374631, BG indexer pilot, Chroma indexer, run, end, 6141374212710300
+1784022308.374715, BG indexer pilot, pipeline - passages, run, end, 258572722223907006966624586686723221884, 1784022308.337903, 1, 6, 6141374212791164
+1784022308.375286, BG indexer pilot, pipeline - passages, run, start, 200897054860695438505317946054250222323, 1784022308.375148, 1, 7, 6141374213358157
+1784022308.375534, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374213611805
+1784022308.375742, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374213811134
+1784022308.375811, BG indexer pilot, Embed passages, run, start, 6141374213884478
+1784022308.408590, BG indexer pilot, Embed passages, run, end, 6141374246668627
+1784022308.409086, BG indexer pilot, Chroma indexer, run, start, 6141374247188324
+1784022308.429453, BG indexer pilot, Chroma indexer, run, end, 6141374267528374
+1784022308.429604, BG indexer pilot, pipeline - passages, run, end, 200897054860695438505317946054250222323, 1784022308.375148, 1, 7, 6141374267678182
+1784022308.430067, BG indexer pilot, pipeline - passages, run, start, 320327929136378309524668167167416080326, 1784022308.429931, 1, 8, 6141374268137495
+1784022308.430215, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374268292247
+1784022308.430415, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374268482791
+1784022308.430501, BG indexer pilot, Embed passages, run, start, 6141374268580007
+1784022308.465243, BG indexer pilot, Embed passages, run, end, 6141374303335296
+1784022308.465735, BG indexer pilot, Chroma indexer, run, start, 6141374303836033
+1784022308.487955, BG indexer pilot, Chroma indexer, run, end, 6141374326022118
+1784022308.488014, BG indexer pilot, pipeline - passages, run, end, 320327929136378309524668167167416080326, 1784022308.429931, 1, 8, 6141374326090598
+1784022308.488508, BG indexer pilot, pipeline - passages, run, start, 279010201975768663999644547172809954862, 1784022308.488376, 1, 9, 6141374326579031
+1784022308.488660, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374326736231
+1784022308.488850, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374326918599
+1784022308.488928, BG indexer pilot, Embed passages, run, start, 6141374327009127
+1784022308.527010, BG indexer pilot, Embed passages, run, end, 6141374365092934
+1784022308.527106, BG indexer pilot, Chroma indexer, run, start, 6141374365176214
+1784022308.543452, BG indexer pilot, Chroma indexer, run, end, 6141374381526961
+1784022308.543527, BG indexer pilot, pipeline - passages, run, end, 279010201975768663999644547172809954862, 1784022308.488376, 1, 9, 6141374381606945
+1784022308.543940, BG indexer pilot, pipeline - passages, run, start, 12817211425846409235201486438950832391, 1784022308.543879, 1, 10, 6141374382017009
+1784022308.544218, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374382299554
+1784022308.544439, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374382510578
+1784022308.544584, BG indexer pilot, Embed passages, run, start, 6141374382663635
+1784022308.581857, BG indexer pilot, Embed passages, run, end, 6141374419939984
+1784022308.581960, BG indexer pilot, Chroma indexer, run, start, 6141374420028784
+1784022308.597586, BG indexer pilot, Chroma indexer, run, end, 6141374435657193
+1784022308.597657, BG indexer pilot, pipeline - passages, run, end, 12817211425846409235201486438950832391, 1784022308.543879, 1, 10, 6141374435737610
+1784022308.598166, BG indexer pilot, pipeline - passages, run, start, 231720514844592848967498896806115462849, 1784022308.598023, 1, 11, 6141374436240250
+1784022308.598429, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374436508491
+1784022308.598649, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374436718779
+1784022308.598786, BG indexer pilot, Embed passages, run, start, 6141374436865307
+1784022308.637024, BG indexer pilot, Embed passages, run, end, 6141374475118458
+1784022308.637262, BG indexer pilot, Chroma indexer, run, start, 6141374475333242
+1784022308.656068, BG indexer pilot, Chroma indexer, run, end, 6141374494151433
+1784022308.656173, BG indexer pilot, pipeline - passages, run, end, 231720514844592848967498896806115462849, 1784022308.598023, 1, 11, 6141374494253881
+1784022308.656721, BG indexer pilot, pipeline - passages, run, start, 218802153998015411516543975851095903222, 1784022308.656579, 1, 12, 6141374494796730
+1784022308.657010, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374495093259
+1784022308.657262, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374495332699
+1784022308.657418, BG indexer pilot, Embed passages, run, start, 6141374495499947
+1784022308.688799, BG indexer pilot, Embed passages, run, end, 6141374526874879
+1784022308.688885, BG indexer pilot, Chroma indexer, run, start, 6141374526956527
+1784022308.703914, BG indexer pilot, Chroma indexer, run, end, 6141374541992712
+1784022308.703999, BG indexer pilot, pipeline - passages, run, end, 218802153998015411516543975851095903222, 1784022308.656579, 1, 12, 6141374542079352
+1784022308.704505, BG indexer pilot, pipeline - passages, run, start, 223000724256205997233777162684593987914, 1784022308.704365, 1, 13, 6141374542581353
+1784022308.704778, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374542859417
+1784022308.705037, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374543107482
+1784022308.705169, BG indexer pilot, Embed passages, run, start, 6141374543242954
+1784022308.736551, BG indexer pilot, Embed passages, run, end, 6141374574629069
+1784022308.736634, BG indexer pilot, Chroma indexer, run, start, 6141374574707389
+1784022308.751683, BG indexer pilot, Chroma indexer, run, end, 6141374589762870
+1784022308.751772, BG indexer pilot, pipeline - passages, run, end, 223000724256205997233777162684593987914, 1784022308.704365, 1, 13, 6141374589847174
+1784022308.752296, BG indexer pilot, pipeline - passages, run, start, 168052476829259363397076519197678756718, 1784022308.752158, 1, 14, 6141374590367975
+1784022308.752467, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374590544231
+1784022308.752678, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374590747448
+1784022308.752741, BG indexer pilot, Embed passages, run, start, 6141374590813384
+1784022308.784650, BG indexer pilot, Embed passages, run, end, 6141374622731196
+1784022308.784802, BG indexer pilot, Chroma indexer, run, start, 6141374622895820
+1784022308.804413, BG indexer pilot, Chroma indexer, run, end, 6141374642505069
+1784022308.804529, BG indexer pilot, pipeline - passages, run, end, 168052476829259363397076519197678756718, 1784022308.752158, 1, 14, 6141374642605021
+1784022308.805158, BG indexer pilot, pipeline - passages, run, start, 199935803497162051577433958101416427463, 1784022308.805032, 1, 15, 6141374643229054
+1784022308.805414, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374643491038
+1784022308.805618, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374643686303
+1784022308.805700, BG indexer pilot, Embed passages, run, start, 6141374643784847
+1784022308.835806, BG indexer pilot, Embed passages, run, end, 6141374673878528
+1784022308.836574, BG indexer pilot, Chroma indexer, run, start, 6141374674692433
+1784022308.859878, BG indexer pilot, Chroma indexer, run, end, 6141374697966856
+1784022308.859989, BG indexer pilot, pipeline - passages, run, end, 199935803497162051577433958101416427463, 1784022308.805032, 1, 15, 6141374698066184
+1784022308.860588, BG indexer pilot, pipeline - passages, run, start, 137710555214552713851400869385557602476, 1784022308.860531, 1, 16, 6141374698662121
+1784022308.860845, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374698924617
+1784022308.861066, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374699135370
+1784022308.861209, BG indexer pilot, Embed passages, run, start, 6141374699287498
+1784022308.893607, BG indexer pilot, Embed passages, run, end, 6141374731682447
+1784022308.894125, BG indexer pilot, Chroma indexer, run, start, 6141374732240672
+1784022308.916301, BG indexer pilot, Chroma indexer, run, end, 6141374754382548
+1784022308.916397, BG indexer pilot, pipeline - passages, run, end, 137710555214552713851400869385557602476, 1784022308.860531, 1, 16, 6141374754478932
+1784022308.916914, BG indexer pilot, pipeline - passages, run, start, 127647850121715018080425741530874276775, 1784022308.916770, 1, 17, 6141374754990949
+1784022308.917202, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374755284550
+1784022308.917452, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374755525702
+1784022308.917521, BG indexer pilot, Embed passages, run, start, 6141374755601958
+1784022308.954997, BG indexer pilot, Embed passages, run, end, 6141374793078164
+1784022308.955108, BG indexer pilot, Chroma indexer, run, start, 6141374793179188
+1784022308.976715, BG indexer pilot, Chroma indexer, run, end, 6141374814790823
+1784022308.976833, BG indexer pilot, pipeline - passages, run, end, 127647850121715018080425741530874276775, 1784022308.916770, 1, 17, 6141374814912760
+1784022308.977364, BG indexer pilot, pipeline - passages, run, start, 293640036978901283069082915999472161964, 1784022308.977229, 1, 18, 6141374815438920
+1784022308.977622, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374815703865
+1784022308.977860, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374815931001
+1784022308.978017, BG indexer pilot, Embed passages, run, start, 6141374816100697
+1784022309.009890, BG indexer pilot, Embed passages, run, end, 6141374847970718
+1784022309.010304, BG indexer pilot, Chroma indexer, run, start, 6141374848391710
+1784022309.040161, BG indexer pilot, Chroma indexer, run, end, 6141374878238447
+1784022309.040270, BG indexer pilot, pipeline - passages, run, end, 293640036978901283069082915999472161964, 1784022308.977229, 1, 18, 6141374878350207
+1784022309.040802, BG indexer pilot, pipeline - passages, run, start, 168117200900256138633957147811744654557, 1784022309.040662, 1, 19, 6141374878873792
+1784022309.040971, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374879049073
+1784022309.041189, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374879257585
+1784022309.041253, BG indexer pilot, Embed passages, run, start, 6141374879325281
+1784022309.073602, BG indexer pilot, Embed passages, run, end, 6141374911680054
+1784022309.073701, BG indexer pilot, Chroma indexer, run, start, 6141374911781030
+1784022309.094932, BG indexer pilot, Chroma indexer, run, end, 6141374933038681
+1784022309.095065, BG indexer pilot, pipeline - passages, run, end, 168117200900256138633957147811744654557, 1784022309.040662, 1, 19, 6141374933141353
+1784022309.095522, BG indexer pilot, pipeline - passages, run, start, 167257594586247660774498755547493194130, 1784022309.095463, 1, 20, 6141374933593834
+1784022309.095701, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374933779898
+1784022309.095901, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374933970507
+1784022309.096029, BG indexer pilot, Embed passages, run, start, 6141374934099179
+1784022309.127252, BG indexer pilot, Embed passages, run, end, 6141374965332926
+1784022309.127349, BG indexer pilot, Chroma indexer, run, start, 6141374965423918
+1784022309.146820, BG indexer pilot, Chroma indexer, run, end, 6141374984903358
+1784022309.146921, BG indexer pilot, pipeline - passages, run, end, 167257594586247660774498755547493194130, 1784022309.095463, 1, 20, 6141374985010094
+1784022309.147438, BG indexer pilot, pipeline - passages, run, start, 235492229308328533886278564340254416797, 1784022309.147302, 1, 21, 6141374985510383
+1784022309.147694, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141374985772223
+1784022309.147903, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141374985972560
+1784022309.147981, BG indexer pilot, Embed passages, run, start, 6141374986058736
+1784022309.186212, BG indexer pilot, Embed passages, run, end, 6141375024294798
+1784022309.186319, BG indexer pilot, Chroma indexer, run, start, 6141375024397663
+1784022309.208380, BG indexer pilot, Chroma indexer, run, end, 6141375046465779
+1784022309.208475, BG indexer pilot, pipeline - passages, run, end, 235492229308328533886278564340254416797, 1784022309.147302, 1, 21, 6141375046550467
+1784022309.209143, BG indexer pilot, pipeline - passages, run, start, 72165638245990120133077836713813135818, 1784022309.209004, 1, 22, 6141375047216900
+1784022309.209314, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375047392036
+1784022309.209529, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375047598437
+1784022309.209666, BG indexer pilot, Embed passages, run, start, 6141375047743109
+1784022309.242419, BG indexer pilot, Embed passages, run, end, 6141375080499146
+1784022309.243177, BG indexer pilot, Chroma indexer, run, start, 6141375081302828
+1784022309.274334, BG indexer pilot, Chroma indexer, run, end, 6141375112424943
+1784022309.274455, BG indexer pilot, pipeline - passages, run, end, 72165638245990120133077836713813135818, 1784022309.209004, 1, 22, 6141375112531087
+1784022309.275035, BG indexer pilot, pipeline - passages, run, start, 306703414531099812122235181824920443307, 1784022309.274979, 1, 23, 6141375113108912
+1784022309.275202, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375113279648
+1784022309.275401, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375113469904
+1784022309.275533, BG indexer pilot, Embed passages, run, start, 6141375113613009
+1784022309.307454, BG indexer pilot, Embed passages, run, end, 6141375145531733
+1784022309.308222, BG indexer pilot, Chroma indexer, run, start, 6141375146342214
+1784022309.337492, BG indexer pilot, Chroma indexer, run, end, 6141375175582070
+1784022309.337703, BG indexer pilot, pipeline - passages, run, end, 306703414531099812122235181824920443307, 1784022309.274979, 1, 23, 6141375175780167
+1784022309.338147, BG indexer pilot, pipeline - passages, run, start, 152069365822714295326018716729283148577, 1784022309.338013, 1, 24, 6141375176218551
+1784022309.338404, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375176482136
+1784022309.338627, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375176696456
+1784022309.338703, BG indexer pilot, Embed passages, run, start, 6141375176783576
+1784022309.370433, BG indexer pilot, Embed passages, run, end, 6141375208515404
+1784022309.371185, BG indexer pilot, Chroma indexer, run, start, 6141375209308893
+1784022309.392414, BG indexer pilot, Chroma indexer, run, end, 6141375230506096
+1784022309.392534, BG indexer pilot, pipeline - passages, run, end, 152069365822714295326018716729283148577, 1784022309.338013, 1, 24, 6141375230611568
+1784022309.393049, BG indexer pilot, pipeline - passages, run, start, 312466281803130313468379479362073391499, 1784022309.392989, 1, 25, 6141375231121153
+1784022309.393295, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375231374738
+1784022309.393496, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375231564850
+1784022309.393571, BG indexer pilot, Embed passages, run, start, 6141375231652242
+1784022309.430833, BG indexer pilot, Embed passages, run, end, 6141375268912943
+1784022309.430926, BG indexer pilot, Chroma indexer, run, start, 6141375269015583
+1784022309.461069, BG indexer pilot, Chroma indexer, run, end, 6141375299147425
+1784022309.461177, BG indexer pilot, pipeline - passages, run, end, 312466281803130313468379479362073391499, 1784022309.392989, 1, 25, 6141375299255681
+1784022309.461815, BG indexer pilot, pipeline - passages, run, start, 339397871504335804822475841779757629875, 1784022309.461674, 1, 26, 6141375299890738
+1784022309.462082, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375300161042
+1784022309.462295, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375300364131
+1784022309.462416, BG indexer pilot, Embed passages, run, start, 6141375300494211
+1784022309.500153, BG indexer pilot, Embed passages, run, end, 6141375338236144
+1784022309.500264, BG indexer pilot, Chroma indexer, run, start, 6141375338340817
+1784022309.523723, BG indexer pilot, Chroma indexer, run, end, 6141375361808135
+1784022309.523828, BG indexer pilot, pipeline - passages, run, end, 339397871504335804822475841779757629875, 1784022309.461674, 1, 26, 6141375361907015
+1784022309.524464, BG indexer pilot, pipeline - passages, run, start, 2238114866017367729335808171274990633, 1784022309.524317, 1, 27, 6141375362541080
+1784022309.524643, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375362721369
+1784022309.524854, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375362924185
+1784022309.525000, BG indexer pilot, Embed passages, run, start, 6141375363077705
+1784022309.557261, BG indexer pilot, Embed passages, run, end, 6141375395354542
+1784022309.557389, BG indexer pilot, Chroma indexer, run, start, 6141375395465326
+1784022309.579844, BG indexer pilot, Chroma indexer, run, end, 6141375417935171
+1784022309.579967, BG indexer pilot, pipeline - passages, run, end, 2238114866017367729335808171274990633, 1784022309.524317, 1, 27, 6141375418043747
+1784022309.580546, BG indexer pilot, pipeline - passages, run, start, 280142365957261820452740868582415921611, 1784022309.580406, 1, 28, 6141375418619044
+1784022309.580809, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375418888709
+1784022309.581029, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375419097845
+1784022309.581083, BG indexer pilot, Embed passages, run, start, 6141375419154453
+1784022309.618280, BG indexer pilot, Embed passages, run, end, 6141375456371602
+1784022309.618400, BG indexer pilot, Chroma indexer, run, start, 6141375456479154
+1784022309.649491, BG indexer pilot, Chroma indexer, run, end, 6141375487573477
+1784022309.649590, BG indexer pilot, pipeline - passages, run, end, 280142365957261820452740868582415921611, 1784022309.580406, 1, 28, 6141375487672565
+1784022309.650161, BG indexer pilot, pipeline - passages, run, start, 251702013934698092337267971299184622692, 1784022309.650008, 1, 29, 6141375488237686
+1784022309.650455, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375488537847
+1784022309.650711, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375488782519
+1784022309.650774, BG indexer pilot, Embed passages, run, start, 6141375488850007
+1784022309.689382, BG indexer pilot, Embed passages, run, end, 6141375527474919
+1784022309.689495, BG indexer pilot, Chroma indexer, run, start, 6141375527567079
+1784022309.715598, BG indexer pilot, Chroma indexer, run, end, 6141375553690337
+1784022309.715715, BG indexer pilot, pipeline - passages, run, end, 251702013934698092337267971299184622692, 1784022309.650008, 1, 29, 6141375553791506
+1784022309.716301, BG indexer pilot, pipeline - passages, run, start, 41801969580407197554190396323509606925, 1784022309.716158, 1, 30, 6141375554372899
+1784022309.716472, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375554549747
+1784022309.716680, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375554748691
+1784022309.716733, BG indexer pilot, Embed passages, run, start, 6141375554804019
+1784022309.751365, BG indexer pilot, Embed passages, run, end, 6141375589460684
+1784022309.751483, BG indexer pilot, Chroma indexer, run, start, 6141375589554156
+1784022309.775154, BG indexer pilot, Chroma indexer, run, end, 6141375613246051
+1784022309.775273, BG indexer pilot, pipeline - passages, run, end, 41801969580407197554190396323509606925, 1784022309.716158, 1, 30, 6141375613349043
+1784022309.775818, BG indexer pilot, pipeline - passages, run, start, 13401971586398345069289040519485798884, 1784022309.775676, 1, 31, 6141375613890436
+1784022309.776079, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375614156692
+1784022309.776284, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375614352053
+1784022309.776410, BG indexer pilot, Embed passages, run, start, 6141375614488101
+1784022309.805080, BG indexer pilot, Embed passages, run, end, 6141375643170580
+1784022309.805461, BG indexer pilot, Chroma indexer, run, start, 6141375643548021
+1784022309.833793, BG indexer pilot, Chroma indexer, run, end, 6141375671863715
+1784022309.833867, BG indexer pilot, pipeline - passages, run, end, 13401971586398345069289040519485798884, 1784022309.775676, 1, 31, 6141375671948819
+1784022309.834289, BG indexer pilot, pipeline - passages, run, start, 280984076150982533225857934859369626522, 1784022309.834244, 1, 32, 6141375672353844
+1784022309.834414, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375672492548
+1784022309.834632, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375672702852
+1784022309.834767, BG indexer pilot, Embed passages, run, start, 6141375672840196
+1784022309.862515, BG indexer pilot, Embed passages, run, end, 6141375700589154
+1784022309.862607, BG indexer pilot, Chroma indexer, run, start, 6141375700680818
+1784022309.892844, BG indexer pilot, Chroma indexer, run, end, 6141375730919204
+1784022309.892924, BG indexer pilot, pipeline - passages, run, end, 280984076150982533225857934859369626522, 1784022309.834244, 1, 32, 6141375731013892
+1784022309.893465, BG indexer pilot, pipeline - passages, run, start, 89035315084945796727166850415584142145, 1784022309.893323, 1, 33, 6141375731542901
+1784022309.893748, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375731828005
+1784022309.893991, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375732064438
+1784022309.894151, BG indexer pilot, Embed passages, run, start, 6141375732223798
+1784022309.924053, BG indexer pilot, Embed passages, run, end, 6141375762132807
+1784022309.924173, BG indexer pilot, Chroma indexer, run, start, 6141375762257895
+1784022309.939913, BG indexer pilot, Chroma indexer, run, end, 6141375777986145
+1784022309.940059, BG indexer pilot, pipeline - passages, run, end, 89035315084945796727166850415584142145, 1784022309.893323, 1, 33, 6141375778143089
+1784022309.940529, BG indexer pilot, pipeline - passages, run, start, 157659935146519099217893423906189537835, 1784022309.940385, 1, 34, 6141375778602850
+1784022309.940819, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375778897666
+1784022309.941059, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375779126770
+1784022309.941142, BG indexer pilot, Embed passages, run, start, 6141375779227043
+1784022309.972783, BG indexer pilot, Embed passages, run, end, 6141375810852070
+1784022309.973040, BG indexer pilot, Chroma indexer, run, start, 6141375811131415
+1784022309.984197, BG indexer pilot, Chroma indexer, run, end, 6141375822267865
+1784022309.984316, BG indexer pilot, pipeline - passages, run, end, 157659935146519099217893423906189537835, 1784022309.940385, 1, 34, 6141375822394313
+1784022309.984639, BG indexer pilot, pipeline - passages, run, start, 244405690344617466283301183705803307681, 1784022309.984602, 1, 35, 6141375822703034
+1784022309.984761, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375822839050
+1784022309.984992, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375823062122
+1784022309.985044, BG indexer pilot, Embed passages, run, start, 6141375823111194
+1784022310.016534, BG indexer pilot, Embed passages, run, end, 6141375854604670
+1784022310.016829, BG indexer pilot, Chroma indexer, run, start, 6141375854912846
+1784022310.030251, BG indexer pilot, Chroma indexer, run, end, 6141375868331140
+1784022310.030345, BG indexer pilot, pipeline - passages, run, end, 244405690344617466283301183705803307681, 1784022309.984602, 1, 35, 6141375868436133
+1784022310.030970, BG indexer pilot, pipeline - passages, run, start, 267298014126260867787369762980283089748, 1784022310.030918, 1, 36, 6141375869047910
+1784022310.031214, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375869294854
+1784022310.031437, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375869507606
+1784022310.031512, BG indexer pilot, Embed passages, run, start, 6141375869592455
+1784022310.063605, BG indexer pilot, Embed passages, run, end, 6141375901686939
+1784022310.063774, BG indexer pilot, Chroma indexer, run, start, 6141375901852283
+1784022310.078254, BG indexer pilot, Chroma indexer, run, end, 6141375916322883
+1784022310.078317, BG indexer pilot, pipeline - passages, run, end, 267298014126260867787369762980283089748, 1784022310.030918, 1, 36, 6141375916396227
+1784022310.078680, BG indexer pilot, pipeline - passages, run, start, 13483621458335705907387648366958045176, 1784022310.078642, 1, 37, 6141375916744307
+1784022310.078887, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375916964308
+1784022310.079105, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375917175316
+1784022310.079180, BG indexer pilot, Embed passages, run, start, 6141375917258868
+1784022310.110775, BG indexer pilot, Embed passages, run, end, 6141375948847960
+1784022310.110902, BG indexer pilot, Chroma indexer, run, start, 6141375948987288
+1784022310.127352, BG indexer pilot, Chroma indexer, run, end, 6141375965432803
+1784022310.127459, BG indexer pilot, pipeline - passages, run, end, 13483621458335705907387648366958045176, 1784022310.078642, 1, 37, 6141375965537779
+1784022310.127990, BG indexer pilot, pipeline - passages, run, start, 107887144649266366582549906310153690989, 1784022310.127855, 1, 38, 6141375966063108
+1784022310.128247, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141375966324741
+1784022310.128457, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141375966525413
+1784022310.128575, BG indexer pilot, Embed passages, run, start, 6141375966646421
+1784022310.161041, BG indexer pilot, Embed passages, run, end, 6141375999125130
+1784022310.161292, BG indexer pilot, Chroma indexer, run, start, 6141375999402667
+1784022310.176370, BG indexer pilot, Chroma indexer, run, end, 6141376014447763
+1784022310.176532, BG indexer pilot, pipeline - passages, run, end, 107887144649266366582549906310153690989, 1784022310.127855, 1, 38, 6141376014607539
+1784022310.176951, BG indexer pilot, pipeline - passages, run, start, 65339511498814860302066189046515595845, 1784022310.176814, 1, 39, 6141376015022420
+1784022310.177203, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376015281268
+1784022310.177417, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376015485269
+1784022310.177541, BG indexer pilot, Embed passages, run, start, 6141376015622757
+1784022310.209294, BG indexer pilot, Embed passages, run, end, 6141376047381849
+1784022310.209792, BG indexer pilot, Chroma indexer, run, start, 6141376047893866
+1784022310.229978, BG indexer pilot, Chroma indexer, run, end, 6141376068053915
+1784022310.230126, BG indexer pilot, pipeline - passages, run, end, 65339511498814860302066189046515595845, 1784022310.176814, 1, 39, 6141376068200971
+1784022310.230476, BG indexer pilot, pipeline - passages, run, start, 237811313124099269628672237647063735021, 1784022310.230421, 1, 40, 6141376068546956
+1784022310.230724, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376068802268
+1784022310.230943, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376069026252
+1784022310.231105, BG indexer pilot, Embed passages, run, start, 6141376069186525
+1784022310.263401, BG indexer pilot, Embed passages, run, end, 6141376101479345
+1784022310.263676, BG indexer pilot, Chroma indexer, run, start, 6141376101787202
+1784022310.287299, BG indexer pilot, Chroma indexer, run, end, 6141376125370056
+1784022310.287419, BG indexer pilot, pipeline - passages, run, end, 237811313124099269628672237647063735021, 1784022310.230421, 1, 40, 6141376125498009
+1784022310.287751, BG indexer pilot, pipeline - passages, run, start, 62408867879946693461853561596012254138, 1784022310.287712, 1, 41, 6141376125815081
+1784022310.287864, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376125941209
+1784022310.288094, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376126165402
+1784022310.288231, BG indexer pilot, Embed passages, run, start, 6141376126313546
+1784022310.310151, BG indexer pilot, Embed passages, run, end, 6141376148228734
+1784022310.310720, BG indexer pilot, Chroma indexer, run, start, 6141376148826735
+1784022310.323522, BG indexer pilot, Chroma indexer, run, end, 6141376161605348
+1784022310.323627, BG indexer pilot, pipeline - passages, run, end, 62408867879946693461853561596012254138, 1784022310.287712, 1, 41, 6141376161708388
+1784022310.324183, BG indexer pilot, pipeline - passages, run, start, 20090309459062610408237814213847693173, 1784022310.324043, 1, 42, 6141376162259589
+1784022310.324366, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376162443813
+1784022310.324581, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376162651365
+1784022310.324660, BG indexer pilot, Embed passages, run, start, 6141376162740214
+1784022310.346109, BG indexer pilot, Embed passages, run, end, 6141376184189864
+1784022310.346276, BG indexer pilot, Chroma indexer, run, start, 6141376184353481
+1784022310.360395, BG indexer pilot, Chroma indexer, run, end, 6141376198463920
+1784022310.360503, BG indexer pilot, pipeline - passages, run, end, 20090309459062610408237814213847693173, 1784022310.324043, 1, 42, 6141376198579824
+1784022310.360817, BG indexer pilot, pipeline - passages, run, start, 230208527015521485011793749514901313446, 1784022310.360776, 1, 43, 6141376198880577
+1784022310.360931, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376199012625
+1784022310.361124, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376199193169
+1784022310.361200, BG indexer pilot, Embed passages, run, start, 6141376199277409
+1784022310.391690, BG indexer pilot, Embed passages, run, end, 6141376229759667
+1784022310.392182, BG indexer pilot, Chroma indexer, run, start, 6141376230290836
+1784022310.412087, BG indexer pilot, Chroma indexer, run, end, 6141376250169924
+1784022310.412192, BG indexer pilot, pipeline - passages, run, end, 230208527015521485011793749514901313446, 1784022310.360776, 1, 43, 6141376250273141
+1784022310.412625, BG indexer pilot, pipeline - passages, run, start, 157222073261532317238728413381606323163, 1784022310.412583, 1, 44, 6141376250689221
+1784022310.412852, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376250933990
+1784022310.413108, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376251180166
+1784022310.413256, BG indexer pilot, Embed passages, run, start, 6141376251335110
+1784022310.444760, BG indexer pilot, Embed passages, run, end, 6141376282828058
+1784022310.444912, BG indexer pilot, Chroma indexer, run, start, 6141376282993834
+1784022310.459655, BG indexer pilot, Chroma indexer, run, end, 6141376297726370
+1784022310.459758, BG indexer pilot, pipeline - passages, run, end, 157222073261532317238728413381606323163, 1784022310.412583, 1, 44, 6141376297840946
+1784022310.460216, BG indexer pilot, pipeline - passages, run, start, 46439967824795582365781488565299319456, 1784022310.460081, 1, 45, 6141376298287523
+1784022310.460380, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376298458339
+1784022310.460591, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376298660900
+1784022310.460669, BG indexer pilot, Embed passages, run, start, 6141376298747060
+1784022310.492669, BG indexer pilot, Embed passages, run, end, 6141376330744936
+1784022310.492760, BG indexer pilot, Chroma indexer, run, start, 6141376330832248
+1784022310.509055, BG indexer pilot, Chroma indexer, run, end, 6141376347144259
+1784022310.509165, BG indexer pilot, pipeline - passages, run, end, 46439967824795582365781488565299319456, 1784022310.460081, 1, 45, 6141376347241539
+1784022310.509685, BG indexer pilot, pipeline - passages, run, start, 243546037745094751133075111063827792880, 1784022310.509548, 1, 46, 6141376347757620
+1784022310.509849, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376347927028
+1784022310.510068, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376348137525
+1784022310.510192, BG indexer pilot, Embed passages, run, start, 6141376348263957
+1784022310.542917, BG indexer pilot, Embed passages, run, end, 6141376381012986
+1784022310.543498, BG indexer pilot, Chroma indexer, run, start, 6141376381592603
+1784022310.559104, BG indexer pilot, Chroma indexer, run, end, 6141376397178293
+1784022310.559182, BG indexer pilot, pipeline - passages, run, end, 243546037745094751133075111063827792880, 1784022310.509548, 1, 46, 6141376397260405
+1784022310.559614, BG indexer pilot, pipeline - passages, run, start, 218711038351289418285211887045698833679, 1784022310.559559, 1, 47, 6141376397684853
+1784022310.559768, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376397846790
+1784022310.559973, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376398042566
+1784022310.560093, BG indexer pilot, Embed passages, run, start, 6141376398164214
+1784022310.587967, BG indexer pilot, Embed passages, run, end, 6141376426061780
+1784022310.588456, BG indexer pilot, Chroma indexer, run, start, 6141376426574853
+1784022310.608612, BG indexer pilot, Chroma indexer, run, end, 6141376446704646
+1784022310.608730, BG indexer pilot, pipeline - passages, run, end, 218711038351289418285211887045698833679, 1784022310.559559, 1, 47, 6141376446806022
+1784022310.609271, BG indexer pilot, pipeline - passages, run, start, 110247331085185600029191647040941677857, 1784022310.609138, 1, 48, 6141376447343399
+1784022310.609526, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376447603831
+1784022310.609733, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376447801127
+1784022310.609824, BG indexer pilot, Embed passages, run, start, 6141376447913368
+1784022310.625334, BG indexer pilot, Embed passages, run, end, 6141376463410145
+1784022310.625583, BG indexer pilot, Chroma indexer, run, start, 6141376463660705
+1784022310.641339, BG indexer pilot, Chroma indexer, run, end, 6141376479413323
+1784022310.641409, BG indexer pilot, pipeline - passages, run, end, 110247331085185600029191647040941677857, 1784022310.609138, 1, 48, 6141376479483851
+1784022310.641848, BG indexer pilot, pipeline - passages, run, start, 151431587266423285643608105127728474828, 1784022310.641724, 1, 49, 6141376479919004
+1784022310.642002, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376480077932
+1784022310.642195, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376480264413
+1784022310.642272, BG indexer pilot, Embed passages, run, start, 6141376480350333
+1784022310.672553, BG indexer pilot, Embed passages, run, end, 6141376510636734
+1784022310.672721, BG indexer pilot, Chroma indexer, run, start, 6141376510823983
+1784022310.696002, BG indexer pilot, Chroma indexer, run, end, 6141376534095701
+1784022310.696121, BG indexer pilot, pipeline - passages, run, end, 151431587266423285643608105127728474828, 1784022310.641724, 1, 49, 6141376534197317
+1784022310.696644, BG indexer pilot, pipeline - passages, run, start, 259253350766525227789275936542441237047, 1784022310.696505, 1, 50, 6141376534716566
+1784022310.696973, BG indexer pilot, Corpus chunk loader (shard 0/1), run, start, 6141376535049798
+1784022310.697181, BG indexer pilot, Corpus chunk loader (shard 0/1), run, end, 6141376535249494
+1784022310.697328, BG indexer pilot, Embed passages, run, start, 6141376535409527
+1784022310.717937, BG indexer pilot, Embed passages, run, end, 6141376556021080
+1784022310.718685, BG indexer pilot, Chroma indexer, run, start, 6141376556804058
+1784022310.741360, BG indexer pilot, Chroma indexer, run, end, 6141376579450319
+1784022310.741478, BG indexer pilot, pipeline - passages, run, end, 259253350766525227789275936542441237047, 1784022310.696505, 1, 50, 6141376579555167
