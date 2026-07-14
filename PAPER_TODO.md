@@ -413,9 +413,9 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
 > as a slim illustration; **VQA-accuracy scorer drops from §2.1 if accepted.**
 > **UPDATE (2026-07-13, author):** E3′ and E6′ merge into ONE staged experiment —
 > system view (E6′) first, then config-only zoom steps to the mechanism (E3′ cells)
-> with the YAML diff shown at each transition (see redesign doc §0.3). Author has
-> agreed to E6′ and the combined form; supervisor sign-off pending on the package.
-> Items below stand only if the redesign is REJECTED:
+> with the YAML diff shown at each transition (see redesign doc §0.3).
+> **FULLY SIGNED OFF (author 2026-07-13, supervisor 2026-07-14) — design of
+> record; items below are DEAD (kept only for the paper trail):**
 - [ ] **⚠ NEW (2026-07-13 pilots): the ANE/CoreML apparatus HANGS.** Both ANE pilot
   cells (`e3_vqa_b`, `e3p_c2_rmax` — CLIPVisionEncoderCoreML) stalled to their 1-h
   timeouts instead of erroring. E3 mapping-B (and E3′ co-runner C2) is unusable until

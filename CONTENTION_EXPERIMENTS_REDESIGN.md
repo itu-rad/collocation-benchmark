@@ -1,6 +1,7 @@
 # Contention experiments — redesign proposal (E3′ + E6′)
 
-**Status:** PROPOSAL (2026-07-12) — pending co-author sign-off (Rob + Ties + supervisor).
+**Status:** ✅ APPROVED — author 2026-07-13 (VQA cut; staged combined form),
+supervisor sign-off 2026-07-14. This is the design of record.
 **Supersedes, if accepted:** E3 (VQA bandwidth contention 2×2) as designed in
 `experimental_setup.tex` §E3, and the E6 foreground/background workload choice
 (EfficientNet inference vs. fine-tune). The E6 *design* (B-sweep, per-process
