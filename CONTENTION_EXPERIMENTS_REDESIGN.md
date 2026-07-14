@@ -190,10 +190,15 @@ The mechanism claim rests on a DRAM-bandwidth (or defensible proxy) read:
   protocol already runs exactly these. (iii) ABI hazard, documented in both C
   files: `IOReportSimpleGetIntegerValue`'s second argument must be NULL —
   passing a local address corrupts the caller's stack (found the hard way).
-- **GB10:** check whether `dcgmi dmon`/DCGM exposes `DRAM_ACTIVE`-class profiling
-  fields on GB10; fallback: `nvidia-smi` memory-utilization %, plus the model-based
-  estimate; note Grace-side traffic (C3) may only be visible via system-level
-  counters — investigate `perf`/PMU availability on the Grace cores.
+- **GB10: ✅ RESOLVED — PROXY-BACKED (verified 2026-07-13 on babyxena/spark-cc0d).**
+  `nvidia-smi utilization.memory` (memory-controller busy fraction) works and is
+  the proxy of record; DCGM `PROF_DRAM_ACTIVE` needs the profiling module
+  (`sudo nv-hostengine` — no passwordless sudo; re-probe if enabled); no usable
+  Grace uncore events visible via unprivileged `perf` (the earlier "1 match" was
+  a breakpoint pseudo-event, not a bandwidth counter). Consequence for wording:
+  the bandwidth law is **counter-backed with per-engine attribution on the
+  M2 Pro** and **proxy-backed (+ model-based GB/s estimates) on GB10** — state
+  exactly that, no more.
 
 If **neither** DUT yields a usable counter, the claim downgrades (as in the old E3)
 to "consistent with bandwidth contention" — decide *before* collection whether that
