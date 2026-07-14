@@ -11,7 +11,7 @@ not assert the outcome.
 \subsection{The Contention Study}
 \label{sec:results-staged}
 
-\paragraph{Stage A --- does collocation interfere, and can \sysname{}
+\paragraph{Step A --- does collocation interfere, and can \sysname{}
 attribute it?} \pending{Foreground p95 response time and throughput vs.\
 $B \in \{0,1,2\}$ on both devices; per-process and (M2~Pro) per-engine
 attribution with the residual unattributed fraction; capacity-pressure
@@ -23,7 +23,7 @@ capacity ceiling, not folded into the bandwidth analysis.
 \begin{figure}[t]
 \small
 \begin{verbatim}
- # Stage A(B=1) -> Stage B: the background
+ # Step A(B=1) -> Step B: the background
  # loadgen block is the entire diff
  loadgen:
 -  component: loadgen.SaturatingOfflineScheduler
@@ -40,7 +40,7 @@ system to mechanism is a sequence of single-element configuration diffs
 \label{fig:staged-diffs}
 \end{figure}
 
-\paragraph{Stage B --- intensity, isolated by one loadgen edit.}
+\paragraph{Step B --- intensity, isolated by one loadgen edit.}
 Figure~\ref{fig:staged-diffs} shows the entire transition.
 \pending{Foreground degradation vs.\ offered background rate at
 $\{25,50,75,100\}\%$ of the indexer's maximum; the counters convert the
@@ -48,7 +48,7 @@ axis to bytes/s.} The hypothesis is monotone growth; a flat response would
 bound the platform's tolerance for this co-runner and would be reported as
 exactly that.
 
-\paragraph{Stage C --- is degradation priced in traffic or in identity?}
+\paragraph{Step C --- is degradation priced in traffic or in identity?}
 One stage-list edit replaces the indexer with single-resource co-runners
 (CPU stream, GPU encode, ANE encode) at matched traffic ladders.
 \pending{Per-engine dose--response slopes below the saturation knee, with
@@ -57,13 +57,13 @@ engine-dependent slopes would instead localize contention in
 engine-specific paths and would redirect the analysis --- both outcomes
 are wired into this subsection.
 
-\paragraph{Stage D --- the counter-free control.} One foreground edit
+\paragraph{Step D --- the counter-free control.} One foreground edit
 reduces serving to bare decode, split by phase. H2 predicts per-token
 decode (bandwidth-heavy) degrades with co-runner traffic while
 time-to-first-token (compute-heavy prefill) moves substantially less; the
 asymmetry is directional, not absolute (\S\ref{sec:setup-staged}).
-\pending{Phase-split slopes; the closing overlay of Stage-A system points
-on the Stage-C/D dose--response.} On the M2~Pro the analysis is
+\pending{Phase-split slopes; the closing overlay of Step-A system points
+on the Step-C/D dose--response.} On the M2~Pro the analysis is
 counter-backed with per-engine attribution; on GB10 it is proxy-backed,
 anchored by the analytic CPU-stream co-runner, and worded with that scope.
 
@@ -95,7 +95,7 @@ per rung per device.}
 \subsection{Instrument Fidelity}
 \label{sec:results-fidelity}
 
-\paragraph{F1: harness overhead (M2~Pro).} Table~\ref{tab:noop}
+\paragraph{CAL-1: harness overhead (M2~Pro).} Table~\ref{tab:noop}
 summarizes. Fitting per-query latency against depth separates a fixed
 per-query cost of ${\approx}\SI{25}{\micro\second}$ (intercept) from a
 \emph{marginal} per-stage cost of \SI{60.3}{\micro\second} (slope), flat
@@ -118,7 +118,7 @@ percent-level, and \S\ref{sec:results-reduction} accounts for it there
 explicitly.
 
 \begin{table}[t]\centering\small
-\caption{F1: harness overhead (no-op chains, tracing off, M2~Pro). Median
+\caption{CAL-1: harness overhead (no-op chains, tracing off, M2~Pro). Median
 with hierarchical bootstrap 95\% CI. ``Per-stage'' is $L_q/d$ (includes the
 amortizing fixed per-query cost); ``self-time'' is the stage's own run
 interval.}
@@ -140,17 +140,20 @@ Payload (d=10) & Ref.\ self-time (\si{\micro\second}) & Copy self-time (\si{\mic
 \end{tabular}
 \end{table}
 
-\paragraph{F2: modularity overhead.} On the M2~Pro, wrapping the
+\paragraph{CAL-2: modularity overhead.} On the M2~Pro, wrapping the
 EfficientNetV2-S fine-tune in the full graph-queue-thread structure
 changes per-step latency by $-43\,\si{\micro\second}$ [$-262, +122$],
 i.e.\ $-0.05\%$ [$-0.29, +0.14$] of a \SI{89.2}{\milli\second} step
 (paired, 10 interleaved runs; per-run medians
 \SI{89.1}{}--\SI{91.0}{\milli\second}) --- indistinguishable from zero at
-$\pm 0.3\%$ resolution. The tracing layer adds a consistent $+2.1\%$; the
-case studies run with it enabled, and because it is a uniform per-step
-cost shared by every arm, within-framework \emph{comparisons} are
-unaffected --- absolute case-study latencies carry the $2.1\%$ and we say
-so wherever they appear. We report the negative point estimate
+$\pm 0.3\%$ resolution. The tracing layer adds $+2.1\%$ on this workload ---
+${\approx}\SI{1.9}{\milli\second}$ over three spans per stage per step,
+i.e.\ a per-\emph{span} cost, so arms with more stages pay
+proportionally more; against the multi-second queries of the case studies
+(which run with tracing enabled) even the many-stage arms' span cost is
+${<}0.1\%$ and cannot reorder comparisons, and the millisecond-scale
+reduction cells run with tracing disabled so the span cost never touches
+them. We report the negative point estimate
 deliberately: a wrapper can only add work, so the honest reading is
 ``below the noise floor,'' and the artifact documents the two instrument
 confounds this stance caught. \pending{GB10 counterpart.}

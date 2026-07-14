@@ -36,7 +36,7 @@ distributed machinery of production engines is precisely the confound a
 measurement instrument must not carry (\S\ref{sec:framework}); distributed
 pipelines are future work. Stages within a pipeline share a Python
 interpreter, so pure-Python stages serialize on the interpreter lock ---
-acceptable for kernel-bound ML stages, and bounded by F1, but a real
+acceptable for kernel-bound ML stages, and bounded by CAL-1, but a real
 constraint for CPU-heavy custom logic, which should drop into native code or
 a separate pipeline. Per-device occupancy is residency, not utilization;
 causal attribution depends on platform counters, which on GB10's current

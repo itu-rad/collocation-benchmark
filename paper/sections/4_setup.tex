@@ -19,12 +19,15 @@ ${\approx}\SI{200}{\giga\byte\per\second}$; LLMs run as 4-bit MLX
 weights~\cite{mlx}, the ANE via Core~ML. The \textbf{NVIDIA GB10}
 (DGX~Spark~\cite{gb10}) couples a Grace CPU and a Blackwell GPU over a
 coherent NVLink-C2C interconnect to \SI{128}{\giga\byte} of LPDDR5X at
-\SI{273}{\giga\byte\per\second} --- a coherent unified-memory \emph{system}
-rather than one physical pool; models run as BF16 PyTorch weights. We never
+\SI{273}{\giga\byte\per\second} --- one physical pool, but with an
+asymmetric access path: the GPU reaches memory across the interconnect.
+Models run as BF16 PyTorch weights. We never
 treat the pair as a controlled axis: capacity differs $8\times$, bandwidth
 ${\approx}1.4\times$, and device class, runtime, and precision co-vary ---
-including the workloads' arithmetic intensity itself, since 4-bit decode is
-more bandwidth-bound than BF16 decode. Cross-device statements therefore
+including arithmetic intensity: at batch~1, 4-bit weights carry
+${\approx}4\times$ more compute per weight byte than BF16, so both decode
+configurations are bandwidth-bound in absolute terms but to different
+degrees. Cross-device statements therefore
 concern the direction of an effect on each platform separately; absolute
 comparisons stay within a device, and each platform is one physical machine
 ($n{=}1$ per platform). Environments are pinned in versioned specifications;
@@ -54,10 +57,15 @@ per-requestor read/write byte counters via a custom IOReport-based sampler
 complete on this SoC --- under a pure-GPU load a fraction of traffic reports
 under fabric agents --- we calibrate the mapping once per engine with
 single-engine loads and report the residual unattributed fraction alongside
-every attribution. On GB10 the DRAM profiling counter is unavailable on
+every attribution. Per-engine is not per-pipeline: when two pipelines drive
+the same engine (Step A's foreground and background both use the GPU), the
+counters report their sum, and we attribute by measuring the background's
+schedule-determined traffic in isolation and subtracting, with the
+subtraction's error carried into the reported interval. On GB10 the DRAM profiling counter is unavailable on
 current drivers; we use the memory-controller busy fraction plus
-model-based traffic estimates (weight bytes $\times$ operation rate), and
-mark every GB10 traffic figure \emph{proxy-backed}. Thermal state is
+model-based traffic estimates (weights plus KV-cache bytes per operation
+$\times$ operation rate; activations excluded and stated), and mark every
+GB10 traffic figure \emph{proxy-backed}. Thermal state is
 monitored per run (package power and temperature); runs crossing a
 pre-specified throttle threshold are excluded and counted. On the
 \SI{16}{\giga\byte} device we additionally record memory pressure and swap
@@ -70,11 +78,14 @@ F1~\cite{rajpurkar2016squad} with SQuAD normalization, over 120 questions
 per arm in dedicated serial runs. All answer-producing arms share one
 literal short-answer instruction (defined once, imported by every prompt
 formatter), validated before collection. We do not claim ``matched''
-quality from overlapping intervals: quality comparisons are reported as
-\emph{bounded differences} --- the EM/F1 difference with its interval ---
-and a speed result is called quality-preserving only when that interval
-excludes differences beyond a pre-specified margin of 10 points; otherwise
-it is a trade-off. Containment (substring) appears only as a secondary
+quality from overlapping intervals: quality comparisons are \emph{paired on questions} --- every arm answers
+the same 120 questions, so the EM difference is a paired proportion
+(McNemar-style interval), roughly halving the width an unpaired comparison
+would need --- and are reported as \emph{bounded differences}: a speed
+result is called quality-preserving only when the paired interval excludes
+differences beyond a pre-specified non-inferiority margin of 10 points
+(chosen for decidability at $n{=}120$ and stated as such); otherwise it is
+a trade-off. Containment (substring) appears only as a secondary
 signal beside mean answer length; token-Jaccard parity checks that arms
 answer the same task (agreement, not correctness).
 
@@ -113,11 +124,11 @@ either path blindly. Pilot capacity estimates are single short serial runs
 and are treated accordingly: every open-loop cell carries a post-hoc
 stability check (no trend in queue depth across the measurement window),
 and cells failing it are reported at reduced scope rather than as latency
-results. Table~\ref{tab:knobs-e4} shows one experiment's knob table; the
+results. Table~\ref{tab:knobs-topology} shows one experiment's knob table; the
 artifact carries all of them with derivations, pilot traces, and
 verification outcomes.
 
-\subsection{The Contention Study (Stages A--D)}
+\subsection{The Contention Study (Steps A--D)}
 \label{sec:setup-staged}
 
 The capability claim under test: collocated pipelines are first-class and
@@ -125,7 +136,7 @@ attributable. The design descends from a production-shaped symptom to a
 candidate mechanism in four stages, each changing \emph{exactly one}
 configuration element of its predecessor; the paper shows each diff.
 
-\textbf{Stage A (system view).} The foreground is plain RAG serving
+\textbf{Step A (system view).} The foreground is plain RAG serving
 (retrieve top-3 from a vector index; generate with a 4B model) at a fixed
 Poisson rate. Beside it run $B \in \{0,1,2\}$ independent \emph{indexing}
 pipelines (chunk $\rightarrow$ GPU embed $\rightarrow$ vector-store
@@ -139,11 +150,11 @@ post-warm-up foreground queries per cell), background throughput,
 per-process attribution, memory-traffic counters, and the
 capacity-pressure telemetry above.
 
-\textbf{Stage B (isolate intensity).} $B{=}1$; \emph{only the background
+\textbf{Step B (isolate intensity).} $B{=}1$; \emph{only the background
 loadgen block} changes --- saturating $\rightarrow$ fixed-interval at
 $\{25,50,75,100\}\%$ of the indexer's pilot-measured maximum rate.
 
-\textbf{Stage C (purify the co-runner).} \emph{Only the background stage
+\textbf{Step C (purify the co-runner).} \emph{Only the background stage
 list} changes: the indexer is replaced by single-resource co-runners at
 matched intensity ladders --- a calibrated CPU streaming stage
 (STREAM-triad~\cite{mccalpin1995stream} over a working set far beyond the
@@ -156,16 +167,30 @@ GB10; the CPU streaming co-runner, whose traffic is analytic, anchors
 both --- decoupling the dose axis from the instrument that measures the
 response.
 
-\textbf{Stage D (purify the foreground).} \emph{Only the foreground}
+\textbf{Step D (purify the foreground).} \emph{Only the foreground}
 changes: RAG serving becomes bare LLM decode, and analysis splits
-time-to-first-token from per-token decode. Prefill (the prompt pass) is
-compute-dominated; decode streams the full weight set per token and is
-bandwidth-dominated~\cite{patel2024splitwise,agrawal2024sarathi} --- an
-asymmetry, not a dichotomy, so the control is directional.
+time-to-first-token (prefill: processing the prompt) from per-token decode
+(generating output). Decode streams the weights plus the growing KV cache
+every token and is bandwidth-dominated at batch~1; prefill is
+compute-dominated at these prompt lengths on the 4-bit
+device~\cite{patel2024splitwise,agrawal2024sarathi}, while on GB10 (BF16)
+short prompts sit nearer the compute/bandwidth ridge, so the control's
+contrast is sharp on the M2~Pro and attenuated on GB10 --- we state its
+strength per platform. Both phases are measured as \emph{service} time
+(stage start to end): the control isolates where contention lands inside a
+query, so queueing delay is deliberately outside it, unlike the
+response-time metrics of Steps A--B.
 
 \emph{Hypotheses and outcomes.} H1: foreground degradation grows with
 co-runner memory traffic at matched intensity, largely independently of
-the generating engine. H2: degradation concentrates in decode; prefill
+the generating engine --- tested cleanly on the co-runners that do
+\emph{not} share the foreground's engine (CPU stream; ANE on the M2~Pro).
+The GPU co-runner shares the foreground's engine, and on GB10 runs in a
+separate process where CUDA contexts time-slice the device (MPS is not
+enabled), so its arm confounds device time with bandwidth; we report it as
+a labeled composite, not as an H1 test. Slope compatibility is judged
+against a pre-specified equivalence band (slope ratios within
+$[2/3, 3/2]$), not by interval overlap. H2: degradation concentrates in decode; prefill
 moves substantially less. Falsification branches are first-class outcomes:
 engine-\emph{dependent} slopes at matched traffic would localize contention
 in engine-specific paths (fabric, schedulers) rather than DRAM; a flat
@@ -180,19 +205,33 @@ bounded by device memory, and the ceiling is reported, not extrapolated.
 \subsection{The Topology and Capacity Study}
 \label{sec:setup-topology}
 
-One Self-RAG~\cite{asai2024selfrag} task; four topologies that swap by
-configuration alone. \textbf{Monolith-9B}: one Qwen3.5-9B~\cite{qwen35}
+One self-reflective RAG task --- grade, generate, check, rewrite-on-failure,
+in the style popularized by Self-RAG~\cite{asai2024selfrag} and corrective
+RAG~\cite{yan2024crag}, implemented as explicit pipeline stages rather than
+reflection tokens --- and four topologies that swap by configuration
+alone. \textbf{Monolith-9B}: one Qwen3.5-9B~\cite{qwen35}
 grades retrieved context, answers, and self-checks in one structured pass,
 with a bounded rewrite cycle. \textbf{Decomposed}: three 4B specialists
 (grader, generator, hallucination-checker), so cheap calls for one query
 can overlap expensive generation for another. \textbf{Monolith-4B}: one 4B
 issuing the three calls sequentially --- the size-matched control.
 \textbf{Decomposed-Shared}: the decomposed graph over \emph{one} resident
-4B behind a mutex --- separating graph structure from physical residency,
-and doubling as the mechanism probe: if Shared recovers most of
-Decomposed's throughput, the win is scheduling-level overlap rather than
-model-level parallelism --- a distinction that matters on a
-GIL-constrained runtime, and one this control adjudicates empirically.
+4B behind a mutex, separating graph structure from physical residency.
+Because stages share a default device stream, model-level GPU parallelism
+is unavailable by construction (\S\ref{sec:framework-execution}); any
+Decomposed-over-Shared gap therefore isolates what extra \emph{residency}
+buys under scheduling-level overlap (unserialized CPU phases, no mutex
+convoying), not concurrent kernel execution, and we interpret it as such.
+All execution backends here are batch-1 engines; production servers
+overlap queries \emph{within} one instance via continuous
+batching~\cite{yu2022orca,kwon2023vllm}, so this study's conclusions are
+about graph-structured batch-1 pipelines and are not serving guidance ---
+a served-engine backend exists in the framework and extending the
+comparison to it is future work.
+The specialists share base weights differentiated by prompt; resident
+memory is reported as unique plus shared mapped pages, since memory-mapped
+weights can share physical pages across instances. All rungs of the
+capacity sweep are dense models.
 Two difficulties --- factoid (rag-mini-wikipedia, top-3 over 3{,}200
 passages) and multi-hop (HotpotQA~\cite{yang2018hotpotqa}, top-5 over a
 20{,}000-passage gold+distractor corpus via ChromaDB~\cite{chroma}) ---
@@ -218,17 +257,17 @@ construction; GB10 runs it with headroom.
 \subsection{Instrument Fidelity}
 \label{sec:setup-fidelity}
 
-\textbf{F1 (harness overhead).} Pass-through pipelines isolate the harness:
+\textbf{CAL-1 (harness overhead).} Pass-through pipelines isolate the harness:
 a depth sweep ($1$--$100$ no-op stages, closed loop) for dispatch cost and
 its scaling; a payload sweep (\SI{0}{}--\SI{10}{\mebi\byte}; reference
 passing vs.\ per-hop deep copy) for the data path. M2~Pro only: with no
 kernel in the loop this measures framework and interpreter, and one quiet
-machine bounds it; F1's absolute numbers are platform-scoped, and the GB10
-fidelity claim rests on F2, which runs on both devices. No-op stages never
+machine bounds it; CAL-1's absolute numbers are platform-scoped, and the GB10
+fidelity claim rests on CAL-2, which runs on both devices. No-op stages never
 release the GIL, making the per-stage figure a worst case; the copy arm
 lower-bounds a serializing design.
 
-\textbf{F2 (modularity overhead).} The same workload two ways: a
+\textbf{CAL-2 (modularity overhead).} The same workload two ways: a
 hand-written PyTorch script vs.\ the equivalent \sysname{} pipeline ---
 EfficientNetV2-S~\cite{tan2021efficientnetv2} transfer-learning
 (fine-tuning a frozen backbone) on Imagenette~\cite{imagenette}, batch 8,
@@ -247,8 +286,11 @@ background prefetch).
 
 MLPerf Inference's four scenarios are, at the load-generation level, four
 arrival processes: one-in-flight (SingleStream), Poisson at a target rate
-(Server), fixed-interval batched queries (MultiStream), and all-at-once
-(Offline). We instantiate each as a \sysname{} scheduler configuration over
+(Server), fixed-interval batched queries (MultiStream as specified through
+MLPerf Inference v1.1; since v2.0 the scenario issues back-to-back
+8-sample queries, a closed-loop pattern our SingleStream scheduler covers
+at batch~8 --- we reproduce the fixed-interval form and say so), and
+all-at-once (Offline). We instantiate each as a \sysname{} scheduler configuration over
 one vision pipeline (ResNet-50), $R{=}10$ per scenario per device, and
 verify each from its arrival log: realized rate within 5\% and exponential
 inter-arrivals by quantile--quantile inspection (Server); interval
@@ -259,7 +301,7 @@ accuracy modes are MLPerf's compliance machinery, not its arrival
 processes, and are out of scope. We likewise substitute an
 auto-downloadable ImageNet subset for the license-gated original: the
 reduction concerns load, not accuracy. The harness footprint is
-re-examined \emph{in this regime} rather than assumed from F2: at
+re-examined \emph{in this regime} rather than assumed from CAL-2: at
 millisecond service times, \SI{60}{\micro\second}-class stage costs are
 percent-level, and we report them beside the scenario metrics.
 
@@ -268,7 +310,7 @@ percent-level, and we report them beside the scenario metrics.
 derives from a committed rule with pilot inputs; verification outcomes and
 the remaining experiments' tables ship in the artifact. Rates in
 queries/s.}
-\label{tab:knobs-e4}
+\label{tab:knobs-topology}
 \resizebox{\columnwidth}{!}{\begin{tabular}{lllll}
 \toprule
 Knob & M2~Pro & GB10 & Rule & Verified by \\

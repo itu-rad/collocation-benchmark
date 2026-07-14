@@ -14,9 +14,10 @@ linear.} Agentic workflows and retrieval-augmented generation
 (RAG)~\cite{lewis2020rag} execute input-dependent graphs. In a RAG pipeline,
 a query retrieves candidate documents, a model \emph{grades} their relevance,
 another generates an answer, a third checks that answer against the retrieved
-evidence, and a failed check re-enters retrieval with a rewritten query
---- a bounded feedback \emph{cycle}, not a
-pass~\cite{asai2024selfrag}. A harness that can only express one forward pass
+evidence, and a failed check re-enters retrieval with a rewritten query. That is a
+bounded feedback \emph{cycle}, not a forward pass --- the self-reflective
+RAG pattern popularized by Self-RAG~\cite{asai2024selfrag} and corrective
+RAG~\cite{yan2024crag}. A harness that can only express one forward pass
 cannot represent such workloads, let alone locate their bottlenecks.
 \textbf{Second, the measurement boundary is too narrow.} Timing only the
 accelerator excludes data loading, preprocessing, retrieval, and inter-stage

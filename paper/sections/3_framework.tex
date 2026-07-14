@@ -23,7 +23,7 @@ pushing to output queues; stages with multiple inputs select among
 configurable polling policies (wait-for-all merge, first-available,
 first-submitted). Queues pass the query object \emph{by reference} --- within
 a pipeline, no serialization or copying occurs on the data path
-(\S\ref{sec:results-e1} quantifies this against a deep-copy counterfactual).
+(\S\ref{sec:results-fidelity} quantifies this against a deep-copy counterfactual).
 
 \paragraph{Pipeline.} A \emph{pipeline} is a directed graph of stage
 instances --- linear chains, fan-out, fan-in, and \emph{cycles} --- declared
@@ -39,7 +39,7 @@ structured query objects according to a scheduler: a closed-loop scheduler
 (one query in flight --- the serial baseline and MLPerf's SingleStream
 shape), a Poisson open-loop scheduler (MLPerf Server), a fixed-interval
 scheduler (MultiStream), and a saturating all-at-once scheduler (Offline).
-Schedulers are components like any other; \S\ref{sec:results-e5} uses exactly
+Schedulers are components like any other; \S\ref{sec:results-reduction} uses exactly
 this pluggability to recover MLPerf's scenario suite. Open-loop schedulers
 additionally log every query's \emph{intended} arrival time beside its
 realized enqueue time, so coordinated omission --- an entry queue silently
@@ -58,11 +58,16 @@ silicon; \texttt{nvidia-smi}, \texttt{dcgmi}, \texttt{iostat} on NVIDIA
 hosts) sample each pipeline independently, so collocated pipelines ---
 declared by simply listing several pipelines in one file --- are separately
 attributable. The thread boundary is where zero-copy composition lives:
-stages hand off object references, and heavyweight stages (model inference,
-retrieval) release the interpreter lock inside native kernels, so stage
-overlap is real where it matters. Pure-Python stages serialize on the
-interpreter lock; \S\ref{sec:setup-metrics} explains how our concurrency
-metric reads under this constraint, and \S\ref{sec:results-e1} shows the
+stages hand off object references, and heavyweight stages release the
+interpreter's global lock (GIL) inside native kernels. We are precise about
+what overlaps: stages in one process share a default device stream on both
+runtimes, so \emph{kernel execution serializes on the accelerator}, and
+autoregressive decode re-enters Python every token; cross-stage overlap is
+therefore pipelining of CPU-side work (tokenization, retrieval, routing)
+against device work and across queries --- scheduling-level concurrency,
+not model-level parallelism --- and our metrics and mechanism claims are
+worded for exactly that. Pure-Python stages serialize on the GIL; \S\ref{sec:setup-metrics} explains how our concurrency
+metric reads under this constraint, and \S\ref{sec:results-fidelity} shows the
 hand-off cost is a bounded, depth-independent constant either way.
 
 Robustness follows the same measurement-first logic. A stage that raises
@@ -88,7 +93,7 @@ described above. In parallel, span-level traces link a query's per-stage
 slices across threads and processes for timeline visualization, and the
 per-process listeners sample power, utilization, and memory. The tracing
 layer is optional and its cost is measured, not assumed
-(\S\ref{sec:results-e2}): with spans exported asynchronously off the
+(\S\ref{sec:results-fidelity}): with spans exported asynchronously off the
 critical path, full instrumentation adds $+2.1\%$ to a multi-millisecond
 training step, and can be disabled entirely for minimal-footprint runs.
 
