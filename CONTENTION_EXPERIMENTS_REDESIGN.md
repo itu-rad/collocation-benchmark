@@ -192,8 +192,10 @@ The mechanism claim rests on a DRAM-bandwidth (or defensible proxy) read:
   passing a local address corrupts the caller's stack (found the hard way).
 - **GB10: ✅ RESOLVED — PROXY-BACKED (verified 2026-07-13 on babyxena/spark-cc0d).**
   `nvidia-smi utilization.memory` (memory-controller busy fraction) works and is
-  the proxy of record; DCGM `PROF_DRAM_ACTIVE` needs the profiling module
-  (`sudo nv-hostengine` — no passwordless sudo; re-probe if enabled); no usable
+  the proxy of record; DCGM `PROF_DRAM_ACTIVE` is **confirmed unavailable** —
+  nv-hostengine runs as a systemd service but its Profiling module reports
+  "Failed to load" on this GB10 stack (checked 2026-07-14; not a privileges
+  issue — closed); no usable
   Grace uncore events visible via unprivileged `perf` (the earlier "1 match" was
   a breakpoint pseudo-event, not a bandwidth counter). Consequence for wording:
   the bandwidth law is **counter-backed with per-engine attribution on the
