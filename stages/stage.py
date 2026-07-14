@@ -65,6 +65,44 @@ def log_phase_single(parent_name, name, phase, start):
     )
 
 
+def log_first_token(stage: "Stage", event: str) -> None:
+    """Log one edge of a generator stage's "first_token" sub-phase.
+
+    Goes through the exact same benchmark-logger path as log_phase_single, so
+    (with utils/logger.py PERF_FORMAT) the trace CSV row is
+
+        wall, <pipeline>, <stage>, first_token, {start|end}, perf
+
+    which evaluation/contention/staged_lib.py keys as the
+    "<stage>::first_token" sub-phase and pairs start/end; the Step D analyzer
+    then derives ttft = pair_end_perf - stage_run_start_perf. Emit "start"
+    immediately before the generate call and "end" at the first produced
+    token, exactly once per run() invocation, so sub-phase pairs stay 1:1
+    with the stage's run start/end pairs (staged_lib aligns them by index).
+    Gated by disable_logs identically to the per-query run rows.
+    """
+    if not stage.disable_logs:
+        log_phase_single(stage.parent_name, stage.name, "first_token", event)
+
+
+def log_generated_tokens(stage: "Stage", n_tokens: int) -> None:
+    """Log the real per-query generated-token count as a companion trace row:
+
+        wall, <pipeline>, <stage>, n_generated_tokens, <int>, perf
+
+    Field 5 is the count, not start/end, so existing parsers
+    (staged_lib.parse_trace_files filters on start|end) skip the row —
+    backward compatible. Analyzers should prefer this over the config's
+    gen_kwargs.max_tokens when present (early EOS makes max_tokens an
+    overestimate). Gated by disable_logs like all per-query stage rows.
+    """
+    if not stage.disable_logs:
+        logging.getLogger("benchmark").info(
+            "%s, %s, n_generated_tokens, %d", stage.parent_name, stage.name,
+            n_tokens,
+        )
+
+
 class Stage:
     """This is the building block of the pipelines. A stage can perform tasks such as data
     loading, data preprocessing or model execution. The stages are separated in order to

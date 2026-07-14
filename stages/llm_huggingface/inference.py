@@ -3,6 +3,8 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
+    StoppingCriteria,
+    StoppingCriteriaList,
 )
 import torch
 import transformers
@@ -14,9 +16,37 @@ import outlines
 
 from threading import Lock
 
-from stages.stage import Stage, log_phase
+from stages.stage import Stage, log_phase, log_first_token, log_generated_tokens
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
+
+
+class _FirstTokenCriteria(StoppingCriteria):
+    """Never stops generation; records the first-token instant.
+
+    transformers evaluates the stopping criteria once per generated token,
+    immediately after the token is appended (generation/utils.py:
+    ``unfinished_sequences & ~stopping_criteria(input_ids, scores)``), so the
+    FIRST invocation is the first-token instant. The benchmark log record
+    stamps wall clock and perf_counter_ns at record creation (utils/logger.py
+    record factory), so calling the log inside that first invocation
+    timestamps the event at the right instant. Every later invocation costs
+    one attribute check plus returning a cached all-False bool tensor (no
+    per-token allocation), and user criteria are merged with — never replace —
+    the default max-length/EOS criteria, so generate() behavior is unchanged.
+    """
+
+    def __init__(self, on_first_token):
+        self._on_first_token = on_first_token
+        self._not_done = None
+
+    def __call__(self, input_ids, scores, **kwargs):
+        if self._not_done is None:
+            self._on_first_token()
+            self._not_done = torch.zeros(
+                input_ids.shape[0], dtype=torch.bool, device=input_ids.device
+            )
+        return self._not_done
 
 
 class Inference(Stage):
@@ -169,6 +199,9 @@ class Inference(Stage):
         print("Input data:", batch)
 
         if self._outlines_generator:
+            # NOTE: no first_token instrumentation on the structured-
+            # generation path (outlines drives generate() internally); the
+            # Step D analyzer falls back to gen_dur/max_tokens for such cells.
             if self._mutex:
                 self._mutex.acquire()
             try:
@@ -195,9 +228,21 @@ class Inference(Stage):
             if self._mutex:
                 self._mutex.acquire()
 
+            # First-token instrumentation (TTFT): a never-stopping criteria
+            # logs the "first_token" end event at its first invocation (see
+            # _FirstTokenCriteria). Gated by disable_logs like all per-query
+            # rows — when logs are disabled the generate() call is untouched.
+            extra_kwargs = {}
+            if not self.disable_logs:
+                log_first_token(self, "start")
+                extra_kwargs["stopping_criteria"] = StoppingCriteriaList(
+                    [_FirstTokenCriteria(lambda: log_first_token(self, "end"))]
+                )
+
             generated_ids = self._model.generate(
                 **model_inputs,
                 **self._gen_kwargs,
+                **extra_kwargs,
                 # logits_processor=self._logits_processors, # No longer used here
             )
 
@@ -208,6 +253,13 @@ class Inference(Stage):
 
             if self._mutex:
                 self._mutex.release()
+
+            # Real decode-step count for this query: output length minus input
+            # length, summed over the batch (rows are padded to a common
+            # length, so each row's slice length == number of decode steps).
+            log_generated_tokens(
+                self, sum(int(ids.shape[-1]) for ids in generated_ids)
+            )
 
             model_out = self._tokenizer.batch_decode(
                 generated_ids, skip_special_tokens=True

@@ -1,9 +1,9 @@
 from threading import Lock
 import mlx.core as mx
-from mlx_lm import load, generate
+from mlx_lm import load, stream_generate
 from transformers import AutoTokenizer
 
-from stages.stage import Stage, log_phase
+from stages.stage import Stage, log_phase, log_first_token, log_generated_tokens
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
 
@@ -90,21 +90,39 @@ class Inference(Stage):
             self._mutex.acquire()
 
         try:
-            # MLX generate typically handles one prompt string.
-            # We iterate over the batch.
-            # Note: mlx_lm.generate prints to stdout by default, verbose=False suppresses it.
+            # MLX handles one prompt string at a time; we iterate the batch.
+            # mlx_lm.generate(verbose=False) is a thin wrapper over
+            # stream_generate — it only concatenates response.text over the
+            # stream (verified in mlx_lm 0.31.3 generate.py:756) — so
+            # consuming stream_generate directly with the same kwargs is
+            # text- and token-identical while exposing the first-token
+            # instant for TTFT. The "first_token" pair is emitted once per
+            # run() call (first prompt only) so sub-phase rows stay 1:1 with
+            # the stage's run start/end pairs (staged_lib pairs by index).
             model_out = []
-            for prompt in batch:
-                response = generate(
+            n_generated = 0
+            log_first_token(self, "start")
+            for i, prompt in enumerate(batch):
+                awaiting_first = i == 0
+                text = ""
+                for response in stream_generate(
                     self._model,
                     self._tokenizer,
                     prompt=prompt,
-                    verbose=False,
                     **self._gen_kwargs,
-                )
-                model_out.append(response)
+                ):
+                    if awaiting_first:
+                        log_first_token(self, "end")
+                        awaiting_first = False
+                    text += response.text
+                # generation_tokens of the last yielded response = number of
+                # decode steps for this prompt (mlx_lm counts EOS/length stop)
+                n_generated += response.generation_tokens
+                model_out.append(text)
 
-                print("generated: ", response)
+                print("generated: ", text)
+
+            log_generated_tokens(self, n_generated)
 
         finally:
             if self._mutex:
