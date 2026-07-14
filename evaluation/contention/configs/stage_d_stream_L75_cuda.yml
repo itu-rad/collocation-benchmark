@@ -1,0 +1,64 @@
+name: stage_d_stream_L75_cuda
+pipelines:
+- name: Decode 9B pilot
+  inputs:
+  - 0
+  outputs:
+  - 1
+  dataset_stage_id: 0
+  loadgen:
+    component: loadgen.OfflineLoadScheduler
+    queue_depth: 4
+    max_queries: 15
+    timeout: 1800
+    config:
+      rate: 0
+  stages:
+  - name: Mock dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.llm_huggingface.MockDataLoader
+    config:
+      tokenizer_stage_id: 1
+      batch_size: 1
+      shuffle: true
+      split:
+      - train
+      dataset:
+        name: yahma/alpaca-cleaned
+        system_column_name: instruction
+        user_column_name: input
+        assistant_column_name: output
+  - name: Decode LLM
+    id: 1
+    component: stages.llm_huggingface.Inference
+    config:
+      dtype: torch.bfloat16
+      device: cuda
+      model:
+        name: Qwen/Qwen3.5-9B
+        quantize: false
+        gen_kwargs:
+          do_sample: false
+          max_new_tokens: 256
+- name: BG co-runner stream
+  dataset_stage_id: 0
+  inputs:
+  - 0
+  outputs:
+  - 0
+  loadgen:
+    component: loadgen.MultiStreamScheduler
+    queue_depth: 1000
+    max_queries: 1000
+    timeout: 3600
+    config:
+      interval: null
+  stages:
+  - name: CPU memory stream
+    id: 0
+    component: stages.evaluation.MemoryStream
+    config:
+      size_mb: 256
+      passes: 4

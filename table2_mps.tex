@@ -1,6 +1,6 @@
 % --- Table 2: modularity overhead (mps, EfficientNetV2-S batch 8, tracing off, steady state) ---
-% per-run medians (ms) — monolith: 90.757, 89.392, 89.295, 89.375, 90.159, 89.472, 90.480, 89.975, 90.091, 90.358 | Choreo: 89.553, 89.349, 89.296, 89.763, 89.167, 89.378, 90.556, 90.220, 90.263, 90.682
-% paired per-run differences (us): -1204, -43, +1, +388, -992, -95, +76, +244, +171, +323
+% per-run medians (ms) — monolith: 91.049, 89.806, 89.176, 89.138, 89.139, 89.173, 89.239, 89.260, 89.136, 89.114 | Choreo: 90.331, 89.219, 89.286, 89.274, 89.302, 89.266, 89.247, 89.322, 89.281, 89.274
+% paired per-run differences (us): -718, -587, +110, +135, +163, +93, +8, +62, +144, +159
 \begin{table}[t]
 \centering
 \caption{Wrapping a real EfficientNetV2-S Imagenette training step in Choreo's graph/queue/thread structure adds a negligible, fixed per-step overhead vs.\ a hand-written monolith. Per-step training latency at steady state, median over $R$ runs with a hierarchical bootstrap \SI{95}{\percent} CI (runs resampled first, then steps); overhead is the paired across-run difference (interleaved arms); mps. Raw per-run values in the artifact.}
@@ -9,12 +9,12 @@
 \toprule
 & Monolith & Choreo \\
 \midrule
-Per-step latency (\si{\milli\second}) & 89.893 & 89.700 \\
-\quad 95\% CI & [89.486, 90.207] & [89.397, 90.219] \\
+Per-step latency (\si{\milli\second}) & 89.229 & 89.297 \\
+\quad 95\% CI & [89.162, 89.401] & [89.263, 89.375] \\
 \midrule
-\multicolumn{3}{l}{Overhead (paired): -113.1\,\si{\micro\second} [-460.3, +171.7], -0.13\% [-0.51, +0.19] --- indistinguishable from zero} \\
+\multicolumn{3}{l}{Overhead (paired): -43.0\,\si{\micro\second} [-262.1, +122.1], -0.05\% [-0.29, +0.14] --- indistinguishable from zero} \\
 \bottomrule
 \end{tabular}
 \end{table}
-% tracing-on per-step median: 92.008 ms (N=9000; per-run: 91.525, 91.094, 91.368, 91.234, 92.446, 92.584, 92.674, 92.848, 93.128, 92.378); overhead-in-context in true_overhead_analysis.py
+% tracing-on per-step median: 91.131 ms (N=9000; per-run: 91.554, 91.204, 91.097, 90.962, 91.224, 90.910, 90.992, 90.879, 90.918, 91.142); overhead-in-context in true_overhead_analysis.py
 
