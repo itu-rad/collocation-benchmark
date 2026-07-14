@@ -33,7 +33,7 @@ accelerator) on unified-memory platforms where all engines draw on one DRAM
 budget; attribution is per-pipeline and, on Apple silicon, per-engine in
 \emph{bytes}, from the memory controller's own counters; and the descent
 from production-shaped symptom to mechanism is itself conducted through the
-benchmark's configuration space --- a method, not only a measurement. The open question is where the unified-memory instantiation of that
+benchmark's configuration space. The open question is where the unified-memory instantiation of that
 picture does and does not follow the classical one; our study tests it
 with attribution the classical studies lacked.
 
@@ -43,15 +43,14 @@ InferLine~\cite{crankshaw2020inferline} compose model DAGs for production
 serving, and LLM-era studies dissect serving performance --- notably the
 prefill/decode phase split that Splitwise~\cite{patel2024splitwise},
 Sarathi~\cite{agrawal2024sarathi}, and DistServe~\cite{zhong2024distserve}
-exploit, which our Stage-D control leans on. Load tools such as
+exploit, which our Step-D control leans on. Load tools such as
 LLMPerf~\cite{llmperf} drive open-loop traffic at model endpoints. These are
 the realistic counterfactual to \sysname{}: a researcher could lash a
 serving framework to a load tool and a profiler. What that lashup lacks is
 precisely what our experiments require: one declarative artifact in which
 topology, placement, schedule, and collocation are all reconfigurable
 \emph{measurement variables}; per-stage timing native to the execution
-rather than sampled around it; arrival-trace verification; and cyclic graphs
-(production servers deliberately reject cycles). \sysname{} is not a serving
+rather than sampled around it; arrival-trace verification; and cyclic graphs, which serving graphs typically disallow or bury in opaque application code. \sysname{} is not a serving
 system --- it trades throughput engineering for measurement fidelity, the
 reverse of their trade.
 

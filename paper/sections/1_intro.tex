@@ -55,7 +55,7 @@ the tracing layer, which \emph{is} the instrument and is enabled in every
 case study, adds a uniform $+2.1\%$ whose effect on within-framework
 comparisons we bound explicitly.
 
-We then run three case studies. As testbeds we choose two machines from
+With the instrument calibrated, we run three case studies. As testbeds we choose two machines from
 opposite ends of the \emph{unified-memory} design space --- a
 \SI{16}{\giga\byte} Apple M2~Pro and a \SI{128}{\giga\byte} NVIDIA GB10 ---
 because shared-memory platforms concentrate collocation effects in a
@@ -63,28 +63,19 @@ resource no per-device counter attributes, exactly the regime a
 collocation-aware instrument should prove itself in.
 
 \begin{itemize}
-  \item \textbf{The contention study} (\S\ref{sec:results-staged}) starts
-  from a production-shaped symptom --- RAG serving collocated with corpus
-  indexing --- and descends toward mechanism in four stages, each changing
-  \emph{exactly one} configuration element: the background's arrival
-  schedule; its stage list (pure-CPU, pure-GPU, and Neural-Engine
-  co-runners); then the foreground itself (bare LLM decode, with the
-  prefill/decode split as a counter-free control). It tests a stated
-  hypothesis --- degradation is priced in co-runner \emph{memory traffic},
-  not co-runner identity --- with pre-specified falsification outcomes;
-  \pending{measured outcome}. The descent itself doubles as a demonstration
-  of declarative reconfigurability: the paper shows the literal diffs.
-  \item \textbf{The topology study} (\S\ref{sec:results-topology}): one
-  large model versus a graph of small specialists for agentic RAG, swapped
-  by configuration alone, with size-matched and shared-instance controls
-  separating model size, physical residency, and graph structure. Speed
-  claims are reported with \emph{bounded} answer-quality differences, never
-  bare. A capacity sweep along the model-size axis --- one configuration
-  field --- runs each device to its residency ceiling.
-  \item \textbf{The load-pattern reduction} (\S\ref{sec:results-reduction}):
-  MLPerf Inference's four scenarios reproduced as scheduler configurations
-  and verified from arrival traces --- scoped deliberately to the load
-  patterns, not to certified-harness semantics.
+  \item \textbf{The contention study} (\S\ref{sec:results-staged}):
+  from a production-shaped symptom (RAG serving beside corpus indexing) to
+  a stated bandwidth-pricing hypothesis, descending one configuration
+  element per step, with the literal diffs shown.
+  \item \textbf{The topology and capacity study}
+  (\S\ref{sec:results-topology}): one large model versus a graph of small
+  specialists, swapped by configuration, with controls separating size,
+  residency, and graph structure; speed reported with bounded answer-quality
+  differences; a model-size sweep to each device's ceiling.
+  \item \textbf{The load-pattern reduction}
+  (\S\ref{sec:results-reduction}): MLPerf Inference's four scenarios as
+  scheduler configurations, verified from arrival logs and scoped to load
+  patterns.
 \end{itemize}
 
 \noindent We make three contributions:
