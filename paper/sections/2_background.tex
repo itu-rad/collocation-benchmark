@@ -33,10 +33,9 @@ accelerator) on unified-memory platforms where all engines draw on one DRAM
 budget; attribution is per-pipeline and, on Apple silicon, per-engine in
 \emph{bytes}, from the memory controller's own counters; and the descent
 from production-shaped symptom to mechanism is itself conducted through the
-benchmark's configuration space --- a method, not only a measurement. What
-the field learns is not ``bandwidth contention exists'' but where the
-unified-memory instantiation of that law does and does not follow the
-classical picture, measured with attribution the classical studies lacked.
+benchmark's configuration space --- a method, not only a measurement. The open question is where the unified-memory instantiation of that
+picture does and does not follow the classical one; our study tests it
+with attribution the classical studies lacked.
 
 \paragraph{Serving systems and LLM load tools.} Pipeline execution is not
 new: Ray Serve~\cite{moritz2018ray}, Triton ensembles, and

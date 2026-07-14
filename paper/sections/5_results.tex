@@ -52,10 +52,11 @@ exactly that.
 One stage-list edit replaces the indexer with single-resource co-runners
 (CPU stream, GPU encode, ANE encode) at matched traffic ladders.
 \pending{Per-engine dose--response slopes below the saturation knee, with
-CIs.} H1 predicts statistically compatible slopes at matched bytes/s;
-engine-dependent slopes would instead localize contention in
-engine-specific paths and would redirect the analysis --- both outcomes
-are wired into this subsection.
+CIs.} H1 predicts slope ratios within the pre-specified $[2/3, 3/2]$ band at
+matched bytes/s (the GPU co-runner arm is a labeled composite,
+\S\ref{sec:setup-staged}); engine-dependent slopes would instead
+localize contention in engine-specific paths, and the subsection reports
+whichever the data support.
 
 \paragraph{Step D --- the counter-free control.} One foreground edit
 reduces serving to bare decode, split by phase. H2 predicts per-token
@@ -165,8 +166,8 @@ confounds this stance caught. \pending{GB10 counterpart.}
 verification outcomes (realized rate, inter-arrival QQ, interval
 regularity, outstanding-query counts); the harness-footprint accounting at
 millisecond service times.} The claim this subsection can already state
-is structural: the four scenario configurations differ from each other
-only in their loadgen blocks, and from the case studies' configurations
-in nothing else --- the isolated single-model regime that standardized
-suites measure is one corner of the same configuration space in which
-\S\ref{sec:results-staged} and \S\ref{sec:results-topology} live.
+is structural: the four scenario configurations differ from each other only in their
+loadgen blocks, and they are written in the same configuration language
+and schema as every case study --- the isolated single-model regime that
+standardized suites measure occupies one corner of the configuration
+space the rest of this section explores.
