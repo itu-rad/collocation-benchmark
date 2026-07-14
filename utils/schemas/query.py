@@ -20,7 +20,11 @@ class Query:
     # global budget. See REPLICATION_NOTES.md (Hurdle 5).
     query_id: uuid.UUID = field(default_factory=uuid.uuid4)
     data: Any = None
-    context: Any = None
+    # Always a dict: schedulers create bare Queries and stages assume they
+    # can attach context (a None default killed a stage thread -> silent
+    # pipeline hang, found 2026-07-14). Mutable default needs a factory —
+    # same class of bug as the shared query_id (REPLICATION_NOTES Hurdle 5).
+    context: dict = field(default_factory=dict)
     # Per-query flow id carried between consecutive tracing spans so Perfetto
     # can link the slices across the scheduler / pipeline / per-stage threads.
     out_flow_id: Optional[uuid.UUID] = None

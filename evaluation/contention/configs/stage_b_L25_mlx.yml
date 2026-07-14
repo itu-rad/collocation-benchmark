@@ -73,7 +73,7 @@ pipelines:
     max_queries: 100
     timeout: 3600
     config:
-      interval: null
+      interval: 0.4396
   stages:
   - name: Corpus chunk loader (shard 0/1)
     id: 0

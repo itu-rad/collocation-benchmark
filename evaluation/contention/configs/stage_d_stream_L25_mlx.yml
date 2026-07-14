@@ -50,7 +50,7 @@ pipelines:
     max_queries: 1000
     timeout: 3600
     config:
-      interval: null
+      interval: 0.23798
   stages:
   - name: CPU memory stream
     id: 0

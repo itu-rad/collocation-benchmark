@@ -307,5 +307,17 @@ class Stage:
                 self._push_to_all_outputs(None)
                 break
 
-            self._process_query(query)
+            try:
+                self._process_query(query)
+            except Exception:
+                # A dead stage thread must not silently hang the pipeline until
+                # the run timeout (it burned a 1h pilot slot on 2026-07-14):
+                # log loudly, propagate the terminator so downstream drains and
+                # the run FAILS FAST, then re-raise for the traceback.
+                import traceback
+                print(f"[stage FATAL] {self.name}: exception in run(); "
+                      f"terminating pipeline", flush=True)
+                traceback.print_exc()
+                self._push_to_all_outputs(None)
+                raise
         self.post_run()
