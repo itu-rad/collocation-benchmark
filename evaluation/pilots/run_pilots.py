@@ -132,6 +132,38 @@ CELLS = [
 
 # ---------------------------------------------------------------------------
 
+RADT_PIN = "0.2.29"  # async_tracing branch @3ba61cb (environments/*.yaml pin)
+
+
+def check_environment(device: str) -> list[str]:
+    """Hard environment gate: wrong radt or CPU-only torch on a CUDA device has
+    already burned collection time once (2026-07-13) — refuse to repeat it."""
+    lines, fatal = [], []
+    try:
+        import radt
+        lines.append(f"radt: {radt.__version__}")
+        if radt.__version__ != RADT_PIN:
+            fatal.append(f"radt {radt.__version__} != pinned {RADT_PIN} "
+                         f"(async_tracing @3ba61cb) — rebuild the env from "
+                         f"environments/*.yaml")
+    except ImportError:
+        fatal.append("radt not importable in this env")
+    try:
+        import torch
+        lines.append(f"torch: {torch.__version__}")
+        if device == "cuda" and not torch.cuda.is_available():
+            fatal.append(f"torch {torch.__version__} has no CUDA on a cuda "
+                         f"device — you have the CPU-only wheel; rebuild from "
+                         f"environments/nvidia.yaml (cu130 index)")
+    except ImportError:
+        fatal.append("torch not importable in this env")
+    if fatal:
+        for f in fatal:
+            print(f"[env FATAL] {f}", file=sys.stderr)
+        sys.exit(3)
+    return lines
+
+
 def capture_env(device: str) -> None:
     lines = [
         f"date: {time.strftime('%Y-%m-%d %H:%M:%S %z')}",
@@ -141,6 +173,7 @@ def capture_env(device: str) -> None:
         f"platform: {platform.platform()}",
         f"perf_counter: {time.get_clock_info('perf_counter')}",
     ]
+    lines += check_environment(device)
     if platform.system() == "Darwin":
         for key in ("machdep.cpu.brand_string", "hw.memsize",
                     "hw.perflevel0.physicalcpu", "hw.perflevel1.physicalcpu"):

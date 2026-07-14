@@ -33,9 +33,20 @@ is re-spent (pilots measure workload *components*, shared by both variants).
 
 ## GB10 spec (Ties) — run verbatim
 
-Prereqs: `benchmark_nvidia` env (see `environments/nvidia.yaml`), models +
-datasets pre-fetched (first pilot run downloads otherwise — fine, but then
-re-run that cell with `--force` so no download is timed), idle box.
+Prereqs: `benchmark_nvidia` env **built from `environments/nvidia.yaml`** —
+NOT any pre-existing env (on babyxena the old `benchmark` env had radt 0.2.23
+and a CPU-only torch; found 2026-07-13). The yaml pins torch 2.10.0+cu130,
+transformers 5.2.0, and radt 0.2.29 (async_tracing @3ba61cb). The drivers now
+**hard-abort** on a mismatched env (`check_environment`). Verify first:
+
+```bash
+conda run -n benchmark_nvidia python -c \
+  "import radt, torch; print(radt.__version__, torch.__version__, torch.cuda.is_available())"
+# expect: 0.2.29 2.10.0+cu130 True
+```
+
+Models + datasets pre-fetched (first pilot run downloads otherwise — fine, but
+then re-run that cell with `--force` so no download is timed), idle box.
 
 ```bash
 git fetch && git checkout feat/paper-hardening && git pull
@@ -61,6 +72,9 @@ committed** — configs carry `[[pending pilot]]`-derived placeholder values
 until then.
 
 ## The idle-M2 session (author)
+
+Canonical M2 collection env: **`benchmark_macos_overhead`** (radt 0.2.29
+async_tracing — the drivers hard-abort in `benchmark_macos`, radt 0.2.28).
 
 1. Machine idle (close apps, disable heavy background jobs), on AC power.
 2. `python evaluation/pilots/run_pilots.py --device mlx` (~45–90 min).

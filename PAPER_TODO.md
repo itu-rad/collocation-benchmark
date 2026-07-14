@@ -382,12 +382,16 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
 - [ ] Set the warm-up drop by the §2.6 rule (current 1 of 101 is too few); R→10 (§2.3).
 
 ### 3.2 E2 — Modularity overhead — **P0**
-- [x] **[M2] RE-COLLECTED (2026-07-13, idle session, R=10, commit 33893eb).**
-  All 10 tracing-off runs consistent (89.2–90.7 ms — contamination gone).
-  **New headline: paired overhead −113 µs [−460, +172], −0.13% [−0.51, +0.19] —
-  statistically indistinguishable from zero at ±0.5% resolution.** (The old
-  "+0.55%" was a pooling artifact of the contaminated matrix.) Tracing-on:
-  +2.3%/step, consistent across all 10 runs. `table2_mps.tex` regenerated.
+- [~] **[M2] RE-COLLECTED (2026-07-13, R=10, commit 33893eb) — but in the WRONG
+  ENV (`benchmark_macos`, radt 0.2.28; protocol requires
+  `benchmark_macos_overhead`, radt 0.2.29 async_tracing @3ba61cb — author
+  caught it).** The numbers look right (all 10 t0 runs consistent 89.2–90.7 ms;
+  paired overhead −113 µs [−460,+172], −0.13% — indistinguishable from zero;
+  t1 +2.3% matching the async-branch cost), and baseline/t0 don't exercise the
+  radt span path — but the t1 arm and protocol consistency require it:
+  **REDO the full R=10 matrix in `benchmark_macos_overhead`** (~100 min idle;
+  drivers now hard-abort on env mismatch, so this can't silently recur).
+  Treat the current numbers as preliminary until then.
 - [ ] `[?]` Small quirk to check: fresh baseline arms logged ~1450 steps/run vs
   Choreo's 900 post-warmup (baseline_finetune may ignore --max-batches and run
   the full epoch) — medians are steady-state so the verdict stands, but fix for

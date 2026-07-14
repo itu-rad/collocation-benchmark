@@ -43,8 +43,41 @@ _CONFIG = os.path.join(_HERE, "configs", "torchvision_training.yml")
 _BASELINE = os.path.join(_HERE, "baseline_finetune.py")
 
 
+RADT_PIN = "0.2.29"  # async_tracing branch @3ba61cb (environments/*.yaml pin)
+
+
+def check_environment(device):
+    """Hard gate: the tracing-ON arm is only meaningful on the pinned
+    async_tracing radt (0.2.29 @3ba61cb), and a CPU-only torch wheel on a
+    cuda device silently measures nothing. Both have burned collection time
+    (2026-07-13). Refuse to run on a mismatched env."""
+    fatal = []
+    try:
+        import radt
+        if radt.__version__ != RADT_PIN:
+            fatal.append(f"radt {radt.__version__} != pinned {RADT_PIN} "
+                         "(async_tracing @3ba61cb) — use the overhead env "
+                         "(benchmark_macos_overhead / benchmark_nvidia)")
+    except ImportError:
+        fatal.append("radt not importable")
+    try:
+        import torch
+        if device == "cuda" and not torch.cuda.is_available():
+            fatal.append(f"torch {torch.__version__} has no CUDA — CPU-only "
+                         "wheel; rebuild from environments/nvidia.yaml")
+    except ImportError:
+        fatal.append("torch not importable")
+    if fatal:
+        for f in fatal:
+            print(f"[env FATAL] {f}", file=sys.stderr)
+        sys.exit(3)
+
+
 def capture_env(device, runs, max_batches, num_workers=0, cooldown=0):
+    check_environment(device)
+    import radt
     lines = ["# modularity-overhead run environment",
+             f"radt = {radt.__version__}",
              f"timestamp_wall = {time.time():.6f}",
              f"device = {device}", f"runs_per_cell = {runs}",
              f"max_batches = {max_batches}", f"num_workers = {num_workers}",
