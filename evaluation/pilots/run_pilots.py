@@ -39,7 +39,7 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent.parent
 RESULTS_DIR = HERE / "results"
 GLOBAL_RESULTS = REPO_ROOT / "evaluation" / "results"
-ENV_FILE = HERE / "pilot_env.txt"
+ENV_FILE = None  # set per device in capture_env (pilot_env_<device>.txt)
 
 
 # ---------------------------------------------------------------------------
@@ -165,6 +165,8 @@ def check_environment(device: str) -> list[str]:
 
 
 def capture_env(device: str) -> None:
+    global ENV_FILE
+    ENV_FILE = HERE / f"pilot_env_{device}.txt"
     lines = [
         f"date: {time.strftime('%Y-%m-%d %H:%M:%S %z')}",
         f"git_commit: {_git_sha()}",
