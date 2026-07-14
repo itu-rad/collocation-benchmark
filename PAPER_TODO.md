@@ -105,9 +105,10 @@ lands, never batched to August.**
 
 - **Week 1 (Jul 14–20):** [dev] staged-contention apparatus (C3 stage,
   EmbedStage/ChromaIndexer, Stage A–D generator, MultiStream scheduler), ANE
-  timebox, hygiene fixes. **[Ties] GB10 pre-flight + pilots MUST land this
-  week** — the cuda knob lock gates his main pass. [M2] second pilot session +
-  first overnight collection (factoid timing 2×2).
+  timebox, hygiene fixes. **[GB10] pre-flight + pilots this week — author has
+  direct access (2026-07-13), no external gating**; cuda knob lock, then the
+  main pass can start immediately. [M2] second pilot session + first overnight
+  collection (factoid timing 2×2).
 - **Week 2 (Jul 21–27):** [GB10] main pass (E4 matrix + quality, E2 cuda, E5
   scenarios, staged contention, E7 rungs — ~2–4 machine-days). [M2] overnight
   sessions: multihop timing (~20 h — the weekend job), quality runs, staged
