@@ -91,12 +91,8 @@ CELLS = [
               {"mlx": f"{SR}/multihop_decomposed_mlx.yml",
                "cuda": f"{SR}/multihop_decomposed_cuda.yml"},
               n_queries=12, timeout_s=5400, serves=["E4 multi-hop"]),
-    # --- E3 (committed VQA; M2-only by design) ------------------------------
-    PilotCell("e3_vqa_a", {"mlx": f"{PC}/multimodal_vqa_mapping_a.yml"},
-              n_queries=15, serves=["E3 mapping-A service time", "E3 warm-up k"]),
-    PilotCell("e3_vqa_b", {"mlx": f"{PC}/multimodal_vqa_mapping_b.yml"},
-              n_queries=15,
-              serves=["E3 mapping-B service time", "ANE first-call outlier"]),
+    # (VQA cells retired 2026-07-14: the VQA experiment is CUT from the paper;
+    # the CLIP encode loops below are the surviving Stage-C apparatus.)
     # --- E3' components (also AMC calibration loads) ------------------------
     PilotCell("e3p_fg_decode",
               {"mlx": f"{PC}/pilots/decode_9b_mlx.yml",

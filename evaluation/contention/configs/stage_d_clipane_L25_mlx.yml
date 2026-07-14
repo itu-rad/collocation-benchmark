@@ -1,0 +1,76 @@
+name: stage_d_clipane_L25_mlx
+pipelines:
+- name: Decode 9B pilot
+  inputs:
+  - 0
+  outputs:
+  - 1
+  dataset_stage_id: 0
+  loadgen:
+    component: loadgen.OfflineLoadScheduler
+    queue_depth: 4
+    max_queries: 15
+    timeout: 1800
+    config:
+      rate: 0
+  stages:
+  - name: Mock dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.llm_huggingface.MockDataLoader
+    config:
+      tokenizer_stage_id: 1
+      batch_size: 1
+      shuffle: true
+      split:
+      - train
+      dataset:
+        name: yahma/alpaca-cleaned
+        system_column_name: instruction
+        user_column_name: input
+        assistant_column_name: output
+  - name: Decode LLM
+    id: 1
+    component: stages.llm_mlx.Inference
+    config:
+      model:
+        name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+        gen_kwargs:
+          max_tokens: 256
+- name: BG co-runner clipane
+  dataset_stage_id: 0
+  inputs:
+  - 0
+  outputs:
+  - 1
+  loadgen:
+    component: loadgen.MultiStreamScheduler
+    queue_depth: 1000
+    max_queries: 1000
+    timeout: 3600
+    config:
+      interval: null
+  stages:
+  - name: VQA dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.multimodal_vqa.VQADataLoader
+    config:
+      dataset:
+        name: Multimodal-Fatima/OK-VQA_train
+        split: train
+        image_column: image
+        question_column: question
+        answers_column: answers
+        max_samples: 100
+      batch_size: 1
+  - name: CLIP vision encoder (CoreML)
+    id: 1
+    component: stages.multimodal_vqa.CLIPVisionEncoderCoreML
+    config:
+      model:
+        coreml_path: tmp/clip_vit_l14_vision.mlpackage
+        hf_name: openai/clip-vit-large-patch14
+      device: ane
