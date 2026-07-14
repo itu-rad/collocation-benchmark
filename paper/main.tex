@@ -1,0 +1,65 @@
+\documentclass[sigconf,anonymous,review]{acmart}
+%% Choreo paper — target: ASPLOS-class venue, 12 pages double column.
+%% Build: latexmk -pdf main.tex
+
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+
+\newcommand{\sysname}{Choreo}
+%% Data-pending marker: collection is running; reviewers should assess prose,
+%% structure, and claims-evidence wiring around these slots.
+\newcommand{\pending}[1]{\textcolor{purple}{[\textsc{pending}: #1]}}
+
+\begin{document}
+
+\title{\sysname: Collocation-Aware, End-to-End Benchmarking of
+Machine-Learning Pipelines}
+
+\author{Anonymous Author(s)}
+\affiliation{\institution{Anonymous Institution}\city{}\country{}}
+
+\begin{abstract}
+Standardized ML benchmarks measure isolated models on isolated accelerators:
+a single feed-forward network, fed preprocessed tensors, timed at the device
+boundary. Production ML systems look nothing like this. Agentic and
+retrieval-augmented pipelines execute cyclic, input-dependent graphs; their
+performance is set by data movement as much as by compute; and, especially on
+resource-constrained nodes, they run \emph{collocated}, contending for shared
+resources that no single-stream benchmark can observe. We present \sysname{},
+a declarative framework that benchmarks ML \emph{pipelines} end to end:
+arbitrary (cyclic) stage graphs defined in configuration, open- and
+closed-loop load generation, per-stage and per-process instrumentation, and
+first-class collocation of concurrent pipelines. Two instrument-fidelity
+experiments bound \sysname{}'s own footprint --- per-stage dispatch is tens of
+microseconds and flat in graph depth, and wrapping a real GPU training
+workload costs $-0.05\%$ [$-0.29, +0.14$] per step, statistically
+indistinguishable from zero. We then use \sysname{} to show what isolated benchmarks miss, with case
+studies on two machines that make contention effects vivid --- unified-memory
+nodes (a \SI{16}{\giga\byte} Apple M2~Pro and a \SI{128}{\giga\byte}
+NVIDIA GB10), where every engine draws on one shared memory: a
+staged contention study that descends, by single-line configuration edits,
+from ``collocated pipelines interfere'' to a quantitative law ---
+\pending{on our unified-memory testbeds, foreground decode throughput
+degrades in proportion to co-runner \emph{memory traffic}, largely
+independent of which engine generates it}; a configuration-only restructuring of an agentic RAG
+pipeline that trades one large model against a graph of small specialists at
+matched answer quality; and a demonstration that MLPerf Inference's four load
+scenarios are special cases of \sysname{}'s configuration space. All
+configurations, traces, and analysis scripts are released.
+\end{abstract}
+
+\maketitle
+
+\input{sections/1_intro}
+\input{sections/2_background}
+\input{sections/3_framework}
+\input{sections/4_setup}
+\input{sections/5_results}
+\input{sections/6_discussion}
+\input{sections/7_conclusion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

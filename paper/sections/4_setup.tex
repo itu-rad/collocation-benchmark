@@ -1,0 +1,222 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+We evaluate \sysname{} in three tiers. Two \emph{instrument-fidelity}
+experiments bound the framework's own footprint, so that every later number
+is attributable to the workload rather than the harness (E1, E2). Two
+\emph{application studies} then surface behavior single-stream benchmarks
+cannot observe: a staged contention study that is also the paper's
+collocation evidence (\S\ref{sec:setup-staged}), and a topology study of
+agentic RAG with a model-size sweep folded in (E4/E7,
+\S\ref{sec:setup-e4}). One \emph{positioning} experiment shows MLPerf
+Inference's load scenarios are special cases of \sysname{}'s configuration
+space (E5, \S\ref{sec:setup-e5}). Nothing in this section states a result;
+results appear in \S\ref{sec:results}.
+
+\subsection{Devices Under Test}
+\label{sec:setup-duts}
+
+We use two single-node machines from opposite extremes of the unified-memory
+design space. The \textbf{Apple M2~Pro} is a \SI{16}{\giga\byte}
+unified-memory laptop SoC whose CPU, GPU, and Neural Engine (ANE) share one
+physical memory at ${\approx}\SI{200}{\giga\byte\per\second}$; LLMs run as
+4-bit MLX weights, the ANE via Core~ML. The \textbf{NVIDIA GB10} (DGX~Spark)
+is a Grace--Blackwell node with \SI{128}{\giga\byte} of LPDDR5X at
+\SI{273}{\giga\byte\per\second}: CPU and GPU are separate dies joined by a
+coherent NVLink-C2C interconnect --- a coherent unified-memory \emph{system}
+rather than a single physical pool; models run as BF16 PyTorch weights
+(CUDA \texttt{cu130} stack, \texttt{sm\_121}). Capacity differs by
+$8\times$ but bandwidth by only ${\approx}1.4\times$, and device class,
+runtime, and numerical precision co-vary --- so we never treat the pair as a
+controlled axis. Cross-device claims concern the \emph{direction} of an
+effect; absolute comparisons stay within a device. The same declarative
+pipeline definitions run on both machines with only per-stage
+\texttt{device}/backend fields changed.
+
+Both software environments are pinned in versioned specifications
+(PyTorch~2.10.0, Transformers~5.2.0, and an async-export tracing build fixed
+by commit); the collection drivers refuse to run on a machine whose
+environment does not match the pins, and every run records the git commit
+and environment fingerprint that produced it.
+
+\subsection{Instrumentation, Metrics, and Statistics}
+\label{sec:setup-metrics}
+
+\paragraph{Performance metrics.} From the monotonic per-query timing
+intervals we report \textbf{per-query latency} (run-start to run-end),
+\textbf{throughput} (completed queries over makespan), \textbf{stage
+concurrency} (sweep-line count of overlapping stage intervals --- temporal
+overlap, not CPU parallelism: pure-Python work serializes on the interpreter
+lock while native kernels overlap genuinely), and \textbf{per-device
+occupancy} (union of run intervals of the stages mapped to each engine ---
+\emph{residency}, not utilization, a limitation we state wherever it
+matters). The contention study adds direct \textbf{memory-traffic}
+measurements: on the M2~Pro we read the Apple memory controller's
+per-requestor read/write byte counters (per-engine attribution, no
+privileges required); on GB10 the profiling counter is unavailable on
+current drivers, so we use the memory-controller busy fraction as a proxy
+plus model-based traffic estimates --- the bandwidth law of
+\S\ref{sec:results-staged} is therefore \emph{counter-backed} on the M2~Pro
+and \emph{proxy-backed} on GB10, and is worded accordingly.
+
+\paragraph{Quality metrics.} Answer-producing pipelines are scored by
+\textbf{exact match (EM)} and \textbf{token-level
+F1}~\cite{rajpurkar2016squad} over the captured answer records, with
+SQuAD-style normalization. Because free-form generations make EM
+unattainable by construction, every answer-producing arm carries one shared,
+literal short-answer instruction --- defined once and imported by every
+prompt formatter, so arms cannot drift --- validated end to end before
+collection. A substring-containment rate is reported only as a secondary
+signal beside mean answer length (it is gameable by verbosity), and a
+token-Jaccard \textbf{parity} score checks that two arms answer the same
+task; parity measures agreement, not correctness.
+
+\paragraph{Statistics.} The unit of replication is the \emph{run}, not the
+query: within-run latencies share warm state and scheduler phase, so pooling
+them as independent samples understates variance. Every configuration runs
+$R$ times (10 for cheap cells, 5 for expensive ones) with fixed distinct
+seeds; we report pooled medians with \emph{hierarchical} bootstrap CIs
+(resample runs, then queries within runs; $10^4$ resamples) and print the raw
+per-run values beside every interval. Paired designs (interleaved arms,
+shared run slots) use the paired across-run difference. Rate metrics carry
+Wilson 95\% intervals; tail quantiles (p95) are reported only when the
+pooled sample reaches 500 queries, and p99 never. Generation is greedy
+everywhere, verified by repeat-run identical-output checks.
+
+\paragraph{Pre-registered configuration.} Every load-generation knob derives
+from a stated rule with pilot-measured inputs, locked into the committed
+configurations before collection: open-loop arrival rates are $0.6\times$
+the pilot-measured capacity of the slowest arm in each comparison (one rate
+per task per device); queue depths equal the query count so the entry queue
+can never throttle arrivals, verified from the intended-vs-realized arrival
+log; warm-up drops come from a rolling-median flatness detector with a
+$2\times$ margin; quality runs use 120 questions per arm (Wilson half-width
+${\leq}9$ points). Table~\ref{tab:knobs-e4} shows one experiment's knob
+table; the artifact carries all of them with their derivations. The knob
+values themselves are inputs, not results: they exist so that no reported
+number depends on an unexplained constant.
+
+\subsection{E1/E2 --- Instrument Fidelity}
+\label{sec:setup-e1e2}
+
+\textbf{E1 (framework overhead).} Synthetic pass-through pipelines isolate
+the harness itself: a \emph{depth} sweep ($N \in \{1..10, 16, 32, 50, 64,
+100\}$ no-op stages, closed-loop, one query in flight) measures per-stage
+dispatch and whether it accumulates with depth; a \emph{payload} sweep
+(depth~10; \SI{0}{}--\SI{10}{\mebi\byte} payloads, reference-passing vs.\ a
+stage that deep-copies each hop) measures the data path. Because no
+accelerator kernel runs, this is a property of the framework and interpreter,
+bounded on one quiet machine (M2~Pro). No-op stages never release the
+interpreter lock, so the per-stage figure is a worst case for real,
+kernel-bound stages; the copy arm lower-bounds what a serializing framework
+would pay.
+
+\textbf{E2 (modularity overhead).} Cheap empty stages do not prove that
+wrapping \emph{real} work is cheap. We express one workload two ways ---
+a hand-written PyTorch script and an equivalent \sysname{} pipeline ---
+and compare per-step latency: EfficientNetV2-S~\cite{tan2021efficientnetv2}
+transfer-learning on Imagenette~\cite{imagenette}, frozen backbone, batch~8,
+identical data loading, matched \texttt{num\_workers}=0, a device
+synchronize closing every step. Arms are interleaved run-by-run (shared
+conditions; paired statistic), $R{=}10$, 1{,}100 steps per run with 200
+dropped as warm-up. Instrumentation is measured in two layers: core dispatch
+(tracing off) and the full tracing layer (async span export). A wrapper can
+only add work; a negative measured overhead therefore signals a confound,
+and we treat it as a bug to find --- two earlier confounds (non-monotonic
+cross-thread timestamps; un-interleaved schedules with background prefetch)
+were found and eliminated exactly this way.
+
+\subsection{Staged Contention Study (system $\rightarrow$ mechanism)}
+\label{sec:setup-staged}
+
+The headline capability claim --- collocated pipelines are first-class and
+attributable --- is tested by a single experiment with four stages, in which
+each stage changes \emph{exactly one element} of the previous stage's
+configuration. The paper shows each diff; the discipline is the point.
+
+\textbf{Stage A (system view).} A latency-sensitive foreground --- plain RAG
+serving: retrieve top-3 from a Chroma index, generate with a 4B model ---
+runs at a fixed Poisson rate ($0.4\times$ pilot capacity, held constant),
+while $B \in \{0, 1, 2\}$ independent \emph{indexing} pipelines (chunk
+$\rightarrow$ GPU embed $\rightarrow$ vector-store insert) run saturating
+beside it, each its own OS process with its own disjoint corpus shard and its
+own target collection. The foreground never reads the background's
+collections, so index growth cannot change foreground behavior --- the only
+coupling is hardware (verified: greedy decoding yields byte-identical
+foreground answers across $B$). Metrics: foreground p95/median latency and
+throughput vs.\ $B$ ($\geq 500$ pooled foreground queries per cell),
+background throughput, per-process attribution, and the memory-traffic
+counters.
+
+\textbf{Stage B (isolate intensity).} $B{=}1$, and \emph{only the background
+loadgen block} changes: saturating $\rightarrow$ fixed-interval at
+$\{25,50,75,100\}\%$ of the indexer's pilot-measured maximum rate. Foreground
+degradation becomes a function of offered background work; the counters
+convert the axis to bytes per second.
+
+\textbf{Stage C (purify the co-runner).} \emph{Only the background stage
+list} changes: the indexing pipeline is replaced by single-resource
+co-runners at matched intensity ladders --- a calibrated CPU memory-streaming
+stage (STREAM-triad over a working set far exceeding the last-level cache;
+deterministic bytes per operation), a GPU CLIP-encode loop, and (M2~Pro only)
+the same encoder on the Neural Engine. The dose--response now separates by
+engine.
+
+\textbf{Stage D (purify the foreground).} \emph{Only the foreground}
+changes: RAG serving is replaced by bare LLM decode, and analysis splits
+time-to-first-token (compute-bound prefill) from per-token decode
+(bandwidth-bound). If contention is a bandwidth phenomenon, decode should
+degrade with co-runner traffic while prefill barely moves --- a built-in
+negative control that requires no counters at all.
+
+\emph{Threats.} Per-process occupancy is residency, not utilization; causal
+attribution uses per-process activity counters on GB10 and per-engine byte
+counters on the M2~Pro. The GB10 lacks a calibrated DRAM counter (proxy +
+estimates; stated). $B$ is bounded by device memory; we report the ceiling
+reached and never extrapolate.
+
+\subsection{E4/E7 --- Topology and Scale of Agentic RAG}
+\label{sec:setup-e4}
+
+One Self-RAG~\cite{asai2024selfrag} task, four topologies that swap by
+configuration alone: \textbf{Monolith-9B} (one Qwen3.5-9B grades, answers,
+and self-checks in a single structured pass, with a bounded rewrite cycle);
+\textbf{Decomposed} ($3\times$4B specialists --- grader, generator,
+hallucination-checker --- so cheap calls for one query overlap expensive
+generation for another); \textbf{Monolith-4B} (one 4B issuing the three
+calls sequentially: the size-matched control); \textbf{Decomposed-Shared}
+(the decomposed graph over \emph{one} resident 4B behind a mutex: physical
+vs.\ logical decomposition). Two difficulties --- factoid
+(rag-mini-wikipedia, top-3 over 3{,}200 passages) and multi-hop
+(HotpotQA~\cite{yang2018hotpotqa}, top-5 over a 20{,}000-passage
+gold+distractor corpus) --- with retrieval held fixed within a difficulty
+and contrasts read within a difficulty. Because the multi-hop quality gap is
+exactly what a size difference alone would produce, the Monolith-4B control
+runs on \emph{both} tasks. Every speed comparison is conditioned on EM/F1;
+timing cells (40 queries, pipelined and serial, $R{=}5$) are separated from
+quality runs (120 questions, serial) so each is sized for its statistic.
+A top-$k{=}10$ sensitivity column guards the multi-hop headline against
+retrieval-depth artifacts. \textbf{E7 (capacity).} The monolith arm read
+along the model-size axis --- $\{0.8, 2, 4, 9, 27\}$B rungs differing only
+in the \texttt{model} field --- reports resident memory and quality per
+size, with each device's ceiling marked: the \SI{15.7}{\giga\byte} 27B rung
+exceeds the M2~Pro's budget by construction while GB10 runs it with
+headroom. The literal config diff between rungs is the no-code-scalability
+artifact.
+
+\subsection{E5 --- MLPerf Inference as a Special Case}
+\label{sec:setup-e5}
+
+We claim a \emph{reduction}, not a parity number: each MLPerf Inference load
+scenario maps to a \sysname{} scheduler --- SingleStream to the closed loop,
+Server to Poisson, MultiStream to the fixed-interval generator, Offline to
+the saturating generator --- instantiated over one canonical vision workload
+(ResNet-50), $R{=}10$ per scenario per device. The claim is verified where
+it lives: the arrival log must match each scenario's defining process
+(exponential inter-arrivals at the target rate; fixed intervals; all-at-once
+enqueue), and the scenario's native metric is reported. Certified-harness
+equivalence (coalescing, tie-breaks, accuracy targets) is explicitly out of
+scope. We deviate from MLPerf's official ImageNet in favor of an
+auto-downloadable subset: the reduction concerns the \emph{load pattern},
+not accuracy certification, and a manually-licensed dataset is an artifact
+landmine we decline to ship.

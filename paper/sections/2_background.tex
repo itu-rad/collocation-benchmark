@@ -1,0 +1,72 @@
+\section{Background and Related Work}
+\label{sec:background}
+
+\paragraph{Standardized benchmarks.} MLPerf~\cite{reddi2020mlperf} anchors ML
+performance measurement: its closed division fixes model architectures and
+weights so that hardware can be compared fairly. The structural choices this
+requires, however, create coverage gaps for systems research. MLPerf segments
+by hardware scale --- \emph{Tiny}~\cite{banbury2021mlperftiny} for
+microcontrollers, \emph{Edge}, \emph{Datacenter} --- leaving a mid-range gap:
+devices such as Jetson-class boards, Apple-silicon workstations, and now
+GB10-class unified-memory nodes are too capable for Tiny yet unrealistically
+provisioned for Datacenter workloads. Researchers who want a \emph{continuous}
+scalability axis --- where does this system break as the model grows? ---
+cannot get it from discrete tracks. The broader ecosystem is fragmented:
+EEMBC MLMark targets embedded inference but has not tracked the transformer
+era; AI Benchmark~\cite{ignatov2019aibenchmark} covers mobile SoCs as a
+consumer scorecard; TPCx-AI~\cite{brucke2023tpcxai} models end-to-end
+enterprise pipelines but at minimum scale factors that exceed edge budgets,
+over predominantly classical-ML workloads. AISBench~\cite{aisbench}, the
+closest recent effort, argues for end-to-end multi-stream measurement on
+large servers and clusters; \sysname{} shares its diagnosis but targets the
+opposite end of the spectrum and adds declarative graph reconfiguration and
+per-process collocation attribution as first-class capabilities.
+
+\paragraph{The measurement boundary.} To isolate accelerator performance,
+standard harnesses preload preprocessed samples into memory and time only the
+model pass. This is the right control for hardware comparison and the wrong
+one for systems analysis: data loading, decoding, and preprocessing routinely
+rival model time in vision and multimodal
+pipelines~\cite{coleman2017dawnbench}, and retrieval dominates many RAG
+configurations. A benchmark that cannot see these stages cannot rank systems
+by the metric deployments care about. \sysname{} makes every stage a
+separately-timed, first-class citizen and can either preload (to reproduce
+the MLPerf-style control) or perform just-in-time I/O (to measure the real
+path) --- the choice is a configuration flag, not a fork of the harness.
+
+\paragraph{Linear execution.} The prevailing benchmark abstraction is a
+static feed-forward pass: a request enters, one network runs, a result
+leaves. Compound AI systems break this: agentic loops introduce cyclic,
+budget-bounded control flow; RAG pipelines branch on the semantics of
+intermediate outputs~\cite{lewis2020rag,asai2024selfrag}; self-reflective
+systems re-enter retrieval with rewritten queries. These are not exotic
+research artifacts --- they are the dominant deployment pattern for LLM
+applications --- and their systems behavior (per-stage residency, cross-query
+overlap, retry-tail latency) is invisible to a fixed-graph harness.
+\sysname{}'s pipelines are directed graphs with cycles, fan-out, and
+configurable fan-in policies precisely so this class of workload can be
+expressed, measured, and \emph{ablated}.
+
+\paragraph{Collocation and attribution.} Benchmarks measure isolation;
+deployments collocate. An edge node serving inference is simultaneously
+fine-tuning, re-indexing its retrieval corpus, or hosting a second tenant.
+On discrete-GPU servers, collocation contends chiefly for device time and
+can be partitioned with MPS or MIG; on \emph{unified-memory} systems the
+contended resource is the shared DRAM bandwidth itself, which every engine
+--- CPU, GPU, neural accelerator --- draws from one pool. TPCx-AI's
+concurrent streams measure aggregate throughput but attribute nothing;
+MLPerf treats multi-tenancy as out of scope. \sysname{} runs each pipeline
+as its own OS process with per-process resource listeners, so interference
+is not merely induced but \emph{attributed}: which pipeline, which stage,
+which engine, and --- with the memory-controller counters we exploit in
+\S\ref{sec:results-staged} --- how many bytes.
+
+\paragraph{Benchmarks as research instruments.} Finally, standardization and
+exploration pull in opposite directions. Fair comparison demands monolithic,
+tightly-controlled implementations; systems research demands the opposite ---
+swap the retriever, halve the model, add a co-runner, and observe. In a
+monolithic harness each such edit is an invasive, non-transferable code
+change. In \sysname{} it is a configuration diff, and \S\ref{sec:results}
+uses exactly this property as an experimental method: our contention study
+descends from system-level observation to mechanism through a sequence of
+single-element configuration changes, each shown explicitly.

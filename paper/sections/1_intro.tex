@@ -1,0 +1,109 @@
+\section{Introduction}
+\label{sec:intro}
+
+Machine learning now runs everywhere from laptop SoCs to rack-scale
+accelerators, and benchmarking has rightly become the field's shared
+instrument for progress. But the instrument was built for a workload shape
+that is disappearing. Standardized suites such as MLPerf
+Inference~\cite{reddi2020mlperf} measure a single, fixed, feed-forward model,
+fed preloaded and preprocessed samples, timed at the accelerator boundary, in
+isolation. Each of those design choices was correct for cross-vendor hardware
+comparison --- and each one hides a class of behavior that now dominates real
+deployments.
+
+We identify three widening gaps. \textbf{First, execution is no longer
+linear.} Agentic workflows and retrieval-augmented generation
+(RAG)~\cite{lewis2020rag} execute input-dependent graphs: conditional
+branches, fan-out to specialist models, and feedback cycles such as
+retrieve--grade--rewrite loops~\cite{asai2024selfrag}. A benchmark that can
+only express ``one forward pass'' cannot even \emph{represent} these
+workloads, let alone locate their bottlenecks. \textbf{Second, the
+measurement boundary is wrong.} By timing only the accelerator, standard
+suites exclude data loading, preprocessing, retrieval, and inter-stage data
+movement --- precisely the components that end-to-end studies repeatedly find
+dominant --- and so reward peak-FLOPs designs over balanced systems.
+\textbf{Third, isolation is a fiction.} On edge and workstation-class nodes,
+inference services run beside fine-tuning jobs, index refreshes, and other
+tenants. What resource they contend for depends on the platform ---
+device time on discrete GPUs, shared memory bandwidth on unified-memory SoCs
+--- but in every case the interference is invisible to a benchmark that
+measures one workload at a time, and unattributable without per-workload
+instrumentation.
+
+This paper presents \sysname{}, a benchmarking framework built for these
+three gaps rather than around them. \sysname{} decomposes a workload into
+\emph{stages} --- data loading, preprocessing, model execution, retrieval,
+routing --- composed into a directed graph, cycles included, entirely in
+declarative configuration. A load generator drives the graph with open-loop
+(Poisson, fixed-interval, saturating) or closed-loop schedules, and every run
+emits a monotonic per-stage timing trace, a per-query answer record, and an
+intended-versus-realized arrival log. Pipelines are isolated at the process
+boundary and instrumented per process, so an arbitrary number of collocated
+pipelines can be launched \emph{and attributed} concurrently. \sysname{}
+\emph{measures and attributes} contention; it deliberately does not manage
+it.
+
+Because a benchmarking framework is itself a measurement instrument, we first
+bound its footprint. Per-stage dispatch costs tens of microseconds, is flat in
+graph depth, and passes payloads by reference at $O(1)$ cost
+(\S\ref{sec:results-e1}); wrapping a real GPU fine-tuning workload in the full
+graph-queue-thread structure changes per-step latency by $-0.05\%$
+[$-0.29,+0.14$] --- statistically indistinguishable from zero
+(\S\ref{sec:results-e2}). The instrument, in other words, stays out of its own
+measurements.
+
+We then use \sysname{} to produce three results that isolated,
+single-stream benchmarks structurally cannot. As testbeds we choose two
+single-node machines from opposite ends of the \emph{unified-memory} design
+space --- a \SI{16}{\giga\byte} Apple M2~Pro and a \SI{128}{\giga\byte}
+NVIDIA GB10 --- because shared-memory platforms make collocation effects
+especially consequential and especially hard to attribute, exactly the regime
+a collocation-aware instrument should prove itself in:
+
+\begin{itemize}
+  \item \textbf{A staged contention study} (\S\ref{sec:results-staged}) that
+  begins with a production-shaped pair --- a RAG serving pipeline collocated
+  with corpus-indexing jobs --- and descends to mechanism by changing
+  \emph{exactly one configuration element per step}: first the background's
+  arrival schedule, then its stage list (pure-CPU, pure-GPU, and
+  Neural-Engine co-runners), then the foreground itself (bare decode, with a
+  prefill/decode split as a built-in control).
+  \pending{The closing figure overlays the system-level degradation points on
+  the mechanism-level dose--response curve: interference is priced in
+  co-runner memory traffic, largely engine-independent, and concentrated in
+  the bandwidth-bound decode phase.} The experiment doubles as a live
+  demonstration of declarative reconfigurability: the paper shows the literal
+  configuration diffs.
+  \item \textbf{A topology study of agentic RAG} (\S\ref{sec:results-e4}):
+  one large model versus a graph of small specialists, swapped by
+  configuration alone, with size-matched and shared-instance controls that
+  separate model size, physical residency, and graph structure --- every
+  speed claim conditioned on exact-match/F1 answer quality.
+  \pending{headline trade-off numbers.}
+  \item \textbf{A reduction of MLPerf Inference} (\S\ref{sec:results-e5}):
+  each of its four load scenarios is recovered as a \sysname{} load-generator
+  configuration, verified from the arrival trace --- positioning \sysname{}
+  as a superset of, not a competitor to, the standard methodology.
+\end{itemize}
+
+\noindent This paper makes the following contributions:
+\begin{enumerate}
+  \item We characterize why standardized benchmarks under-serve ML
+  \emph{systems} research: linear-graph assumptions, accelerator-boundary
+  timing, and the isolation fiction (\S\ref{sec:background}).
+  \item We present the design of \sysname{}: declarative cyclic stage graphs,
+  pluggable load schedules, and process-granular, collocation-aware
+  instrumentation (\S\ref{sec:framework}) --- with measured evidence that the
+  instrument's own footprint is negligible (\S\ref{sec:results-e1},
+  \S\ref{sec:results-e2}).
+  \item We introduce a pre-registered measurement methodology --- every
+  configuration knob derived from a stated rule with pilot-measured inputs,
+  hierarchical run-level statistics, and arrival-trace verification
+  (\S\ref{sec:setup}) --- and release it with the artifact.
+  \item We use \sysname{} for three case studies beyond the reach of
+  single-stream suites: a staged collocation study that, on our
+  unified-memory testbeds, prices interference in co-runner memory traffic;
+  a configuration-only topology trade-off for agentic RAG, conditioned on
+  answer quality; and a load-pattern reduction of MLPerf Inference
+  (\S\ref{sec:results}).
+\end{enumerate}

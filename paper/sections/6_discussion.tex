@@ -1,0 +1,45 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{When does decomposition pay?} The topology study suggests a
+systems answer rather than an ML one: physical decomposition buys cross-query
+overlap, so its value scales with the ratio of cheap to expensive calls per
+query and with the hardware's ability to interleave them --- and it costs
+resident memory in proportion to the instance count. The shared-instance
+control is the diagnostic practitioners can run on their own workloads: if
+Decomposed-Shared recovers most of Decomposed's throughput, buy the graph and
+skip the replicas. That a benchmark framework can answer this question with
+a configuration diff, per-stage attribution, and a quality gate is the
+capability we set out to demonstrate.
+
+\paragraph{What collocation-aware measurement reveals.} The staged study's
+descent --- from ``the indexer slows my service'' to a dose--response priced
+in bytes per second --- is only expressible because collocation, per-process
+attribution, and reconfiguration are first-class. On our unified-memory
+testbeds the contended resource turned out to be memory bandwidth, and the
+prefill/decode split localizes the damage to bandwidth-bound phases; on
+platforms with different contention surfaces (discrete-GPU time slicing,
+storage) the same staged method applies with different co-runners. We offer
+the method as the contribution and the bandwidth law as its first, and
+platform-scoped, instantiation.
+
+\paragraph{Instrument honesty.} Three of our own findings began as
+instrument errors: a pooled bootstrap that hid a contaminated run, an
+append-mode log that could flip an overhead's sign, and a benchmark-runner
+check defeated by a pipeline exit code. Each survives in the paper as a
+methodological guardrail (hierarchical statistics with printed run values;
+session-aware parsing; environment hard-gates), because we believe a
+measurement paper should show its failure modes, not only its results.
+
+\paragraph{Limitations.} \sysname{} is single-node by design; distributed
+pipelines are future work. Stages within a pipeline share a Python
+interpreter, so pure-Python stages serialize on the interpreter lock ---
+acceptable for kernel-bound ML stages, and bounded by E1, but a real
+constraint for CPU-heavy custom logic, which should drop into native code or
+a separate pipeline. Per-device occupancy is residency, not utilization;
+causal attribution depends on platform counters, which on GB10's current
+driver stack lack a calibrated DRAM channel (our law is proxy-backed there).
+Quality evaluation inherits the limits of EM/F1 on generative answers even
+with the short-answer protocol; and our two testbeds, chosen to make
+contention vivid, mean the bandwidth findings should be generalized to
+discrete-memory servers only with new measurements, not by extrapolation.

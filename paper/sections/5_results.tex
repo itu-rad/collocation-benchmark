@@ -1,0 +1,152 @@
+\section{Results}
+\label{sec:results}
+
+We present findings first (the staged contention study, then the RAG topology
+study), the instrument-fidelity bounds after (they license everything above
+them), and the MLPerf reduction last. Every interval is a hierarchical
+run-level 95\% CI; raw per-run values ship in the artifact.
+
+\subsection{Staged Contention: from Interference to a Priced Mechanism}
+\label{sec:results-staged}
+
+\pending{Collection in progress on both devices; the subsection below is
+written to its final structure, with measured values to be inserted. Numbers
+shown as $x$ are placeholders.}
+
+\paragraph{Stage A --- collocated pipelines interfere, and \sysname{}
+attributes it.} With $B$ independent indexing pipelines beside the RAG-serving
+foreground, foreground p95 latency rises from $x$\,s ($B{=}0$) to $x$\,s
+($B{=}1$) and $x$\,s ($B{=}2$) on the M2~Pro, while per-process attribution
+assigns $x\%$ of memory traffic (M2, per-engine byte counters) and $x\%$ of
+device activity (GB10, per-process counters) to the backgrounds. Greedy
+decoding yields byte-identical foreground answers across $B$, confirming the
+separate-stores control: the coupling is hardware, not behavior.
+
+\paragraph{Stage B --- intensity, isolated by one loadgen edit.} Holding
+$B{=}1$ and sweeping only the background's arrival schedule
+(Figure~\ref{fig:staged-diffs} shows the four-line diff), foreground
+degradation grows monotonically with offered background work; the
+memory-controller counters convert the axis to GB/s.
+
+\paragraph{Stage C --- the co-runner purified, one stage-list edit.}
+Replacing the indexer with single-resource co-runners at matched intensity
+ladders, degradation collapses onto a single dose--response in offered
+memory traffic: at matched GB/s, the CPU streaming co-runner, the GPU encode
+loop, and (on M2) the ANE encode loop depress foreground throughput by
+statistically indistinguishable amounts ($x\%$, $x\%$, $x\%$ per
+\SI{10}{\giga\byte\per\second}). \emph{Who} moves the bytes matters far less
+than \emph{how many bytes move}.
+
+\paragraph{Stage D --- the mechanism's signature.} With the foreground
+reduced to bare decode and split by phase, per-token decode (bandwidth-bound)
+degrades by $x\%$ per \SI{10}{\giga\byte\per\second} of co-runner traffic
+while time-to-first-token (compute-bound prefill) moves $x\%$ --- the
+negative control that separates bandwidth contention from generic
+machine-is-busy effects without requiring any counter. The closing figure
+overlays Stage~A's system-level points on Stage~D's curve:
+\pending{the production-shaped interference sits on the mechanism's
+prediction.}
+
+On the M2~Pro this law is counter-backed with per-engine attribution; on
+GB10 it is proxy-backed (memory-controller busy fraction plus model-based
+traffic estimates), and we word its generality accordingly. The entire
+descent --- system to mechanism --- is four configurations apart, each one
+edit from its neighbor.
+
+\subsection{Topology of Agentic RAG: a Config-Only Trade-off}
+\label{sec:results-e4}
+
+\pending{Collection in progress; structure final.}
+
+\paragraph{Factoid.} At matched EM/F1 ($x$ vs.\ $x$; parity $x$), the
+decomposed $3\times$4B graph completes queries $x\%$ faster than the 9B
+monolith under load and sustains $x\times$ its throughput, at $x\times$ the
+resident model memory. The size control (Monolith-4B) shows $x$; the
+shared-instance control shows $x$ --- separating what the \emph{graph} buys
+(cross-query overlap of cheap grading against expensive generation) from
+what the extra \emph{residency} buys.
+
+\paragraph{Multi-hop.} \pending{quality-conditioned comparison with the
+size control on-task; top-$k{=}10$ sensitivity column.}
+
+\paragraph{Capacity (E7).} Read along the model-size axis, the monolith arm
+sweeps from \SI{0.5}{\giga\byte} (0.8B) to \SI{15.7}{\giga\byte} (27B) of
+resident weights by editing one configuration field. The 27B rung exceeds
+the M2~Pro's \SI{16}{\giga\byte} budget --- the device's measured ceiling ---
+while GB10 runs it with headroom; quality rises with size in line with the
+family's published capability scores. \pending{resident-memory and quality
+values per rung.}
+
+\subsection{Instrument Fidelity I: Framework Overhead}
+\label{sec:results-e1}
+
+Table~\ref{tab:noop} summarizes the no-op sweeps on the M2~Pro. Per-query
+latency is linear in depth while the \emph{per-stage} cost falls from
+\SI{84.6}{\micro\second} at depth~1 to a flat
+\SI{60.4}{\micro\second} [59.8, 61.7] by depth~100 --- fixed per-query
+overhead amortizing over deeper graphs; nothing accumulates. Reference
+passing is constant in payload size (\SI{30.8}{\micro\second} at zero payload
+vs.\ \SI{31.6}{\micro\second} at \SI{10}{\mebi\byte}) while the deep-copy
+counterfactual grows linearly to \SI{1059}{\micro\second} at
+\SI{10}{\mebi\byte} --- a $33\times$ gap that is the measured value of the
+zero-copy data path. These figures are worst cases: no-op stages never
+release the interpreter lock, and the result is robust to the warm-up
+policy (values shift under $1.5\%$ between 1- and 22-query warm-up drops).
+Against the multi-second LLM stages of \S\ref{sec:results-e4}, per-stage
+dispatch is four orders of magnitude below the work it measures.
+
+\begin{table}[t]\centering\small
+\caption{Framework overhead (no-op chains, tracing off, M2~Pro). Median with
+hierarchical bootstrap 95\% CI; per-stage cost is flat in depth, and
+reference passing is $O(1)$ in payload while deep-copy is $O(\text{payload})$.}
+\label{tab:noop}
+\begin{tabular}{rrr}
+\toprule
+Depth & Per-query (\si{\milli\second}) & Per-stage (\si{\micro\second}) \\
+\midrule
+1 & 0.085 & 84.6 [74.4, 94.9] \\
+10 & 0.64 & 63.9 [62.7, 65.1] \\
+100 & 6.04 & 60.4 [59.8, 61.7] \\
+\midrule
+Payload & Reference (\si{\micro\second}) & Deep-copy (\si{\micro\second}) \\
+\midrule
+0 & 30.8 [30.6, 31.0] & 32.8 [31.0, 48.8] \\
+\SI{1}{\mebi\byte} & 31.2 & 97.3 [94.9, 100.6] \\
+\SI{10}{\mebi\byte} & 31.6 & 1059 [1047, 1086] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Instrument Fidelity II: Modularity Overhead}
+\label{sec:results-e2}
+
+Wrapping the EfficientNetV2-S fine-tune in \sysname{}'s full
+graph-queue-thread structure changes per-step latency by
+$-43\,\si{\micro\second}$ [$-262, +122$], i.e.\ $-0.05\%$ [$-0.29, +0.14$]
+against a \SI{89.2}{\milli\second} step (paired across 10 interleaved runs;
+all per-run medians within \SI{89.1}{}--\SI{91.0}{\milli\second}) ---
+statistically indistinguishable from zero at $\pm 0.3\%$ resolution. The
+full tracing layer, exported asynchronously, adds a consistent $+2.1\%$
+per step; it is enabled for the case studies (it \emph{is} the instrument)
+and disabled for the fidelity runs. We note the negative point estimate
+deliberately: a wrapper can only add work, so the honest reading is ``below
+the noise floor,'' and our earlier encounters with confounds that produced
+\emph{spuriously significant} overheads (non-monotonic cross-thread clocks,
+contaminated baselines appended across sessions) are documented in the
+artifact --- the run-level statistics of \S\ref{sec:setup-metrics} caught
+both. \pending{GB10 counterpart values.}
+
+\subsection{MLPerf Inference as a Configuration Subspace}
+\label{sec:results-e5}
+
+\pending{Collection in progress.} Each of MLPerf's four scenarios runs as a
+\sysname{} loadgen block over the same ResNet-50 pipeline, and the arrival
+logs verify the defining process of each: exponential inter-arrivals at the
+target rate (Server; realized rate within $x\%$ of intended, zero blocked
+submissions), fixed \SI{x}{\milli\second} intervals (MultiStream),
+one-in-flight (SingleStream), and all-at-once enqueue (Offline). The
+scenario's native metric is reported per device. The reduction is the claim:
+the isolated, single-model regime that standardized suites measure occupies
+one corner of \sysname{}'s configuration space, while the collocated and
+graph-structured regimes of \S\ref{sec:results-staged} and
+\S\ref{sec:results-e4} lie outside what those suites can express at all.
