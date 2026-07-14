@@ -53,7 +53,11 @@ dependencies:
     # wheel builds/serves on this GB10 (aarch64, sm_121 / cu130) box — it may
     # need a specific nightly or a source build. Ollama (external binary) is
     # the cross-platform fallback and needs no pip dependency.
-    - vllm
+    # vllm REMOVED from the base env (2026-07-13): its build probe fails on
+    # GB10 aarch64+cu130 ("Unknown runtime environment"), which broke the whole
+    # env create. vllm is only needed for the (demoted) E4 engine overlay —
+    # install it separately if that arm is ever collected:
+    #   pip install vllm   # needs an aarch64+cu130-compatible build
 
     ## nvidia specific
     # possibly TensorRT or other NVIDIA/CUDA specific dependencies
