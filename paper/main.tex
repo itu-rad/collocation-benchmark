@@ -20,33 +20,35 @@ Machine-Learning Pipelines}
 \affiliation{\institution{Anonymous Institution}\city{}\country{}}
 
 \begin{abstract}
-Standardized ML benchmarks measure isolated models on isolated accelerators:
-a single feed-forward network, fed preprocessed tensors, timed at the device
-boundary. Production ML systems look nothing like this. Agentic and
-retrieval-augmented pipelines execute cyclic, input-dependent graphs; their
-performance is set by data movement as much as by compute; and, especially on
-resource-constrained nodes, they run \emph{collocated}, contending for shared
-resources that no single-stream benchmark can observe. We present \sysname{},
-a declarative framework that benchmarks ML \emph{pipelines} end to end:
-arbitrary (cyclic) stage graphs defined in configuration, open- and
-closed-loop load generation, per-stage and per-process instrumentation, and
-first-class collocation of concurrent pipelines. Two instrument-fidelity
-experiments bound \sysname{}'s own footprint --- per-stage dispatch is tens of
-microseconds and flat in graph depth, and wrapping a real GPU training
-workload costs $-0.05\%$ [$-0.29, +0.14$] per step, statistically
-indistinguishable from zero. We then use \sysname{} to show what isolated benchmarks miss, with case
-studies on two machines that make contention effects vivid --- unified-memory
-nodes (a \SI{16}{\giga\byte} Apple M2~Pro and a \SI{128}{\giga\byte}
-NVIDIA GB10), where every engine draws on one shared memory: a
-staged contention study that descends, by single-line configuration edits,
-from ``collocated pipelines interfere'' to a quantitative law ---
-\pending{on our unified-memory testbeds, foreground decode throughput
-degrades in proportion to co-runner \emph{memory traffic}, largely
-independent of which engine generates it}; a configuration-only restructuring of an agentic RAG
-pipeline that trades one large model against a graph of small specialists at
-matched answer quality; and a demonstration that MLPerf Inference's four load
-scenarios are special cases of \sysname{}'s configuration space. All
-configurations, traces, and analysis scripts are released.
+Standardized ML benchmarks measure isolated models on isolated accelerators.
+Production ML systems are neither: agentic and retrieval-augmented pipelines
+execute cyclic, input-dependent graphs; their performance is set by data
+movement as much as by compute; and they run collocated with other workloads.
+We present \sysname{}, a framework that benchmarks ML \emph{pipelines} end to
+end: cyclic stage graphs declared in configuration, open- and closed-loop
+load generation with arrival-trace verification, and per-process
+instrumentation that makes collocated pipelines separately attributable.
+
+Because a benchmark is an instrument, we first bound \sysname{}'s own
+footprint. Bare dispatch costs \SI{60}{}--\SI{85}{\micro\second} per stage,
+flat in graph depth; wrapping a real GPU fine-tune measures $-0.05\%$
+[$-0.29,+0.14$] per step (indistinguishable from zero), and the full tracing
+layer --- enabled whenever \sysname{} is used as an instrument --- adds a
+uniform $+2.1\%$. We then run three case studies on two unified-memory
+machines (\SI{16}{\giga\byte} Apple M2~Pro; \SI{128}{\giga\byte} NVIDIA
+GB10), chosen because shared-memory platforms concentrate contention where
+per-device counters cannot attribute it. A \emph{staged contention study}
+descends from a production-shaped symptom (RAG serving degraded by collocated
+indexing) toward mechanism, changing exactly one configuration element per
+step; it tests the hypothesis that \pending{degradation is priced in
+co-runner memory traffic rather than in co-runner identity, with
+prefill/decode asymmetry as a counter-free control}. A \emph{topology study}
+restructures an agentic RAG pipeline by configuration alone --- one large
+model versus a graph of small specialists, with size-matched and
+shared-instance controls --- reporting speed with explicitly bounded answer-%
+quality differences. Finally, MLPerf Inference's four load \emph{patterns}
+are reproduced as \sysname{} scheduler configurations, verified from arrival
+traces. Configurations, traces, and analysis scripts will be released.
 \end{abstract}
 
 \maketitle

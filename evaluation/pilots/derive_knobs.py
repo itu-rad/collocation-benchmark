@@ -336,7 +336,7 @@ def derive_e5(pilots: dict, device: str) -> list[dict]:
     else:
         entries.append(K("loadgen.config.rate", None, "R-LAMBDA-BELOW-SAT",
                          "config", note="pending pilot"))
-    entries.append(K("R", 5, "R-REPS", "driver"))
+    entries.append(K("R", 10, "R-REPS", "driver"))
     return entries
 
 
@@ -399,7 +399,7 @@ def derive_e1_e2() -> dict:
         e1_entries += [
             K("warmup_k", k, "R-WARMUP", "analysis", inputs=e1,
               note="replaces the old 1-of-101 drop"),
-            K("loadgen.max_queries", 100 + k, "R-NTIMING", "driver",
+            K("loadgen.max_queries", 100 + k, "R-WARMUP", "driver",
               note="100 measured queries after warm-up"),
         ]
     out["e1"] = {"any": e1_entries}
@@ -408,7 +408,7 @@ def derive_e1_e2() -> dict:
         window=51, epsilon=0.05, series_fn=_e2_step_series)
     e2_entries = [
         K("R", 10, "R-REPS", "driver"),
-        K("max_batches", 1100, "R-NTIMING", "driver",
+        K("max_batches", 1100, "R-PRECEDENT", "driver",
           note="one continuous epoch; canonicalizes the 400/1100 driver default split"),
     ]
     if e2:
@@ -470,11 +470,14 @@ def main() -> int:
         experiments.setdefault("e6", {})[dn] = derive_e6(pilots, dev, variants["e6"])
 
     env_commit = "unknown"
-    env_file = HERE / "pilot_env.txt"
-    if env_file.exists():
-        for line in env_file.read_text().splitlines():
-            if line.startswith("git_commit:"):
-                env_commit = line.split(":", 1)[1].strip()
+    for name in ("pilot_env_mlx.txt", "pilot_env_cuda.txt", "pilot_env.txt"):
+        env_file = HERE / name
+        if env_file.exists():
+            for line in env_file.read_text().splitlines():
+                if line.startswith("git_commit:"):
+                    env_commit = line.split(":", 1)[1].strip()
+            if env_commit != "unknown":
+                break
     if env_commit.endswith("-dirty"):
         print("[derive] WARNING: pilots ran on a dirty tree — knob provenance is weakened")
 

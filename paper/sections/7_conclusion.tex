@@ -8,16 +8,15 @@ bottlenecks go unmeasured and unoptimized. \sysname{} closes that gap with a
 small set of composable ideas: stages in declarative graphs, pluggable load
 schedules, process-granular collocation with per-pipeline attribution, and a
 pre-registered measurement methodology in which every knob has a derivation
-and every arrival process is verified from its own trace. We showed the
-instrument stays out of its measurements (per-stage dispatch flat at tens of
-microseconds; wrapping real training statistically indistinguishable from
-zero), and we used it for studies a single-stream harness cannot express: a
+and every arrival process is verified from its own trace. We calibrated the instrument (per-stage dispatch flat in depth at
+\SI{60}{}--\SI{85}{\micro\second}; modularity overhead indistinguishable
+from zero; tracing a uniform, accounted $+2.1\%$), and we used it for studies a single-stream harness cannot express: a
 staged collocation analysis that descends from symptom to a mechanism priced
 in memory traffic, a quality-conditioned, configuration-only topology
 trade-off for agentic RAG with a capacity sweep to each device's ceiling, and
-a load-pattern reduction showing MLPerf's scenarios are points in
+a load-pattern reduction locating MLPerf's scenarios inside
 \sysname{}'s configuration space. Configurations, traces, and analysis
-scripts are released for artifact evaluation. Future work extends the same
+scripts will be released for artifact evaluation. Future work extends the same
 method to discrete-memory servers and multi-node pipelines, where the
 contended resources --- and therefore the laws --- will differ, but the
 instrument need not.

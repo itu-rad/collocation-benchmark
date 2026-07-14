@@ -23,15 +23,17 @@ storage) the same staged method applies with different co-runners. We offer
 the method as the contribution and the bandwidth law as its first, and
 platform-scoped, instantiation.
 
-\paragraph{Instrument honesty.} Three of our own findings began as
-instrument errors: a pooled bootstrap that hid a contaminated run, an
-append-mode log that could flip an overhead's sign, and a benchmark-runner
-check defeated by a pipeline exit code. Each survives in the paper as a
-methodological guardrail (hierarchical statistics with printed run values;
-session-aware parsing; environment hard-gates), because we believe a
+\paragraph{Instrument honesty.} Several of our findings began as
+instrument errors --- among them a pooled bootstrap that hid a contaminated
+run and an append-mode log capable of flipping an overhead's sign
+(\S\ref{sec:results-fidelity} references the same incidents). Each survives
+as a guardrail in the released methodology (hierarchical statistics with
+printed run values; session-aware trace parsing; environment hard-gates): a
 measurement paper should show its failure modes, not only its results.
 
-\paragraph{Limitations.} \sysname{} is single-node by design; distributed
+\paragraph{Limitations.} \sysname{} is single-node by design --- the
+distributed machinery of production engines is precisely the confound a
+measurement instrument must not carry (\S\ref{sec:framework}); distributed
 pipelines are future work. Stages within a pipeline share a Python
 interpreter, so pure-Python stages serialize on the interpreter lock ---
 acceptable for kernel-bound ML stages, and bounded by E1, but a real

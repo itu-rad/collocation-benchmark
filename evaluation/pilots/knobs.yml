@@ -1,6 +1,6 @@
 schema_version: 1
-generated: 2026-07-14 08:02:51 -0700
-git_commit: unknown
+generated: 2026-07-14 08:48:56 -0700
+git_commit: 39151a976bc1fc05de803aa2c209f781bd41c933-dirty
 variants:
   e3: dose_response
   e6: rag_indexing
@@ -625,7 +625,7 @@ experiments:
       note: replaces the old 1-of-101 drop
     - knob: loadgen.max_queries
       value: 122
-      rule: R-NTIMING
+      rule: R-WARMUP
       scope: driver
       verified: null
       note: 100 measured queries after warm-up
@@ -638,7 +638,7 @@ experiments:
       verified: null
     - knob: max_batches
       value: 1100
-      rule: R-NTIMING
+      rule: R-PRECEDENT
       scope: driver
       verified: null
       note: one continuous epoch; canonicalizes the 400/1100 driver default split
@@ -1072,7 +1072,7 @@ experiments:
         note: "tail not flat \u2014 pilot inconclusive, extend N"
         outlier_idxs: *id004
     - knob: R
-      value: 5
+      value: 10
       rule: R-REPS
       scope: driver
       verified: null
@@ -1140,7 +1140,7 @@ experiments:
         note: "tail not flat \u2014 pilot inconclusive, extend N"
         outlier_idxs: *id006
     - knob: R
-      value: 5
+      value: 10
       rule: R-REPS
       scope: driver
       verified: null
