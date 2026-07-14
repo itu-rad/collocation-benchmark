@@ -140,6 +140,8 @@ def exec_baseline(device, max_batches, num_workers, timeout, r, force):
     if os.path.exists(target) and not force:
         print(f"[skip] {lab}")
         return
+    if os.path.exists(target):
+        os.remove(target)  # belt: never append onto a stale baseline CSV
     print(f"[run ] {lab}")
     try:
         rc = subprocess.run(

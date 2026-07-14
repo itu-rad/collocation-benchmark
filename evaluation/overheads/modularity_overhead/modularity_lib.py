@@ -95,8 +95,32 @@ def _stage_durations(path, module_name):
     return durs
 
 
+BASELINE_LOOP = "training_loop"
+
+
 def parse_baseline_steps(path):
-    return _stage_durations(path, BASELINE_STEP)
+    """Per-step durations for the LAST session in the file.
+
+    baseline_finetune historically opened its log in append mode, so re-runs
+    accumulated stale sessions (the baseline-append bug — it can flip the core
+    overhead negative). Each session emits one 'training_loop, run, start'
+    marker; we reset at every marker so only the final session's steps count.
+    Robust even against pre-fix contaminated files."""
+    evs = []
+    for (mod, phase, event, perf) in _rows(path):
+        if mod == BASELINE_LOOP and phase == "run" and event == "start":
+            evs = []  # new session marker: discard everything before it
+        elif mod == BASELINE_STEP and phase == "run" and event in ("start", "end"):
+            evs.append((perf, event))
+    evs.sort()
+    durs, i = [], 0
+    while i < len(evs) - 1:
+        if evs[i][1] == "start" and evs[i + 1][1] == "end":
+            durs.append(evs[i + 1][0] - evs[i][0])
+            i += 2
+        else:
+            i += 1
+    return durs
 
 
 def parse_choreo_train_steps(path):

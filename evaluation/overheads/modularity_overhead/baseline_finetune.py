@@ -43,7 +43,9 @@ def setup_logging(label="baseline_finetune"):
     formatter = logging.Formatter(PERF_FORMAT)
 
     # These handlers will be used by the Listener in a background thread
-    file_handler = logging.FileHandler(filename=log_file)
+    # mode='w': truncate — append mode silently accumulated stale sessions
+    # into re-runs (the baseline-append bug; see modularity_lib session split)
+    file_handler = logging.FileHandler(filename=log_file, mode='w')
     file_handler.setFormatter(formatter)
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
