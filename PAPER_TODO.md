@@ -63,10 +63,14 @@ hyperparameter protocol must all land *before* that re-collection so we only col
    warm-up k=22 (was 1-of-101); `table1.tex` regenerated — depth-flatness
    robust to the change (<1.5% shift). Remaining E1 item: synchronous tracing
    cost (§3.1).
-7. **[ ] P0 [dev] Build the delta of missing arms** (§2.2) — E5 saturating-Offline +
-   fixed-interval MultiStream + **N-in-flight closed-loop** schedulers; 4 multi-hop
-   Self-RAG control configs; E7 size rungs (folded into E4); the **E6 B-sweep generator
-   (now REQUIRED — E6 is no longer negotiable, §1)**.
+7. **[~] P0 [dev] Build the delta of missing arms** (§2.2) — remaining after the
+   2026-07-13 sweep (saturating-Offline scheduler, 4 multi-hop controls, and E7
+   size rungs are DONE): **fixed-interval MultiStream scheduler** (E5);
+   the **staged-contention apparatus** — C3 CPU memory-streaming stage,
+   EmbedStage + ChromaIndexer, and the Stage-A–D config generator (single-diff
+   transitions, redesign doc §0.3); **ANE-hang diagnosis (timeboxed)** — Stage C
+   ships with CPU+GPU co-runners if unfixed. The N-in-flight scheduler is
+   **DROPPED** (its only consumer was the cut VQA contended cells).
 8. **[ ] P0 [GB10, Ties] Full GB10 collection pass** — E4 matrix (post-fix, locked knobs),
    E2 cuda half (cheap to re-run rather than argue provenance), E5 scenarios, E6 minimal
    sweep, E7 rungs. One pass, one protocol, one env capture.
@@ -454,12 +458,14 @@ Arms: Monolith-9B, Decomposed-3×4B, Monolith-4B (size control), Decomposed-Shar
   `bert_training.yml`, `retinanet_training.yml` are **0-byte stubs**;
   `retinanet_inference.yml` hardcodes `/home/roba/...` (§7.1). Fix or delete.
 
-### 3.6 E6 — Collocation scaling — **P0, NON-NEGOTIABLE (minimal form)** — ⚠️ workload swap proposed
-> **See `CONTENTION_EXPERIMENTS_REDESIGN.md` (E6′):** keep the B-sweep design,
-> attribution machinery, and scope rules verbatim, but replace the EfficientNet
-> foreground/background pair with **RAG serving (plain retrieve+generate foreground)
-> vs. B index-refresh pipelines** — properly proportioned, LLM-era legible, and its
-> degradation reconciles against the E3′ dose–response curve. Pending sign-off.
+### 3.6 E6 — Staged contention experiment — **P0, APPROVED (2026-07-13)**
+> **APPROVED by the author:** the staged system→mechanism experiment of
+> `CONTENTION_EXPERIMENTS_REDESIGN.md` §0.3 — Stage A (RAG-serve foreground vs
+> B index-refresh pipelines, per-process attribution) → B (intensity isolation) →
+> C (single-resource co-runners) → D (bare decode, prefill/decode split), each
+> transition a single-element config diff shown in the paper. **VQA (old E3) is
+> CUT** — the CLIP encode configs survive only as Stage-C co-runner apparatus.
+> Knob variants locked: `e3=dose_response`, `e6=rag_indexing` (derive defaults).
 Decision upgraded (§1): the paper's title and Intro rest on this; minimal E6 ships.
 - [ ] Build the B-sweep generator (§2.2) — independent bg processes, each own dataset stage.
 - [ ] Fix ONE foreground workload (EfficientNetV2-S inference, Poisson rate per the

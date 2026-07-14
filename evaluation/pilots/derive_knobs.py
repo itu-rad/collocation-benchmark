@@ -415,7 +415,11 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    variants = {"e3": "vqa", "e6": "torchvision"}
+    # Defaults = the APPROVED design (2026-07-13): VQA is cut; the staged
+    # contention experiment (system -> mechanism zoom) uses the dose-response
+    # cells and the RAG-serving-vs-indexing pair. The legacy variants remain
+    # selectable only for archaeology.
+    variants = {"e3": "dose_response", "e6": "rag_indexing"}
     for v in args.variant:
         k, _, val = v.partition("=")
         if k not in variants or not val:

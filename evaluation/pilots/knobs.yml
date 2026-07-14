@@ -1,9 +1,9 @@
 schema_version: 1
-generated: 2026-07-13 20:16:10 -0700
+generated: 2026-07-13 20:47:34 -0700
 git_commit: 66fd55a31eae51a1bd4a58df2b659c7db11df675-dirty
 variants:
-  e3: vqa
-  e6: torchvision
+  e3: dose_response
+  e6: rag_indexing
 rules_doc: see derive_knobs.py docstring (rule registry)
 pilots:
   e3_vqa_a_mlx:
@@ -125,7 +125,7 @@ pilots:
       epsilon: 0.1
       converged: false
       note: "tail not flat \u2014 pilot inconclusive, extend N"
-      outlier_idxs: &id002 []
+      outlier_idxs: &id001 []
     service_s:
       median: 4.9106
       mean: 5.9013
@@ -210,7 +210,7 @@ pilots:
       epsilon: 0.1
       converged: false
       note: "tail not flat \u2014 pilot inconclusive, extend N"
-      outlier_idxs: &id004
+      outlier_idxs: &id003
       - 0
     service_s:
       median: 0.0112
@@ -232,7 +232,7 @@ pilots:
       epsilon: 0.1
       converged: true
       note: ''
-      outlier_idxs: &id005 []
+      outlier_idxs: []
     service_s:
       median: 0.7228
       mean: 0.735
@@ -253,7 +253,7 @@ pilots:
       epsilon: 0.1
       converged: false
       note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
-      outlier_idxs: []
+      outlier_idxs: &id004 []
     service_s:
       median: 1.7836
       mean: 1.6602
@@ -321,10 +321,7 @@ experiments:
       value: 0.1167
       rule: R-LAMBDA-BELOW-SAT
       scope: config
-      verified: &id001
-        ok: true
-        traces: evaluation/results/knobs_verify_mono9b.csv
-        checked: '2026-07-13'
+      verified: null
       inputs:
         pilot: e4_factoid_decomp
         median_service_s: 5.1395
@@ -349,7 +346,7 @@ experiments:
       value: 40
       rule: R-QDEPTH
       scope: config
-      verified: *id001
+      verified: null
       applies_to:
       - evaluation/self_rag/configs/factoid_*_mlx.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
@@ -367,7 +364,7 @@ experiments:
       value: 0.0217
       rule: R-LAMBDA-BELOW-SAT
       scope: config
-      verified: *id001
+      verified: null
       inputs:
         pilot: e4_multihop_mono9b
         median_service_s: 27.5959
@@ -390,7 +387,7 @@ experiments:
       value: 40
       rule: R-QDEPTH
       scope: config
-      verified: *id001
+      verified: null
       applies_to:
       - evaluation/self_rag/configs/multihop_*_mlx.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
@@ -417,7 +414,7 @@ experiments:
         epsilon: 0.1
         converged: false
         note: "tail not flat \u2014 pilot inconclusive, extend N"
-        outlier_idxs: *id002
+        outlier_idxs: *id001
     - knob: R
       value: 5
       rule: R-REPS
@@ -427,7 +424,7 @@ experiments:
       value: 120
       rule: R-NQUALITY
       scope: driver
-      verified: *id001
+      verified: null
       verification: Wilson 95% half-width <= 9 points at the observed rate
     - knob: top_k
       value:
@@ -449,18 +446,33 @@ experiments:
       verified: null
   e3:
     m2pro:
-    - knob: p95_policy
-      value: raise
-      rule: R-NTIMING
-      scope: analysis
+    - knob: corunner_c1_gpu_levels
+      value:
+      - 4.604
+      - 9.208
+      - 13.812
+      - 18.416
+      rule: R-INTENSITY
+      scope: driver
       verified: null
-      note: 'raise: 100 q/run x R=10 -> 1000 pooled clears the >=500 gate'
-    - knob: loadgen.max_queries
+      inputs:
+        pilot: e3p_c1_rmax
+        rmax_per_s: 18.416
+        median_op_s: 0.0543
+    - knob: corunner_c2_ane_levels
       value: null
-      rule: R-NTIMING
-      scope: config
+      rule: R-INTENSITY
+      scope: driver
       verified: null
       note: pending pilot
+    - knob: fg_decode_median_s
+      value: 10.3648
+      rule: R-LAMBDA-SAT
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_fg_decode
+      note: foreground runs saturated decode; co-runner is the swept axis
     - knob: R
       value: 10
       rule: R-REPS
@@ -477,7 +489,7 @@ experiments:
         pilot: e5_resnet_serial
         median_service_s: 0.0112
         rho: 0.6
-      applies_to: &id003
+      applies_to: &id002
       - pipeline_configs/mlperf/resnet_inference.yml
       verification: "arrival trace: realized inter-arrivals ~ Exp(\u03BB); 0 blocked puts"
     - knob: loadgen.max_queries
@@ -485,14 +497,14 @@ experiments:
       rule: R-NTIMING
       scope: config
       verified: null
-      applies_to: *id003
+      applies_to: *id002
       note: Server scenario cell; other scenarios get their own configs
     - knob: loadgen.queue_depth
       value: 500
       rule: R-QDEPTH
       scope: config
       verified: null
-      applies_to: *id003
+      applies_to: *id002
     - knob: loadgen.timeout
       value: 47
       rule: R-TIMEOUT
@@ -500,7 +512,7 @@ experiments:
       verified: null
       inputs:
         unit: seconds
-      applies_to: *id003
+      applies_to: *id002
     - knob: multistream_interval_s
       value: 0.0896
       rule: R-LAMBDA-BELOW-SAT
@@ -529,7 +541,7 @@ experiments:
         epsilon: 0.1
         converged: false
         note: "tail not flat \u2014 pilot inconclusive, extend N"
-        outlier_idxs: *id004
+        outlier_idxs: *id003
     - knob: R
       value: 5
       rule: R-REPS
@@ -538,16 +550,16 @@ experiments:
   e6:
     m2pro:
     - knob: fg.loadgen.config.rate
-      value: 0.5534
+      value: 0.2243
       rule: R-E6-HEADROOM
       scope: config
       verified: null
       inputs:
-        pilot: e6_fg_effnet
-        median_service_s: 0.7228
+        pilot: e6p_fg_ragserve
+        median_service_s: 1.7836
         rho: 0.4
       applies_to:
-      - pipeline_configs/torchvision_inference.yml
+      - pipeline_configs/rag_serve_plain*.yml
       verification: "B=0 utilization 30-50%; \u03BB identical across all B"
     - knob: fg.loadgen.max_queries
       value: 100
@@ -555,7 +567,7 @@ experiments:
       scope: config
       verified: null
       applies_to:
-      - pipeline_configs/torchvision_inference.yml
+      - pipeline_configs/rag_serve_plain*.yml
       note: '>=500 pooled per cell at R=5 (p95 gate)'
     - knob: fg.loadgen.queue_depth
       value: 100
@@ -563,30 +575,30 @@ experiments:
       scope: config
       verified: null
       applies_to:
-      - pipeline_configs/torchvision_inference.yml
+      - pipeline_configs/rag_serve_plain*.yml
     - knob: fg.loadgen.timeout
-      value: 915
+      value: 2256
       rule: R-TIMEOUT
       scope: config
       verified: null
       inputs:
         unit: seconds
       applies_to:
-      - pipeline_configs/torchvision_inference.yml
+      - pipeline_configs/rag_serve_plain*.yml
     - knob: warmup_k
-      value: 1
+      value: 2
       rule: R-WARMUP
       scope: analysis
       verified: null
       inputs:
-        pilot: e6_fg_effnet
-        k_star: 0
-        k_fixed: 1
+        pilot: e6p_fg_ragserve
+        k_star: 4
+        k_fixed: 2
         window: 5
         epsilon: 0.1
-        converged: true
-        note: ''
-        outlier_idxs: *id005
+        converged: false
+        note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
+        outlier_idxs: *id004
     - knob: B_sweep
       value:
       - 0
