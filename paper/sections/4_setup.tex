@@ -194,8 +194,7 @@ $[2/3, 3/2]$), not by interval overlap. H2: degradation concentrates in decode; 
 moves substantially less. Falsification branches are first-class outcomes:
 engine-\emph{dependent} slopes at matched traffic would localize contention
 in engine-specific paths (fabric, schedulers) rather than DRAM; a flat
-dose--response would bound the platforms' co-runner tolerance --- both
-publishable, both accommodated by the analysis. Slopes are fitted only
+dose--response would bound the platforms' co-runner tolerance. Slopes are fitted only
 below the saturation knee; behavior near the roofline is reported
 descriptively, since memory-controller queueing is not linear there.
 \emph{Further threats:} occupancy is residency; attribution is
@@ -232,11 +231,7 @@ The specialists share base weights differentiated by prompt; resident
 memory is reported as unique plus shared mapped pages, since memory-mapped
 weights can share physical pages across instances. All rungs of the
 capacity sweep are dense models.
-Two difficulties --- factoid (rag-mini-wikipedia, top-3 over 3{,}200
-passages) and multi-hop (HotpotQA~\cite{yang2018hotpotqa}, top-5 over a
-20{,}000-passage gold+distractor corpus via ChromaDB~\cite{chroma}) ---
-with retrieval fixed within a difficulty and contrasts read within a
-difficulty; the size control runs on \emph{both} tasks, since a multi-hop
+We run two difficulties: factoid (rag-mini-wikipedia, top-3 over 3{,}200 passages) and multi-hop (HotpotQA~\cite{yang2018hotpotqa}, top-5 over a 20{,}000-passage corpus of gold plus distractor passages via ChromaDB~\cite{chroma}). Retrieval is fixed within a difficulty and contrasts are read within a difficulty; the size control runs on \emph{both} tasks, since a multi-hop
 quality gap is exactly what a size difference alone would produce. A
 top-$k{=}10$ sensitivity column guards the multi-hop result against
 retrieval-depth artifacts.
