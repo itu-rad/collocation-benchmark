@@ -20,6 +20,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import noop_lib as nl  # noqa: E402
 
+# Warm-up drop from the pilot-derived knobs (R-WARMUP), falling back to the
+# historical default when knobs.yml doesn't exist yet.
+try:
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "..", "..", "pilots"))
+    import pilot_lib as _pl
+    _k = _pl.get_knob(_pl.load_knobs(), "e1", "any", "warmup_k")
+    if _k:
+        nl.WARMUP_K = int(_k)
+except Exception:
+    pass
+
 SIZES = [0, 1024, 1048576, 10485760]
 SIZE_TEX = {0: "0", 1024: "\\SI{1}{\\kibi\\byte}",
             1048576: "\\SI{1}{\\mebi\\byte}", 10485760: "\\SI{10}{\\mebi\\byte}"}

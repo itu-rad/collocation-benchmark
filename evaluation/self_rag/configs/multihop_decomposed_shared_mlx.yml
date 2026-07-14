@@ -1,12 +1,23 @@
-name: "Self-RAG Decomposed (factoid, MLX)"
+name: "Self-RAG Decomposed-Shared — 1x4B, 3 calls (multi-hop / HotpotQA, MLX)"
+# Logical decomposition on ONE resident 4B instance: same decomposed graph
+# (grade -> generate -> hallucination-check -> optional rewrite) and the same
+# per-role narrow prompts as multihop_decomposed_mlx.yml, but every LLM stage
+# SHARES a single loaded 4B via depends_on_id (stage 3 owns the model + mutex).
+# Isolates physical decomposition (3 instances) from logical decomposition
+# (3 narrow calls on one model). NOTE (MLX): a dependent stage's tokenizer is
+# None until pre_run, so all formatters point tokenizer_stage_id at the model
+# owner (stage 3) rather than at the dependent generate/hallucination stages.
+# Retrieval held fixed by reusing the decomposed Chroma collection. All four
+# LLM stages share ONE mutex, so generation is serialized on the single
+# instance (true single-instance behavior).
 pipelines:
-  - name: Self-RAG Decomposed
+  - name: Self-RAG Decomposed-Shared (multi-hop)
     inputs: [0]
     outputs: [12]
     dataset_stage_id: 0
     loadgen:
       # [knobs] derived by evaluation/pilots/derive_knobs.py @ 66fd55a31eae51a1bd4a58df2b659c7db11df675-dirty
-      # [knobs] config.rate: R-LAMBDA-BELOW-SAT (0.6 x 1/5.1395s, pilot e4_factoid_decomp)
+      # [knobs] config.rate: R-LAMBDA-BELOW-SAT (0.6 x 1/27.5959s, pilot e4_multihop_mono9b)
       # [knobs] max_queries: R-NTIMING
       # [knobs] queue_depth: R-QDEPTH
       # [knobs] timeout: R-TIMEOUT
@@ -14,11 +25,11 @@ pipelines:
       component: loadgen.PoissonLoadScheduler
       queue_depth: 40
       max_queries: 40
-      timeout: 1791
+      timeout: 9631
       config:
-        rate: 0.1167
+        rate: 0.0217
     stages:
-      # --- Stage 0: Question DataLoader ---
+      # --- Stage 0: Question DataLoader (HotpotQA multi-hop) ---
       - name: Question dataloader
         id: 0
         outputs: [1]
@@ -26,13 +37,13 @@ pipelines:
         config:
           batch_size: 1
           dataset:
-            name: rag-datasets/rag-mini-wikipedia
-            subset: question-answer
-            split: test
+            name: RUC-NLPIR/FlashRAG_datasets
+            subset: hotpotqa
+            split: dev
             question_column: question
-            answers_column: answer
+            answers_column: golden_answers
 
-      # --- Stage 1: ChromaDB Retriever ---
+      # --- Stage 1: ChromaDB Retriever (corpus from HotpotQA contexts) ---
       - name: Document retriever
         id: 1
         outputs: [2]
@@ -40,13 +51,14 @@ pipelines:
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
         config:
           corpus_dataset:
-            name: rag-datasets/rag-mini-wikipedia
-            subset: text-corpus
-            split: passages
-            text_column: passage
-            max_docs: 3200
-          top_k: 3
-          collection_name: self_rag_factoid_decomposed_corpus
+            name: RUC-NLPIR/FlashRAG_datasets
+            subset: hotpotqa
+            split: dev
+            context_column: metadata
+            max_context_rows: 300
+            max_docs: 20000
+          top_k: 5
+          collection_name: self_rag_multihop_decomposed_corpus
 
       # --- Stage 2: Retrieval Grader Formatter ---
       - name: Retrieval grader formatter
@@ -56,8 +68,8 @@ pipelines:
         config:
           tokenizer_stage_id: 3
 
-      # --- Stage 3: Grader LLM (separate instance #1) ---
-      - name: Grader LLM
+      # --- Stage 3: Shared LLM — grade call (owns the single 4B + mutex) ---
+      - name: Shared LLM (grade)
         id: 3
         outputs: [4]
         component: stages.llm_mlx.Inference
@@ -86,10 +98,10 @@ pipelines:
         component: stages.self_rag.AnswerGeneratorFormatter
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
         config:
-          tokenizer_stage_id: 6
+          tokenizer_stage_id: 3
 
-      # --- Stage 6: Generator LLM (separate instance #2) ---
-      - name: Generator LLM
+      # --- Stage 6: Shared LLM — generate call (shares stage 3's 4B) ---
+      - name: Shared LLM (generate)
         id: 6
         outputs: [7]
         component: stages.llm_mlx.Inference
@@ -98,6 +110,7 @@ pipelines:
             name: mlx-community/Qwen3.5-4B-OptiQ-4bit
             gen_kwargs:
               max_tokens: 256
+          depends_on_id: 3
 
       # --- Stage 7: Hallucination Grader Formatter ---
       - name: Hallucination grader formatter
@@ -105,10 +118,10 @@ pipelines:
         outputs: [8]
         component: stages.self_rag.HallucinationGraderFormatter
         config:
-          tokenizer_stage_id: 8
+          tokenizer_stage_id: 3
 
-      # --- Stage 8: Hallucination LLM (separate instance #3) ---
-      - name: Hallucination LLM
+      # --- Stage 8: Shared LLM — hallucination call (shares stage 3's 4B) ---
+      - name: Shared LLM (hallucination)
         id: 8
         outputs: [9]
         component: stages.llm_mlx.Inference
@@ -117,6 +130,7 @@ pipelines:
             name: mlx-community/Qwen3.5-4B-OptiQ-4bit
             gen_kwargs:
               max_tokens: 16
+          depends_on_id: 3
 
       # --- Stage 9: Hallucination Router ---
       - name: Hallucination router
@@ -138,8 +152,8 @@ pipelines:
         config:
           tokenizer_stage_id: 3
 
-      # --- Stage 11: Query Rewrite LLM (shares Grader model) ---
-      - name: Query rewrite LLM
+      # --- Stage 11: Shared LLM — rewrite call (shares stage 3's 4B) ---
+      - name: Shared LLM (rewrite)
         id: 11
         outputs: [1]
         component: stages.llm_mlx.Inference

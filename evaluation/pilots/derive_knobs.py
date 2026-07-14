@@ -88,7 +88,14 @@ def summarize_pilot(cell_id: str, device: str) -> dict | None:
     if not all_lat:
         return None
     # Warm-up on the first run's raw series; service stats pooled post-warm-up.
+    # Non-converged detection on a short/retry-noisy pilot falls back to the
+    # pre-registered LLM default k=2 (first-call kernel compile) — a spurious
+    # large k would silently discard most of the pilot.
     wu = pl.detect_warmup(all_lat[0], window=5, epsilon=0.10)
+    if not wu.converged and wu.k_fixed > 2:
+        wu.k_fixed = 2
+        wu.note = (wu.note + "; " if wu.note else "") + \
+            "non-converged -> fallback k=2 (pre-registered LLM default)"
     pooled = []
     for series in all_lat:
         stats = pl.service_stats(series, wu.k_fixed, wu.outlier_idxs)
@@ -177,19 +184,33 @@ def _timeout_serial(n: int, med: float) -> int:
 
 
 def derive_e4(pilots: dict, device: str) -> list[dict]:
-    arms = ["e4_factoid_mono9b", "e4_factoid_decomp", "e4_factoid_mono4b",
-            "e4_factoid_shared", "e4_multihop_mono9b", "e4_multihop_decomp"]
-    have = {a: pilots[(a, device)] for a in arms if (a, device) in pilots}
+    """λ binds per (task, device): the monolith-vs-decomposed contrast is read
+    WITHIN a difficulty, so 'slowest arm in the comparison' means slowest arm
+    of that task — one λ across all arms of the task on the device."""
+    tasks = {
+        "factoid": ["e4_factoid_mono9b", "e4_factoid_decomp",
+                    "e4_factoid_mono4b", "e4_factoid_shared"],
+        "multihop": ["e4_multihop_mono9b", "e4_multihop_decomp"],
+    }
+    suffix = "mlx" if device == "mlx" else "cuda"
     entries = []
-    if have:
+    any_pilot = False
+    for task, arms in tasks.items():
+        have = {a: pilots[(a, device)] for a in arms if (a, device) in pilots}
+        glob_pat = f"evaluation/self_rag/configs/{task}_*_{suffix}.yml"
+        if not have:
+            entries.append(K(f"{task}.loadgen.config.rate", None,
+                             "R-LAMBDA-BELOW-SAT", "config",
+                             note="pending pilot on this device"))
+            continue
+        any_pilot = True
         slowest_id = max(have, key=lambda a: have[a]["service_s"]["median"])
         med = have[slowest_id]["service_s"]["median"]
         lam = _lam(med)
-        glob_pat = ("evaluation/self_rag/configs/*_mlx.yml" if device == "mlx"
-                    else "evaluation/self_rag/configs/*_cuda.yml")
         entries += [
             K("loadgen.config.rate", lam, "R-LAMBDA-BELOW-SAT", "config",
               inputs={"pilot": slowest_id, "median_service_s": med, "rho": RHO,
+                      "task": task,
                       "all_arm_medians_s": {a: have[a]["service_s"]["median"]
                                             for a in have}},
               applies_to=[glob_pat],
@@ -200,15 +221,15 @@ def derive_e4(pilots: dict, device: str) -> list[dict]:
               applies_to=[glob_pat],
               verification="arrivals sidecar: max block_s < 5 ms"),
             K("loadgen.timeout", _timeout_open(N_TIMING, lam, med), "R-TIMEOUT",
-              "config", inputs={"unit": "seconds"}, applies_to=[glob_pat]),
+              "config", inputs={"unit": "seconds", "task": task},
+              applies_to=[glob_pat]),
         ]
-        wu = have.get("e4_factoid_mono9b") or have[slowest_id]
-        entries.append(K("warmup_k", wu["warmup"]["k_fixed"], "R-WARMUP",
-                         "analysis", inputs={"pilot": wu["cell"],
-                                             **wu["warmup"]}))
-    else:
-        entries.append(K("loadgen.config.rate", None, "R-LAMBDA-BELOW-SAT",
-                         "config", note="pending pilot on this device"))
+    if any_pilot:
+        wu = pilots.get(("e4_factoid_mono9b", device))
+        if wu:
+            entries.append(K("warmup_k", wu["warmup"]["k_fixed"], "R-WARMUP",
+                             "analysis", inputs={"pilot": wu["cell"],
+                                                 **wu["warmup"]}))
     entries += [
         K("R", 5, "R-REPS", "driver"),
         K("n_quality", N_QUALITY, "R-NQUALITY", "driver",

@@ -1,4 +1,4 @@
-name: "Self-RAG Monolith (factoid, MLX)"
+name: "Self-RAG Monolith 0.8B — size-sweep rung (factoid, MLX)"
 pipelines:
   - name: Self-RAG Monolith
     inputs: [0]
@@ -63,7 +63,7 @@ pipelines:
         component: stages.llm_mlx.Inference
         config:
           model:
-            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+            name: mlx-community/Qwen3.5-0.8B-OptiQ-4bit
             gen_kwargs:
               max_tokens: 256
 
@@ -99,7 +99,7 @@ pipelines:
         component: stages.llm_mlx.Inference
         config:
           model:
-            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+            name: mlx-community/Qwen3.5-0.8B-OptiQ-4bit
             gen_kwargs:
               max_tokens: 128
           depends_on_id: 3

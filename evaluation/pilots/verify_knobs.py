@@ -49,11 +49,19 @@ def verify_traces(trace_glob: str, lam: float | None, warmup_k: int | None):
                 notes.append(f"{c.name}: {arr.blocked_puts} blocked puts "
                              f"(max {arr.max_block_s * 1000:.1f} ms) — R-QDEPTH violated")
             if lam:
-                rr = arr.realized_rate()
-                if rr == rr and abs(rr - lam) / lam > RATE_TOL:
+                # Faithfulness = realized vs the INTENDED (drawn) schedule; a
+                # finite Poisson draw legitimately deviates from nominal λ by
+                # ~1/sqrt(n), so nominal gets only a 3-sigma sanity bound.
+                rr, ir = arr.realized_rate(), arr.intended_rate()
+                if rr == rr and ir == ir and abs(rr - ir) / ir > RATE_TOL:
                     ok = False
-                    notes.append(f"{c.name}: realized rate {rr:.4f} vs λ={lam} "
-                                 f"(>±{RATE_TOL:.0%}) — R-LAMBDA violated")
+                    notes.append(f"{c.name}: realized rate {rr:.4f} vs intended "
+                                 f"{ir:.4f} (>±{RATE_TOL:.0%}) — R-LAMBDA violated")
+                n = max(arr.n, 2)
+                if rr == rr and abs(rr - lam) / lam > 3.0 / (n - 1) ** 0.5:
+                    ok = False
+                    notes.append(f"{c.name}: realized rate {rr:.4f} vs nominal "
+                                 f"λ={lam} beyond 3σ for n={n} — check the seed/draw")
         elif lam:
             notes.append(f"{c.name}: no arrivals sidecar (pre-sidecar run?)")
         if warmup_k is not None:

@@ -1,0 +1,10 @@
+date: 2026-07-13 20:13:17 -0700
+git_commit: 66fd55a31eae51a1bd4a58df2b659c7db11df675-dirty
+device_arg: mlx
+python: 3.10.20
+platform: macOS-26.5.2-arm64-arm-64bit
+perf_counter: namespace(implementation='mach_absolute_time()', monotonic=True, adjustable=False, resolution=4.166666666666667e-08)
+machdep.cpu.brand_string: Apple M2 Pro
+hw.memsize: 17179869184
+hw.perflevel0.physicalcpu: 8
+hw.perflevel1.physicalcpu: 4

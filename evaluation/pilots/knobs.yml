@@ -1,0 +1,603 @@
+schema_version: 1
+generated: 2026-07-13 20:16:10 -0700
+git_commit: 66fd55a31eae51a1bd4a58df2b659c7db11df675-dirty
+variants:
+  e3: vqa
+  e6: torchvision
+rules_doc: see derive_knobs.py docstring (rule registry)
+pilots:
+  e3_vqa_a_mlx:
+    cell: e3_vqa_a
+    device: m2pro
+    csvs:
+    - pilot_e3_vqa_a_mlx_r1.csv
+    n_pooled: 14
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      outlier_idxs: []
+    service_s:
+      median: 2.4541
+      mean: 2.7478
+      min: 1.1044
+      max: 5.4765
+    per_run_medians_s:
+    - 2.454
+  e3p_c1_rmax_mlx:
+    cell: e3p_c1_rmax
+    device: m2pro
+    csvs:
+    - pilot_e3p_c1_rmax_mlx_r1.csv
+    n_pooled: 99
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: true
+      note: ''
+      outlier_idxs: []
+    service_s:
+      median: 0.0543
+      mean: 0.0559
+      min: 0.0509
+      max: 0.2455
+    per_run_medians_s:
+    - 0.054
+  e3p_fg_decode_mlx:
+    cell: e3p_fg_decode
+    device: m2pro
+    csvs:
+    - pilot_e3p_fg_decode_mlx_r1.csv
+    n_pooled: 14
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: true
+      note: ''
+      outlier_idxs: []
+    service_s:
+      median: 10.3648
+      mean: 10.3725
+      min: 10.3357
+      max: 10.426
+    per_run_medians_s:
+    - 10.365
+  e4_factoid_decomp_mlx:
+    cell: e4_factoid_decomp
+    device: m2pro
+    csvs:
+    - pilot_e4_factoid_decomp_mlx_r1.csv
+    n_pooled: 18
+    warmup:
+      k_star: 4
+      k_fixed: 2
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
+      outlier_idxs: []
+    service_s:
+      median: 5.1395
+      mean: 5.2016
+      min: 2.4393
+      max: 9.8345
+    per_run_medians_s:
+    - 5.14
+  e4_factoid_mono4b_mlx:
+    cell: e4_factoid_mono4b
+    device: m2pro
+    csvs:
+    - pilot_e4_factoid_mono4b_mlx_r1.csv
+    n_pooled: 18
+    warmup:
+      k_star: 4
+      k_fixed: 2
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
+      outlier_idxs: []
+    service_s:
+      median: 2.7278
+      mean: 3.4946
+      min: 1.9958
+      max: 11.651
+    per_run_medians_s:
+    - 2.728
+  e4_factoid_mono9b_mlx:
+    cell: e4_factoid_mono9b
+    device: m2pro
+    csvs:
+    - pilot_e4_factoid_mono9b_mlx_r1.csv
+    - pilot_e4_factoid_mono9b_mlx_r2.csv
+    n_pooled: 38
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      outlier_idxs: &id002 []
+    service_s:
+      median: 4.9106
+      mean: 5.9013
+      min: 3.3889
+      max: 20.6322
+    per_run_medians_s:
+    - 4.913
+    - 4.909
+  e4_factoid_shared_mlx:
+    cell: e4_factoid_shared
+    device: m2pro
+    csvs:
+    - pilot_e4_factoid_shared_mlx_r1.csv
+    n_pooled: 18
+    warmup:
+      k_star: 4
+      k_fixed: 2
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
+      outlier_idxs: []
+    service_s:
+      median: 4.9953
+      mean: 5.0301
+      min: 2.3362
+      max: 9.5426
+    per_run_medians_s:
+    - 4.995
+  e4_multihop_decomp_mlx:
+    cell: e4_multihop_decomp
+    device: m2pro
+    csvs:
+    - pilot_e4_multihop_decomp_mlx_r1.csv
+    n_pooled: 10
+    warmup:
+      k_star: 4
+      k_fixed: 2
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
+      outlier_idxs: []
+    service_s:
+      median: 8.3098
+      mean: 10.4357
+      min: 5.5926
+      max: 17.2583
+    per_run_medians_s:
+    - 8.31
+  e4_multihop_mono9b_mlx:
+    cell: e4_multihop_mono9b
+    device: m2pro
+    csvs:
+    - pilot_e4_multihop_mono9b_mlx_r1.csv
+    n_pooled: 11
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      outlier_idxs: []
+    service_s:
+      median: 27.5959
+      mean: 20.9656
+      min: 5.7648
+      max: 36.4841
+    per_run_medians_s:
+    - 27.596
+  e5_resnet_serial_mlx:
+    cell: e5_resnet_serial
+    device: m2pro
+    csvs:
+    - pilot_e5_resnet_serial_mlx_r1.csv
+    n_pooled: 199
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      outlier_idxs: &id004
+      - 0
+    service_s:
+      median: 0.0112
+      mean: 0.0115
+      min: 0.0097
+      max: 0.0193
+    per_run_medians_s:
+    - 0.011
+  e6_fg_effnet_mlx:
+    cell: e6_fg_effnet
+    device: m2pro
+    csvs:
+    - pilot_e6_fg_effnet_mlx_r1.csv
+    n_pooled: 99
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: true
+      note: ''
+      outlier_idxs: &id005 []
+    service_s:
+      median: 0.7228
+      mean: 0.735
+      min: 0.6584
+      max: 0.9817
+    per_run_medians_s:
+    - 0.723
+  e6p_fg_ragserve_mlx:
+    cell: e6p_fg_ragserve
+    device: m2pro
+    csvs:
+    - pilot_e6p_fg_ragserve_mlx_r1.csv
+    n_pooled: 18
+    warmup:
+      k_star: 4
+      k_fixed: 2
+      window: 5
+      epsilon: 0.1
+      converged: false
+      note: "k_fixed=8 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
+      outlier_idxs: []
+    service_s:
+      median: 1.7836
+      mean: 1.6602
+      min: 0.8833
+      max: 2.3585
+    per_run_medians_s:
+    - 1.784
+experiments:
+  e1:
+    any:
+    - knob: R
+      value: 10
+      rule: R-REPS
+      scope: driver
+      verified: null
+    - knob: warmup_k
+      value: 22
+      rule: R-WARMUP
+      scope: analysis
+      verified: null
+      inputs:
+        csvs_scanned: 5
+        converged_runs: 3
+        k_star_max: 11
+        k_fixed: 22
+        window: 5
+        epsilon: 0.1
+      note: replaces the old 1-of-101 drop
+    - knob: loadgen.max_queries
+      value: 122
+      rule: R-NTIMING
+      scope: driver
+      verified: null
+      note: 100 measured queries after warm-up
+  e2:
+    any:
+    - knob: R
+      value: 10
+      rule: R-REPS
+      scope: driver
+      verified: null
+    - knob: max_batches
+      value: 1100
+      rule: R-NTIMING
+      scope: driver
+      verified: null
+      note: one continuous epoch; canonicalizes the 400/1100 driver default split
+    - knob: warmup_k
+      value: 200
+      rule: R-WARMUP
+      scope: analysis
+      verified: null
+      inputs:
+        csvs_scanned: 10
+        converged_runs: 3
+        k_star_max: 0
+        k_fixed: 1
+        window: 51
+        epsilon: 0.05
+      note: canonical 200 unless detector demands more (detected on tracing-ON runs; tracing-OFF runs
+        1-2 are contaminated and excluded)
+  e4:
+    m2pro:
+    - knob: loadgen.config.rate
+      value: 0.1167
+      rule: R-LAMBDA-BELOW-SAT
+      scope: config
+      verified: &id001
+        ok: true
+        traces: evaluation/results/knobs_verify_mono9b.csv
+        checked: '2026-07-13'
+      inputs:
+        pilot: e4_factoid_decomp
+        median_service_s: 5.1395
+        rho: 0.6
+        task: factoid
+        all_arm_medians_s:
+          e4_factoid_mono9b: 4.9106
+          e4_factoid_decomp: 5.1395
+          e4_factoid_mono4b: 2.7278
+          e4_factoid_shared: 4.9953
+      applies_to:
+      - evaluation/self_rag/configs/factoid_*_mlx.yml
+      verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
+    - knob: loadgen.max_queries
+      value: 40
+      rule: R-NTIMING
+      scope: config
+      verified: null
+      applies_to:
+      - evaluation/self_rag/configs/factoid_*_mlx.yml
+    - knob: loadgen.queue_depth
+      value: 40
+      rule: R-QDEPTH
+      scope: config
+      verified: *id001
+      applies_to:
+      - evaluation/self_rag/configs/factoid_*_mlx.yml
+      verification: 'arrivals sidecar: max block_s < 5 ms'
+    - knob: loadgen.timeout
+      value: 1791
+      rule: R-TIMEOUT
+      scope: config
+      verified: null
+      inputs:
+        unit: seconds
+        task: factoid
+      applies_to:
+      - evaluation/self_rag/configs/factoid_*_mlx.yml
+    - knob: loadgen.config.rate
+      value: 0.0217
+      rule: R-LAMBDA-BELOW-SAT
+      scope: config
+      verified: *id001
+      inputs:
+        pilot: e4_multihop_mono9b
+        median_service_s: 27.5959
+        rho: 0.6
+        task: multihop
+        all_arm_medians_s:
+          e4_multihop_mono9b: 27.5959
+          e4_multihop_decomp: 8.3098
+      applies_to:
+      - evaluation/self_rag/configs/multihop_*_mlx.yml
+      verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
+    - knob: loadgen.max_queries
+      value: 40
+      rule: R-NTIMING
+      scope: config
+      verified: null
+      applies_to:
+      - evaluation/self_rag/configs/multihop_*_mlx.yml
+    - knob: loadgen.queue_depth
+      value: 40
+      rule: R-QDEPTH
+      scope: config
+      verified: *id001
+      applies_to:
+      - evaluation/self_rag/configs/multihop_*_mlx.yml
+      verification: 'arrivals sidecar: max block_s < 5 ms'
+    - knob: loadgen.timeout
+      value: 9631
+      rule: R-TIMEOUT
+      scope: config
+      verified: null
+      inputs:
+        unit: seconds
+        task: multihop
+      applies_to:
+      - evaluation/self_rag/configs/multihop_*_mlx.yml
+    - knob: warmup_k
+      value: 1
+      rule: R-WARMUP
+      scope: analysis
+      verified: null
+      inputs:
+        pilot: e4_factoid_mono9b
+        k_star: 0
+        k_fixed: 1
+        window: 5
+        epsilon: 0.1
+        converged: false
+        note: "tail not flat \u2014 pilot inconclusive, extend N"
+        outlier_idxs: *id002
+    - knob: R
+      value: 5
+      rule: R-REPS
+      scope: driver
+      verified: null
+    - knob: n_quality
+      value: 120
+      rule: R-NQUALITY
+      scope: driver
+      verified: *id001
+      verification: Wilson 95% half-width <= 9 points at the observed rate
+    - knob: top_k
+      value:
+        factoid: 3
+        multihop: 5
+      rule: R-PRECEDENT
+      scope: config
+      verified: null
+      inputs:
+        sensitivity:
+          top_k: 10
+          'on': multihop core arms
+      note: per task difficulty (retrieval differs across difficulties by design; contrasts are read within
+        a difficulty)
+    - knob: max_retries
+      value: 2
+      rule: R-PRECEDENT
+      scope: config
+      verified: null
+  e3:
+    m2pro:
+    - knob: p95_policy
+      value: raise
+      rule: R-NTIMING
+      scope: analysis
+      verified: null
+      note: 'raise: 100 q/run x R=10 -> 1000 pooled clears the >=500 gate'
+    - knob: loadgen.max_queries
+      value: null
+      rule: R-NTIMING
+      scope: config
+      verified: null
+      note: pending pilot
+    - knob: R
+      value: 10
+      rule: R-REPS
+      scope: driver
+      verified: null
+  e5:
+    m2pro:
+    - knob: loadgen.config.rate
+      value: 53.5714
+      rule: R-LAMBDA-BELOW-SAT
+      scope: config
+      verified: null
+      inputs:
+        pilot: e5_resnet_serial
+        median_service_s: 0.0112
+        rho: 0.6
+      applies_to: &id003
+      - pipeline_configs/mlperf/resnet_inference.yml
+      verification: "arrival trace: realized inter-arrivals ~ Exp(\u03BB); 0 blocked puts"
+    - knob: loadgen.max_queries
+      value: 500
+      rule: R-NTIMING
+      scope: config
+      verified: null
+      applies_to: *id003
+      note: Server scenario cell; other scenarios get their own configs
+    - knob: loadgen.queue_depth
+      value: 500
+      rule: R-QDEPTH
+      scope: config
+      verified: null
+      applies_to: *id003
+    - knob: loadgen.timeout
+      value: 47
+      rule: R-TIMEOUT
+      scope: config
+      verified: null
+      inputs:
+        unit: seconds
+      applies_to: *id003
+    - knob: multistream_interval_s
+      value: 0.0896
+      rule: R-LAMBDA-BELOW-SAT
+      scope: driver
+      verified: null
+      inputs:
+        n_samples: 8
+        median_service_s: 0.0112
+      note: 'fixed-interval MultiStream: 8-sample query every interval'
+    - knob: offline_queue_depth
+      value: total_samples
+      rule: R-QDEPTH
+      scope: driver
+      verified: null
+      note: 'saturating scheduler: depth >= all samples enqueued at once'
+    - knob: warmup_k
+      value: 1
+      rule: R-WARMUP
+      scope: analysis
+      verified: null
+      inputs:
+        pilot: e5_resnet_serial
+        k_star: 0
+        k_fixed: 1
+        window: 5
+        epsilon: 0.1
+        converged: false
+        note: "tail not flat \u2014 pilot inconclusive, extend N"
+        outlier_idxs: *id004
+    - knob: R
+      value: 5
+      rule: R-REPS
+      scope: driver
+      verified: null
+  e6:
+    m2pro:
+    - knob: fg.loadgen.config.rate
+      value: 0.5534
+      rule: R-E6-HEADROOM
+      scope: config
+      verified: null
+      inputs:
+        pilot: e6_fg_effnet
+        median_service_s: 0.7228
+        rho: 0.4
+      applies_to:
+      - pipeline_configs/torchvision_inference.yml
+      verification: "B=0 utilization 30-50%; \u03BB identical across all B"
+    - knob: fg.loadgen.max_queries
+      value: 100
+      rule: R-NTIMING
+      scope: config
+      verified: null
+      applies_to:
+      - pipeline_configs/torchvision_inference.yml
+      note: '>=500 pooled per cell at R=5 (p95 gate)'
+    - knob: fg.loadgen.queue_depth
+      value: 100
+      rule: R-QDEPTH
+      scope: config
+      verified: null
+      applies_to:
+      - pipeline_configs/torchvision_inference.yml
+    - knob: fg.loadgen.timeout
+      value: 915
+      rule: R-TIMEOUT
+      scope: config
+      verified: null
+      inputs:
+        unit: seconds
+      applies_to:
+      - pipeline_configs/torchvision_inference.yml
+    - knob: warmup_k
+      value: 1
+      rule: R-WARMUP
+      scope: analysis
+      verified: null
+      inputs:
+        pilot: e6_fg_effnet
+        k_star: 0
+        k_fixed: 1
+        window: 5
+        epsilon: 0.1
+        converged: true
+        note: ''
+        outlier_idxs: *id005
+    - knob: B_sweep
+      value:
+      - 0
+      - 1
+      - 2
+      rule: R-PRECEDENT
+      scope: driver
+      verified: null
+      note: minimal E6; ceiling reported, never extrapolated
+    - knob: R
+      value: 5
+      rule: R-REPS
+      scope: driver
+      verified: null

@@ -1,24 +1,28 @@
-name: "Self-RAG Monolith (factoid, MLX)"
+name: "Self-RAG Monolith 4B — single call (multi-hop / HotpotQA, CUDA)"
+# Size-matched single-call control: identical to multihop_monolith_cuda.yml
+# (one structured grade+answer+check call) but on the 4B instead of the 9B.
+# Isolates model SIZE from topology in the monolith arm on the multi-hop task
+# — the control that decides whether the multi-hop quality gap is topology or
+# just size. Retrieval is held fixed by reusing the 9B monolith's Chroma
+# collection.
+listeners:
+  - dcgmi
+  - top
+  - iostat
 pipelines:
-  - name: Self-RAG Monolith
+  - name: Self-RAG Monolith 4B (multi-hop)
     inputs: [0]
     outputs: [5]
     dataset_stage_id: 0
     loadgen:
-      # [knobs] derived by evaluation/pilots/derive_knobs.py @ 66fd55a31eae51a1bd4a58df2b659c7db11df675-dirty
-      # [knobs] config.rate: R-LAMBDA-BELOW-SAT (0.6 x 1/5.1395s, pilot e4_factoid_decomp)
-      # [knobs] max_queries: R-NTIMING
-      # [knobs] queue_depth: R-QDEPTH
-      # [knobs] timeout: R-TIMEOUT
-      # [knobs] DO NOT hand-edit; regenerate via apply_knobs.py
       component: loadgen.PoissonLoadScheduler
-      queue_depth: 40
-      max_queries: 40
-      timeout: 1791
+      queue_depth: 50
+      max_queries: 30
+      timeout: 600000
       config:
-        rate: 0.1167
+        rate: 4.0
     stages:
-      # --- Stage 0: Question DataLoader ---
+      # --- Stage 0: Question DataLoader (HotpotQA multi-hop) ---
       - name: Question dataloader
         id: 0
         outputs: [1]
@@ -26,13 +30,13 @@ pipelines:
         config:
           batch_size: 1
           dataset:
-            name: rag-datasets/rag-mini-wikipedia
-            subset: question-answer
-            split: test
+            name: RUC-NLPIR/FlashRAG_datasets
+            subset: hotpotqa
+            split: dev
             question_column: question
-            answers_column: answer
+            answers_column: golden_answers
 
-      # --- Stage 1: ChromaDB Retriever ---
+      # --- Stage 1: ChromaDB Retriever (corpus from HotpotQA contexts) ---
       - name: Document retriever
         id: 1
         outputs: [2]
@@ -40,13 +44,14 @@ pipelines:
         polling_policy: utils.queues.polling.FirstSubmittedPolicy
         config:
           corpus_dataset:
-            name: rag-datasets/rag-mini-wikipedia
-            subset: text-corpus
-            split: passages
-            text_column: passage
-            max_docs: 3200
-          top_k: 3
-          collection_name: self_rag_factoid_monolith_corpus
+            name: RUC-NLPIR/FlashRAG_datasets
+            subset: hotpotqa
+            split: dev
+            context_column: metadata   # build corpus from gold+distractor contexts
+            max_context_rows: 300       # harvest contexts from first 300 questions
+            max_docs: 20000
+          top_k: 5
+          collection_name: self_rag_multihop_monolith_corpus
 
       # --- Stage 2: Monolith Prompt Formatter ---
       - name: Monolith formatter
@@ -56,16 +61,20 @@ pipelines:
         config:
           tokenizer_stage_id: 3
 
-      # --- Stage 3: Monolith LLM (single large model) ---
+      # --- Stage 3: Monolith LLM (single 4B model) ---
       - name: Monolith LLM
         id: 3
         outputs: [4]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+            name: Qwen/Qwen3.5-4B
+            quantize: false
             gen_kwargs:
-              max_tokens: 256
+              max_new_tokens: 256
+              do_sample: false
 
       # --- Stage 4: Monolith Router (JSON parser + routing) ---
       - name: Monolith router
@@ -96,10 +105,14 @@ pipelines:
       - name: Query rewrite LLM
         id: 7
         outputs: [1]
-        component: stages.llm_mlx.Inference
+        component: stages.llm_huggingface.Inference
         config:
+          dtype: torch.bfloat16
+          device: cuda
           model:
-            name: mlx-community/Qwen3.5-9B-OptiQ-4bit
+            name: Qwen/Qwen3.5-4B
+            quantize: false
             gen_kwargs:
-              max_tokens: 128
+              max_new_tokens: 128
+              do_sample: false
           depends_on_id: 3

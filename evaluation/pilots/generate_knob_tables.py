@@ -61,16 +61,23 @@ def _fmt_value(v) -> str:
     return _tex_escape(v)
 
 
+def _key(e: dict) -> str:
+    """Display key: knob name, disambiguated by task when a rule binds
+    per-task (e.g. E4's factoid vs multihop λ)."""
+    task = (e.get("inputs") or {}).get("task")
+    return f"{e['knob']} ({task})" if task else e["knob"]
+
+
 def render_experiment(exp: str, devices: dict, knobs: dict) -> None:
     dev_names = [d for d in ("m2pro", "gb10", "any") if d in devices]
-    # union of knob names, in first-device order
+    # union of knob keys, in first-device order
     order, seen = [], set()
     for d in dev_names:
         for e in devices[d] or []:
-            if e["knob"] not in seen:
-                seen.add(e["knob"])
-                order.append(e["knob"])
-    by_dev = {d: {e["knob"]: e for e in (devices[d] or [])} for d in dev_names}
+            if _key(e) not in seen:
+                seen.add(_key(e))
+                order.append(_key(e))
+    by_dev = {d: {_key(e): e for e in (devices[d] or [])} for d in dev_names}
 
     print(f"% --- {EXP_TITLES.get(exp, exp)} knobs "
           f"(derive_knobs.py @ {knobs.get('git_commit', '?')}, "

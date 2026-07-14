@@ -50,13 +50,19 @@ hyperparameter protocol must all land *before* that re-collection so we only col
    Polling fix verified **end-to-end** (factoid_decomposed_mlx serial: 10/10, 0 spam,
    distinct query_ids); others unit-verified against real code paths. Router-dict cleanup
    deferred (§2.5). Nothing is re-collected on a build that still has these.
-5. **[ ] P0 [dev/M2] Hyperparameter protocol** (§2.6) — pilot runs per (workload, device),
-   derive every knob by rule, lock the values into committed configs, draft the
-   per-experiment knob tables for the paper.
-6. **[ ] P0 `[?]` Verify E1 re-collection status** (§3.1) — `run_matrix_env.txt` says the
-   committed matrix IS from an M2 Pro, and fresh untracked NoOp CSVs + regenerated
-   zero-copy figure exist in the working tree. Reconcile provenance; this blocker may
-   already be done.
+5. **[~] P0 [dev/M2] Hyperparameter protocol — M2 HALF DONE (2026-07-13).**
+   `evaluation/pilots/` package built + idle-session pilots run (12 cells) →
+   `knobs.yml` derived (per-task E4 λ: factoid 0.117, multihop 0.0217 q/s;
+   E5 53.6 q/s; E6 fg 0.55 q/s; E1 warm-up k=22 — not 1; E2 k=200 confirmed) →
+   configs locked via apply_knobs → `knob_tables.tex` (6 tables) generated.
+   **Remaining:** GB10 pilots by Ties (`evaluation/pilots/README.md` GB10 spec);
+   ANE/CoreML pilot cells hang (E3 mapping-B apparatus broken — investigate,
+   §3.3); E5 pilot now runs on Imagenette (§3.5 dataset decision).
+6. **[x] P0 E1 re-collection VERIFIED + warm-up corrected (2026-07-13)** —
+   committed matrix is idle-M2 data (`run_matrix_env.txt`); pilot detector set
+   warm-up k=22 (was 1-of-101); `table1.tex` regenerated — depth-flatness
+   robust to the change (<1.5% shift). Remaining E1 item: synchronous tracing
+   cost (§3.1).
 7. **[ ] P0 [dev] Build the delta of missing arms** (§2.2) — E5 saturating-Offline +
    fixed-interval MultiStream + **N-in-flight closed-loop** schedulers; 4 multi-hop
    Self-RAG control configs; E7 size rungs (folded into E4); the **E6 B-sweep generator
@@ -340,14 +346,16 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
 - [ ] Set the warm-up drop by the §2.6 rule (current 1 of 101 is too few); R→10 (§2.3).
 
 ### 3.2 E2 — Modularity overhead — **P0**
-- [ ] **[M2] Re-collect the mps tracing-OFF arm** — the run-level statistics
-  (2026-07-13) exposed contamination the old pooled CI hid: Choreo(off) per-run
-  medians are 120.3 / 96.5 / 90.2 / 90.3 / 89.4 ms (runs 1–2 outliers; baseline and
-  tracing-on runs are all clean and consistent). The old headline "+493.3 µs / +0.55%
-  [+0.41, +0.69]" was a pooling artifact and is superseded; current honest verdict is
-  "indistinguishable from zero" with two bad runs. Investigate cause (thermal /
-  background load / cold caches beyond the 200-step warmup) and re-run on an idle
-  machine. Tracing-on cost is now cleanly significant: **+1.8 ms / +2.0% per step**.
+- [x] **[M2] RE-COLLECTED (2026-07-13, idle session, R=10, commit 33893eb).**
+  All 10 tracing-off runs consistent (89.2–90.7 ms — contamination gone).
+  **New headline: paired overhead −113 µs [−460, +172], −0.13% [−0.51, +0.19] —
+  statistically indistinguishable from zero at ±0.5% resolution.** (The old
+  "+0.55%" was a pooling artifact of the contaminated matrix.) Tracing-on:
+  +2.3%/step, consistent across all 10 runs. `table2_mps.tex` regenerated.
+- [ ] `[?]` Small quirk to check: fresh baseline arms logged ~1450 steps/run vs
+  Choreo's 900 post-warmup (baseline_finetune may ignore --max-batches and run
+  the full epoch) — medians are steady-state so the verdict stands, but fix for
+  the "identical N" claim before the GB10 cuda half.
 - [ ] **[GB10, Ties] Re-run the cuda half** in the main collection pass (prior numbers:
   +49.1 µs / +0.13% core; +1.75 ms / +4.5% tracing-on async) — cheap, and sidesteps
   old-data provenance questions.
@@ -365,6 +373,12 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
 > as a slim illustration; **VQA-accuracy scorer drops from §2.1 if accepted.**
 > Pending co-author sign-off + the counter pre-flight check. Items below stand only
 > if the redesign is REJECTED:
+- [ ] **⚠ NEW (2026-07-13 pilots): the ANE/CoreML apparatus HANGS.** Both ANE pilot
+  cells (`e3_vqa_b`, `e3p_c2_rmax` — CLIPVisionEncoderCoreML) stalled to their 1-h
+  timeouts instead of erroring. E3 mapping-B (and E3′ co-runner C2) is unusable until
+  diagnosed — suspects: CoreML model compile blocking forever on this macOS, or a
+  deadlock in the stage's prepare/dispatch. Affects BOTH E3 variants; investigate
+  before any E3 collection.
 - [x] Verified: **no E3 data exists** (configs `multimodal_vqa_mapping_{a,b}.yml` ready;
   `bandwidth_analysis.py` ready; nothing run).
 - [ ] **Decide the operating point first (§2.6):** recommended — build the N-in-flight
