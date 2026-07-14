@@ -12,13 +12,15 @@ Runs, in value order, on knob-locked configs (evaluation/pilots/knobs.yml):
                      e4_factoid); 27B OOM on the M2 is an EXPECTED datum
   phase e5           ResNet scenario reduction: Server (as-committed) +
                      SingleStream / Offline / MultiStream via loadgen override,
-                     R=10
+                     R=10; each cell also runs a *_notrace duplicate with
+                     CHOREO_DISABLE_TRACING=1 (spans-off arm)
 
 E2's cuda half runs separately via run_modularity.py (own driver).
 Timing cells run the configs AS COMMITTED (tracing on — the instrumented
 framework is the paper's measurement instrument); quality cells override the
-loadgen to a serial closed loop of n_quality queries. Results + arrivals
-sidecars + _outputs.jsonl are curated into evaluation/collect/results/<dev>/.
+loadgen to a serial closed loop of n_quality queries. Results + arrivals /
+_bandwidth.csv sidecars + _outputs.jsonl are curated into
+evaluation/collect/results/<dev>/.
 Writes collect_env_<dev>.txt (commit-pinned) and DONE_<dev> marker on success.
 
     python evaluation/collect/run_collection.py --device {mlx,cuda}
@@ -66,6 +68,7 @@ class Cell:
     orchestrated: bool = False  # multi-pipeline config: run WITHOUT -p 0
     timeout_s: int = 7200
     tolerate_failure: bool = False  # e.g. the 27B OOM ceiling datum
+    env: dict | None = None     # extra env for the subprocess (e.g. e5 _notrace)
 
 
 def build_cells(device: str) -> list[Cell]:
@@ -131,6 +134,12 @@ def build_cells(device: str) -> list[Cell]:
     for name, ov in scenarios.items():
         cells.append(Cell(f"e5_{name}", resnet, "e5", runs=10,
                           loadgen_override=ov, timeout_s=1800))
+        # spans-off variant: same cell with MLflow tracing no-op'd, isolating
+        # the tracing layer's contribution (mirrors the overhead drivers'
+        # t0 arms, e.g. evaluation/overheads/framework_overhead/run_matrix.py)
+        cells.append(Cell(f"e5_{name}_notrace", resnet, "e5", runs=10,
+                          loadgen_override=ov, timeout_s=1800,
+                          env={"CHOREO_DISABLE_TRACING": "1"}))
 
     return cells
 
@@ -159,6 +168,9 @@ def make_config(base_rel: str, device: str, quality_n: int | None,
 
 def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
     ok = True
+    # Popen used to inherit os.environ implicitly; build it explicitly so
+    # per-cell extras (Cell.env) layer on top of the parent environment.
+    proc_env = {**os.environ, **(cell.env or {})}
     for r in range(1, cell.runs + 1):
         label = f"{cell.label}_{device}_r{r}"
         target = results_dir / f"{label}.csv"
@@ -181,7 +193,7 @@ def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
             with open(log_path, "w") as logf:
                 proc = subprocess.Popen(cmd, cwd=REPO_ROOT, stdout=logf,
                                         stderr=subprocess.STDOUT,
-                                        start_new_session=True)
+                                        start_new_session=True, env=proc_env)
                 rc = proc.wait(timeout=cell.timeout_s)
         except subprocess.TimeoutExpired:
             # kill the whole process group (grandchildren included) — a wedged
@@ -206,7 +218,7 @@ def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
             ok = ok and cell.tolerate_failure
             continue
         shutil.move(str(src), target)
-        for suffix in ("_arrivals.csv", "_outputs.jsonl"):
+        for suffix in ("_arrivals.csv", "_outputs.jsonl", "_bandwidth.csv"):
             p = GLOBAL_RESULTS / f"{label}{suffix}"
             if p.exists():
                 shutil.move(str(p), results_dir / f"{label}{suffix}")
