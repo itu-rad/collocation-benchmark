@@ -6,6 +6,20 @@ The Collocation Benchmark is a modular and flexible framework designed to evalua
 - **Modularity**: Stages like data loading and model execution are standalone building blocks, allowing for flexible pipeline construction.
 - **Collocation**: Facilitating research into colocation schedulers and resource managers by providing scenarios with detailed time breakdowns for colocated workloads.
 
+## Environments (canonical mapping)
+
+One pinned environment file per machine class — always rebuild from the file,
+never reuse a pre-existing env (drifted envs have silently broken collection):
+
+| Machine | File | Env name | Verified pins |
+|---|---|---|---|
+| Apple Silicon (M2 Pro) | `environments/macos.yaml` | `benchmark_macos` | radt 0.2.29 (async_tracing @3ba61cb), torch 2.10.0 (mps), transformers 5.2.0; mlx/mlx-lm float by design (qwen3_5 arch needs latest) |
+| NVIDIA DGX Spark (GB10) | `environments/nvidia.yaml` | `benchmark_nvidia` | radt 0.2.29, torch 2.10.0+cu130, transformers 5.2.0; vllm excluded (separate install, engine-overlay only) |
+
+The collection drivers (`evaluation/pilots/run_pilots.py`,
+`evaluation/overheads/modularity_overhead/run_modularity.py`) hard-abort on a
+mismatched env.
+
 ## Getting Started
 
 ### Installation
@@ -20,7 +34,7 @@ The Collocation Benchmark is a modular and flexible framework designed to evalua
 
 2.  Install dependencies:
     ```bash
-    conda env create -f environments/nvidia.yml
+    conda env create -f environments/nvidia.yaml
     conda activate benchmark_nvidia
     ```
 
@@ -34,7 +48,7 @@ The Collocation Benchmark is a modular and flexible framework designed to evalua
 
 2.  Install dependencies:
     ```bash
-    conda env create -f environments/macos.yml
+    conda env create -f environments/macos.yaml
     conda activate benchmark_macos
     ```
 

@@ -73,8 +73,9 @@ until then.
 
 ## The idle-M2 session (author)
 
-Canonical M2 collection env: **`benchmark_macos_overhead`** (radt 0.2.29
-async_tracing — the drivers hard-abort in `benchmark_macos`, radt 0.2.28).
+Canonical M2 collection env: **`benchmark_macos`**, rebuilt from
+`environments/macos.yaml` (2026-07-13: the yaml pins radt 0.2.29 async_tracing;
+the old `benchmark_macos_overhead` workaround env is retired).
 
 1. Machine idle (close apps, disable heavy background jobs), on AC power.
 2. `python evaluation/pilots/run_pilots.py --device mlx` (~45–90 min).
