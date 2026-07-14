@@ -1,5 +1,5 @@
 schema_version: 1
-generated: 2026-07-14 07:54:12 -0700
+generated: 2026-07-14 08:02:51 -0700
 git_commit: unknown
 variants:
   e3: dose_response
@@ -27,6 +27,28 @@ pilots:
       max: 5.4765
     per_run_medians_s:
     - 2.454
+  e3p_c1_rmax_cuda:
+    cell: e3p_c1_rmax
+    device: gb10
+    csvs:
+    - pilot_e3p_c1_rmax_cuda_r1.csv
+    n_pooled: 99
+    warmup:
+      k_star: 0
+      k_fixed: 1
+      window: 5
+      epsilon: 0.1
+      converged: true
+      note: ''
+      outlier_idxs:
+      - 0
+    service_s:
+      median: 0.0335
+      mean: 0.0335
+      min: 0.0309
+      max: 0.037
+    per_run_medians_s:
+    - 0.034
   e3p_c1_rmax_mlx:
     cell: e3p_c1_rmax
     device: m2pro
@@ -891,6 +913,100 @@ experiments:
       rule: R-PRECEDENT
       scope: config
       verified: null
+  e3:
+    gb10:
+    - knob: corunner_c1_gpu_levels
+      value:
+      - 7.463
+      - 14.925
+      - 22.388
+      - 29.851
+      rule: R-INTENSITY
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_c1_rmax
+        rmax_per_s: 29.851
+        median_op_s: 0.0335
+    - knob: corunner_c3_levels
+      value:
+      - 2.425
+      - 4.849
+      - 7.274
+      - 9.699
+      rule: R-INTENSITY
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_c3_rmax
+        rmax_per_s: 9.699
+        median_op_s: 0.1031
+    - knob: fg_decode_median_s
+      value: 31.6367
+      rule: R-LAMBDA-SAT
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_fg_decode
+      note: foreground runs saturated decode; co-runner is the swept axis
+    - knob: R
+      value: 10
+      rule: R-REPS
+      scope: driver
+      verified: null
+    m2pro:
+    - knob: corunner_c1_gpu_levels
+      value:
+      - 4.604
+      - 9.208
+      - 13.812
+      - 18.416
+      rule: R-INTENSITY
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_c1_rmax
+        rmax_per_s: 18.416
+        median_op_s: 0.0543
+    - knob: corunner_c2_ane_levels
+      value:
+      - 5.01
+      - 10.02
+      - 15.03
+      - 20.04
+      rule: R-INTENSITY
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_c2_rmax
+        rmax_per_s: 20.04
+        median_op_s: 0.0499
+    - knob: corunner_c3_levels
+      value:
+      - 4.202
+      - 8.403
+      - 12.605
+      - 16.807
+      rule: R-INTENSITY
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_c3_rmax
+        rmax_per_s: 16.807
+        median_op_s: 0.0595
+    - knob: fg_decode_median_s
+      value: 10.3648
+      rule: R-LAMBDA-SAT
+      scope: driver
+      verified: null
+      inputs:
+        pilot: e3p_fg_decode
+      note: foreground runs saturated decode; co-runner is the swept axis
+    - knob: R
+      value: 10
+      rule: R-REPS
+      scope: driver
+      verified: null
   e5:
     gb10:
     - knob: loadgen.config.rate
@@ -1176,60 +1292,6 @@ experiments:
       note: minimal E6; ceiling reported, never extrapolated
     - knob: R
       value: 5
-      rule: R-REPS
-      scope: driver
-      verified: null
-  e3:
-    m2pro:
-    - knob: corunner_c1_gpu_levels
-      value:
-      - 4.604
-      - 9.208
-      - 13.812
-      - 18.416
-      rule: R-INTENSITY
-      scope: driver
-      verified: null
-      inputs:
-        pilot: e3p_c1_rmax
-        rmax_per_s: 18.416
-        median_op_s: 0.0543
-    - knob: corunner_c2_ane_levels
-      value:
-      - 5.01
-      - 10.02
-      - 15.03
-      - 20.04
-      rule: R-INTENSITY
-      scope: driver
-      verified: null
-      inputs:
-        pilot: e3p_c2_rmax
-        rmax_per_s: 20.04
-        median_op_s: 0.0499
-    - knob: corunner_c3_levels
-      value:
-      - 4.202
-      - 8.403
-      - 12.605
-      - 16.807
-      rule: R-INTENSITY
-      scope: driver
-      verified: null
-      inputs:
-        pilot: e3p_c3_rmax
-        rmax_per_s: 16.807
-        median_op_s: 0.0595
-    - knob: fg_decode_median_s
-      value: 10.3648
-      rule: R-LAMBDA-SAT
-      scope: driver
-      verified: null
-      inputs:
-        pilot: e3p_fg_decode
-      note: foreground runs saturated decode; co-runner is the swept axis
-    - knob: R
-      value: 10
       rule: R-REPS
       scope: driver
       verified: null

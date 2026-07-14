@@ -54,7 +54,7 @@ pipelines:
     max_queries: 1000
     timeout: 3600
     config:
-      interval: null
+      interval: 0.13399
   stages:
   - name: VQA dataloader
     id: 0

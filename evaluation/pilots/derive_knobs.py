@@ -280,8 +280,10 @@ def derive_e3(pilots: dict, device: str, variant: str, p95_policy: str) -> list[
             entries.append(K("loadgen.max_queries", None, "R-NTIMING", "config",
                              note="pending pilot"))
     else:  # dose_response (E3')
-        for cell, label in (("e3p_c1_rmax", "c1_gpu"), ("e3p_c2_rmax", "c2_ane"),
-                            ("e3p_c3_rmax", "c3")):
+        corunners = [("e3p_c1_rmax", "c1_gpu"), ("e3p_c3_rmax", "c3")]
+        if device == "mlx":  # no Neural Engine on GB10
+            corunners.insert(1, ("e3p_c2_rmax", "c2_ane"))
+        for cell, label in corunners:
             p = pilots.get((cell, device))
             if p:
                 rmax = round(1.0 / p["service_s"]["median"], 3)
