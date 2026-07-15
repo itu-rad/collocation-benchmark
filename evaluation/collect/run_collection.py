@@ -78,17 +78,21 @@ RADT_LISTENER_ENV = {
     # ensure_built(). No-ops with one warning on non-Apple hosts.
     "mlx": {"RADT_PRESENT": "True", "RADT_LISTENER_MACMON": "True",
             "RADT_LISTENER_AMCBANDWIDTH": "True"},
-    # cuda: EVERY registry listener armed (2026-07-15 user decision: "enable
-    # all of them and let's see what works"). Expected on GB10: TOP/SMI/Free/
-    # IOstat/PS produce data (SMI with some N/A fields on unified memory);
-    # DCGMI likely no-ops (profiling module broken on GB10); Macmon and
-    # AMCBandwidth no-op on Linux by design. Survivors get pruned after the
-    # R=1 sweep's empirical verdict.
+    # cuda survivors of the 2026-07-15 all-listeners test: TOP/PS/Free/IOstat
+    # worked out of the box; SMI needs SMI_GPU_ID (the radt schedule path
+    # sets it for its children; direct-mode cells must set it themselves —
+    # without it the listener runs `nvidia-smi -i None` and dies silently).
+    # memory.used reads [N/A] on GB10 unified memory -> listener logs -1;
+    # power/utilization/pstate stream fine (verified live).
+    # DCGMI: OFF — platform dead end, not config: DCGM 4.5.2 (newest sbsa
+    # build) discovers the GB10 but rejects ALL field watches ("Error
+    # setting watches: Bad parameter", every field 155..1012, group 0 with
+    # GPU 0 present). Matches the earlier profiling-module verdict.
+    # Macmon/AMCBandwidth: no-op on Linux; left unarmed.
     "cuda": {"RADT_PRESENT": "True", "RADT_LISTENER_TOP": "True",
-             "RADT_LISTENER_SMI": "True", "RADT_LISTENER_FREE": "True",
-             "RADT_LISTENER_IOSTAT": "True", "RADT_LISTENER_PS": "True",
-             "RADT_LISTENER_DCGMI": "True", "RADT_LISTENER_MACMON": "True",
-             "RADT_LISTENER_AMCBANDWIDTH": "True"},
+             "RADT_LISTENER_SMI": "True", "SMI_GPU_ID": "0",
+             "RADT_LISTENER_FREE": "True", "RADT_LISTENER_IOSTAT": "True",
+             "RADT_LISTENER_PS": "True"},
 }
 
 # Spans are ON for collection cells (design of record). Safe against the
