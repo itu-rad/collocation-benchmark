@@ -31,6 +31,7 @@ Writes collect_env_<dev>.txt (commit-pinned) and DONE_<dev> marker on success.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import fnmatch
 import os
 import platform
@@ -48,8 +49,32 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent.parent
 GLOBAL_RESULTS = REPO_ROOT / "evaluation" / "results"
 sys.path.insert(0, str(REPO_ROOT / "evaluation" / "pilots"))
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import pilot_lib as pl  # noqa: E402
 from run_pilots import check_environment, _git_sha  # noqa: E402
+
+# DRAM-bandwidth sidecar for the staged phase (Apple-Silicon-only; the module
+# is pure stdlib so this import succeeds everywhere, but guard anyway so a
+# cuda host missing scripts/ skips it silently — run_cell also gates on
+# device == "mlx").
+try:
+    from amc_bandwidth_sampler import AMCBandwidthSampler  # noqa: E402
+except ImportError:
+    AMCBandwidthSampler = None
+
+# radt listener env vars (FIX: listeners never armed on the direct `-p 0`
+# path). _RADTBenchmark.__enter__ (radt/run/benchmark.py) spawns a listener
+# only when RADT_PRESENT is set AND RADT_LISTENER_<NAME> == "True", where
+# <NAME> comes from the listener class name (MacmonThread -> MACMON,
+# TOPThread -> TOP). radt.schedule_external sets these for orchestrated
+# cells; the direct path must set them itself. Mirrors make_config's
+# doc["listeners"] choice per device. Listeners stay ON for the e5 *_notrace
+# cells: CHOREO_DISABLE_TRACING only no-ops MLflow *spans* (mlflow.tracing),
+# while listeners log run *metrics* via MlflowClient — independent paths.
+RADT_LISTENER_ENV = {
+    "mlx": {"RADT_PRESENT": "True", "RADT_LISTENER_MACMON": "True"},
+    "cuda": {"RADT_PRESENT": "True", "RADT_LISTENER_TOP": "True"},
+}
 
 SR = "evaluation/self_rag/configs"
 CT = "evaluation/contention/configs"
@@ -170,7 +195,10 @@ def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
     ok = True
     # Popen used to inherit os.environ implicitly; build it explicitly so
     # per-cell extras (Cell.env) layer on top of the parent environment.
-    proc_env = {**os.environ, **(cell.env or {})}
+    # RADT_LISTENER_ENV arms the macmon/top listeners on every cell (see the
+    # module-level note); for orchestrated cells radt.schedule_external sets
+    # the same vars for its children, so this is consistent, not conflicting.
+    proc_env = {**os.environ, **RADT_LISTENER_ENV[device], **(cell.env or {})}
     for r in range(1, cell.runs + 1):
         label = f"{cell.label}_{device}_r{r}"
         target = results_dir / f"{label}.csv"
@@ -189,12 +217,22 @@ def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
         t0 = time.time()
         log_path = results_dir / f"{label}.log"
         results_dir.mkdir(parents=True, exist_ok=True)
+        # Staged phase on Apple silicon: run the AMC DRAM-bandwidth sampler as
+        # a sidecar for the whole run so Steps B/C get a bytes/s axis. The
+        # curation loop below already moves the _bandwidth.csv it writes.
+        if (device == "mlx" and cell.label.startswith("stage_")
+                and AMCBandwidthSampler is not None):
+            sampler_ctx = AMCBandwidthSampler(
+                out=GLOBAL_RESULTS / f"{label}_bandwidth.csv")
+        else:
+            sampler_ctx = contextlib.nullcontext()
         try:
             with open(log_path, "w") as logf:
                 proc = subprocess.Popen(cmd, cwd=REPO_ROOT, stdout=logf,
                                         stderr=subprocess.STDOUT,
                                         start_new_session=True, env=proc_env)
-                rc = proc.wait(timeout=cell.timeout_s)
+                with sampler_ctx:
+                    rc = proc.wait(timeout=cell.timeout_s)
         except subprocess.TimeoutExpired:
             # kill the whole process group (grandchildren included) — a wedged
             # cell must never wedge the pass

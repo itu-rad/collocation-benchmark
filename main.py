@@ -90,6 +90,19 @@ def radt_entrypoint(args):
         # skips stage post_run(), so it must happen here.
         kill_all_servers()
         flush_traces()
+        # Tear down the radt listener/logger children and close the mlflow
+        # run; without this a timeout-killed run stays status=RUNNING forever
+        # and the listener processes only die with the process group. No-op
+        # unless RADT_PRESENT is set. shutdown() end_run()s with the default
+        # FINISHED status, so re-mark the run KILLED afterwards — a validator
+        # matching runs by tag must not mistake a timeout kill for a clean run.
+        active = mlflow.active_run()
+        radt.shutdown()
+        if active is not None:
+            try:
+                mlflow.MlflowClient().set_terminated(active.info.run_id, "KILLED")
+            except Exception:  # pylint: disable=broad-except
+                pass
         signal.signal(signum, signal.SIG_DFL)
         os.kill(os.getpid(), signum)
 
@@ -163,7 +176,22 @@ def radt_entrypoint(args):
         )
         mlflow.log_params(mlflow_config)
 
-    run_loadgen(benchmark_config.pipelines[args.pipeline_id])
+    # Enter the radt benchmark context ourselves. On the direct `-p N` path
+    # (evaluation/collect/run_collection.py execs `main.py <cfg> -p 0`) nothing
+    # else enters it, so the macmon/top listener processes never spawn —
+    # _RADTBenchmark.__enter__ (radt/run/benchmark.py) is the ONLY place they
+    # are started, gated on RADT_PRESENT + RADT_LISTENER_<NAME> env vars.
+    # RADTBenchmark is a no-op when RADT_PRESENT is unset (manual runs and the
+    # overhead drivers stay unperturbed), and it wraps a process-wide singleton,
+    # so on the radt-scheduled path (`python -m radt run`, used for the
+    # orchestrated multi-pipeline cells) this reuses the instance already
+    # entered by radt.run.run.start_run instead of double-spawning listeners.
+    with radt.run.RADTBenchmark():
+        # Tag the run with the per-run output label so post-hoc validation can
+        # match mlflow runs by tag instead of wall clock. The active run exists
+        # by now (mlflow.log_params above auto-starts one even without radt).
+        mlflow.set_tag("choreo.label", os.environ.get("CHOREO_OUTPUT_LABEL", ""))
+        run_loadgen(benchmark_config.pipelines[args.pipeline_id])
 
     # Force-exit after the pipeline completes. Interpreter shutdown can
     # otherwise hang for many minutes on mlflow telemetry sockets in
@@ -179,15 +207,18 @@ def radt_entrypoint(args):
 
     # Drain MLflow trace spans BEFORE os._exit. atexit handlers don't fire
     # on os._exit, so this is the last chance to push pending spans.
-    # NOTE: we do NOT call mlflow.end_run() here — RadT listeners (macmon,
-    # smi, top, etc.) attach to the active run and stream metrics. Calling
-    # end_run from under them closes the run, drops in-flight metric
-    # writes, and can also race with mlflow.log_artifact for the yaml.
-    # RadT marks the run FINISHED itself via RADTBenchmark.__exit__.
+    # Run closure: the RADTBenchmark with-block above already terminated the
+    # listeners, flushed their metric queues, and mlflow.end_run()'d (in that
+    # order — see _RADTBenchmark.__exit__ — so no in-flight metric write lands
+    # on a closed run). radt.shutdown() below is the belt-and-braces drain for
+    # any path where the with-block was bypassed; it is idempotent and a no-op
+    # without RADT_PRESENT. Without it, os._exit would leave the run stuck
+    # status=RUNNING and orphan the listener children.
     # Reap any local inference servers before os._exit (which skips atexit), so
     # the GPU is freed even if a stage's post_run() didn't run.
     kill_all_servers()
     flush_traces()
+    radt.shutdown()
     os._exit(0)
 
 
