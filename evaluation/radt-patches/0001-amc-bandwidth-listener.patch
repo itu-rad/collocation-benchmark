@@ -1,0 +1,202 @@
+From f9a61e8074b16501b8be0550fdcefd9081bf8760 Mon Sep 17 00:00:00 2001
+From: Robert Bayer <roba@itu.dk>
+Date: Tue, 14 Jul 2026 22:32:02 -0700
+Subject: [PATCH] Add AMCBandwidth listener: Apple-silicon DRAM bandwidth via
+ IOReport
+
+New listener (enable with RADT_LISTENER_AMCBANDWIDTH=True) that streams
+per-engine memory-controller bandwidth as radt metrics:
+
+  system/amc - {Cpu|Gpu|Ane|Other} {Rd|Wr} GBps
+  system/amc - Total GBps
+
+It runs an external clang-compiled sampler binary that reads the Apple
+Memory Controller's per-requestor DRAM byte counters from the private
+IOReport framework (no root required), parses its per-interval CSV
+stream (default 0.5 s cadence), and pushes metrics through the batched
+listener logger like the top listener does. The binary is located via
+env CHOREO_AMC_SAMPLER_BIN or PATH; it stays external because the
+IOReport calls need Objective-C blocks and an ABI where
+IOReportSimpleGetIntegerValue's 2nd argument must be NULL.
+
+On non-Darwin platforms, a missing binary, or a machine whose IOReport
+exposes no AMC channels, the listener prints one warning and exits
+cleanly instead of crashing the run. SIGTERM (how RADTBenchmark stops
+listeners) is forwarded to the sampler so it is never orphaned.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01N3eEMNU1BgTYrtFV6fJVp2
+---
+ .../run/listeners/amc_bandwidth_listener.py   | 160 ++++++++++++++++++
+ 1 file changed, 160 insertions(+)
+ create mode 100644 radt/radt/run/listeners/amc_bandwidth_listener.py
+
+diff --git a/radt/radt/run/listeners/amc_bandwidth_listener.py b/radt/radt/run/listeners/amc_bandwidth_listener.py
+new file mode 100644
+index 0000000..ed50bf4
+--- /dev/null
++++ b/radt/radt/run/listeners/amc_bandwidth_listener.py
+@@ -0,0 +1,160 @@
++"""Apple-silicon DRAM-bandwidth listener (AMC / IOReport).
++
++Streams per-engine memory-controller bandwidth as radt metrics by running an
++external sampler binary (``amc_bandwidth_sampler``) that reads the Apple
++Memory Controller's per-requestor DRAM byte counters from the private
++IOReport framework. No root required. Metric keys mirror the macmon listener
++naming convention:
++
++    system/amc - Cpu Rd GBps      system/amc - Cpu Wr GBps
++    system/amc - Gpu Rd GBps      system/amc - Gpu Wr GBps
++    system/amc - Ane Rd GBps      system/amc - Ane Wr GBps
++    system/amc - Other Rd GBps    system/amc - Other Wr GBps
++    system/amc - Total GBps
++
++Enable with RADT_LISTENER_AMCBANDWIDTH=True (registry rule: class name minus
++'Thread', uppercased). Metric timestamps are the sampler's wall-clock
++interval-end times in ms, so the series aligns with workload-side traces.
++
++The sampler binary is NOT bundled with radt (it is a small clang-compiled C
++program; the IOReport calls involve Objective-C blocks and an unstable ABI
++where e.g. IOReportSimpleGetIntegerValue's 2nd argument must be NULL, so it
++deliberately stays in C rather than being reimplemented in Python). It is
++located via:
++
++    1. env CHOREO_AMC_SAMPLER_BIN  - explicit path to the binary
++    2. `amc_bandwidth_sampler` on PATH
++
++The binary emits CSV on stdout (header + one row per interval) with columns:
++timestamp, dt_s, {cpu,gpu,ane,other}_{rd,wr} (bytes moved in the interval),
++total_rd, total_wr, total_gbps.
++
++On non-Darwin platforms, when the binary is missing, or when IOReport has no
++AMC channels on this machine (binary exits rc=3 without data rows), the
++listener prints ONE warning and exits cleanly - it never crashes the run.
++"""
++
++import os
++import platform
++import shutil
++import signal
++import subprocess
++import sys
++import time
++from multiprocessing import Process
++
++import mlflow
++
++_BUCKETS = (("cpu", "Cpu"), ("gpu", "Gpu"), ("ane", "Ane"), ("other", "Other"))
++
++
++class AMCBandwidthThread(Process):
++    def __init__(self, run_id, mlflow_buffer=None, interval=0.5, experiment_id=88):
++        super(AMCBandwidthThread, self).__init__()
++        self.run_id = run_id
++        self.experiment_id = experiment_id
++        self.mlflow_buffer = mlflow_buffer
++        self.interval = interval
++
++    def _warn(self, msg):
++        print(f"AMCBandwidth listener: {msg}", file=sys.stderr)
++
++    def _enqueue_metrics(self, metrics, timestamp_ms=None):
++        if self.mlflow_buffer:
++            ts = int(timestamp_ms) if timestamp_ms is not None else int(time.time() * 1000)
++            for k, v in metrics.items():
++                self.mlflow_buffer.put(
++                    {"key": k, "value": v, "timestamp": ts, "step": 0}
++                )
++        else:
++            mlflow.log_metrics(metrics)
++
++    @staticmethod
++    def _find_binary():
++        explicit = os.environ.get("CHOREO_AMC_SAMPLER_BIN")
++        if explicit:
++            if os.path.isfile(explicit) and os.access(explicit, os.X_OK):
++                return explicit
++            return None
++        return shutil.which("amc_bandwidth_sampler")
++
++    def run(self):
++        try:
++            self._run()
++        except Exception as e:
++            # A monitoring sidecar must never take the benchmark down.
++            self._warn(f"disabled after error: {e}")
++
++    def _run(self):
++        if platform.system() != "Darwin":
++            self._warn(
++                "Apple-Silicon-only (IOReport); skipping on "
++                f"{platform.system()}"
++            )
++            return
++
++        binary = self._find_binary()
++        if binary is None:
++            self._warn(
++                "sampler binary not found (set CHOREO_AMC_SAMPLER_BIN or put "
++                "'amc_bandwidth_sampler' on PATH); bandwidth metrics disabled"
++            )
++            return
++
++        if not self.mlflow_buffer:
++            mlflow.start_run(run_id=self.run_id).__enter__()  # attach to run
++
++        proc = subprocess.Popen(
++            [binary, "-i", str(int(self.interval * 1000))],
++            stdout=subprocess.PIPE,
++            stderr=subprocess.DEVNULL,
++            text=True,
++        )
++
++        # RADTBenchmark.__exit__ stops listeners via Process.terminate()
++        # (SIGTERM): forward it so the sampler binary is reaped instead of
++        # orphaned on its pipe.
++        def _on_term(signum, frame):
++            try:
++                proc.terminate()
++            finally:
++                os._exit(0)
++
++        signal.signal(signal.SIGTERM, _on_term)
++
++        header = None
++        samples = 0
++        for line in proc.stdout:
++            line = line.strip()
++            if not line or line.startswith("#"):  # '--raw' debug lines
++                continue
++            if header is None:
++                header = line.split(",")
++                continue
++            try:
++                row = dict(zip(header, (float(x) for x in line.split(","))))
++                dt = row["dt_s"]
++                if dt <= 0:
++                    continue
++                ts_ms = int(row["timestamp"] * 1000)
++            except (ValueError, KeyError):
++                continue  # malformed/partial line
++
++            m = {}
++            for col, title in _BUCKETS:
++                for suffix, direction in (("rd", "Rd"), ("wr", "Wr")):
++                    m[f"system/amc - {title} {direction} GBps"] = (
++                        row[f"{col}_{suffix}"] / dt / 1e9
++                    )
++            m["system/amc - Total GBps"] = row["total_gbps"]
++            self._enqueue_metrics(m, timestamp_ms=ts_ms)
++            samples += 1
++
++        rc = proc.wait()
++        if samples == 0:
++            # rc=3 means IOReport exposes no 'AMC Stats' DCS RD/WR channels.
++            self._warn(
++                f"sampler produced no samples (rc={rc}); IOReport AMC "
++                "channels unavailable on this machine - bandwidth metrics "
++                "disabled"
++            )
+-- 
+2.50.1 (Apple Git-155)
+

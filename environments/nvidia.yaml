@@ -26,8 +26,12 @@ dependencies:
     - psutil==7.2.2
     # radt async_tracing branch (non-blocking MLflow span export -> realistic tracing
     # overhead; replaces the blocking sync export of 0.2.28). Pinned to commit 3ba61cb of
-    # feat/Sipondo/async_tracing; the installable package lives in the radt/ subdirectory.
-    - git+https://github.com/Resource-Aware-Data-systems-RAD/radt.git@3ba61cb1b541a38b531bd90d05843ef97f86b995#subdirectory=radt
+    # feat/Sipondo/async_tracing (itu-rad org); package lives in the radt/ subdirectory.
+    - git+https://github.com/itu-rad/radt.git@9dda7b82d87daad792074ee21463669e503515a0#subdirectory=radt
+    # NOTE: production install additionally applies evaluation/radt-patches/
+    # 0001-amc-bandwidth-listener.patch (AMCBandwidth listener, local commit
+    # f9a61e8 — unpushed by design): clone @9dda7b8, git am the patch, pip
+    # install ./radt. The listener no-ops on non-Apple hosts.
 
     # Tracing + Perfetto export
     - sqlalchemy==2.0.47

@@ -20,7 +20,7 @@ from loadgen import run_loadgen
 from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
 from utils.server_manager import kill_all as kill_all_servers
-from utils.tracing import configure_sync_export, flush_traces
+from utils.tracing import configure_async_export, flush_traces
 
 
 def parse_args():
@@ -68,10 +68,12 @@ def convert_listeners(listeners: list[Literal[listeners.keys()]]) -> str:
 
 
 def radt_entrypoint(args):
-    # Force MLflow span export to run synchronously. Must happen before any
-    # mlflow.start_span call (i.e. before importing/constructing the pipeline)
-    # because the async/sync flag is read at exporter init time.
-    configure_sync_export()
+    # Enable ASYNC MLflow span export (radt's bounded background uploader).
+    # Must happen before any mlflow.start_span call (i.e. before importing/
+    # constructing the pipeline) because the flag is read at exporter init.
+    # The overhead drivers still call configure_sync_export explicitly when
+    # they need deterministic per-span cost.
+    configure_async_export()
 
     # Measurement knob for the framework-overhead microbenchmark: when set, turn
     # MLflow tracing into a no-op so per-stage spans (3 per stage per query) do

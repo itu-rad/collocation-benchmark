@@ -72,19 +72,24 @@ except ImportError:
 # cells: CHOREO_DISABLE_TRACING only no-ops MLflow *spans* (mlflow.tracing),
 # while listeners log run *metrics* via MlflowClient — independent paths.
 RADT_LISTENER_ENV = {
-    "mlx": {"RADT_PRESENT": "True", "RADT_LISTENER_MACMON": "True"},
+    # AMCBandwidth: per-engine DRAM bandwidth listener (local radt patch,
+    # evaluation/radt-patches/0001-amc-bandwidth-listener.patch). Needs the
+    # compiled sampler binary; run_cell sets CHOREO_AMC_SAMPLER_BIN after
+    # ensure_built(). No-ops with one warning on non-Apple hosts.
+    "mlx": {"RADT_PRESENT": "True", "RADT_LISTENER_MACMON": "True",
+            "RADT_LISTENER_AMCBANDWIDTH": "True"},
     "cuda": {"RADT_PRESENT": "True", "RADT_LISTENER_TOP": "True"},
 }
 
-# Spans are DISABLED for every collection cell (2026-07-14, probe-verified):
-# with the remote tracking server, span export is synchronous per root span
-# (~30 HTTPS round-trips/query) and destroys the open-loop arrival process
-# (19 ms intended inter-arrival -> 2.76 s realized on the ms-scale E5 cell;
-# even local sqlite throttles ~4x). The trace CSV is the timing instrument;
-# listener metrics flow via the batched radt logger, unaffected. Span
-# timelines for the paper's framework figure come from a dedicated
-# locally-tracked illustrative run, not from timed collection.
-COLLECTION_BASE_ENV = {"CHOREO_DISABLE_TRACING": "1"}
+# Spans are ON for collection cells (design of record). Safe against the
+# remote tracking server ONLY because main.py enables MLflow async trace
+# export and the pinned radt (@9dda7b8) patches in its bounded background
+# uploader — under the default sync export, remote span logging blocked
+# worker threads (~30 HTTPS/query) and destroyed the open-loop arrival
+# process (probe: 437 s vs 1.7 s for the same 50-query ms-scale cell).
+# The e5 *_notrace twins provide the spans-off arm for the ms-scale
+# harness-footprint accounting.
+COLLECTION_BASE_ENV: dict[str, str] = {}
 
 SR = "evaluation/self_rag/configs"
 CT = "evaluation/contention/configs"
@@ -167,12 +172,14 @@ def build_cells(device: str) -> list[Cell]:
                                     "timeout": 1800,
                                     "config": {"interval": interval}}
     for name, ov in scenarios.items():
-        # Spans are off for ALL collection cells (COLLECTION_BASE_ENV), so
-        # the former *_notrace twins are gone: they would duplicate these
-        # cells exactly. The span-cost accounting number comes from CAL-2
-        # plus a dedicated locally-tracked traced run, outside collection.
         cells.append(Cell(f"e5_{name}", resnet, "e5", runs=10,
                           loadgen_override=ov, timeout_s=1800))
+        # spans-off variant: same cell with MLflow tracing no-op'd, isolating
+        # the tracing layer's contribution at millisecond service times
+        # (the harness-footprint accounting arm).
+        cells.append(Cell(f"e5_{name}_notrace", resnet, "e5", runs=10,
+                          loadgen_override=ov, timeout_s=1800,
+                          env={"CHOREO_DISABLE_TRACING": "1"}))
 
     return cells
 
@@ -208,6 +215,10 @@ def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
     # the same vars for its children, so this is consistent, not conflicting.
     proc_env = {**os.environ, **COLLECTION_BASE_ENV,
                 **RADT_LISTENER_ENV[device], **(cell.env or {})}
+    if device == "mlx" and AMCBandwidthSampler is not None:
+        # Point the radt AMCBandwidth listener at the compiled sampler.
+        import amc_bandwidth_sampler as _amc
+        proc_env.setdefault("CHOREO_AMC_SAMPLER_BIN", str(_amc.ensure_built()))
     for r in range(1, cell.runs + 1):
         label = f"{cell.label}_{device}_r{r}"
         target = results_dir / f"{label}.csv"
