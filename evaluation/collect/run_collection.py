@@ -39,7 +39,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import yaml
@@ -234,11 +234,16 @@ def main() -> int:
     ap.add_argument("--only", default=None, help="glob over cell labels")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--runs-cap", type=int, default=None, metavar="N",
+                    help="cap every cell at N runs (e.g. 1 for a full-coverage "
+                         "verification sweep before committing to the full R)")
     args = ap.parse_args()
 
     cells = build_cells(args.device)
     if args.only:
         cells = [c for c in cells if fnmatch.fnmatch(c.label, args.only)]
+    if args.runs_cap:
+        cells = [replace(c, runs=min(c.runs, args.runs_cap)) for c in cells]
     if args.list:
         total = sum(c.runs for c in cells)
         for c in cells:
@@ -269,7 +274,12 @@ def main() -> int:
     if failures:
         print(f"\nFAILED cells: {failures}", flush=True)
         return 1
-    (HERE / f"DONE_{args.device}").write_text(time.strftime("%F %T"))
+    # A filtered or run-capped invocation is not the full pass: write a
+    # distinct marker so completion watchers keyed on DONE_<device> can't
+    # fire on a partial sweep (the stale-smoke-marker trap).
+    marker = (f"DONE_{args.device}" if not (args.only or args.runs_cap)
+              else f"DONE_{args.device}_partial")
+    (HERE / marker).write_text(time.strftime("%F %T"))
     print("\nCollection pass complete.", flush=True)
     return 0
 
