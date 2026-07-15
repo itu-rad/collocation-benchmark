@@ -78,12 +78,17 @@ RADT_LISTENER_ENV = {
     # ensure_built(). No-ops with one warning on non-Apple hosts.
     "mlx": {"RADT_PRESENT": "True", "RADT_LISTENER_MACMON": "True",
             "RADT_LISTENER_AMCBANDWIDTH": "True"},
-    # cuda: TOP (per-process cpu/mem) + SMI (nvidia-smi: GPU util/power;
-    # some fields are N/A on GB10's unified memory) + Free (host memory) +
-    # IOstat (disk). DCGMI stays off: profiling module broken on GB10.
+    # cuda: EVERY registry listener armed (2026-07-15 user decision: "enable
+    # all of them and let's see what works"). Expected on GB10: TOP/SMI/Free/
+    # IOstat/PS produce data (SMI with some N/A fields on unified memory);
+    # DCGMI likely no-ops (profiling module broken on GB10); Macmon and
+    # AMCBandwidth no-op on Linux by design. Survivors get pruned after the
+    # R=1 sweep's empirical verdict.
     "cuda": {"RADT_PRESENT": "True", "RADT_LISTENER_TOP": "True",
              "RADT_LISTENER_SMI": "True", "RADT_LISTENER_FREE": "True",
-             "RADT_LISTENER_IOSTAT": "True"},
+             "RADT_LISTENER_IOSTAT": "True", "RADT_LISTENER_PS": "True",
+             "RADT_LISTENER_DCGMI": "True", "RADT_LISTENER_MACMON": "True",
+             "RADT_LISTENER_AMCBANDWIDTH": "True"},
 }
 
 # Spans are ON for collection cells (design of record). Safe against the
