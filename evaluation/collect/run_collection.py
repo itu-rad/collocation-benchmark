@@ -207,9 +207,10 @@ def run_cell(cell: Cell, device: str, results_dir: Path, force: bool) -> bool:
             continue
         tmp = make_config(cell.config, device, cell.quality_n,
                           cell.loadgen_override)
-        cmd = [sys.executable, "main.py", tmp]
-        if not cell.orchestrated:
-            cmd += ["-p", "0"]
+        # -e 138: the paper's experiment on the RAD MLflow server
+        # (res17.itu.dk; credentials via conda env config vars). -p is
+        # auto-assigned by main.py (default -1) — do not pass it.
+        cmd = [sys.executable, "main.py", tmp, "-e", "138"]
         cmd += ["--label", label]
         if cell.serialize:
             cmd += ["--serialize", "true"]
