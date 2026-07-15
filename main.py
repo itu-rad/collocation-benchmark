@@ -167,6 +167,14 @@ def radt_entrypoint(args):
             else:
                 config[f"{directory}"] = data
 
+        # Route the run to the requested radT experiment BEFORE the first
+        # mlflow call auto-starts a run — without this, -e is honored only on
+        # the schedule path and direct-mode runs land in the Default
+        # experiment. MLFLOW_EXPERIMENT_ID (set by radt for its children)
+        # takes precedence to avoid fighting the orchestrator.
+        if "MLFLOW_EXPERIMENT_ID" not in os.environ and args.experiment_id:
+            mlflow.set_experiment(experiment_id=str(args.experiment_id))
+
         # Log config
         mlflow.log_artifact(args.config_file_path, "pipeline")
 
@@ -271,7 +279,14 @@ def main(args):
                 "Collocation": "",
                 "Listeners": convert_listeners(benchmark_config.listeners).lower(),
                 "File": "main.py",
-                "Params": f"{args.config_file_path} -p {pipeline_id}",
+                # Forward the per-run flags to the inner invocation: radt
+                # re-execs main.py from this Params string, so anything not
+                # carried here (label, serialize override) is silently lost
+                # and the run/CSV falls back to default naming.
+                "Params": f"{args.config_file_path} -p {pipeline_id}"
+                          + (f" --label {args.label}" if args.label else "")
+                          + (f" --serialize {args.serialize_override}"
+                             if args.serialize_override else ""),
             }
         )
 
