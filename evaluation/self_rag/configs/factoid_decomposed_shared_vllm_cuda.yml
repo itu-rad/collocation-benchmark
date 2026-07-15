@@ -24,8 +24,8 @@ pipelines:
       # [knobs] timeout: R-TIMEOUT
       # [knobs] DO NOT hand-edit; regenerate via apply_knobs.py
       component: loadgen.PoissonLoadScheduler
-      queue_depth: 40
-      max_queries: 40
+      queue_depth: 110
+      max_queries: 110
       timeout: 1357
       config:
         rate: 0.1541

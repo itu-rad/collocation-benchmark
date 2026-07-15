@@ -677,17 +677,21 @@ experiments:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
       verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
     - knob: loadgen.max_queries
-      value: 40
+      value: 110
       rule: R-NTIMING
       scope: config
       verified: null
+      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
+        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
     - knob: loadgen.queue_depth
-      value: 40
+      value: 110
       rule: R-QDEPTH
       scope: config
       verified: null
+      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
+        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
@@ -718,17 +722,21 @@ experiments:
       - evaluation/self_rag/configs/multihop_*_cuda.yml
       verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
     - knob: loadgen.max_queries
-      value: 40
+      value: 110
       rule: R-NTIMING
       scope: config
       verified: null
+      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
+        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_cuda.yml
     - knob: loadgen.queue_depth
-      value: 40
+      value: 110
       rule: R-QDEPTH
       scope: config
       verified: null
+      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
+        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_cuda.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
@@ -805,17 +813,21 @@ experiments:
       - evaluation/self_rag/configs/factoid_*_mlx.yml
       verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
     - knob: loadgen.max_queries
-      value: 40
+      value: 110
       rule: R-NTIMING
       scope: config
       verified: null
+      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
+        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_mlx.yml
     - knob: loadgen.queue_depth
-      value: 40
+      value: 110
       rule: R-QDEPTH
       scope: config
       verified: null
+      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
+        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_mlx.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
@@ -846,17 +858,21 @@ experiments:
       - evaluation/self_rag/configs/multihop_*_mlx.yml
       verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
     - knob: loadgen.max_queries
-      value: 40
+      value: 110
       rule: R-NTIMING
       scope: config
       verified: null
+      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
+        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_mlx.yml
     - knob: loadgen.queue_depth
-      value: 40
+      value: 110
       rule: R-QDEPTH
       scope: config
       verified: null
+      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
+        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_mlx.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
