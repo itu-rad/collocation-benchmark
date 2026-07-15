@@ -190,7 +190,15 @@ def radt_entrypoint(args):
         # Tag the run with the per-run output label so post-hoc validation can
         # match mlflow runs by tag instead of wall clock. The active run exists
         # by now (mlflow.log_params above auto-starts one even without radt).
-        mlflow.set_tag("choreo.label", os.environ.get("CHOREO_OUTPUT_LABEL", ""))
+        label = os.environ.get("CHOREO_OUTPUT_LABEL", "")
+        mlflow.set_tag("choreo.label", label)
+        # Descriptive server-side run name: the cell label already encodes
+        # experiment/task/arm/schedule/device/run (e.g.
+        # e4_factoid_monolith_pipe_mlx_r1); append the pipeline name so
+        # multi-pipeline cells stay distinguishable in the UI.
+        pipe_name = benchmark_config.pipelines[args.pipeline_id].name
+        mlflow.set_tag("mlflow.runName",
+                       f"{label} | {pipe_name}" if label else pipe_name)
         run_loadgen(benchmark_config.pipelines[args.pipeline_id])
 
     # Force-exit after the pipeline completes. Interpreter shutdown can
