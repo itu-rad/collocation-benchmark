@@ -71,7 +71,7 @@ pipelines:
           device: cuda
           model:
             name: Qwen/Qwen3.5-9B
-            quantize: false
+            quantize: true
             gen_kwargs:
               max_new_tokens: 256
               do_sample: false
@@ -111,7 +111,7 @@ pipelines:
           device: cuda
           model:
             name: Qwen/Qwen3.5-9B
-            quantize: false
+            quantize: true
             gen_kwargs:
               max_new_tokens: 128
               do_sample: false
