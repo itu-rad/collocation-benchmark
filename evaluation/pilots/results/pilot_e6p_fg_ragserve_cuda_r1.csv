@@ -1,250 +1,310 @@
-1784022193.893446, RAG serve plain, pipeline, prepare, start, 6141259731714703
-1784022193.893874, RAG serve plain, Question dataloader, prepare, start, 6141259731940832
-1784022195.347122, RAG serve plain, Question dataloader, prepare, end, 6141261185193658
-1784022195.347183, RAG serve plain, Document retriever, prepare, start, 6141261185244874
-1784022231.042577, RAG serve plain, Document retriever, prepare, end, 6141296880666991
-1784022231.042688, RAG serve plain, Answer formatter, prepare, start, 6141296880749823
-1784022231.043092, RAG serve plain, Answer formatter, prepare, end, 6141296881155312
-1784022231.043113, RAG serve plain, Generator LLM, prepare, start, 6141296881173248
-1784022278.318527, RAG serve plain, Generator LLM, prepare, end, 6141344156610093
-1784022278.319469, RAG serve plain, pipeline, prepare, end, 6141344157561695
-1784022278.320855, RAG serve plain, pipeline - val, run, start, 324885526872631313740111874435151509788, 1784022278.320678, 1, 1, 6141344158940161
-1784022278.321299, RAG serve plain, Question dataloader, run, start, 6141344159375938
-1784022278.321618, RAG serve plain, Question dataloader, run, end, 6141344159681202
-1784022278.321750, RAG serve plain, Document retriever, run, start, 6141344159829763
-1784022278.469302, RAG serve plain, Document retriever, run, end, 6141344307388419
-1784022278.469464, RAG serve plain, Answer formatter, run, start, 6141344307560515
-1784022278.504031, RAG serve plain, Answer formatter, run, end, 6141344342117520
-1784022278.504138, RAG serve plain, Generator LLM, run, start, 6141344342216944
-1784022279.592185, RAG serve plain, Generator LLM, run, end, 6141345430271537
-1784022279.592379, RAG serve plain, End stage, run, start, 6141345430471618
-1784022279.592844, RAG serve plain, End stage, run, end, 6141345430913666
-1784022279.593094, RAG serve plain, pipeline - val, run, end, 324885526872631313740111874435151509788, 1784022278.320678, 1, 1, 6141345431171459
-1784022279.593456, RAG serve plain, pipeline - val, run, start, 177579658338099190323104388728749830616, 1784022279.593400, 1, 2, 6141345431525683
-1784022279.593771, RAG serve plain, Question dataloader, run, start, 6141345431852580
-1784022279.594132, RAG serve plain, Question dataloader, run, end, 6141345432194213
-1784022279.594280, RAG serve plain, Document retriever, run, start, 6141345432360581
-1784022279.729795, RAG serve plain, Document retriever, run, end, 6141345567877088
-1784022279.729941, RAG serve plain, Answer formatter, run, start, 6141345568042064
-1784022279.730679, RAG serve plain, Answer formatter, run, end, 6141345568752002
-1784022279.730908, RAG serve plain, Generator LLM, run, start, 6141345568980866
-1784022280.226695, RAG serve plain, Generator LLM, run, end, 6141346064778637
-1784022280.227074, RAG serve plain, End stage, run, start, 6141346065163502
-1784022280.227486, RAG serve plain, End stage, run, end, 6141346065556399
-1784022280.227621, RAG serve plain, pipeline - val, run, end, 177579658338099190323104388728749830616, 1784022279.593400, 1, 2, 6141346065699631
-1784022280.228130, RAG serve plain, pipeline - val, run, start, 53611494884011667421169697584633012762, 1784022280.227984, 1, 3, 6141346066209296
-1784022280.228486, RAG serve plain, Question dataloader, run, start, 6141346066567344
-1784022280.228815, RAG serve plain, Question dataloader, run, end, 6141346066878017
-1784022280.228974, RAG serve plain, Document retriever, run, start, 6141346067056241
-1784022280.352075, RAG serve plain, Document retriever, run, end, 6141346190156710
-1784022280.352224, RAG serve plain, Answer formatter, run, start, 6141346190322231
-1784022280.352934, RAG serve plain, Answer formatter, run, end, 6141346191021032
-1784022280.353018, RAG serve plain, Generator LLM, run, start, 6141346191088936
-1784022280.836107, RAG serve plain, Generator LLM, run, end, 6141346674195421
-1784022280.839332, RAG serve plain, End stage, run, start, 6141346677424562
-1784022280.839787, RAG serve plain, End stage, run, end, 6141346677856643
-1784022280.839915, RAG serve plain, pipeline - val, run, end, 53611494884011667421169697584633012762, 1784022280.227984, 1, 3, 6141346677989571
-1784022280.840912, RAG serve plain, pipeline - val, run, start, 103686765385867923950500324537550774568, 1784022280.840728, 1, 4, 6141346679022117
-1784022280.841603, RAG serve plain, Question dataloader, run, start, 6141346679707206
-1784022280.842121, RAG serve plain, Question dataloader, run, end, 6141346680183703
-1784022280.842796, RAG serve plain, Document retriever, run, start, 6141346680881896
-1784022280.967650, RAG serve plain, Document retriever, run, end, 6141346805733105
-1784022280.967806, RAG serve plain, Answer formatter, run, start, 6141346805904465
-1784022280.968534, RAG serve plain, Answer formatter, run, end, 6141346806607474
-1784022280.968771, RAG serve plain, Generator LLM, run, start, 6141346806843762
-1784022281.593114, RAG serve plain, Generator LLM, run, end, 6141347431199082
-1784022281.593388, RAG serve plain, End stage, run, start, 6141347431480666
-1784022281.593815, RAG serve plain, End stage, run, end, 6141347431884267
-1784022281.593918, RAG serve plain, pipeline - val, run, end, 103686765385867923950500324537550774568, 1784022280.840728, 1, 4, 6141347431994027
-1784022281.594373, RAG serve plain, pipeline - val, run, start, 79460510409718644263456716319814447095, 1784022281.594227, 1, 5, 6141347432448588
-1784022281.595008, RAG serve plain, Question dataloader, run, start, 6141347433110989
-1784022281.595484, RAG serve plain, Question dataloader, run, end, 6141347433546270
-1784022281.595623, RAG serve plain, Document retriever, run, start, 6141347433702302
-1784022281.716888, RAG serve plain, Document retriever, run, end, 6141347554970351
-1784022281.717039, RAG serve plain, Answer formatter, run, start, 6141347555136400
-1784022281.717747, RAG serve plain, Answer formatter, run, end, 6141347555820977
-1784022281.717819, RAG serve plain, Generator LLM, run, start, 6141347555890097
-1784022282.343176, RAG serve plain, Generator LLM, run, end, 6141348181259177
-1784022282.343572, RAG serve plain, End stage, run, start, 6141348181665209
-1784022282.344014, RAG serve plain, End stage, run, end, 6141348182085034
-1784022282.344134, RAG serve plain, pipeline - val, run, end, 79460510409718644263456716319814447095, 1784022281.594227, 1, 5, 6141348182213962
-1784022282.344519, RAG serve plain, pipeline - val, run, start, 192606950862578133765481595573547147227, 1784022282.344471, 1, 6, 6141348182587867
-1784022282.344841, RAG serve plain, Question dataloader, run, start, 6141348182924636
-1784022282.345185, RAG serve plain, Question dataloader, run, end, 6141348183247516
-1784022282.345339, RAG serve plain, Document retriever, run, start, 6141348183419292
-1784022282.478548, RAG serve plain, Document retriever, run, end, 6141348316630098
-1784022282.478699, RAG serve plain, Answer formatter, run, start, 6141348316794579
-1784022282.479427, RAG serve plain, Answer formatter, run, end, 6141348317501044
-1784022282.479572, RAG serve plain, Generator LLM, run, start, 6141348317642884
-1784022283.265677, RAG serve plain, Generator LLM, run, end, 6141349103760399
-1784022283.266074, RAG serve plain, End stage, run, start, 6141349104163984
-1784022283.266523, RAG serve plain, End stage, run, end, 6141349104594689
-1784022283.266637, RAG serve plain, pipeline - val, run, end, 192606950862578133765481595573547147227, 1784022282.344471, 1, 6, 6141349104709905
-1784022283.267077, RAG serve plain, pipeline - val, run, start, 200548864738858552543720402101611648498, 1784022283.266929, 1, 7, 6141349105157810
-1784022283.267418, RAG serve plain, Question dataloader, run, start, 6141349105499842
-1784022283.267751, RAG serve plain, Question dataloader, run, end, 6141349105813331
-1784022283.267965, RAG serve plain, Document retriever, run, start, 6141349106053299
-1784022283.390688, RAG serve plain, Document retriever, run, end, 6141349228772918
-1784022283.390836, RAG serve plain, Answer formatter, run, start, 6141349228931063
-1784022283.391542, RAG serve plain, Answer formatter, run, end, 6141349229615176
-1784022283.391771, RAG serve plain, Generator LLM, run, start, 6141349229842504
-1784022284.005159, RAG serve plain, Generator LLM, run, end, 6141349843243545
-1784022284.005388, RAG serve plain, End stage, run, start, 6141349843480665
-1784022284.005822, RAG serve plain, End stage, run, end, 6141349843890810
-1784022284.005933, RAG serve plain, pipeline - val, run, end, 200548864738858552543720402101611648498, 1784022283.266929, 1, 7, 6141349844013114
-1784022284.006325, RAG serve plain, pipeline - val, run, start, 39153833408495254209482674595431982105, 1784022284.006194, 1, 8, 6141349844403867
-1784022284.006670, RAG serve plain, Question dataloader, run, start, 6141349844756107
-1784022284.007285, RAG serve plain, Question dataloader, run, end, 6141349845347916
-1784022284.007421, RAG serve plain, Document retriever, run, start, 6141349845499325
-1784022284.135239, RAG serve plain, Document retriever, run, end, 6141349973322824
-1784022284.135391, RAG serve plain, Answer formatter, run, start, 6141349973485608
-1784022284.136141, RAG serve plain, Answer formatter, run, end, 6141349974213274
-1784022284.136212, RAG serve plain, Generator LLM, run, start, 6141349974285162
-1784022284.907218, RAG serve plain, Generator LLM, run, end, 6141350745302920
-1784022284.907362, RAG serve plain, End stage, run, start, 6141350745455272
-1784022284.908117, RAG serve plain, End stage, run, end, 6141350746198281
-1784022284.908242, RAG serve plain, pipeline - val, run, end, 39153833408495254209482674595431982105, 1784022284.006194, 1, 8, 6141350746312809
-1784022284.908636, RAG serve plain, pipeline - val, run, start, 161998185017480525271244022172166324138, 1784022284.908505, 1, 9, 6141350746716634
-1784022284.909132, RAG serve plain, Question dataloader, run, start, 6141350747218891
-1784022284.909489, RAG serve plain, Question dataloader, run, end, 6141350747553963
-1784022284.909634, RAG serve plain, Document retriever, run, start, 6141350747717500
-1784022285.033499, RAG serve plain, Document retriever, run, end, 6141350871580657
-1784022285.033648, RAG serve plain, Answer formatter, run, start, 6141350871745921
-1784022285.034384, RAG serve plain, Answer formatter, run, end, 6141350872457170
-1784022285.034454, RAG serve plain, Generator LLM, run, start, 6141350872526274
-1784022285.647743, RAG serve plain, Generator LLM, run, end, 6141351485827582
-1784022285.648034, RAG serve plain, End stage, run, start, 6141351486123951
-1784022285.648483, RAG serve plain, End stage, run, end, 6141351486554063
-1784022285.648688, RAG serve plain, pipeline - val, run, end, 161998185017480525271244022172166324138, 1784022284.908505, 1, 9, 6141351486760896
-1784022285.649045, RAG serve plain, pipeline - val, run, start, 170735914847703910107923543901008389648, 1784022285.648992, 1, 10, 6141351487116288
-1784022285.649326, RAG serve plain, Question dataloader, run, start, 6141351487409633
-1784022285.649671, RAG serve plain, Question dataloader, run, end, 6141351487733649
-1784022285.649830, RAG serve plain, Document retriever, run, start, 6141351487910178
-1784022285.771615, RAG serve plain, Document retriever, run, end, 6141351609696130
-1784022285.771763, RAG serve plain, Answer formatter, run, start, 6141351609861971
-1784022285.772509, RAG serve plain, Answer formatter, run, end, 6141351610582932
-1784022285.772580, RAG serve plain, Generator LLM, run, start, 6141351610652132
-1784022286.297284, RAG serve plain, Generator LLM, run, end, 6141352135367287
-1784022286.297395, RAG serve plain, End stage, run, start, 6141352135487719
-1784022286.298095, RAG serve plain, End stage, run, end, 6141352136164904
-1784022286.298206, RAG serve plain, pipeline - val, run, end, 170735914847703910107923543901008389648, 1784022285.648992, 1, 10, 6141352136278504
-1784022286.298543, RAG serve plain, pipeline - val, run, start, 224053051280756759545146100434534822378, 1784022286.298489, 1, 11, 6141352136616569
-1784022286.298854, RAG serve plain, Question dataloader, run, start, 6141352136937417
-1784022286.299199, RAG serve plain, Question dataloader, run, end, 6141352137261722
-1784022286.299341, RAG serve plain, Document retriever, run, start, 6141352137420794
-1784022286.426431, RAG serve plain, Document retriever, run, end, 6141352264512084
-1784022286.426571, RAG serve plain, Answer formatter, run, start, 6141352264667428
-1784022286.427308, RAG serve plain, Answer formatter, run, end, 6141352265380053
-1784022286.427381, RAG serve plain, Generator LLM, run, start, 6141352265451397
-1784022286.939590, RAG serve plain, Generator LLM, run, end, 6141352777672946
-1784022286.939725, RAG serve plain, End stage, run, start, 6141352777816098
-1784022286.940532, RAG serve plain, End stage, run, end, 6141352778603668
-1784022286.940818, RAG serve plain, pipeline - val, run, end, 224053051280756759545146100434534822378, 1784022286.298489, 1, 11, 6141352778890516
-1784022286.941155, RAG serve plain, pipeline - val, run, start, 205135612461413179581368366725065559866, 1784022286.941106, 1, 12, 6141352779224853
-1784022286.941622, RAG serve plain, Question dataloader, run, start, 6141352779705045
-1784022286.941963, RAG serve plain, Question dataloader, run, end, 6141352780026102
-1784022286.942122, RAG serve plain, Document retriever, run, start, 6141352780202934
-1784022287.069297, RAG serve plain, Document retriever, run, end, 6141352907378896
-1784022287.069433, RAG serve plain, Answer formatter, run, start, 6141352907527120
-1784022287.070149, RAG serve plain, Answer formatter, run, end, 6141352908222305
-1784022287.070219, RAG serve plain, Generator LLM, run, start, 6141352908290161
-1784022287.499445, RAG serve plain, Generator LLM, run, end, 6141353337527407
-1784022287.499563, RAG serve plain, End stage, run, start, 6141353337645215
-1784022287.500044, RAG serve plain, End stage, run, end, 6141353338118336
-1784022287.500301, RAG serve plain, pipeline - val, run, end, 205135612461413179581368366725065559866, 1784022286.941106, 1, 12, 6141353338377041
-1784022287.500675, RAG serve plain, pipeline - val, run, start, 124358266810188114943220913305996966353, 1784022287.500619, 1, 13, 6141353338747425
-1784022287.500993, RAG serve plain, Question dataloader, run, start, 6141353339082930
-1784022287.501367, RAG serve plain, Question dataloader, run, end, 6141353339430002
-1784022287.501526, RAG serve plain, Document retriever, run, start, 6141353339609683
-1784022287.624923, RAG serve plain, Document retriever, run, end, 6141353463008566
-1784022287.625079, RAG serve plain, Answer formatter, run, start, 6141353463177190
-1784022287.625805, RAG serve plain, Answer formatter, run, end, 6141353463880247
-1784022287.625960, RAG serve plain, Generator LLM, run, start, 6141353464031927
-1784022288.249174, RAG serve plain, Generator LLM, run, end, 6141354087258480
-1784022288.249289, RAG serve plain, End stage, run, start, 6141354087377664
-1784022288.250165, RAG serve plain, End stage, run, end, 6141354088246769
-1784022288.250370, RAG serve plain, pipeline - val, run, end, 124358266810188114943220913305996966353, 1784022287.500619, 1, 13, 6141354088442866
-1784022288.250694, RAG serve plain, pipeline - val, run, start, 220339625226527192509943082502324031864, 1784022288.250644, 1, 14, 6141354088764610
-1784022288.250988, RAG serve plain, Question dataloader, run, start, 6141354089071571
-1784022288.251346, RAG serve plain, Question dataloader, run, end, 6141354089407955
-1784022288.251500, RAG serve plain, Document retriever, run, start, 6141354089580756
-1784022288.377872, RAG serve plain, Document retriever, run, end, 6141354215953819
-1784022288.378026, RAG serve plain, Answer formatter, run, start, 6141354216120603
-1784022288.378882, RAG serve plain, Answer formatter, run, end, 6141354216965437
-1784022288.378969, RAG serve plain, Generator LLM, run, start, 6141354217039181
-1784022289.546270, RAG serve plain, Generator LLM, run, end, 6141355384353410
-1784022289.546794, RAG serve plain, End stage, run, start, 6141355384912131
-1784022289.547515, RAG serve plain, End stage, run, end, 6141355385583796
-1784022289.547626, RAG serve plain, pipeline - val, run, end, 220339625226527192509943082502324031864, 1784022288.250644, 1, 14, 6141355385698772
-1784022289.547950, RAG serve plain, pipeline - val, run, start, 339002486931988864515830149520695235621, 1784022289.547896, 1, 15, 6141355386020341
-1784022289.548244, RAG serve plain, Question dataloader, run, start, 6141355386326453
-1784022289.548563, RAG serve plain, Question dataloader, run, end, 6141355386625862
-1784022289.548689, RAG serve plain, Document retriever, run, start, 6141355386766214
-1784022289.675165, RAG serve plain, Document retriever, run, end, 6141355513248381
-1784022289.675316, RAG serve plain, Answer formatter, run, start, 6141355513412078
-1784022289.676065, RAG serve plain, Answer formatter, run, end, 6141355514137487
-1784022289.676144, RAG serve plain, Generator LLM, run, start, 6141355514221887
-1784022290.343793, RAG serve plain, Generator LLM, run, end, 6141356181897582
-1784022290.344125, RAG serve plain, End stage, run, start, 6141356182205279
-1784022290.344503, RAG serve plain, End stage, run, end, 6141356182576527
-1784022290.344725, RAG serve plain, pipeline - val, run, end, 339002486931988864515830149520695235621, 1784022289.547896, 1, 15, 6141356182800960
-1784022290.345185, RAG serve plain, pipeline - val, run, start, 248361802618230800132657235730772831269, 1784022290.345037, 1, 16, 6141356183274961
-1784022290.345592, RAG serve plain, Question dataloader, run, start, 6141356183679457
-1784022290.345953, RAG serve plain, Question dataloader, run, end, 6141356184015330
-1784022290.346059, RAG serve plain, Document retriever, run, start, 6141356184129538
-1784022290.473011, RAG serve plain, Document retriever, run, end, 6141356311092506
-1784022290.473162, RAG serve plain, Answer formatter, run, start, 6141356311259338
-1784022290.473887, RAG serve plain, Answer formatter, run, end, 6141356311959131
-1784022290.474051, RAG serve plain, Generator LLM, run, start, 6141356312122539
-1784022291.036267, RAG serve plain, Generator LLM, run, end, 6141356874351190
-1784022291.036812, RAG serve plain, End stage, run, start, 6141356874892839
-1784022291.037269, RAG serve plain, End stage, run, end, 6141356875345416
-1784022291.037500, RAG serve plain, pipeline - val, run, end, 248361802618230800132657235730772831269, 1784022290.345037, 1, 16, 6141356875572296
-1784022291.037952, RAG serve plain, pipeline - val, run, start, 29769302957874518801486110203614293741, 1784022291.037891, 1, 17, 6141356876023065
-1784022291.038260, RAG serve plain, Question dataloader, run, start, 6141356876346042
-1784022291.038617, RAG serve plain, Question dataloader, run, end, 6141356876679146
-1784022291.038761, RAG serve plain, Document retriever, run, start, 6141356876843611
-1784022291.161227, RAG serve plain, Document retriever, run, end, 6141356999309402
-1784022291.161376, RAG serve plain, Answer formatter, run, start, 6141356999475146
-1784022291.162082, RAG serve plain, Answer formatter, run, end, 6141357000152476
-1784022291.162150, RAG serve plain, Generator LLM, run, start, 6141357000221228
-1784022292.009261, RAG serve plain, Generator LLM, run, end, 6141357847344120
-1784022292.009373, RAG serve plain, End stage, run, start, 6141357847462856
-1784022292.009984, RAG serve plain, End stage, run, end, 6141357848053945
-1784022292.010108, RAG serve plain, pipeline - val, run, end, 29769302957874518801486110203614293741, 1784022291.037891, 1, 17, 6141357848180570
-1784022292.010432, RAG serve plain, pipeline - val, run, start, 263017432350127856177831302475115849348, 1784022292.010379, 1, 18, 6141357848505082
-1784022292.010717, RAG serve plain, Question dataloader, run, start, 6141357848800955
-1784022292.011064, RAG serve plain, Question dataloader, run, end, 6141357849126043
-1784022292.011209, RAG serve plain, Document retriever, run, start, 6141357849290123
-1784022292.130035, RAG serve plain, Document retriever, run, end, 6141357968117541
-1784022292.130193, RAG serve plain, Answer formatter, run, start, 6141357968289397
-1784022292.130905, RAG serve plain, Answer formatter, run, end, 6141357968978486
-1784022292.130999, RAG serve plain, Generator LLM, run, start, 6141357969072374
-1784022292.878871, RAG serve plain, Generator LLM, run, end, 6141358716957000
-1784022292.879245, RAG serve plain, End stage, run, start, 6141358717336169
-1784022292.879683, RAG serve plain, End stage, run, end, 6141358717753577
-1784022292.879802, RAG serve plain, pipeline - val, run, end, 263017432350127856177831302475115849348, 1784022292.010379, 1, 18, 6141358717874794
-1784022292.880581, RAG serve plain, pipeline - val, run, start, 37525064037066541623950528082983375553, 1784022292.880242, 1, 19, 6141358718661067
-1784022292.881242, RAG serve plain, Question dataloader, run, start, 6141358719345324
-1784022292.881680, RAG serve plain, Question dataloader, run, end, 6141358719742797
-1784022292.882236, RAG serve plain, Document retriever, run, start, 6141358720332286
-1784022293.010197, RAG serve plain, Document retriever, run, end, 6141358848279654
-1784022293.010353, RAG serve plain, Answer formatter, run, start, 6141358848452102
-1784022293.011110, RAG serve plain, Answer formatter, run, end, 6141358849187688
-1784022293.011190, RAG serve plain, Generator LLM, run, start, 6141358849261480
-1784022293.462485, RAG serve plain, Generator LLM, run, end, 6141359300568466
-1784022293.462843, RAG serve plain, End stage, run, start, 6141359300924546
-1784022293.463232, RAG serve plain, End stage, run, end, 6141359301305827
-1784022293.463531, RAG serve plain, pipeline - val, run, end, 37525064037066541623950528082983375553, 1784022292.880242, 1, 19, 6141359301646724
-1784022293.464080, RAG serve plain, pipeline - val, run, start, 338743410686066460778601903044868626869, 1784022293.463985, 1, 20, 6141359302163045
-1784022293.464665, RAG serve plain, Question dataloader, run, start, 6141359302754198
-1784022293.465044, RAG serve plain, Question dataloader, run, end, 6141359303105974
-1784022293.465082, RAG serve plain, Document retriever, run, start, 6141359303162294
-1784022293.593098, RAG serve plain, Document retriever, run, end, 6141359431182734
-1784022293.593253, RAG serve plain, Answer formatter, run, start, 6141359431349871
-1784022293.593985, RAG serve plain, Answer formatter, run, end, 6141359432057232
-1784022293.594056, RAG serve plain, Generator LLM, run, start, 6141359432128736
-1784022294.020054, RAG serve plain, Generator LLM, run, end, 6141359858138719
-1784022294.020447, RAG serve plain, End stage, run, start, 6141359858538624
-1784022294.020869, RAG serve plain, End stage, run, end, 6141359858938689
-1784022294.021301, RAG serve plain, pipeline - val, run, end, 338743410686066460778601903044868626869, 1784022293.463985, 1, 20, 6141359859390466
+1784081829.961313, RAG serve plain, pipeline, prepare, start, 6200895799584059
+1784081829.961692, RAG serve plain, Question dataloader, prepare, start, 6200895799756972
+1784081831.348866, RAG serve plain, Question dataloader, prepare, end, 6200897186936860
+1784081831.348925, RAG serve plain, Document retriever, prepare, start, 6200897186986268
+1784081867.205976, RAG serve plain, Document retriever, prepare, end, 6200933044065257
+1784081867.206083, RAG serve plain, Answer formatter, prepare, start, 6200933044145289
+1784081867.206442, RAG serve plain, Answer formatter, prepare, end, 6200933044505114
+1784081867.206462, RAG serve plain, Generator LLM, prepare, start, 6200933044522202
+1784081912.776116, RAG serve plain, Generator LLM, prepare, end, 6200978614196961
+1784081912.777555, RAG serve plain, pipeline, prepare, end, 6200978616197252
+1784081912.780319, RAG serve plain, pipeline - val, run, start, 158986490417231111641024787753484704176, 1784081912.780160, 1, 1, 6200978618407815
+1784081912.780706, RAG serve plain, Question dataloader, run, start, 6200978618787192
+1784081912.781184, RAG serve plain, Question dataloader, run, end, 6200978619255352
+1784081912.781242, RAG serve plain, Document retriever, run, start, 6200978619310952
+1784081912.917385, RAG serve plain, Document retriever, run, end, 6200978755469219
+1784081912.917533, RAG serve plain, Answer formatter, run, start, 6200978755620947
+1784081912.933643, RAG serve plain, Answer formatter, run, end, 6200978771713163
+1784081912.934187, RAG serve plain, Generator LLM, run, start, 6200978772293916
+1784081912.937736, RAG serve plain, Generator LLM, first_token, start, 6200978775812657
+1784081913.791361, RAG serve plain, Generator LLM, first_token, end, 6200979629461172
+1784081913.971483, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200979809586928
+1784081913.973201, RAG serve plain, Generator LLM, run, end, 6200979811293395
+1784081913.973494, RAG serve plain, End stage, run, start, 6200979811601539
+1784081913.974006, RAG serve plain, End stage, run, end, 6200979812076308
+1784081913.974126, RAG serve plain, pipeline - val, run, end, 158986490417231111641024787753484704176, 1784081912.780160, 1, 1, 6200979812202740
+1784081913.974509, RAG serve plain, pipeline - val, run, start, 95664254878781323463259567256816050002, 1784081913.974460, 1, 2, 6200979812576805
+1784081913.974777, RAG serve plain, Question dataloader, run, start, 6200979812864037
+1784081913.975277, RAG serve plain, Question dataloader, run, end, 6200979813347350
+1784081913.975396, RAG serve plain, Document retriever, run, start, 6200979813464774
+1784081914.110013, RAG serve plain, Document retriever, run, end, 6200979948096014
+1784081914.110149, RAG serve plain, Answer formatter, run, start, 6200979948234366
+1784081914.110649, RAG serve plain, Answer formatter, run, end, 6200979948712463
+1784081914.110767, RAG serve plain, Generator LLM, run, start, 6200979948839375
+1784081914.112487, RAG serve plain, Generator LLM, first_token, start, 6200979950555554
+1784081914.380908, RAG serve plain, Generator LLM, first_token, end, 6200980219015761
+1784081914.523322, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200980361434916
+1784081914.524055, RAG serve plain, Generator LLM, run, end, 6200980362132661
+1784081914.524166, RAG serve plain, End stage, run, start, 6200980362246693
+1784081914.524624, RAG serve plain, End stage, run, end, 6200980362695526
+1784081914.524692, RAG serve plain, pipeline - val, run, end, 95664254878781323463259567256816050002, 1784081913.974460, 1, 2, 6200980362769254
+1784081914.525289, RAG serve plain, pipeline - val, run, start, 330067919033227524319146147947945728053, 1784081914.525156, 1, 3, 6200980363364471
+1784081914.525621, RAG serve plain, Question dataloader, run, start, 6200980363709144
+1784081914.526109, RAG serve plain, Question dataloader, run, end, 6200980364177736
+1784081914.526307, RAG serve plain, Document retriever, run, start, 6200980364374601
+1784081914.646010, RAG serve plain, Document retriever, run, end, 6200980484091802
+1784081914.646138, RAG serve plain, Answer formatter, run, start, 6200980484227227
+1784081914.646655, RAG serve plain, Answer formatter, run, end, 6200980484718123
+1784081914.646714, RAG serve plain, Generator LLM, run, start, 6200980484788140
+1784081914.648373, RAG serve plain, Generator LLM, first_token, start, 6200980486443406
+1784081914.904092, RAG serve plain, Generator LLM, first_token, end, 6200980742220570
+1784081915.072646, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200980910738100
+1784081915.073815, RAG serve plain, Generator LLM, run, end, 6200980911892902
+1784081915.074218, RAG serve plain, End stage, run, start, 6200980912307047
+1784081915.074658, RAG serve plain, End stage, run, end, 6200980912726551
+1784081915.074762, RAG serve plain, pipeline - val, run, end, 330067919033227524319146147947945728053, 1784081914.525156, 1, 3, 6200980912836584
+1784081915.075172, RAG serve plain, pipeline - val, run, start, 314761069894530713747290096207151259028, 1784081915.075045, 1, 4, 6200980913246728
+1784081915.076087, RAG serve plain, Question dataloader, run, start, 6200980914218554
+1784081915.076854, RAG serve plain, Question dataloader, run, end, 6200980914923115
+1784081915.077060, RAG serve plain, Document retriever, run, start, 6200980915128427
+1784081915.174273, RAG serve plain, Document retriever, run, end, 6200981012356092
+1784081915.174420, RAG serve plain, Answer formatter, run, start, 6200981012514732
+1784081915.174942, RAG serve plain, Answer formatter, run, end, 6200981013008508
+1784081915.175010, RAG serve plain, Generator LLM, run, start, 6200981013087677
+1784081915.176660, RAG serve plain, Generator LLM, first_token, start, 6200981014729679
+1784081915.414923, RAG serve plain, Generator LLM, first_token, end, 6200981253023201
+1784081915.675178, RAG serve plain, Generator LLM, n_generated_tokens, 6, 6200981513263684
+1784081915.676813, RAG serve plain, Generator LLM, run, end, 6200981514891751
+1784081915.676929, RAG serve plain, End stage, run, start, 6200981515018183
+1784081915.678150, RAG serve plain, End stage, run, end, 6200981516230344
+1784081915.678394, RAG serve plain, pipeline - val, run, end, 314761069894530713747290096207151259028, 1784081915.075045, 1, 4, 6200981516471577
+1784081915.679501, RAG serve plain, pipeline - val, run, start, 122750523661568629854783183452519348869, 1784081915.679246, 1, 5, 6200981517599355
+1784081915.680218, RAG serve plain, Question dataloader, run, start, 6200981518328076
+1784081915.680914, RAG serve plain, Question dataloader, run, end, 6200981518983165
+1784081915.681129, RAG serve plain, Document retriever, run, start, 6200981519196653
+1784081915.786514, RAG serve plain, Document retriever, run, end, 6200981624599450
+1784081915.786609, RAG serve plain, Answer formatter, run, start, 6200981624682986
+1784081915.787040, RAG serve plain, Answer formatter, run, end, 6200981625105354
+1784081915.787112, RAG serve plain, Generator LLM, run, start, 6200981625189770
+1784081915.788743, RAG serve plain, Generator LLM, first_token, start, 6200981626813629
+1784081915.999739, RAG serve plain, Generator LLM, first_token, end, 6200981837855319
+1784081916.290107, RAG serve plain, Generator LLM, n_generated_tokens, 7, 6200982128194102
+1784081916.290438, RAG serve plain, Generator LLM, run, end, 6200982128504071
+1784081916.291059, RAG serve plain, End stage, run, start, 6200982129150520
+1784081916.291489, RAG serve plain, End stage, run, end, 6200982129557864
+1784081916.291758, RAG serve plain, pipeline - val, run, end, 122750523661568629854783183452519348869, 1784081915.679246, 1, 5, 6200982129871033
+1784081916.292971, RAG serve plain, pipeline - val, run, start, 273920560282872804565959477443369401984, 1784081916.292650, 1, 6, 6200982131062443
+1784081916.293878, RAG serve plain, Question dataloader, run, start, 6200982131987852
+1784081916.294498, RAG serve plain, Question dataloader, run, end, 6200982132568397
+1784081916.294724, RAG serve plain, Document retriever, run, start, 6200982132814493
+1784081916.401903, RAG serve plain, Document retriever, run, end, 6200982239991005
+1784081916.402019, RAG serve plain, Answer formatter, run, start, 6200982240093629
+1784081916.402425, RAG serve plain, Answer formatter, run, end, 6200982240489213
+1784081916.402460, RAG serve plain, Generator LLM, run, start, 6200982240528429
+1784081916.404408, RAG serve plain, Generator LLM, first_token, start, 6200982242477376
+1784081916.718000, RAG serve plain, Generator LLM, first_token, end, 6200982556154851
+1784081917.014658, RAG serve plain, Generator LLM, n_generated_tokens, 7, 6200982852745836
+1784081917.015021, RAG serve plain, Generator LLM, run, end, 6200982853086076
+1784081917.015705, RAG serve plain, End stage, run, start, 6200982853824445
+1784081917.016433, RAG serve plain, End stage, run, end, 6200982854501614
+1784081917.016572, RAG serve plain, pipeline - val, run, end, 273920560282872804565959477443369401984, 1784081916.292650, 1, 6, 6200982854663998
+1784081917.017454, RAG serve plain, pipeline - val, run, start, 91472153469630229252570846968933558077, 1784081917.017265, 1, 7, 6200982855546544
+1784081917.018326, RAG serve plain, Question dataloader, run, start, 6200982856417921
+1784081917.018837, RAG serve plain, Question dataloader, run, end, 6200982856907330
+1784081917.019391, RAG serve plain, Document retriever, run, start, 6200982857472451
+1784081917.133409, RAG serve plain, Document retriever, run, end, 6200982971492764
+1784081917.133510, RAG serve plain, Answer formatter, run, start, 6200982971585036
+1784081917.133898, RAG serve plain, Answer formatter, run, end, 6200982971962061
+1784081917.133971, RAG serve plain, Generator LLM, run, start, 6200982972050797
+1784081917.135108, RAG serve plain, Generator LLM, first_token, start, 6200982973178175
+1784081917.308627, RAG serve plain, Generator LLM, first_token, end, 6200983146728113
+1784081917.578455, RAG serve plain, Generator LLM, n_generated_tokens, 6, 6200983416545170
+1784081917.578800, RAG serve plain, Generator LLM, run, end, 6200983416864691
+1784081917.579398, RAG serve plain, End stage, run, start, 6200983417489172
+1784081917.579831, RAG serve plain, End stage, run, end, 6200983417900004
+1784081917.580112, RAG serve plain, pipeline - val, run, end, 91472153469630229252570846968933558077, 1784081917.017265, 1, 7, 6200983418229461
+1784081917.581047, RAG serve plain, pipeline - val, run, start, 302655826197626393276810188514030125457, 1784081917.580870, 1, 8, 6200983419136150
+1784081917.581552, RAG serve plain, Question dataloader, run, start, 6200983419640455
+1784081917.582041, RAG serve plain, Question dataloader, run, end, 6200983420110023
+1784081917.582372, RAG serve plain, Document retriever, run, start, 6200983420455176
+1784081917.693206, RAG serve plain, Document retriever, run, end, 6200983531290365
+1784081917.693302, RAG serve plain, Answer formatter, run, start, 6200983531375405
+1784081917.693686, RAG serve plain, Answer formatter, run, end, 6200983531749294
+1784081917.693720, RAG serve plain, Generator LLM, run, start, 6200983531785342
+1784081917.695721, RAG serve plain, Generator LLM, first_token, start, 6200983533789633
+1784081917.990690, RAG serve plain, Generator LLM, first_token, end, 6200983828827783
+1784081918.292622, RAG serve plain, Generator LLM, n_generated_tokens, 7, 6200984130708040
+1784081918.292975, RAG serve plain, Generator LLM, run, end, 6200984131040041
+1784081918.293400, RAG serve plain, End stage, run, start, 6200984131484058
+1784081918.293809, RAG serve plain, End stage, run, end, 6200984131876538
+1784081918.293974, RAG serve plain, pipeline - val, run, end, 302655826197626393276810188514030125457, 1784081917.580870, 1, 8, 6200984132061066
+1784081918.294481, RAG serve plain, pipeline - val, run, start, 49343700227348725513992410695346894611, 1784081918.294339, 1, 9, 6200984132557211
+1784081918.294864, RAG serve plain, Question dataloader, run, start, 6200984132958828
+1784081918.295594, RAG serve plain, Question dataloader, run, end, 6200984133664637
+1784081918.295800, RAG serve plain, Document retriever, run, start, 6200984133891997
+1784081918.409602, RAG serve plain, Document retriever, run, end, 6200984247686198
+1784081918.409709, RAG serve plain, Answer formatter, run, start, 6200984247784887
+1784081918.410257, RAG serve plain, Answer formatter, run, end, 6200984248331431
+1784081918.410334, RAG serve plain, Generator LLM, run, start, 6200984248410680
+1784081918.412831, RAG serve plain, Generator LLM, first_token, start, 6200984250900475
+1784081918.795812, RAG serve plain, Generator LLM, first_token, end, 6200984633955365
+1784081918.946434, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200984784523573
+1784081918.948396, RAG serve plain, Generator LLM, run, end, 6200984786478680
+1784081918.949004, RAG serve plain, End stage, run, start, 6200984787096297
+1784081918.949451, RAG serve plain, End stage, run, end, 6200984787518634
+1784081918.949701, RAG serve plain, pipeline - val, run, end, 49343700227348725513992410695346894611, 1784081918.294339, 1, 9, 6200984787812570
+1784081918.950561, RAG serve plain, pipeline - val, run, start, 14809929176126492920597864286643574511, 1784081918.950295, 1, 10, 6200984788661004
+1784081918.951555, RAG serve plain, Question dataloader, run, start, 6200984789663053
+1784081918.952220, RAG serve plain, Question dataloader, run, end, 6200984790289310
+1784081918.952461, RAG serve plain, Document retriever, run, start, 6200984790558702
+1784081919.054225, RAG serve plain, Document retriever, run, end, 6200984892306886
+1784081919.054365, RAG serve plain, Answer formatter, run, start, 6200984892453190
+1784081919.054876, RAG serve plain, Answer formatter, run, end, 6200984892938743
+1784081919.054935, RAG serve plain, Generator LLM, run, start, 6200984893013543
+1784081919.056816, RAG serve plain, Generator LLM, first_token, start, 6200984894884938
+1784081919.383123, RAG serve plain, Generator LLM, first_token, end, 6200985221246560
+1784081919.526730, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200985364813173
+1784081919.527561, RAG serve plain, Generator LLM, run, end, 6200985365627591
+1784081919.527732, RAG serve plain, End stage, run, start, 6200985365817975
+1784081919.528197, RAG serve plain, End stage, run, end, 6200985366268200
+1784081919.528317, RAG serve plain, pipeline - val, run, end, 14809929176126492920597864286643574511, 1784081918.950295, 1, 10, 6200985366395160
+1784081919.528788, RAG serve plain, pipeline - val, run, start, 26414213584710443722486396073931430971, 1784081919.528650, 1, 11, 6200985366864553
+1784081919.529147, RAG serve plain, Question dataloader, run, start, 6200985367233769
+1784081919.529609, RAG serve plain, Question dataloader, run, end, 6200985367677642
+1784081919.529721, RAG serve plain, Document retriever, run, start, 6200985367789466
+1784081919.628580, RAG serve plain, Document retriever, run, end, 6200985466662509
+1784081919.628715, RAG serve plain, Answer formatter, run, start, 6200985466801757
+1784081919.629330, RAG serve plain, Answer formatter, run, end, 6200985467393070
+1784081919.629387, RAG serve plain, Generator LLM, run, start, 6200985467459902
+1784081919.631046, RAG serve plain, Generator LLM, first_token, start, 6200985469115617
+1784081919.921194, RAG serve plain, Generator LLM, first_token, end, 6200985759332161
+1784081920.080655, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200985918741646
+1784081920.080981, RAG serve plain, Generator LLM, run, end, 6200985919046190
+1784081920.081598, RAG serve plain, End stage, run, start, 6200985919691743
+1784081920.082056, RAG serve plain, End stage, run, end, 6200985920123792
+1784081920.082161, RAG serve plain, pipeline - val, run, end, 26414213584710443722486396073931430971, 1784081919.528650, 1, 11, 6200985920234944
+1784081920.082502, RAG serve plain, pipeline - val, run, start, 105983626134602148622357525084134695419, 1784081920.082456, 1, 12, 6200985920570657
+1784081920.082864, RAG serve plain, Question dataloader, run, start, 6200985920975793
+1784081920.083391, RAG serve plain, Question dataloader, run, end, 6200985921460418
+1784081920.083501, RAG serve plain, Document retriever, run, start, 6200985921570034
+1784081920.180488, RAG serve plain, Document retriever, run, end, 6200986018568899
+1784081920.180624, RAG serve plain, Answer formatter, run, start, 6200986018713075
+1784081920.181167, RAG serve plain, Answer formatter, run, end, 6200986019230628
+1784081920.181226, RAG serve plain, Generator LLM, run, start, 6200986019300740
+1784081920.182613, RAG serve plain, Generator LLM, first_token, start, 6200986020682694
+1784081920.389404, RAG serve plain, Generator LLM, first_token, end, 6200986227502490
+1784081920.544744, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200986382848065
+1784081920.545669, RAG serve plain, Generator LLM, run, end, 6200986383746899
+1784081920.545778, RAG serve plain, End stage, run, start, 6200986383868883
+1784081920.546614, RAG serve plain, End stage, run, end, 6200986384685908
+1784081920.547013, RAG serve plain, pipeline - val, run, end, 105983626134602148622357525084134695419, 1784081920.082456, 1, 12, 6200986385085285
+1784081920.547354, RAG serve plain, pipeline - val, run, start, 21055897109089630548381734372329873300, 1784081920.547290, 1, 13, 6200986385427157
+1784081920.547801, RAG serve plain, Question dataloader, run, start, 6200986385889190
+1784081920.548307, RAG serve plain, Question dataloader, run, end, 6200986386376071
+1784081920.548422, RAG serve plain, Document retriever, run, start, 6200986386490823
+1784081920.648530, RAG serve plain, Document retriever, run, end, 6200986486612076
+1784081920.648737, RAG serve plain, Answer formatter, run, start, 6200986486820924
+1784081920.649155, RAG serve plain, Answer formatter, run, end, 6200986487217773
+1784081920.649189, RAG serve plain, Generator LLM, run, start, 6200986487260669
+1784081920.651348, RAG serve plain, Generator LLM, first_token, start, 6200986489414480
+1784081920.958184, RAG serve plain, Generator LLM, first_token, end, 6200986796301129
+1784081921.200611, RAG serve plain, Generator LLM, n_generated_tokens, 6, 6200987038695570
+1784081921.201329, RAG serve plain, Generator LLM, run, end, 6200987039408803
+1784081921.201439, RAG serve plain, End stage, run, start, 6200987039519523
+1784081921.202066, RAG serve plain, End stage, run, end, 6200987040148420
+1784081921.202317, RAG serve plain, pipeline - val, run, end, 21055897109089630548381734372329873300, 1784081920.547290, 1, 13, 6200987040396181
+1784081921.202740, RAG serve plain, pipeline - val, run, start, 70875231651593995262808678228614043852, 1784081921.202690, 1, 14, 6200987040810277
+1784081921.203100, RAG serve plain, Question dataloader, run, start, 6200987041190262
+1784081921.203586, RAG serve plain, Question dataloader, run, end, 6200987041655111
+1784081921.203799, RAG serve plain, Document retriever, run, start, 6200987041868455
+1784081921.302634, RAG serve plain, Document retriever, run, end, 6200987140717114
+1784081921.302921, RAG serve plain, Answer formatter, run, start, 6200987141012619
+1784081921.303541, RAG serve plain, Answer formatter, run, end, 6200987141618571
+1784081921.303610, RAG serve plain, Generator LLM, run, start, 6200987141691964
+1784081921.305496, RAG serve plain, Generator LLM, first_token, start, 6200987143561806
+1784081921.607781, RAG serve plain, Generator LLM, first_token, end, 6200987445882993
+1784081922.187639, RAG serve plain, Generator LLM, n_generated_tokens, 12, 6200988025724145
+1784081922.188878, RAG serve plain, Generator LLM, run, end, 6200988026955778
+1784081922.189293, RAG serve plain, End stage, run, start, 6200988027381139
+1784081922.189737, RAG serve plain, End stage, run, end, 6200988027809284
+1784081922.189874, RAG serve plain, pipeline - val, run, end, 70875231651593995262808678228614043852, 1784081921.202690, 1, 14, 6200988027952340
+1784081922.190377, RAG serve plain, pipeline - val, run, start, 147578795528961364298498112058399213492, 1784081922.190215, 1, 15, 6200988028454613
+1784081922.191341, RAG serve plain, Question dataloader, run, start, 6200988029449606
+1784081922.191931, RAG serve plain, Question dataloader, run, end, 6200988030026935
+1784081922.192081, RAG serve plain, Document retriever, run, start, 6200988030149575
+1784081922.289748, RAG serve plain, Document retriever, run, end, 6200988127829673
+1784081922.289885, RAG serve plain, Answer formatter, run, start, 6200988127970025
+1784081922.290387, RAG serve plain, Answer formatter, run, end, 6200988128449610
+1784081922.290550, RAG serve plain, Generator LLM, run, start, 6200988128623674
+1784081922.291937, RAG serve plain, Generator LLM, first_token, start, 6200988130007196
+1784081922.512001, RAG serve plain, Generator LLM, first_token, end, 6200988350092340
+1784081922.798361, RAG serve plain, Generator LLM, n_generated_tokens, 7, 6200988636447999
+1784081922.798691, RAG serve plain, Generator LLM, run, end, 6200988636755312
+1784081922.798824, RAG serve plain, End stage, run, start, 6200988636903888
+1784081922.799242, RAG serve plain, End stage, run, end, 6200988637314800
+1784081922.799355, RAG serve plain, pipeline - val, run, end, 147578795528961364298498112058399213492, 1784081922.190215, 1, 15, 6200988637431489
+1784081922.799793, RAG serve plain, pipeline - val, run, start, 127644056043941203843212259903762952555, 1784081922.799645, 1, 16, 6200988637866737
+1784081922.800095, RAG serve plain, Question dataloader, run, start, 6200988638185346
+1784081922.800581, RAG serve plain, Question dataloader, run, end, 6200988638649698
+1784081922.800702, RAG serve plain, Document retriever, run, start, 6200988638772515
+1784081922.901177, RAG serve plain, Document retriever, run, end, 6200988739262136
+1784081922.901284, RAG serve plain, Answer formatter, run, start, 6200988739366968
+1784081922.901750, RAG serve plain, Answer formatter, run, end, 6200988739813241
+1784081922.901812, RAG serve plain, Generator LLM, run, start, 6200988739886777
+1784081922.903812, RAG serve plain, Generator LLM, first_token, start, 6200988741880364
+1784081923.265455, RAG serve plain, Generator LLM, first_token, end, 6200989103570360
+1784081923.403642, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200989241727654
+1784081923.403997, RAG serve plain, Generator LLM, run, end, 6200989242062694
+1784081923.404364, RAG serve plain, End stage, run, start, 6200989242442327
+1784081923.404763, RAG serve plain, End stage, run, end, 6200989242834535
+1784081923.404885, RAG serve plain, pipeline - val, run, end, 127644056043941203843212259903762952555, 1784081922.799645, 1, 16, 6200989242964792
+1784081923.405386, RAG serve plain, pipeline - val, run, start, 63932356254111402828588165208065079778, 1784081923.405239, 1, 17, 6200989243464248
+1784081923.405827, RAG serve plain, Question dataloader, run, start, 6200989243916873
+1784081923.406331, RAG serve plain, Question dataloader, run, end, 6200989244401306
+1784081923.406451, RAG serve plain, Document retriever, run, start, 6200989244518954
+1784081923.518669, RAG serve plain, Document retriever, run, end, 6200989356750513
+1784081923.518798, RAG serve plain, Answer formatter, run, start, 6200989356883025
+1784081923.519417, RAG serve plain, Answer formatter, run, end, 6200989357494242
+1784081923.519496, RAG serve plain, Generator LLM, run, start, 6200989357580562
+1784081923.521833, RAG serve plain, Generator LLM, first_token, start, 6200989359901174
+1784081923.814101, RAG serve plain, Generator LLM, first_token, end, 6200989652220714
+1784081924.065493, RAG serve plain, Generator LLM, n_generated_tokens, 7, 6200989903579777
+1784081924.065857, RAG serve plain, Generator LLM, run, end, 6200989903923281
+1784081924.066293, RAG serve plain, End stage, run, start, 6200989904383554
+1784081924.066735, RAG serve plain, End stage, run, end, 6200989904805923
+1784081924.066846, RAG serve plain, pipeline - val, run, end, 63932356254111402828588165208065079778, 1784081923.405239, 1, 17, 6200989904920051
+1784081924.067352, RAG serve plain, pipeline - val, run, start, 50574301300512459871032173004953031970, 1784081924.067191, 1, 18, 6200989905434867
+1784081924.067698, RAG serve plain, Question dataloader, run, start, 6200989905785732
+1784081924.068190, RAG serve plain, Question dataloader, run, end, 6200989906259365
+1784081924.068305, RAG serve plain, Document retriever, run, start, 6200989906373909
+1784081924.168302, RAG serve plain, Document retriever, run, end, 6200990006385498
+1784081924.168420, RAG serve plain, Answer formatter, run, start, 6200990006504858
+1784081924.169048, RAG serve plain, Answer formatter, run, end, 6200990007123803
+1784081924.169165, RAG serve plain, Generator LLM, run, start, 6200990007247323
+1784081924.171152, RAG serve plain, Generator LLM, first_token, start, 6200990009227870
+1784081924.432846, RAG serve plain, Generator LLM, first_token, end, 6200990270976117
+1784081924.606879, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200990444968888
+1784081924.607241, RAG serve plain, Generator LLM, run, end, 6200990445305769
+1784081924.607393, RAG serve plain, End stage, run, start, 6200990445480921
+1784081924.607824, RAG serve plain, End stage, run, end, 6200990445895930
+1784081924.607939, RAG serve plain, pipeline - val, run, end, 50574301300512459871032173004953031970, 1784081924.067191, 1, 18, 6200990446016954
+1784081924.608314, RAG serve plain, pipeline - val, run, start, 48632962765256266865997815452049829395, 1784081924.608159, 1, 19, 6200990446393403
+1784081924.608588, RAG serve plain, Question dataloader, run, start, 6200990446679771
+1784081924.609098, RAG serve plain, Question dataloader, run, end, 6200990447168428
+1784081924.609159, RAG serve plain, Document retriever, run, start, 6200990447228380
+1784081924.707477, RAG serve plain, Document retriever, run, end, 6200990545560174
+1784081924.707623, RAG serve plain, Answer formatter, run, start, 6200990545718703
+1784081924.708142, RAG serve plain, Answer formatter, run, end, 6200990546204543
+1784081924.708278, RAG serve plain, Generator LLM, run, start, 6200990546356304
+1784081924.709948, RAG serve plain, Generator LLM, first_token, start, 6200990548017234
+1784081924.956387, RAG serve plain, Generator LLM, first_token, end, 6200990794524866
+1784081925.110027, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200990948113063
+1784081925.110358, RAG serve plain, Generator LLM, run, end, 6200990948422456
+1784081925.110679, RAG serve plain, End stage, run, start, 6200990948766056
+1784081925.111132, RAG serve plain, End stage, run, end, 6200990949203209
+1784081925.111344, RAG serve plain, pipeline - val, run, end, 48632962765256266865997815452049829395, 1784081924.608159, 1, 19, 6200990949416921
+1784081925.112036, RAG serve plain, pipeline - val, run, start, 121712819054984949638451640057737385474, 1784081925.111587, 1, 20, 6200990950112586
+1784081925.112879, RAG serve plain, Question dataloader, run, start, 6200990950965963
+1784081925.113353, RAG serve plain, Question dataloader, run, end, 6200990951422380
+1784081925.113462, RAG serve plain, Document retriever, run, start, 6200990951530332
+1784081925.215062, RAG serve plain, Document retriever, run, end, 6200991053146692
+1784081925.215185, RAG serve plain, Answer formatter, run, start, 6200991053269540
+1784081925.215788, RAG serve plain, Answer formatter, run, end, 6200991053865237
+1784081925.215875, RAG serve plain, Generator LLM, run, start, 6200991053959669
+1784081925.217484, RAG serve plain, Generator LLM, first_token, start, 6200991055550440
+1784081925.434393, RAG serve plain, Generator LLM, first_token, end, 6200991272490955
+1784081925.592830, RAG serve plain, Generator LLM, n_generated_tokens, 4, 6200991430916712
+1784081925.593195, RAG serve plain, Generator LLM, run, end, 6200991431260552
+1784081925.593369, RAG serve plain, End stage, run, start, 6200991431454216
+1784081925.593760, RAG serve plain, End stage, run, end, 6200991431828681
+1784081925.593878, RAG serve plain, pipeline - val, run, end, 121712819054984949638451640057737385474, 1784081925.111587, 1, 20, 6200991431949321

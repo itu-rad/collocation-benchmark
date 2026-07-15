@@ -1,5 +1,5 @@
 schema_version: 1
-generated: 2026-07-14 08:48:56 -0700
+generated: 2026-07-14 20:21:50 -0700
 git_commit: 39151a976bc1fc05de803aa2c209f781bd41c933-dirty
 variants:
   e3: dose_response
@@ -43,12 +43,12 @@ pilots:
       outlier_idxs:
       - 0
     service_s:
-      median: 0.0335
-      mean: 0.0335
-      min: 0.0309
-      max: 0.037
+      median: 0.0356
+      mean: 0.0355
+      min: 0.0321
+      max: 0.0464
     per_run_medians_s:
-    - 0.034
+    - 0.036
   e3p_c1_rmax_mlx:
     cell: e3p_c1_rmax
     device: m2pro
@@ -106,10 +106,10 @@ pilots:
       note: ''
       outlier_idxs: []
     service_s:
-      median: 0.1031
-      mean: 0.103
-      min: 0.1016
-      max: 0.1037
+      median: 0.1027
+      mean: 0.1027
+      min: 0.1015
+      max: 0.1042
     per_run_medians_s:
     - 0.103
   e3p_c3_rmax_mlx:
@@ -148,12 +148,12 @@ pilots:
       note: ''
       outlier_idxs: []
     service_s:
-      median: 31.6367
-      mean: 31.5918
-      min: 30.694
-      max: 32.7101
+      median: 15.4149
+      mean: 15.3247
+      min: 14.834
+      max: 15.6769
     per_run_medians_s:
-    - 31.637
+    - 15.415
   e3p_fg_decode_mlx:
     cell: e3p_fg_decode
     device: m2pro
@@ -190,12 +190,12 @@ pilots:
       note: "tail not flat \u2014 pilot inconclusive, extend N"
       outlier_idxs: []
     service_s:
-      median: 1.6658
-      mean: 1.9278
-      min: 1.3448
-      max: 4.858
+      median: 1.5813
+      mean: 1.8974
+      min: 1.2044
+      max: 3.636
     per_run_medians_s:
-    - 1.666
+    - 1.581
   e4_factoid_decomp_mlx:
     cell: e4_factoid_decomp
     device: m2pro
@@ -232,12 +232,12 @@ pilots:
       note: ''
       outlier_idxs: []
     service_s:
-      median: 2.6147
-      mean: 2.8813
-      min: 2.3709
-      max: 5.7869
+      median: 1.7532
+      mean: 2.109
+      min: 1.5366
+      max: 6.4932
     per_run_medians_s:
-    - 2.615
+    - 1.753
   e4_factoid_mono4b_mlx:
     cell: e4_factoid_mono4b
     device: m2pro
@@ -271,17 +271,17 @@ pilots:
       k_fixed: 1
       window: 5
       epsilon: 0.1
-      converged: false
-      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      converged: true
+      note: ''
       outlier_idxs: &id001 []
     service_s:
-      median: 3.893
-      mean: 4.8064
-      min: 3.4653
-      max: 12.9039
+      median: 2.5253
+      mean: 2.9142
+      min: 2.3151
+      max: 9.6609
     per_run_medians_s:
-    - 3.917
-    - 3.849
+    - 2.503
+    - 2.553
   e4_factoid_mono9b_mlx:
     cell: e4_factoid_mono9b
     device: m2pro
@@ -320,12 +320,12 @@ pilots:
       note: "tail not flat \u2014 pilot inconclusive, extend N"
       outlier_idxs: []
     service_s:
-      median: 1.6607
-      mean: 1.8907
-      min: 1.3081
-      max: 4.4858
+      median: 1.5616
+      mean: 1.8609
+      min: 1.1807
+      max: 3.4641
     per_run_medians_s:
-    - 1.661
+    - 1.562
   e4_factoid_shared_mlx:
     cell: e4_factoid_shared
     device: m2pro
@@ -352,22 +352,22 @@ pilots:
     device: gb10
     csvs:
     - pilot_e4_multihop_decomp_cuda_r1.csv
-    n_pooled: 11
+    n_pooled: 10
     warmup:
-      k_star: 0
-      k_fixed: 1
+      k_star: 6
+      k_fixed: 2
       window: 5
       epsilon: 0.1
       converged: false
-      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      note: "k_fixed=12 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
       outlier_idxs: []
     service_s:
-      median: 3.7982
-      mean: 3.365
-      min: 1.8167
-      max: 5.2883
+      median: 3.674
+      mean: 3.354
+      min: 1.5409
+      max: 6.1189
     per_run_medians_s:
-    - 3.798
+    - 3.674
   e4_multihop_decomp_mlx:
     cell: e4_multihop_decomp
     device: m2pro
@@ -394,22 +394,22 @@ pilots:
     device: gb10
     csvs:
     - pilot_e4_multihop_mono9b_cuda_r1.csv
-    n_pooled: 11
+    n_pooled: 10
     warmup:
-      k_star: 0
-      k_fixed: 1
+      k_star: 5
+      k_fixed: 2
       window: 5
       epsilon: 0.1
       converged: false
-      note: "tail not flat \u2014 pilot inconclusive, extend N"
+      note: "k_fixed=10 > N/3 \u2014 extend N; non-converged -> fallback k=2 (pre-registered LLM default)"
       outlier_idxs: []
     service_s:
-      median: 13.0487
-      mean: 10.6253
-      min: 3.7851
-      max: 16.2194
+      median: 2.7272
+      mean: 5.7637
+      min: 2.6002
+      max: 11.1501
     per_run_medians_s:
-    - 13.049
+    - 2.727
   e4_multihop_mono9b_mlx:
     cell: e4_multihop_mono9b
     device: m2pro
@@ -447,10 +447,10 @@ pilots:
       outlier_idxs: &id004
       - 0
     service_s:
-      median: 0.006
-      mean: 0.0099
-      min: 0.0046
-      max: 0.0189
+      median: 0.0059
+      mean: 0.006
+      min: 0.0044
+      max: 0.026
     per_run_medians_s:
     - 0.006
   e5_resnet_serial_mlx:
@@ -490,12 +490,12 @@ pilots:
       note: ''
       outlier_idxs: []
     service_s:
-      median: 0.4264
-      mean: 0.4256
-      min: 0.3991
-      max: 0.4677
+      median: 0.4176
+      mean: 0.4197
+      min: 0.3973
+      max: 0.4554
     per_run_medians_s:
-    - 0.426
+    - 0.418
   e6_fg_effnet_mlx:
     cell: e6_fg_effnet
     device: m2pro
@@ -533,12 +533,12 @@ pilots:
       outlier_idxs:
       - 0
     service_s:
-      median: 0.0532
-      mean: 0.0519
-      min: 0.0321
-      max: 0.0691
+      median: 0.0569
+      mean: 0.0546
+      min: 0.0341
+      max: 0.0684
     per_run_medians_s:
-    - 0.053
+    - 0.057
   e6p_bg_index_rmax_mlx:
     cell: e6p_bg_index_rmax
     device: m2pro
@@ -575,12 +575,12 @@ pilots:
       note: "tail not flat \u2014 pilot inconclusive, extend N"
       outlier_idxs: &id007 []
     service_s:
-      median: 0.74
-      mean: 0.7589
-      min: 0.5572
-      max: 1.2969
+      median: 0.6032
+      mean: 0.611
+      min: 0.4645
+      max: 0.9871
     per_run_medians_s:
-    - 0.74
+    - 0.603
   e6p_fg_ragserve_mlx:
     cell: e6p_fg_ragserve
     device: m2pro
@@ -659,20 +659,20 @@ experiments:
   e4:
     gb10:
     - knob: loadgen.config.rate
-      value: 0.1541
+      value: 0.2376
       rule: R-LAMBDA-BELOW-SAT
       scope: config
       verified: null
       inputs:
         pilot: e4_factoid_mono9b
-        median_service_s: 3.893
+        median_service_s: 2.5253
         rho: 0.6
         task: factoid
         all_arm_medians_s:
-          e4_factoid_mono9b: 3.893
-          e4_factoid_decomp: 1.6658
-          e4_factoid_mono4b: 2.6147
-          e4_factoid_shared: 1.6607
+          e4_factoid_mono9b: 2.5253
+          e4_factoid_decomp: 1.5813
+          e4_factoid_mono4b: 1.7532
+          e4_factoid_shared: 1.5616
       applies_to:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
       verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
@@ -681,8 +681,6 @@ experiments:
       rule: R-NTIMING
       scope: config
       verified: null
-      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
-        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
     - knob: loadgen.queue_depth
@@ -690,13 +688,11 @@ experiments:
       rule: R-QDEPTH
       scope: config
       verified: null
-      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
-        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
     - knob: loadgen.timeout
-      value: 1357
+      value: 2353
       rule: R-TIMEOUT
       scope: config
       verified: null
@@ -706,18 +702,18 @@ experiments:
       applies_to:
       - evaluation/self_rag/configs/factoid_*_cuda.yml
     - knob: loadgen.config.rate
-      value: 0.046
+      value: 0.1633
       rule: R-LAMBDA-BELOW-SAT
       scope: config
       verified: null
       inputs:
-        pilot: e4_multihop_mono9b
-        median_service_s: 13.0487
+        pilot: e4_multihop_decomp
+        median_service_s: 3.674
         rho: 0.6
         task: multihop
         all_arm_medians_s:
-          e4_multihop_mono9b: 13.0487
-          e4_multihop_decomp: 3.7982
+          e4_multihop_mono9b: 2.7272
+          e4_multihop_decomp: 3.674
       applies_to:
       - evaluation/self_rag/configs/multihop_*_cuda.yml
       verification: "arrivals sidecar: 0 blocked puts; realized rate within 5% of \u03BB"
@@ -726,8 +722,6 @@ experiments:
       rule: R-NTIMING
       scope: config
       verified: null
-      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
-        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_cuda.yml
     - knob: loadgen.queue_depth
@@ -735,13 +729,11 @@ experiments:
       rule: R-QDEPTH
       scope: config
       verified: null
-      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
-        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_cuda.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
     - knob: loadgen.timeout
-      value: 4544
+      value: 3424
       rule: R-TIMEOUT
       scope: config
       verified: null
@@ -761,8 +753,8 @@ experiments:
         k_fixed: 1
         window: 5
         epsilon: 0.1
-        converged: false
-        note: "tail not flat \u2014 pilot inconclusive, extend N"
+        converged: true
+        note: ''
         outlier_idxs: *id001
     - knob: R
       value: 5
@@ -817,8 +809,6 @@ experiments:
       rule: R-NTIMING
       scope: config
       verified: null
-      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
-        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_mlx.yml
     - knob: loadgen.queue_depth
@@ -826,13 +816,11 @@ experiments:
       rule: R-QDEPTH
       scope: config
       verified: null
-      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
-        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/factoid_*_mlx.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
     - knob: loadgen.timeout
-      value: 1791
+      value: 4791
       rule: R-TIMEOUT
       scope: config
       verified: null
@@ -862,8 +850,6 @@ experiments:
       rule: R-NTIMING
       scope: config
       verified: null
-      note: 'R-NTIMING refined 2026-07-14: N raised 40->110 so pooled post-warmup samples (110-k)*R>=500
-        meets the p95 gate (rule collision found by validate_pass; timing cells re-collect at full R)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_mlx.yml
     - knob: loadgen.queue_depth
@@ -871,13 +857,11 @@ experiments:
       rule: R-QDEPTH
       scope: config
       verified: null
-      note: 'follows loadgen.max_queries 40->110 (R-QDEPTH ties queue_depth = max_queries for open-loop
-        cells; see the R-NTIMING refinement 2026-07-14)'
       applies_to:
       - evaluation/self_rag/configs/multihop_*_mlx.yml
       verification: 'arrivals sidecar: max block_s < 5 ms'
     - knob: loadgen.timeout
-      value: 9631
+      value: 25760
       rule: R-TIMEOUT
       scope: config
       verified: null
@@ -933,32 +917,32 @@ experiments:
     gb10:
     - knob: corunner_c1_gpu_levels
       value:
-      - 7.463
-      - 14.925
-      - 22.388
-      - 29.851
+      - 7.022
+      - 14.045
+      - 21.067
+      - 28.09
       rule: R-INTENSITY
       scope: driver
       verified: null
       inputs:
         pilot: e3p_c1_rmax
-        rmax_per_s: 29.851
-        median_op_s: 0.0335
+        rmax_per_s: 28.09
+        median_op_s: 0.0356
     - knob: corunner_c3_levels
       value:
-      - 2.425
-      - 4.849
-      - 7.274
-      - 9.699
+      - 2.434
+      - 4.869
+      - 7.303
+      - 9.737
       rule: R-INTENSITY
       scope: driver
       verified: null
       inputs:
         pilot: e3p_c3_rmax
-        rmax_per_s: 9.699
-        median_op_s: 0.1031
+        rmax_per_s: 9.737
+        median_op_s: 0.1027
     - knob: fg_decode_median_s
-      value: 31.6367
+      value: 15.4149
       rule: R-LAMBDA-SAT
       scope: driver
       verified: null
@@ -1026,13 +1010,13 @@ experiments:
   e5:
     gb10:
     - knob: loadgen.config.rate
-      value: 100.0
+      value: 101.6949
       rule: R-LAMBDA-BELOW-SAT
       scope: config
       verified: null
       inputs:
         pilot: e5_resnet_serial
-        median_service_s: 0.006
+        median_service_s: 0.0059
         rho: 0.6
       applies_to: &id003
       - pipeline_configs/mlperf/resnet_inference.yml
@@ -1051,7 +1035,7 @@ experiments:
       verified: null
       applies_to: *id003
     - knob: loadgen.timeout
-      value: 26
+      value: 25
       rule: R-TIMEOUT
       scope: config
       verified: null
@@ -1059,13 +1043,13 @@ experiments:
         unit: seconds
       applies_to: *id003
     - knob: multistream_interval_s
-      value: 0.048
+      value: 0.0472
       rule: R-LAMBDA-BELOW-SAT
       scope: driver
       verified: null
       inputs:
         n_samples: 8
-        median_service_s: 0.006
+        median_service_s: 0.0059
       note: 'fixed-interval MultiStream: 8-sample query every interval'
     - knob: offline_queue_depth
       value: total_samples
@@ -1163,13 +1147,13 @@ experiments:
   e6:
     gb10:
     - knob: fg.loadgen.config.rate
-      value: 0.5405
+      value: 0.6631
       rule: R-E6-HEADROOM
       scope: config
       verified: null
       inputs:
         pilot: e6p_fg_ragserve
-        median_service_s: 0.74
+        median_service_s: 0.6032
         rho: 0.4
       applies_to:
       - pipeline_configs/rag_serve_plain*.yml
@@ -1190,7 +1174,7 @@ experiments:
       applies_to:
       - pipeline_configs/rag_serve_plain*.yml
     - knob: fg.loadgen.timeout
-      value: 937
+      value: 764
       rule: R-TIMEOUT
       scope: config
       verified: null
@@ -1213,13 +1197,13 @@ experiments:
         note: "tail not flat \u2014 pilot inconclusive, extend N"
         outlier_idxs: *id007
     - knob: bg_index_rmax_qps
-      value: 18.797
+      value: 17.5747
       rule: R-INTENSITY
       scope: driver
       verified: null
       inputs:
         pilot: e6p_bg_index_rmax
-        median_chunk_s: 0.0532
+        median_chunk_s: 0.0569
         docs_per_query: 32
       note: Stage-B fixed-interval levels = {25,50,75,100}% of this
     - knob: B_sweep

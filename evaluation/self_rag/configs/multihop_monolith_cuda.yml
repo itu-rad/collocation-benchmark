@@ -9,8 +9,8 @@ pipelines:
     outputs: [5]
     dataset_stage_id: 0
     loadgen:
-      # [knobs] derived by evaluation/pilots/derive_knobs.py @ unknown
-      # [knobs] config.rate: R-LAMBDA-BELOW-SAT (0.6 x 1/13.0487s, pilot e4_multihop_mono9b)
+      # [knobs] derived by evaluation/pilots/derive_knobs.py @ 39151a976bc1fc05de803aa2c209f781bd41c933-dirty
+      # [knobs] config.rate: R-LAMBDA-BELOW-SAT (0.6 x 1/3.674s, pilot e4_multihop_decomp)
       # [knobs] max_queries: R-NTIMING
       # [knobs] queue_depth: R-QDEPTH
       # [knobs] timeout: R-TIMEOUT
@@ -18,9 +18,9 @@ pipelines:
       component: loadgen.PoissonLoadScheduler
       queue_depth: 110
       max_queries: 110
-      timeout: 4544
+      timeout: 3424
       config:
-        rate: 0.046
+        rate: 0.1633
     stages:
       # --- Stage 0: Question DataLoader (HotpotQA multi-hop) ---
       - name: Question dataloader

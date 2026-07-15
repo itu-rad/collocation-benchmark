@@ -16,7 +16,7 @@ pipelines:
     outputs: [12]
     dataset_stage_id: 0
     loadgen:
-      # [knobs] derived by evaluation/pilots/derive_knobs.py @ unknown
+      # [knobs] derived by evaluation/pilots/derive_knobs.py @ 39151a976bc1fc05de803aa2c209f781bd41c933-dirty
       # [knobs] config.rate: R-LAMBDA-BELOW-SAT (0.6 x 1/27.5959s, pilot e4_multihop_mono9b)
       # [knobs] max_queries: R-NTIMING
       # [knobs] queue_depth: R-QDEPTH
@@ -25,7 +25,7 @@ pipelines:
       component: loadgen.PoissonLoadScheduler
       queue_depth: 110
       max_queries: 110
-      timeout: 9631
+      timeout: 25760
       config:
         rate: 0.0217
     stages:

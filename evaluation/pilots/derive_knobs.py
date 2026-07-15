@@ -21,7 +21,8 @@ Rule registry (pre-registered; the paper's knob tables cite these ids):
   R-WARMUP            k = 2 x rolling-median flatness point on the pilot
                       (detect_warmup); ANE first-call outliers excluded AND
                       reported separately, never folded into k.
-  R-NTIMING           timing cells: 40 queries x R (within the 30–50 band).
+  R-NTIMING           timing cells: 110 queries x R (>=500 pooled post-warmup
+                      for the p95 gate; refined from 40 on 2026-07-14).
   R-NQUALITY          quality: 120 questions per arm, dedicated serial runs
                       (Wilson 95% half-width <= ~9 points at p~0.5).
   R-REPS              R = 10 for cheap cells (E1/E2/E3), 5 for expensive
@@ -66,7 +67,10 @@ KNOBS_PATH = HERE / "knobs.yml"
 
 RHO = 0.6            # R-LAMBDA-BELOW-SAT load factor (stated choice in 0.5-0.8)
 E6_RHO = 0.4         # R-E6-HEADROOM
-N_TIMING = 40        # R-NTIMING
+N_TIMING = 110       # R-NTIMING (refined 2026-07-14: (N-1)*R >= 500 pooled
+                     # post-warmup samples at R=5 meets the p95 gate; was 40,
+                     # which pooled only 195 — rule collision found by
+                     # validate_pass.py)
 N_QUALITY = 120      # R-NQUALITY
 DEVICE_NAME = {"mlx": "m2pro", "cuda": "gb10"}
 
