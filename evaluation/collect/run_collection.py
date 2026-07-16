@@ -195,6 +195,18 @@ def build_cells(device: str) -> list[Cell]:
                           loadgen_override=ov, timeout_s=1800,
                           env={"CHOREO_DISABLE_TRACING": "1"}))
 
+    # ---- E5 measurement-boundary variant (preload: False) -------------------
+    # Single-diff twin of the scenario family: the dataloader does disk I/O +
+    # JPEG decode PER QUERY instead of MLPerf-style QSL preloading. Purpose:
+    # show that end-to-end per-stage measurement uncovers data stalls that
+    # device-boundary timing cannot see (the accelerator stage is expected to
+    # stay flat while end-to-end latency/throughput shifts to the loader).
+    resnet_diskio = "pipeline_configs/mlperf/resnet_inference_diskio.yml"
+    for name in ("server", "singlestream", "offline"):
+        cells.append(Cell(f"e5_{name}_diskio", resnet_diskio, "e5",
+                          runs=10, loadgen_override=scenarios[name],
+                          timeout_s=1800))
+
     return cells
 
 
