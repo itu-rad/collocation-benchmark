@@ -379,3 +379,50 @@ if space allows.
 **Cost estimate:** E3′ ≈ 22 cells × R=10 × minutes ⇒ roughly a day per DUT including
 pilots. E6′ ≈ 6 cells + 3 sub-sweep cells × R=5 × ~10–20 min ⇒ 1–2 days per DUT.
 Build work ≈ 2–4 dev-days, most of it already on the TODO for E5/E6.
+
+---
+
+## ADDENDUM (2026-07-15, after the R=1 verification sweep + mock-PC review — PENDING AUTHOR SIGN-OFF)
+
+R=1 outcomes (full detail: `PRELIM_REPORT.md`; review synthesis: `REVIEW_SYNTHESIS.md`):
+
+- **Step A/B returned a null at every administered dose on both devices** — and the
+  delivered dose was ~1–2 GB/s on a ~200 GB/s bus (<1% of headroom), i.e. the design
+  reproduced the very mis-proportioning that §0.1.2 killed old-E3 for. The foreground
+  additionally ran below its registered λ (31–38% on GB10, 86% on M2) — reconcile
+  before any redesign conclusions.
+- **H1 point-estimate direction: engine-dependent** (falsified) on M2; not evaluable on
+  GB10 by design. CAVEATS: verdicts were emitted from zero-width CIs at R=1, the AMC
+  axis is uncalibrated (totals exceeded platform spec — closure protocol from §counters
+  was never run), and the co-runner dose spans barely overlap (ANE ~0.8 GB/s
+  non-monotone vs stream ~40 GB/s). H1 must be re-evaluated on overlapping delivered-
+  dose support with calibrated counters and Fieller/cluster-bootstrap ratio CIs.
+- **H2: supported vs the pure-bandwidth STREAM co-runner, falsified vs the engine-sharing
+  clip co-runners, same direction on both platforms.** This motivates the thesis
+  reframe: contention is engine-specific, not a fungible bytes/s tax; the phase split +
+  per-engine attribution is what tells the regimes apart.
+
+Proposed design deltas (each preserves the single-diff discipline; sign-off required):
+
+1. **Extended dose ladder:** background arms beyond B=2 (B=4; stacked STREAM co-runners
+   proportioned toward measured post-foreground headroom) and a foreground arm at
+   0.7–0.8× capacity — run until degradation CIs exclude zero, so Step A/B reports a
+   *located tolerance boundary* instead of an unbounded null.
+2. **GB10 staged foreground precision:** the mid-campaign NF4 switch broke this design's
+   own premise (§0.1: BF16 foreground near the 273 GB/s roof; NF4 streams ~37% of it).
+   Recommendation: staged foreground on GB10 returns to bf16 (E4/E7 ladder stays NF4;
+   each experiment internally consistent), with the streaming-bandwidth arithmetic
+   stated per device.
+3. **Counter calibration is a precondition:** per-engine closure runs (known-byte
+   STREAM/matmul/ANE loads), agent→bucket map, residual unattributed fraction reported
+   per cell; totals must respect the spec ceiling.
+4. **Thermal gate:** per-cell power/clocks from the listeners with the pre-registered
+   throttle-exclusion applied (the H2 clip falsification is currently attributed to
+   "thermal/scheduling" with no telemetry in evidence).
+5. **Measurement-boundary decomposition** added as a standing analysis output: per-stage
+   attribution of contention deltas (device stage vs loader/retriever/queue wait), plus
+   the E5 `*_diskio` twins (landed 2026-07-15: device stage flat, loader 2.7–4.1×,
+   throughput −4..−13% — two-device evidence for the intro's gap 2).
+6. **Verdict hygiene:** no FALSIFIED/SUPPORTED at R<2 (degenerate-CI guard); minimum
+   detectable slope pre-registered; "replication" language reserved for full-R with
+   real intervals.

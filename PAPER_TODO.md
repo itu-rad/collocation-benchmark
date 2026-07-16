@@ -21,6 +21,43 @@ conditional on collection*) **and the full repo/code/data audit of 2026-07-12**
 
 ## 0. Critical path (do these in order)
 
+> **STATUS UPDATE 2026-07-15 — R=1 verification complete; mock-PC review done; full-R
+> gated on Phase 0.** Both devices completed a full R=1 verification sweep of the entire
+> matrix (see `PRELIM_REPORT.md`). Five harsh mock-ASPLOS reviews of the experiments +
+> preliminary results (Reject ×3, Weak Reject ×2) are synthesized in
+> `REVIEW_SYNTHESIS.md`, which **supersedes the original 5 launch conditions** with a
+> Phase 0–3 pre-freeze plan. Headline outcomes:
+> - **Thesis reframe (accepted direction):** "bandwidth, not compute, is binding" is
+>   contradicted by our own R=1 data on both devices → new thesis: *contention on
+>   unified-memory SoCs is engine-specific, not a fungible bytes/s tax; the framework's
+>   per-engine byte attribution + phase-split latency is what distinguishes the regimes*
+>   (H2 supported vs the pure-bandwidth STREAM co-runner, falsified vs engine-sharing
+>   clip co-runners, directionally consistent on both platforms).
+> - **Apparatus defects to fix before full-R (Phase 0):** AMC counter axis uncalibrated
+>   (totals exceed platform spec; run the closure protocol); staged foreground ran at
+>   31–86% of registered λ (reconcile); zero-width-CI verdict guard + Fieller ratio CIs;
+>   hot-path `print()`s in `stages/llm_huggingface/inference.py` (remove + re-verify CAL);
+>   NUL-scrub trace guard; validator dispersion-check fix + PASS/FAIL policy; staged
+>   max_queries 100→110 (p95 gate 495<500); e5 λ re-pilot BOTH devices (server scenario
+>   under-realized >5%); e7_rung_27b: prefetch weights + raised cuda timeout + real OOM
+>   telemetry on mlx (current "measured ceiling" contains a 50-min download).
+> - **Registration hardening:** clean-tree tagged knob freeze before full-R; driver
+>   hash-checks loadgen blocks against the registration; `verified:` auto-populated;
+>   public amendment ledger (N 40→110, blocked-puts rewording, p95 resolution, e5 λ).
+> - **New cells landed 2026-07-15:** E5 `*_diskio` twins (preload:False, single diff) —
+>   R=1 collected on BOTH devices; result: device stage flat while loader 2.7–4.1× and
+>   throughput −4..−13% (GB10 offline worst) → the intro's "measurement boundary" gap
+>   now has measured two-device evidence. Cells are in the driver at R=10 for full-R.
+> - **OPEN DECISIONS (author) gating Phase 0** — see `REVIEW_SYNTHESIS.md` §E:
+>   (1) extended dose ladder + fg 0.7–0.8× arm (design addendum, needs sign-off);
+>   (2) GB10 staged-foreground precision: bf16 (recommended) vs NF4 (NF4 broke the
+>   near-roof premise; NVFP4 checkpoints exist but transformers cannot load modelopt
+>   format — dead end, documented); (3) llama.cpp second-stack Step-D arm (~2–3 days);
+>   (4) quality N raise if paired-power analysis fails at N=120; (5) quiesced-host rule
+>   for full-R (no interactive/agent sessions on the M2 during collection; PS/macmon
+>   listeners double as process audit). Also pending: batched-Offline twin
+>   (`e5_offline_b32`) recommended, not yet approved.
+
 Re-ordered after the 2026-07-12 audit. The old spine ("GB10 data exists, just analyze
 it") is **superseded**: the headline Self-RAG data is suspect until the `query_id`
 provenance is resolved (§1.5), and the working assumption is now a **full GB10
