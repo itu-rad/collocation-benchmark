@@ -52,6 +52,21 @@ BG_DOCS_PER_QUERY = 32
 BG_MAX_QUERIES = 100          # 3200 docs/cell
 INTENSITY_LEVELS = (25, 50, 75, 100)
 
+# --- Extended dose ladder (decision 2, --extended) --------------------------
+# The base ladder measures the foreground either idle (Stage A B=0) or against a
+# single saturating co-runner — two points, not a dose-response curve. A mock
+# reviewer flagged that a single saturating measurement cannot separate a truly
+# engine-independent slowdown from a coincidence at one operating point. The
+# extended ladder adds, WITHOUT touching any base filename:
+#   * deeper background fan-out (B in {3,4}) at Stage A;
+#   * a foreground held at a fixed fraction (0.7, 0.8) of its own R_max, so the
+#     fg sits in its contention-sensitive region instead of idle-or-saturated;
+#   * stacked STREAM co-runners (2x, 3x concurrent MemoryStream pipelines) to
+#     push the memory-bandwidth dose past what one stream delivers.
+EXTENDED_B_LEVELS = (3, 4)
+FG_LOAD_FRACTIONS = (0.7, 0.8)
+STREAM_STACK_COUNTS = (2, 3)
+
 
 def _load_pipeline(rel_path: str) -> dict:
     doc = yaml.safe_load((REPO_ROOT / rel_path).read_text(encoding="utf-8"))
@@ -146,14 +161,56 @@ def _dump(doc: dict, name: str) -> Path:
     return path
 
 
+def _stream_stack_pipelines(count: int, device: str, rate: float | None) -> list[dict]:
+    """`count` concurrent MemoryStream co-runner pipelines (stacked dose)."""
+    pipes = []
+    for j in range(count):
+        bg = {"name": f"BG stream {j}/{count}"}
+        bg.update(_corunner_dataset_stage_meta("stream"))
+        bg["loadgen"] = {
+            "component": "loadgen.MultiStreamScheduler",
+            "queue_depth": 1000,
+            "max_queries": 1000,
+            "timeout": 3600,
+            "config": {"interval": round(1.0 / rate, 5) if rate else None},
+        }
+        bg["stages"] = _bg_corunner_stages("stream", device)
+        pipes.append(bg)
+    return pipes
+
+
+def _throttle_fg(fg_doc: dict, rate: float | None) -> dict:
+    """Return a copy of a foreground pipeline held at a fixed arrival rate
+    (fixed-interval MultiStream) instead of its native saturating loadgen."""
+    doc = copy.deepcopy(fg_doc)
+    lg = dict(doc.get("loadgen", {}))
+    lg["component"] = "loadgen.MultiStreamScheduler"
+    cfg = dict(lg.get("config", {}))
+    cfg["interval"] = round(1.0 / rate, 5) if rate else None
+    lg["config"] = cfg
+    doc["loadgen"] = lg
+    return doc
+
+
 def main() -> int:
+    global OUT_DIR
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--device", choices=["mlx", "cuda"], required=True)
     ap.add_argument("--include-ane", action="store_true",
                     help="emit the Stage-C ANE co-runner variant (blocked on "
                          "the CoreML hang fix)")
+    ap.add_argument("--extended", action="store_true",
+                    help="ALSO emit the extended dose ladder (decision 2): B in "
+                         "{3,4}, fg-throttled arms, stacked STREAM co-runners. "
+                         "Uses distinct filenames — never overwrites base configs.")
+    ap.add_argument("--out-dir", default=None,
+                    help="override the config output directory (default "
+                         "evaluation/contention/configs; use a scratch dir to "
+                         "dry-run generation without touching the live configs).")
     args = ap.parse_args()
     dev = args.device
+    if args.out_dir:
+        OUT_DIR = Path(args.out_dir)
 
     knobs = pl.load_knobs()
     devname = DEVNAME[dev]
@@ -230,6 +287,49 @@ def main() -> int:
             doc["pipelines"][0] = copy.deepcopy(fg_decode)
             files.append((f"D {kind} L={lvl}%",
                           _dump(doc, f"stage_d_{kind}_L{lvl}_{dev}.yml")))
+
+    # ---- Extended dose ladder (decision 2, opt-in) -----------------------
+    if args.extended:
+        # (E1) deeper Stage-A background fan-out
+        for B in EXTENDED_B_LEVELS:
+            doc = {"name": f"stage_a_B{B}_{dev}",
+                   "pipelines": [copy.deepcopy(fg)]
+                   + [_bg_indexer_pipeline(i, B, dev) for i in range(B)]}
+            files.append((f"A B={B} (ext)", _dump(doc, f"stage_a_B{B}_{dev}.yml")))
+
+        # (E2) foreground held at a fixed fraction of its R_max, against the
+        # max-intensity stream co-runner (the contention-sensitive operating
+        # point). fg R_max comes from the rag-serve pilot (e5/R-FGMAX).
+        fg_rmax = knob("e5", "ragserve_fg_rmax_qps")
+        if fg_rmax is None:
+            warn.append("fg R_max pilot missing (e5p_ragserve_fgmax) — fg-throttle "
+                        "arms are PLACEHOLDERS (interval: null)")
+        stream_levels = knob("e3", "corunner_c3_levels")
+        stream_top = stream_levels[-1] if stream_levels else None
+        for frac in FG_LOAD_FRACTIONS:
+            fg_rate = round(fg_rmax * frac, 4) if fg_rmax else None
+            pct = int(round(frac * 100))
+            doc = {"name": f"stage_c_stream_L100_fg{pct}_{dev}",
+                   "pipelines": [_throttle_fg(fg, fg_rate)]}
+            bg = {"name": "BG co-runner stream"}
+            bg.update(_corunner_dataset_stage_meta("stream"))
+            bg["loadgen"] = {
+                "component": "loadgen.MultiStreamScheduler",
+                "queue_depth": 1000, "max_queries": 1000, "timeout": 3600,
+                "config": {"interval": round(1.0 / stream_top, 5) if stream_top else None},
+            }
+            bg["stages"] = _bg_corunner_stages("stream", dev)
+            doc["pipelines"].append(bg)
+            files.append((f"C stream fg={pct}% (ext)",
+                          _dump(doc, f"stage_c_stream_L100_fg{pct}_{dev}.yml")))
+
+        # (E3) stacked STREAM co-runners at max intensity (bandwidth dose > 1x)
+        for cnt in STREAM_STACK_COUNTS:
+            doc = {"name": f"stage_c_streamx{cnt}_L100_{dev}",
+                   "pipelines": [copy.deepcopy(fg)]
+                   + _stream_stack_pipelines(cnt, dev, stream_top)}
+            files.append((f"C stream x{cnt} (ext)",
+                          _dump(doc, f"stage_c_streamx{cnt}_L100_{dev}.yml")))
 
     # ---- DIFFS.md: prove the single-diff discipline -----------------------
     pairs = [(f"stage_a_B1_{dev}.yml", f"stage_b_L100_{dev}.yml",
