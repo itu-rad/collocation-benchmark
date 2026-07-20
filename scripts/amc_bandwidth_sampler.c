@@ -72,6 +72,7 @@ enum { B_CPU, B_GPU, B_ANE, B_OTHER, B_N };
 // (no __block byref cell — clang's byref support for aggregate types is what
 // broke the first version of this loop).
 static int64_t s_rd[B_N], s_wr[B_N];
+static int64_t s_agg_rd, s_agg_wr;  // bare "DCS RD/WR" (no DIE) = MC aggregate = true total
 static FILE* s_rawout;
 
 int main(int argc, char** argv) {
@@ -155,6 +156,7 @@ int main(int argc, char** argv) {
 
         memset(s_rd, 0, sizeof s_rd);
         memset(s_wr, 0, sizeof s_wr);
+        s_agg_rd = s_agg_wr = 0;
         s_rawout = raw ? out : NULL;
         Iterate(delta, ^int(CFDictionaryRef ch) {
             char g[128], name[256];
@@ -166,17 +168,33 @@ int main(int argc, char** argv) {
             if (!is_rd && !is_wr) return 0;
             int64_t v = GetInt(ch, NULL);
             if (v < 0) return 0;  // counter wrap / bogus sample
-            int b = B_OTHER;
-            if (strstr(name, "PCPU") || strstr(name, "ECPU")) b = B_CPU;
-            else if (strstr(name, "GFX")) b = B_GPU;
-            else if (strstr(name, "ANE")) b = B_ANE;
-            if (is_rd) s_rd[b] += v; else s_wr[b] += v;
+            // The bare "DCS RD/WR" channel (no DIE/requestor prefix) is the
+            // memory-controller AGGREGATE = the true total. Per-requestor
+            // channels ("DIE0 ECPU0 DCS RD", "DIE0 GFX DCS RD", ...) are the
+            // attribution breakdown. Summing the aggregate AND its components
+            // double-counts (the calibration bug: reported total = 2x real).
+            if (!strstr(name, "DIE")) {
+                if (is_rd) s_agg_rd += v; else s_agg_wr += v;
+            } else {
+                int b = B_OTHER;
+                if (strstr(name, "PCPU") || strstr(name, "ECPU")) b = B_CPU;
+                else if (strstr(name, "GFX")) b = B_GPU;
+                else if (strstr(name, "ANE") || strstr(name, "ANS")) b = B_ANE;
+                if (is_rd) s_rd[b] += v; else s_wr[b] += v;
+            }
             if (s_rawout && v > 0) fprintf(s_rawout, "# %s = %lld\n", name, (long long)v);
             return 0;
         });
 
-        int64_t trd = s_rd[0] + s_rd[1] + s_rd[2] + s_rd[3];
-        int64_t twr = s_wr[0] + s_wr[1] + s_wr[2] + s_wr[3];
+        // total = MC aggregate (bare DCS), NOT the sum of per-requestor buckets.
+        // Fall back to the bucket sum only if this machine exposes no aggregate
+        // channel (then the double-count risk is absent because there is no
+        // duplicate).
+        int64_t trd = s_agg_rd, twr = s_agg_wr;
+        if (trd == 0 && twr == 0) {
+            trd = s_rd[0] + s_rd[1] + s_rd[2] + s_rd[3];
+            twr = s_wr[0] + s_wr[1] + s_wr[2] + s_wr[3];
+        }
         fprintf(out, "%.6f,%.4f,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%.3f\n",
                 wall, dt,
                 (long long)s_rd[B_CPU], (long long)s_wr[B_CPU],
