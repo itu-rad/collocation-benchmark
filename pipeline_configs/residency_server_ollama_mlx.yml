@@ -1,0 +1,86 @@
+# §3 residency Pareto — the SERVER arm (Ollama continuous batching), MLX/M2 Pro.
+#
+# Single-diff relative to rag_serve_plain.yml: ONLY the "Generator LLM" stage
+# changes (stages.llm_mlx.Inference -> stages.llm_server.Inference with
+# engine=ollama). Everything else is byte-identical, so a throughput/latency
+# delta vs the replicated and shared arms is attributable to the residency mode
+# (one server process with dynamic batching) and not to a different workload.
+#
+# `concurrency` is the continuous-batching knob: requests held in flight against
+# the one server. The replicated arm (N in-process MLX instances serialize on
+# the single Metal command queue) and the shared arm (1 model + mutex) cannot
+# batch dynamically; this arm can.
+#
+# MODEL PARITY CAVEAT: the in-process MLX arm serves
+# mlx-community/Qwen3.5-4B-OptiQ-4bit. Ollama's qwen3.5:4b default is a Q4_K_M
+# GGUF — a comparable 4-bit quant but NOT bit-identical. Note this in the paper;
+# for strict parity import a GGUF matching the OptiQ quant via a Modelfile.
+# `tokenizer_name` pins the HF tokenizer the formatter needs. Ollama on Apple
+# silicon serves via Metal (same accelerator as the in-process MLX arm).
+name: "RAG serve (residency: server/Ollama, MLX)"
+pipelines:
+  - name: RAG serve server
+    inputs: [0]
+    outputs: [4]
+    dataset_stage_id: 0
+    loadgen:
+      component: loadgen.PoissonLoadScheduler
+      queue_depth: 100
+      max_queries: 100
+      timeout: 2256
+      config:
+        rate: 0.2243
+    stages:
+      - name: Question dataloader
+        id: 0
+        outputs: [1]
+        component: stages.self_rag.SelfRAGDataLoader
+        config:
+          batch_size: 1
+          dataset:
+            name: rag-datasets/rag-mini-wikipedia
+            subset: question-answer
+            split: test
+            question_column: question
+            answers_column: answer
+
+      - name: Document retriever
+        id: 1
+        outputs: [2]
+        component: stages.self_rag.ChromaRetriever
+        config:
+          corpus_dataset:
+            name: rag-datasets/rag-mini-wikipedia
+            subset: text-corpus
+            split: passages
+            text_column: passage
+            max_docs: 3200
+          top_k: 3
+          collection_name: rag_serve_plain_corpus
+
+      - name: Answer formatter
+        id: 2
+        outputs: [3]
+        component: stages.self_rag.AnswerGeneratorFormatter
+        config:
+          tokenizer_stage_id: 3
+
+      - name: Generator LLM
+        id: 3
+        outputs: [4]
+        component: stages.llm_server.Inference
+        config:
+          concurrency: 8
+          tokenizer_name: Qwen/Qwen3.5-4B
+          server:
+            engine: ollama
+            model: qwen3.5:4b
+            port: 0
+          model:
+            gen_kwargs:
+              do_sample: false
+              max_new_tokens: 128
+
+      - name: End stage
+        id: 4
+        component: stages.TerminalCapture
