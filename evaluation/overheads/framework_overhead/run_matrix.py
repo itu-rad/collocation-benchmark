@@ -53,7 +53,7 @@ _SHARED_RESULTS = os.path.join(_REPO_ROOT, "evaluation", "results")
 _GENERATOR = os.path.join(_HERE, "noop_chain_generator.py")
 
 # --- the matrix --------------------------------------------------------------
-DEPTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 32, 50, 64, 100]
+DEPTHS = [1, 2, 4, 8, 16, 32, 64, 128]  # powers of 2, ~2 orders of magnitude
 PAYLOAD_SIZES = [0, 1024, 1048576, 10485760]  # 0, 1 KiB, 1 MiB, 10 MiB
 PAYLOAD_MODES = ["ref", "copy"]
 PAYLOAD_DEPTH = 10
