@@ -121,7 +121,7 @@ def capture_env(max_queries: int, runs: int) -> str:
 
 
 def run_cell(depth, size, mode, trace_on, runs, max_queries, timeout,
-             force, mlflow_safe):
+             force, mlflow_safe, online, experiment):
     """Run R repetitions of one (cell, arm); curate CSVs into results/."""
     cfg = ensure_config(depth, size, mode, max_queries, force)
     for r in range(1, runs + 1):
@@ -133,25 +133,39 @@ def run_cell(depth, size, mode, trace_on, runs, max_queries, timeout,
 
         env = os.environ.copy()
         tmpdir = None
+        if online:
+            # Enter RADTBenchmark (via main.py) so the run is end_run()'d
+            # (status FINISHED) and the async span queue is drained before
+            # os._exit. NO RADT_LISTENER_* vars are set, so NO listener
+            # processes spawn — zero measurement perturbation.
+            env["RADT_PRESENT"] = "True"
         if not trace_on:
             env["CHOREO_DISABLE_TRACING"] = "1"
+        elif online:
+            # ONLINE: async span export to the ambient MLflow server (res17, from
+            # the conda env credential vars) — this measures the REAL production
+            # tracing cost the case studies pay, not a local-file-store cost. Do
+            # NOT override MLFLOW_TRACKING_URI; the server is inherited from env.
+            env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
         elif mlflow_safe:
-            # Avoid the sync-export-with-no-backend pathology on the -p 0 path:
-            # async export to a throwaway local file store. Point MLflow at a
-            # NON-existent subdir so its FileStore initializes the store
-            # (incl. the default experiment); an empty pre-made dir would raise
-            # "Could not find experiment with ID 0".
+            # Offline default: avoid the sync-export-with-no-backend pathology on
+            # the -p 0 path — async export to a throwaway local file store. Point
+            # MLflow at a NON-existent subdir so its FileStore initializes the
+            # store (incl. the default experiment); an empty pre-made dir would
+            # raise "Could not find experiment with ID 0".
             env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
             tmpdir = tempfile.mkdtemp(prefix="noop_mlruns_")
             env["MLFLOW_TRACKING_URI"] = "file:" + os.path.join(tmpdir, "store")
 
+        cmd = [sys.executable, "main.py", cfg, "-p", "0", "--label", lab]
+        if online:
+            # route both arms to the overhead experiment on the server so the
+            # ON/OFF pair is centralized and comparable
+            cmd += ["-e", str(experiment)]
         print(f"[run ] {lab}")
         rc = None
         try:
-            proc = subprocess.run(
-                [sys.executable, "main.py", cfg, "-p", "0", "--label", lab],
-                cwd=_REPO_ROOT, env=env, timeout=timeout,
-            )
+            proc = subprocess.run(cmd, cwd=_REPO_ROOT, env=env, timeout=timeout)
             rc = proc.returncode
         except subprocess.TimeoutExpired:
             print(f"[FAIL] {lab}: timed out after {timeout}s")
@@ -185,6 +199,13 @@ def main():
     ap.add_argument("--no-mlflow-safe", action="store_true",
                     help="for the tracing-ON arm, do NOT redirect MLflow to a "
                          "local async store (use the ambient MLflow config)")
+    ap.add_argument("--online", action="store_true",
+                    help="log runs to the ambient MLflow server (res17, from the "
+                         "conda env credential vars) with ASYNC span export — the "
+                         "representative production tracing cost. Requires the "
+                         "server credentials to be set as conda env vars.")
+    ap.add_argument("--experiment", type=int, default=138,
+                    help="MLflow experiment id for --online runs (default 138)")
     ap.add_argument("--force", action="store_true",
                     help="re-run and regenerate configs even if outputs exist")
     args = ap.parse_args()
@@ -212,7 +233,8 @@ def main():
                     cells.append(c)
         for depth, size, mode in cells:
             run_cell(depth, size, mode, trace_on, args.runs, args.max_queries,
-                     args.timeout, args.force, mlflow_safe)
+                     args.timeout, args.force, mlflow_safe,
+                     args.online, args.experiment)
 
     print("\nDone. CSVs in:", _RESULTS_DIR)
 

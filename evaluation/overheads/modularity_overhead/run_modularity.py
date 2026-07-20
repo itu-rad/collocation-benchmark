@@ -43,12 +43,12 @@ _CONFIG = os.path.join(_HERE, "configs", "torchvision_training.yml")
 _BASELINE = os.path.join(_HERE, "baseline_finetune.py")
 
 
-RADT_PIN = "0.2.29"  # async_tracing branch @3ba61cb (environments/*.yaml pin)
+RADT_PIN = "0.2.29"  # async_tracing fork @9dda7b8 (itu-rad/radt; environments/*.yaml pin)
 
 
 def check_environment(device):
     """Hard gate: the tracing-ON arm is only meaningful on the pinned
-    async_tracing radt (0.2.29 @3ba61cb), and a CPU-only torch wheel on a
+    async_tracing radt (0.2.29 @9dda7b8), and a CPU-only torch wheel on a
     cuda device silently measures nothing. Both have burned collection time
     (2026-07-13). Refuse to run on a mismatched env."""
     fatal = []
@@ -56,8 +56,8 @@ def check_environment(device):
         import radt
         if radt.__version__ != RADT_PIN:
             fatal.append(f"radt {radt.__version__} != pinned {RADT_PIN} "
-                         "(async_tracing @3ba61cb) — use the overhead env "
-                         "(benchmark_macos_overhead / benchmark_nvidia)")
+                         "(async_tracing @9dda7b8) — create the env from "
+                         "environments/macos.yaml (benchmark_macos) / nvidia.yaml")
     except ImportError:
         fatal.append("radt not importable")
     try:
@@ -157,29 +157,45 @@ def exec_baseline(device, max_batches, num_workers, timeout, r, force):
     print(f"[{'ok ' if ok else 'FAIL'}] {lab} (rc={rc})")
 
 
-def exec_choreo(cfg, device, trace_on, timeout, r, force):
+def exec_choreo(cfg, device, trace_on, timeout, r, force, online, experiment):
     lab = f"mod_choreo_t{1 if trace_on else 0}_d{device}_r{r}"
     target = os.path.join(_RESULTS_DIR, lab + ".csv")
     if os.path.exists(target) and not force:
         print(f"[skip] {lab}")
         return
     env = os.environ.copy()
-    # Always point MLflow at a throwaway, freshly-created local file store (per run),
-    # for BOTH arms. This overrides any ambient MLFLOW_TRACKING_URI (e.g. a shared
-    # sqlite DB another user may migrate out from under us -> schema-mismatch crashes)
-    # and keeps us from touching anyone else's MLflow state. The non-existent "store"
-    # subdir lets MLflow's FileStore initialize the default experiment.
-    tmpdir = tempfile.mkdtemp(prefix="mod_mlruns_")
-    env["MLFLOW_TRACKING_URI"] = "file:" + os.path.join(tmpdir, "store")
-    if not trace_on:
-        env["CHOREO_DISABLE_TRACING"] = "1"
+    tmpdir = None
+    if online:
+        # ONLINE: inherit the ambient MLflow server (res17, from the conda env
+        # credential vars). The tracing-ON arm uses ASYNC span export, so the
+        # measured overhead is the REAL production tracing cost, not a local
+        # file-store cost. Do NOT override MLFLOW_TRACKING_URI. RADT_PRESENT
+        # makes main.py end_run() + drain the async span queue on exit; NO
+        # RADT_LISTENER_* vars are set, so NO listener processes spawn (zero
+        # measurement perturbation).
+        env["RADT_PRESENT"] = "True"
+        if not trace_on:
+            env["CHOREO_DISABLE_TRACING"] = "1"
+        else:
+            env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
     else:
-        env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
+        # Offline default: throwaway per-run local file store for BOTH arms. This
+        # overrides any ambient MLFLOW_TRACKING_URI (e.g. a shared sqlite DB
+        # another user may migrate out from under us -> schema-mismatch crashes)
+        # and touches no one else's MLflow state. The non-existent "store" subdir
+        # lets MLflow's FileStore initialize the default experiment.
+        tmpdir = tempfile.mkdtemp(prefix="mod_mlruns_")
+        env["MLFLOW_TRACKING_URI"] = "file:" + os.path.join(tmpdir, "store")
+        if not trace_on:
+            env["CHOREO_DISABLE_TRACING"] = "1"
+        else:
+            env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
+    cmd = [sys.executable, "main.py", cfg, "-p", "0", "--label", lab]
+    if online:
+        cmd += ["-e", str(experiment)]
     print(f"[run ] {lab}")
     try:
-        rc = subprocess.run(
-            [sys.executable, "main.py", cfg, "-p", "0", "--label", lab],
-            cwd=_REPO_ROOT, env=env, timeout=timeout).returncode
+        rc = subprocess.run(cmd, cwd=_REPO_ROOT, env=env, timeout=timeout).returncode
     except subprocess.TimeoutExpired:
         print(f"[FAIL] {lab}: timeout")
         rc = None
@@ -218,6 +234,13 @@ def main():
     ap.add_argument("--arms", choices=["off", "on", "both"], default="both")
     ap.add_argument("--no-baseline", action="store_true")
     ap.add_argument("--no-choreo", action="store_true")
+    ap.add_argument("--online", action="store_true",
+                    help="log Choreo runs to the ambient MLflow server (res17, from "
+                         "the conda env credential vars) with ASYNC span export — the "
+                         "representative production tracing cost. Requires the server "
+                         "credentials to be set as conda env vars.")
+    ap.add_argument("--experiment", type=int, default=138,
+                    help="MLflow experiment id for --online runs (default 138)")
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
@@ -242,7 +265,8 @@ def main():
                 for trace_on in arms:
                     if args.cooldown:
                         print(f"[cool] {args.cooldown}s"); time.sleep(args.cooldown)
-                    exec_choreo(cfg, args.device, trace_on, args.timeout, r, args.force)
+                    exec_choreo(cfg, args.device, trace_on, args.timeout, r,
+                                args.force, args.online, args.experiment)
     finally:
         if cfg:
             os.unlink(cfg)
