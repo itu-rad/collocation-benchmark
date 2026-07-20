@@ -410,13 +410,21 @@ def cell_statistics(cell_label: str, meta: dict, run_traces: dict,
     """run_traces: {run_id: {pipe_name: PipelineTrace}}."""
     out, stats = [], {}
     fg_vecs, throughputs, run_medians = [], [], {}
+    # In orchestrated (multi-pipeline) staged cells the traces include the
+    # background co-runner(s) alongside the foreground. Cell statistics (p50/p95,
+    # throughput, run-median dispersion) are about the FOREGROUND response only —
+    # pooling the bg (named "BG ...") conflated its latency with the fg and made
+    # the dispersion check misfire (fg ~2s vs bg ~16s read as a huge spread).
+    def _is_bg(nm: str) -> bool:
+        return nm.strip().upper().startswith("BG")
     for rid, traces in sorted(run_traces.items()):
-        for name, pt in traces.items():
+        fg_pipes = {n: pt for n, pt in traces.items() if not _is_bg(n)} or traces
+        for name, pt in fg_pipes.items():
             lat = [q.latency_s for q in pt.completed][warmup_k:]
             if not lat:
                 continue
             fg_vecs.append(lat)
-            run_medians[f"{rid}:{name}" if len(traces) > 1 else rid] = pl.statistics.median(lat)
+            run_medians[f"{rid}:{name}" if len(fg_pipes) > 1 else rid] = pl.statistics.median(lat)
             t0, t1 = pt.span_wall()
             if t1 > t0:
                 throughputs.append(len(pt.completed) / (t1 - t0))
