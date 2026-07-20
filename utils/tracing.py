@@ -38,8 +38,23 @@ def configure_sync_export() -> None:
     ``mlflow.start_span`` call).
     """
     # setdefault: an explicit user override in the shell wins.
+    os.environ.setdefault(_ASYNC_TRACE_ENV_VAR, "false")
+
+
+def configure_async_export() -> None:
+    """Enable MLflow async trace export (radt AsyncTraceExportQueueV2 path).
+
+    The pinned radt (feat/Sipondo/async_tracing @9dda7b8) monkey-patches
+    mlflow's AsyncTraceExportQueue at import time with a bounded,
+    drop-on-overflow, background-batched uploader — but mlflow only USES
+    the async queue when this flag is truthy (OSS backends default to
+    sync export, which blocks worker threads per root span; probe-measured
+    to destroy open-loop arrival processes against a remote tracking
+    server). Idempotent; call once per process before any
+    ``mlflow.start_span``.
+    """
+    # setdefault: an explicit user override in the shell wins.
     os.environ.setdefault(_ASYNC_TRACE_ENV_VAR, "true")
-    print("Blocked from configuring trace export. Set to ASYNC TRUE")
 
 
 def flush_traces() -> None:

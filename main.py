@@ -15,12 +15,12 @@ from pydantic import BaseModel
 from multiprocessing import Process, Queue
 from pydantic_yaml import parse_yaml_raw_as
 from typing import Literal
-from utils.logger import Logger
+from utils.logger import Logger, PERF_FORMAT, install_perf_clock
 from loadgen import run_loadgen
 from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
 from utils.server_manager import kill_all as kill_all_servers
-from utils.tracing import configure_sync_export, flush_traces
+from utils.tracing import configure_async_export, flush_traces
 
 
 def parse_args():
@@ -68,10 +68,20 @@ def convert_listeners(listeners: list[Literal[listeners.keys()]]) -> str:
 
 
 def radt_entrypoint(args):
-    # Force MLflow span export to run synchronously. Must happen before any
-    # mlflow.start_span call (i.e. before importing/constructing the pipeline)
-    # because the async/sync flag is read at exporter init time.
-    configure_sync_export()
+    # Enable ASYNC MLflow span export (radt's bounded background uploader).
+    # Must happen before any mlflow.start_span call (i.e. before importing/
+    # constructing the pipeline) because the flag is read at exporter init.
+    # The overhead drivers still call configure_sync_export explicitly when
+    # they need deterministic per-span cost.
+    configure_async_export()
+
+    # Measurement knob for the framework-overhead microbenchmark: when set, turn
+    # MLflow tracing into a no-op so per-stage spans (3 per stage per query) do
+    # not dominate the measured cost. This isolates the framework's CORE dispatch
+    # (thread wake + queue hand-off + CSV log) from the optional profiling layer.
+    # Unset in all normal runs, so it has no effect on the case studies.
+    if os.environ.get("CHOREO_DISABLE_TRACING", "").lower() in ("1", "true", "yes"):
+        mlflow.tracing.disable()
 
     # Belt-and-braces for the prior "RadT killed the subprocess before MLflow
     # drained" issue: catch SIGTERM, flush spans, then re-raise so the
@@ -82,10 +92,19 @@ def radt_entrypoint(args):
         # skips stage post_run(), so it must happen here.
         kill_all_servers()
         flush_traces()
-        # Stop RadT listeners/loggers and mark the run FINISHED. os._exit (and
-        # this re-raised signal) skip RADTBenchmark.__exit__, so without this the
-        # run stays RUNNING and the listener children orphan.
+        # Tear down the radt listener/logger children and close the mlflow
+        # run; without this a timeout-killed run stays status=RUNNING forever
+        # and the listener processes only die with the process group. No-op
+        # unless RADT_PRESENT is set. shutdown() end_run()s with the default
+        # FINISHED status, so re-mark the run KILLED afterwards — a validator
+        # matching runs by tag must not mistake a timeout kill for a clean run.
+        active = mlflow.active_run()
         radt.shutdown()
+        if active is not None:
+            try:
+                mlflow.MlflowClient().set_terminated(active.info.run_id, "KILLED")
+            except Exception:  # pylint: disable=broad-except
+                pass
         signal.signal(signum, signal.SIG_DFL)
         os.kill(os.getpid(), signum)
 
@@ -110,7 +129,8 @@ def radt_entrypoint(args):
         # JSONL filename matches the CSV filename.
         os.environ["CHOREO_OUTPUT_LABEL"] = pipeline_name
 
-        formatter = logging.Formatter("%(created)f, %(message)s")
+        install_perf_clock()
+        formatter = logging.Formatter(PERF_FORMAT)
         file_handler = logging.FileHandler(filename=log_file)
         file_handler.setFormatter(formatter)
 
@@ -149,6 +169,14 @@ def radt_entrypoint(args):
             else:
                 config[f"{directory}"] = data
 
+        # Route the run to the requested radT experiment BEFORE the first
+        # mlflow call auto-starts a run — without this, -e is honored only on
+        # the schedule path and direct-mode runs land in the Default
+        # experiment. MLFLOW_EXPERIMENT_ID (set by radt for its children)
+        # takes precedence to avoid fighting the orchestrator.
+        if "MLFLOW_EXPERIMENT_ID" not in os.environ and args.experiment_id:
+            mlflow.set_experiment(experiment_id=str(args.experiment_id))
+
         # Log config
         mlflow.log_artifact(args.config_file_path, "pipeline")
 
@@ -158,7 +186,30 @@ def radt_entrypoint(args):
         )
         mlflow.log_params(mlflow_config)
 
-    run_loadgen(benchmark_config.pipelines[args.pipeline_id])
+    # Enter the radt benchmark context ourselves. On the direct `-p N` path
+    # (evaluation/collect/run_collection.py execs `main.py <cfg> -p 0`) nothing
+    # else enters it, so the macmon/top listener processes never spawn —
+    # _RADTBenchmark.__enter__ (radt/run/benchmark.py) is the ONLY place they
+    # are started, gated on RADT_PRESENT + RADT_LISTENER_<NAME> env vars.
+    # RADTBenchmark is a no-op when RADT_PRESENT is unset (manual runs and the
+    # overhead drivers stay unperturbed), and it wraps a process-wide singleton,
+    # so on the radt-scheduled path (`python -m radt run`, used for the
+    # orchestrated multi-pipeline cells) this reuses the instance already
+    # entered by radt.run.run.start_run instead of double-spawning listeners.
+    with radt.run.RADTBenchmark():
+        # Tag the run with the per-run output label so post-hoc validation can
+        # match mlflow runs by tag instead of wall clock. The active run exists
+        # by now (mlflow.log_params above auto-starts one even without radt).
+        label = os.environ.get("CHOREO_OUTPUT_LABEL", "")
+        mlflow.set_tag("choreo.label", label)
+        # Descriptive server-side run name: the cell label already encodes
+        # experiment/task/arm/schedule/device/run (e.g.
+        # e4_factoid_monolith_pipe_mlx_r1); append the pipeline name so
+        # multi-pipeline cells stay distinguishable in the UI.
+        pipe_name = benchmark_config.pipelines[args.pipeline_id].name
+        mlflow.set_tag("mlflow.runName",
+                       f"{label} | {pipe_name}" if label else pipe_name)
+        run_loadgen(benchmark_config.pipelines[args.pipeline_id])
 
     # Force-exit after the pipeline completes. Interpreter shutdown can
     # otherwise hang for many minutes on mlflow telemetry sockets in
@@ -174,20 +225,17 @@ def radt_entrypoint(args):
 
     # Drain MLflow trace spans BEFORE os._exit. atexit handlers don't fire
     # on os._exit, so this is the last chance to push pending spans.
-    # NOTE: we do NOT call mlflow.end_run() here — RadT listeners (macmon,
-    # smi, top, etc.) attach to the active run and stream metrics. Calling
-    # end_run from under them closes the run, drops in-flight metric
-    # writes, and can also race with mlflow.log_artifact for the yaml.
-    # RadT marks the run FINISHED itself via RADTBenchmark.__exit__.
+    # Run closure: the RADTBenchmark with-block above already terminated the
+    # listeners, flushed their metric queues, and mlflow.end_run()'d (in that
+    # order — see _RADTBenchmark.__exit__ — so no in-flight metric write lands
+    # on a closed run). radt.shutdown() below is the belt-and-braces drain for
+    # any path where the with-block was bypassed; it is idempotent and a no-op
+    # without RADT_PRESENT. Without it, os._exit would leave the run stuck
+    # status=RUNNING and orphan the listener children.
     # Reap any local inference servers before os._exit (which skips atexit), so
     # the GPU is freed even if a stage's post_run() didn't run.
     kill_all_servers()
     flush_traces()
-    # Stop RadT listeners/loggers and mark the run FINISHED before the hard
-    # exit. os._exit skips RADTBenchmark.__exit__, so without this the run
-    # stays RUNNING in mlflow and the listener children orphan (and wedge the
-    # orchestrator by holding its stdout pipe open). Done after flush_traces so
-    # spans are out before end_run closes the run.
     radt.shutdown()
     os._exit(0)
 
@@ -233,7 +281,14 @@ def main(args):
                 "Collocation": "",
                 "Listeners": convert_listeners(benchmark_config.listeners).lower(),
                 "File": "main.py",
-                "Params": f"{args.config_file_path} -p {pipeline_id}",
+                # Forward the per-run flags to the inner invocation: radt
+                # re-execs main.py from this Params string, so anything not
+                # carried here (label, serialize override) is silently lost
+                # and the run/CSV falls back to default naming.
+                "Params": f"{args.config_file_path} -p {pipeline_id}"
+                          + (f" --label {args.label}" if args.label else "")
+                          + (f" --serialize {args.serialize_override}"
+                             if args.serialize_override else ""),
             }
         )
 
