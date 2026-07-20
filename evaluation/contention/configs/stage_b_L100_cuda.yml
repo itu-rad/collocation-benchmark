@@ -58,7 +58,7 @@ pipelines:
       device: cuda
       model:
         name: Qwen/Qwen3.5-4B
-        quantize: true
+        quantize: false
         gen_kwargs:
           do_sample: false
           max_new_tokens: 128
@@ -77,7 +77,7 @@ pipelines:
     max_queries: 100
     timeout: 3600
     config:
-      interval: 0.0532
+      interval: 0.0569
   stages:
   - name: Corpus chunk loader (shard 0/1)
     id: 0

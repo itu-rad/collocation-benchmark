@@ -38,7 +38,7 @@ pipelines:
       device: cuda
       model:
         name: Qwen/Qwen3.5-9B
-        quantize: true
+        quantize: false
         gen_kwargs:
           do_sample: false
           max_new_tokens: 256
@@ -54,7 +54,7 @@ pipelines:
     max_queries: 1000
     timeout: 3600
     config:
-      interval: 0.41237
+      interval: 0.41085
   stages:
   - name: CPU memory stream
     id: 0
