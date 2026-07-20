@@ -479,9 +479,29 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
   decide now** (§2.6).
 - [ ] Run VQA-accuracy + parity scorers on the outputs.
 
-### 3.4 E4 — Self-RAG topology — **P0 [M2] + [GB10]** — re-collection assumed (§1.5)
-Arms: Monolith-9B, Decomposed-3×4B, Monolith-4B (size control), Decomposed-Shared
-(logical), + engine overlay (HF / vLLM / Ollama). Tasks: factoid + multi-hop. Both DUTs.
+### 3.4 E4 — Self-RAG topology = **the reconfigurability showcase** (paper's MAIN contribution) — **P0 [M2] + [GB10]**
+
+> **REDESIGN 2026-07-19 (results-review):** this section demonstrates the declarative
+> tuning knobs a systems researcher wants for a complex agentic workload (Self-RAG w/
+> loops) that current tools don't expose. **Quality = non-inferiority GUARD, not headline.**
+> Axes: (a) TOPOLOGY monolith vs decomposed — thesis "are small models now good enough to
+> answer complex queries in one shot, making decomposition an unnecessary tax?" (R=1:
+> matched-4B monolith matches decomposed quality, ~2× faster, ~3× lighter than replicated);
+> (b) SIZE control monolith-9B vs -4B (present 4B≈9B as the RATIONALE for small specialists,
+> never "4B better" — dodges the EM-verbosity artifact); (c) RESIDENCY/SHARING — three
+> points, RENAMED: **replicated** (was "decomposed", N instances, N× mem, concurrency-
+> capable) → **shared** (1 instance + mutex, 1× mem, serialized) → **server**
+> (vLLM/Ollama, 1 instance, no lock, continuous batching = best of both, dominates);
+> (d) CONCURRENCY knob (serialize_queries). **Server arm REBUTS the serving-reviewer's #1
+> Reject** — MEASURE it. Hunt these SURPRISES: device-dependent topology crossover
+> (decompose cheap on GB10, costly on M2 → no universal best); replication buys nothing on
+> unified memory (kernel serialization → replicated-concurrent ≈ shared-serial, pay N× mem
+> for nothing → "share or serve, never replicate"); server dominates the surface.
+
+Arms: Monolith-9B, Decomposed-4B, Monolith-4B (size control), **Replicated** (N inst.),
+**Shared** (1 inst.+mutex), **Server** (vLLM/Ollama continuous batching). Tasks: factoid +
+multi-hop. Both DUTs. Each residency arm in its natural concurrency mode + replicated in
+both serial/concurrent to measure the concurrency knob's latency delta.
 - [ ] **Gate: §1.5 provenance.** Working assumption: the full matrix re-runs post-fix
   with §2.6 knobs on both DUTs.
 - [ ] **Split every arm into (a) timing cells** (30–50 queries × R=5, pipelined + serial,
@@ -534,25 +554,67 @@ Arms: Monolith-9B, Decomposed-3×4B, Monolith-4B (size control), Decomposed-Shar
   `bert_training.yml`, `retinanet_training.yml` are **0-byte stubs**;
   `retinanet_inference.yml` hardcodes `/home/roba/...` (§7.1). Fix or delete.
 
-### 3.6 E6 — Staged contention experiment — **P0, APPROVED (2026-07-13)**
-> **APPROVED by the author:** the staged system→mechanism experiment of
-> `CONTENTION_EXPERIMENTS_REDESIGN.md` §0.3 — Stage A (RAG-serve foreground vs
-> B index-refresh pipelines, per-process attribution) → B (intensity isolation) →
-> C (single-resource co-runners) → D (bare decode, prefill/decode split), each
-> transition a single-element config diff shown in the paper. **VQA (old E3) is
-> CUT** — the CLIP encode configs survive only as Stage-C co-runner apparatus.
-> Knob variants locked: `e3=dose_response`, `e6=rag_indexing` (derive defaults).
-Decision upgraded (§1): the paper's title and Intro rest on this; minimal E6 ships.
-- [ ] Build the B-sweep generator (§2.2) — independent bg processes, each own dataset stage.
-- [ ] Fix ONE foreground workload (EfficientNetV2-S inference, Poisson rate per the
-  §2.6 headroom rule, held fixed across all B), ≥500 pooled queries/cell; B=0 is the
-  isolation baseline.
-- [ ] **[GB10, Ties]** B∈{0,1,2}: capture per-process SM-activity (`nvidia-smi pmon`);
-  validate the faithfulness check (per-process shares reconcile to the aggregate counter).
-- [ ] (Optional) **[M2]** same curve, attribution **residency-only** (no per-process counter).
-- [ ] Report the ceiling B reached; do not extrapolate.
-- [ ] Framing rule for the prose: Choreo **measures and attributes** interference; it
-  never **manages** it (no cross-pipeline resource control exists) — §5.3.
+### 3.6 §4 Contention — Staged descent (A→B→C→D) — **P0, DESIGN SOLID / EXECUTION GAPPED — REVISIT**
+> **Design APPROVED (2026-07-13), structure BUILT & R=1-collected.** Staged
+> system→mechanism descent (`CONTENTION_EXPERIMENTS_REDESIGN.md`), single config diff
+> per step, diffs shown in paper: Stage A (Self-RAG "RAG serve plain" foreground vs
+> B∈{0,1,2} corpus-indexer bg pipelines, per-process + M2 per-engine AMC attribution) →
+> B (intensity sweep {25,50,75,100}% R_max, bg loadgen diff) → C (single-resource
+> co-runners stream/clipgpu/clipane, bg stage-list diff; H1 engine-independence) →
+> D (bare decode, TTFT/decode phase split, fg diff; H2 bandwidth-vs-compute). VQA cut;
+> CLIP configs survive as Stage-C co-runners.
+>
+> **2026-07-19 VERDICT (results review): experiment is SOLID, EXECUTION had MAJOR GAPS
+> — must revisit before full-R.** R=1 outcomes: Stage A/B = under-dosed NULL; Stage C =
+> H1 falsified-direction but on a broken axis; Stage D = H2 SPLIT (supported vs pure-
+> bandwidth stream, falsified vs engine-sharing clip, REPLICATES both devices — the clean
+> star result). Framework capabilities (descent, per-process/per-engine attribution,
+> phase split, arrival verification) ARE demonstrated regardless of hypothesis outcome —
+> that's the contribution; the science is the vehicle.
+
+**MUST-FIX APPARATUS (science indefensible otherwise):**
+- [ ] **Calibrate the AMC counters** — closure protocol (known-byte STREAM/matmul/ANE
+  loads per engine), publish agent→bucket map + residual unattributed fraction per cell,
+  cap totals to the spec ceiling. Currently reports 331 GB/s on a ~200 GB/s bus
+  (physically impossible → disqualifying). BLOCKS all M2 bytes/s claims.
+- [ ] **Fix the under-dosing (Stage A/B)** — heavier backgrounds toward measured post-fg
+  headroom, foreground at 0.7–0.8× capacity, extend past B=2 (B=4, stacked co-runners),
+  until degradation CIs exclude zero → converts the NULL into a LOCATED tolerance boundary.
+- [ ] **Match delivered-dose ranges (Stage C)** — evaluate H1 only on OVERLAPPING bytes/s
+  support; ANE co-runner delivers <1 GB/s (non-monotone), can't be ratio'd against
+  stream's ~40 GB/s. Drive each co-runner to a common counter-verified GB/s range.
+- [ ] **λ reconciliation** — the fg ran at 31–86% of its registered rate; reconcile per
+  cell from the arrivals sidecar before deriving conclusions; re-derive if unsustainable.
+- [ ] **GB10 staged-fg precision → bf16** (near the ~273 GB/s roof, per the design
+  premise) NOT NF4 (streams ~37% of roof → a flat null is GUARANTEED). E4/E7 ladder
+  stays NF4; only the staged fg changes.
+- [ ] **Verdict machinery** — no FALSIFIED/SUPPORTED from zero-width (R=1) CIs; add
+  degenerate-CI guard; Fieller / cluster-bootstrap ratio CIs at full-R; pre-registered
+  minimum-detectable-slope below which it's "no detectable dose-response."
+- [ ] **Thermal telemetry + throttle-exclusion gate** (knob table already promised it) —
+  per-cell power/clocks logged, throttled runs excluded; so "thermal/scheduling" is
+  evidence, not a hand-wave.
+
+**MPS ADDITION (the strong new §4 lever — GB10):**
+- [ ] **MPS off vs on** disambiguates SCHEDULING-contention from true RESOURCE-contention:
+  without MPS fg/bg time-slice the GPU (fg waits its turn); with MPS they co-execute
+  (true simultaneous bandwidth/SM fight). If the H2 phase-split SURVIVES MPS-on (decode
+  degrades, TTFT flat) → real bandwidth contention, NOT the "thermal/scheduling" reviewers
+  dismissed it as. Gives complementary per-device attribution: **M2 = per-engine bytes
+  (calibrated AMC), GB10 = scheduling-vs-resource (MPS on/off)** — each platform's native
+  mechanism, one question. radt exposes via Collocation="mps"; GB10 MPS verified working
+  2026-07-19 (MIG not supported there).
+
+**FRAMING:**
+- [ ] **H2 phase-split = the centerpiece** (clean, cross-device replicated, reviewer-
+  resistant). **H1 → "engine-specific per-engine laws"** (falsified as pre-registered,
+  honest). **Stage A/B → located tolerance boundary**, never presented as a bare null.
+- [ ] **Thesis reframe**: drop "bandwidth is the binding resource" (own data contradicts
+  it); adopt *"contention on unified-memory SoCs is engine-specific, not a fungible
+  bytes/s tax — and the framework's per-engine attribution + phase split is what tells the
+  regimes apart."* Everything downstream (intro/abstract/§4) follows from this.
+- [ ] Framing rule (unchanged): Choreo **measures and attributes** interference, never
+  **manages** it (no cross-pipeline resource control).
 
 ### 3.7 E7 — Capacity/size sweep — **MERGED INTO E4 (Self-RAG)** — **P1**
 No longer a standalone experiment; it is the Self-RAG monolith arm read along the size axis.
