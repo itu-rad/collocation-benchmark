@@ -120,8 +120,6 @@ class Inference(Stage):
                 n_generated += response.generation_tokens
                 model_out.append(text)
 
-                print("generated: ", text)
-
             log_generated_tokens(self, n_generated)
 
         finally:

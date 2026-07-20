@@ -196,8 +196,6 @@ class Inference(Stage):
         if isinstance(batch, str):
             batch = [batch]
 
-        print("Input data:", batch)
-
         if self._outlines_generator:
             # NOTE: no first_token instrumentation on the structured-
             # generation path (outlines drives generate() internally); the
@@ -264,8 +262,6 @@ class Inference(Stage):
             model_out = self._tokenizer.batch_decode(
                 generated_ids, skip_special_tokens=True
             )
-
-        print("Raw model output: ", model_out)
 
 
         if self._data_model:
