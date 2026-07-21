@@ -136,9 +136,13 @@ both caveats for Robert: reviewers unanimously say omitting MLPerf Server is fat
 mention it; v4 threads it as "3D-UNet ships no Server/MultiStream scenario"; recommended = actually
 run a Server-mode open-loop LoadGen (the #1 fix, sim→measured). Reviewers' unanimous #1 for BOTH
 sections = a real open-loop under-load run.
-mlx R=1 sweep RESUMED (pid, resumes at e4_multihop_decomposed_pipe, skips 15 done). MLPerf report §4a
-(real-harness FIFO/SJF flow-times) PENDING: GB10 SJF accuracy run still grinding (slow, 2.8GB dumps);
-FIFO done (build/logs_fifo). Loop finalizes §4a when SJF lands.
+mlx R=1 sweep RESUMED (resumes at e4_multihop_decomposed_pipe, skips 15 done). MLPerf report §4a
+DONE: real MLPerf-harness FIFO vs SJF (GB10, 43 studies) — makespan/throughput IDENTICAL (337≈330s,
+order-insensitive) but routine-study (≤36 subvol) mean time-to-result FIFO 170s → SJF 21s = 8.2x
+sooner; Dice unchanged by reorder. This is the empirical anchor for paper-section A.2. BOTH REPORTS
+NOW FULLY COMPLETE (findings + §4a + paper-ready v4 section + caveats). Remaining = monitor mlx sweep
+to completion + analysis, then TODOs (retry open-loop instrumentation, 2nd R=1 round, optional Server
+run pending Robert's Server decision).
 
 ## REAL FIFO-vs-SJF in BOTH harnesses, BOTH machines (user: "can we do this for real both in mlperf and choreo" + "full r=1 on both mac and gb10")
 The scheduling result must be REAL, not simulated. Mechanism: MLPerf Offline permits the SUT to
