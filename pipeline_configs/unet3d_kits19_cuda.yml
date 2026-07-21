@@ -42,7 +42,7 @@ pipelines:
         outputs: [3]
         component: stages.unet3d_kits19.UNet3DInference
         config:
-          model_path: models/3dunet_kits19/3dunet_kits19_128x128x128.pt
+          model_path: models/3dunet_kits19/3dunet_kits19_pytorch.ptc
           device: cuda
 
       - name: End stage
