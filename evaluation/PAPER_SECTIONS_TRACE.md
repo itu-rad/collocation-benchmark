@@ -559,3 +559,21 @@ bounded null, so its compute allocation is almost entirely unproductive, and ret
 data-dependent cost variable a length-based cost model misprices. Turning that compute-
 allocation result into a measured *tail* under open-loop load, and building the difficulty-
 aware scheduler it motivates, are the next steps this measurement enables.
+
+---
+
+# v4 + AUTHOR REFINEMENT (Robert, post-round-3) — preprocessing re-elevated for online serving
+
+All 3 review rounds pushed the preprocessing thread DOWN (reviewers: "pipelining/DALI hides it →
+only bites for serial single-request → weak case"). The author's rebuttal reverses this: **serial
+single-request IS the live-serving latency case, and it is not weak.** In online/streaming serving
+a request's raw data arrives WITH the request — there is nothing to prefetch, and the overlap that
+hides preprocessing requires a *different concurrent request* to overlap against (i.e., batch/
+throughput, not single-request latency). So to minimize a request's latency you must preprocess it
+online and serially; the excluded resample/normalize/pad sits fully on the critical path
+(~5% M2 / 19% GB10 / up to 70% smallest), grows with faster inference (Amdahl), and GPU
+preprocessing (DALI) accelerates but does not remove it. This ANSWERS the reviewers' pipelining/
+DALI rebuttal (which holds only for throughput/batch) and re-elevates preprocessing from a demoted
+caveat to a co-argument, correctly scoped to online serving. A.6/A.7 rewritten accordingly; the
+two threads now unify: MLPerf's offline-preprocessed, order-insensitive, closed-loop model is a
+faithful model of OFFLINE BATCH execution silently assumed for a workload served ONLINE.
