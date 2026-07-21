@@ -58,14 +58,17 @@ endpoint), this variance breaks MLPerf's metrics:
 |---|---|---|
 | MLPerf Offline throughput, FIFO vs SJF | identical | identical |
 | **SJF small-study time-to-result speedup** | **10.3×** | **11.2×** |
-| **Head-of-line p99 inflation @ ρ=0.35 (modest load)** | **9.0×** | **10.1×** |
+| **Open-loop p90 latency, ρ 0.35→0.82 (measured Server)** | — | **18.0 → 34.0 s** |
+| **HoL queue-wait tail (max), ρ 0.35→0.82 (measured)** | — | **16.7 → 43.5 s** |
 
 - **Size-aware scheduling (SJF, using the pre-inference-known subvolume count) returns
   routine studies ~10× sooner** (Mac: 28.3 → 2.7 min) — while **MLPerf's throughput is
   byte-identical for FIFO and SJF** (order-insensitive), so it cannot see the difference.
-- At **modest bursty load (ρ=0.35, well below saturation)**, a routine study's p99 is
-  inflated ~9–10× by head-of-line blocking behind large studies — invisible to MLPerf's
-  closed-loop SingleStream (which never queues).
+- In a **real open-loop Server run (GB10)**, per-request latency climbs from p90 18.0 s (ρ≈0.35)
+  to p90 34.0 s (ρ≈0.82) and the head-of-line queue-wait tail from 16.7 s to **43.5 s** — a routine
+  study waits up to ~11× its own service behind large ones. Invisible to MLPerf's closed-loop
+  SingleStream (never queues) and to Offline throughput (order-insensitive). *Measured*, not
+  simulated — superseding the earlier M/G/1 estimate.
 - **Device-independent** (same ~10× ratios despite GB10 being 10× faster) — because it's
   about *ordering and variance*, not speed.
 
@@ -156,11 +159,24 @@ assumed batch position — the ~10× ratio is the harness-robust quantity, and i
 as well; the cross-accelerator agreement is expected, as the ratio is dimensionless in
 service time, so we read it as a consistency check, not independent evidence).
 
-**A.4 Tail latency under load (simulated).** A trace-driven M/G/1 analysis over the measured
-service times — not a live load test — indicates a routine study's p99 would be inflated
-~9–10× by head-of-line blocking at ρ=0.35, the expected consequence of high service-time
-variance under FIFO. This is a single-utilization analytic result; a real open-loop run
-across a ρ-sweep (§A.7) is the deciding measurement we have not yet taken.
+**A.4 Tail latency under load (measured, real open-loop Server).** We ran the reference MLPerf
+LoadGen **Server** scenario (open-loop Poisson arrivals) on GB10 at two loads, with the reference
+SUT processing one study at a time (FIFO), and decomposed each request's latency into queue-wait +
+service from the loadgen trace (mlperf_log_trace.json, cross-checked against the reported
+percentiles). Service time is 7.7 s mean (0.99–18.4 s, an 18× spread). As offered load rises from
+**ρ≈0.35 to ρ≈0.82**, per-request latency climbs from **p90 18.0 s / p99 24.1 s** to **p90 34.0 s /
+p99 52.9 s**, and the *queue-wait alone* — pure head-of-line blocking behind large studies — grows
+from a 16.7 s to a **43.5 s** tail (mean 1.6 s → 7.1 s). That 43.5 s wait exceeds the entire model's
+18.4 s worst-case service: a routine (small, 4.5 s-service) study's latency reaches p90 10.6→22.9 s
+and a worst case of 18.6→**49.1 s (~11× its own service)**, purely from waiting. Both runs are
+"INVALID" in loadgen's sense — no latency target is met — which is precisely the finding: under this
+service-time variance, FIFO has **no bounded-latency operating point**, and no MLPerf scenario
+shipped for 3D-UNet queues, so none exposes it. (Honest scope: GB10 only; n≈86 per point, so p99≈max
+is undersampled — we lead with p90/p95, and the measured inflation is a *lower* bound on the true
+tail. This *measurement* supersedes an earlier single-ρ M/G/1 estimate that put the ρ=0.35 inflation
+at ~9–10×; the real run shows a milder but load-growing tail, so we report the measured numbers.)
+SJF relief under Server load needs an async queue+worker SUT (future work); the SJF benefit itself is
+measured inside the Offline harness (§A.2).
 
 **A.5 A fairness counterpoint we do not hide.** SJF/SRPT reduces routine-study flow time by
 delaying the largest studies, which for KiTS19 may correlate with larger tumor/kidney volumes
@@ -192,31 +208,39 @@ request's critical path (§A.6), a fraction that *grows* with faster inference; 
 optimal size-aware schedule — free and exact here because service time is predictable from the
 input header — improves routine flow time ~10× (measured as a throughput-invariant flow-time
 separation inside MLPerf's own harness, §A.2), yet no MLPerf scenario shipped for 3D-UNet queues,
-so it has no *shipped* instrument for it. The one experiment that would upgrade the tail from
-analysis to measurement — a real open-loop Server-mode run confirming the modeled ~10× p99 across
-a ρ-sweep — is the natural next step.
+so it has no *shipped* instrument for it. We close this with a **real open-loop Server-mode run**
+(§A.4): across ρ≈0.35→0.82 the per-request p90 latency doubles (18→34 s) and the head-of-line
+queue-wait tail reaches 43.5 s — measured, on the reference harness, exceeding the model's own
+worst-case service time. The remaining upgrade is SJF *under* Server load (an async SUT), where the
+Offline harness already shows the size-aware schedule erases the separation (§A.2).
 
 
 ## CAVEATS & OPEN QUESTIONS (for Robert)
 
 *Synthesized across all 3 review rounds. Read before committing the section.*
 
-**⚠️ THE SERVER-SCENARIO DECISION (you must make this call).** You said not to mention MLPerf's
-Server scenario ("not supported, provides nothing extra"). But all three reviewers, independently,
-call omitting it **fatal** — a knowledgeable PC member knows MLPerf defines a Server scenario
-(open-loop Poisson under a p99 bound) that is the canonical instrument for the head-of-line effect
-we claim is unseen, and reads its omission as concealment. v4 threads this honestly as "3D-UNet
-ships no Server/MultiStream scenario" (true, and the defensible framing). Two options:
-  (a) Keep the "no shipped scenario that queues" framing — honest, and the section stands at Weak
-      Accept. Lowest effort.
-  (b) **Actually run a Server-mode (open-loop) LoadGen harness on our SUT** — the reviewers'
-      *unanimous* #1 fix. It converts A.4's tail from simulation to measurement and turns "the
-      benchmark can't see it" into "here is the under-load tail it refuses to show." Cheap: we own
-      the SUT and the service times; only the Poisson arrival process is new. **My recommendation: (b)** — it is the single highest-value experiment in the whole 3D-UNet study.
+**✅ THE SERVER-SCENARIO DECISION — RESOLVED (option b executed).** You said not to mention MLPerf's
+Server scenario; all three reviewers independently called omitting it **fatal** (the canonical
+instrument for the head-of-line effect we claim is unseen). We took the reviewers' unanimous #1 fix:
+**we actually ran the reference MLPerf LoadGen Server scenario (open-loop Poisson) on our SUT**, at
+ρ≈0.35 and ρ≈0.82 (GB10). §A.4 is now **measured**, not simulated: p90 latency 18→34 s, HoL
+queue-wait tail 16.7→43.5 s. This required a one-line loadgen fix (run.py loaded a nonexistent
+`build/mlperf.conf` alongside user.conf → loadgen 6.0.16 marked every run INVALID; fixed to load
+only user.conf with conf_type=1). Framing to still make in the paper: 3D-UNet *ships* no
+Server/MultiStream scenario (true), so the effect is unseen by the shipped instruments — we
+demonstrate it by running the open-loop harness ourselves. Remaining caveats for you to weigh:
+  - **GB10 only, n≈86 per point.** p99≈max is undersampled; we lead with p90/p95. A Mac Server run
+    and higher query counts would firm the tail (the measured tail is a lower bound).
+  - **Milder than the old sim.** The M/G/1 estimate said ~9–10× at ρ=0.35; the real run shows ~2–4×
+    at ρ=0.35 growing with load (up to ~11× routine-study worst case at ρ=0.82). We report measured.
+  - **SJF-under-Server not yet measured** — needs an async queue+worker SUT (the reference SUT is
+    synchronous, so the reorder is a no-op under 1-query-at-a-time Server issue). SJF benefit stands
+    measured in Offline (§A.2). This is the one remaining upgrade.
 
 **Overclaims we softened (and why).** "MLPerf is blind" → "no shipped scenario that queues" (Server
-exists; blindness is scenario-selection, not structural). The tail ~10× is labeled *simulated*
-(single-ρ M/G/1 over measured service times), not measured. "hardware-invariant" → the cross-
+exists; blindness is scenario-selection, not structural). The tail is now **measured** (open-loop
+Server, §A.4): p90 18→34 s, HoL queue-wait tail 16.7→43.5 s across ρ 0.35→0.82 — the old ~10× M/G/1
+figure is retired in favor of the measured (milder, load-growing) numbers. "hardware-invariant" → the cross-
 accelerator agreement is *entailed* by the mechanism (flow-time ratio is dimensionless in service
 time), so it's a consistency check, not independent evidence. The measured 10× is the *in-harness
 throughput-invariant flow-time separation* (A.2); the absolute 28.3→2.7 min embeds an assumed batch

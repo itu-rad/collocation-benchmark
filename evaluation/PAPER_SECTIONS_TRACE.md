@@ -577,3 +577,29 @@ DALI rebuttal (which holds only for throughput/batch) and re-elevates preprocess
 caveat to a co-argument, correctly scoped to online serving. A.6/A.7 rewritten accordingly; the
 two threads now unify: MLPerf's offline-preprocessed, order-insensitive, closed-loop model is a
 faithful model of OFFLINE BATCH execution silently assumed for a workload served ONLINE.
+
+---
+
+## POST-REVIEW MEASURED UPGRADE (2026-07-21) — §A.4 simulation → measurement
+
+The 3-round review flagged the simulated §A.4 tail as the section's #1 weakness (all three
+reviewers: run the real open-loop Server harness). DONE. We ran the reference MLPerf LoadGen
+**Server** scenario (open-loop Poisson) on our 3D-UNet/KiTS19 SUT (GB10), FIFO, at two loads.
+
+Enabler: a one-line loadgen bug fix — run.py called FromConfig on a nonexistent `build/mlperf.conf`
+alongside user.conf; loadgen 6.0.16 bundles mlperf.conf internally, so the double-load threw
+"can't open file" + "Multiple conf files ... not valid" and marked every run INVALID (empty summary),
+which had masked earlier attempts as "GB10 flakiness." Fixed to `FromConfig(user_conf, "3d-unet",
+scenario, 1)` only.
+
+Measured (S=7.7s mean service, 0.99–18.4s): as ρ rises 0.35→0.82, per-request p90 latency 18.0→34.0s,
+p99 24.1→52.9s; HoL queue-wait tail 16.7→43.5s (exceeds the model's own 18.4s worst-case service);
+routine (4.5s-service) study worst case 18.6→49.1s (~11×). Both runs "INVALID" in loadgen's sense —
+no bounded-latency operating point under FIFO, the finding itself.
+
+Honesty deltas from the reviewed v4: (1) the measured inflation is MILDER than the retired M/G/1
+~9–10× estimate (~2–4× at ρ=0.35), so we report measured numbers and drop the 9–10× figure;
+(2) GB10-only, n≈86/point → p99≈max undersampled, lead with p90/p95, tail is a lower bound;
+(3) SJF-under-Server not measured (reference SUT is synchronous → reorder is a no-op at 1-query-at-a-
+time Server issue; needs async queue+worker SUT). SJF benefit stands measured in Offline (§A.2).
+REPORT.md §A.4, summary table, A.7 takeaway, and caveats updated; numbers in server_measured.md.
