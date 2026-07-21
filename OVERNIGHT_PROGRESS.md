@@ -121,6 +121,71 @@ The port is correct end-to-end. Committed (config model_path→.ptc, BUILD.md up
 conda-run/radt launch note). Remaining (non-gating): full 42-case run, CUDA smoke on
 GB10, bitwise xcheck vs reference SUT.
 
+## NEAR-SAT SELF_RAG RUN — ATTEMPTED, BLOCKED by GB10 radt-launch env (optional; §B.3b stands)
+Investigated the deferred near-saturation self_rag run to upgrade §B.3b (service tail → queue-amplified).
+GOOD NEWS: the stack IS ready on GB10 (Qwen3.5-9B cached 19GB; ChromaRetriever uses in-memory
+chromadb.Client() so "no persistent index" is expected/fine; dataset auto-downloads from HF; LLM is
+llm_huggingface NOT ollama, so ollama-down is irrelevant). My earlier "deep rebuild needed" was WRONG.
+Also learned the load regime: queue_depth=110=max_queries so the scheduler queue absorbs all arrivals
+(0.36s submission delay); the existing run is already ~near saturation → a clean rate-SWEEP (below/near/
+above sat) is the right queue-amplification experiment, parallel to §A.4.
+BLOCKER (genuine): running one config via main.py on GB10 fails at the radt launch. main.py has two
+paths: (a) `-p 0` → radt_entrypoint = IN-PROCESS (no spawn) — UNUSABLE because radt/mlflow consumes `-p`
+from sys.argv at IMPORT time, so pipeline_id always resolves to -1 → falls to (b); (b) no -p → main() →
+radt.schedule_external → spawns `python -m radt run`, which fails FileNotFoundError 'python' because
+GB10's base PATH has no `python` anywhere but the conda env bin, and the spawn's PATH doesn't include it
+even under conda run (isolated Popen test works; radt's spawn does not — unresolved). run_collection
+avoids this via its specific launch env (it uses the spawn path successfully on cuda). PATH options:
+/usr/local/bin on PATH but not writable; ~/.local/bin writable but not on PATH.
+RECOMMENDATION (future, not blocking paper): run the rate-sweep via run_collection's cell machinery
+(add near-sat monolith cells to the matrix) rather than a one-off main.py, OR fix radt useconda mode.
+§B.3b already committed + honest (measured service tail, queue-amp flagged as the remaining upgrade).
+
+## BOTH REVIEWER EXPERIMENTS DELIVERED AS MEASURED (committed, no attribution)
+[UPDATE 3] DECISION 1 DONE — commit 55aefc6. §A.4 now MEASURED open-loop Server (GB10): ρ 0.35→0.82,
+p90 lat 18→34s, p99 24→53s, HoL queue-wait tail 16.7→43.5s, routine study up to ~11×. Honest: milder
+than retired M/G/1 9-10×; GB10-only n≈86 (p99≈max undersampled, lead p90/p95); SJF-under-Server needs
+async SUT (future). run.py FromConfig bug fixed. Numbers: evaluation/unet3d/server_measured.md.
+DECISION 2 DONE — commit 14c3df1. §B.3b now MEASURED retry-driven serving tail, recovered from EXISTING
+open-loop Poisson runs (arrivals.csv + trace End-stage/end) — NO new run/instrumentation needed.
+evaluation/self_rag/retry_tail.py: multihop serial GB10 n=110/arm, per-request latency p99/p50≈3.0× in
+EVERY arm (monolith 18.6→57.1s, decomp 4.2→12.8s, mono4b 5.7→16.7s); 2-retry queries 1.4-2.3× a 0-retry
+query; worst-decile retry-enriched 45/55/100% vs 41-43% base. Honest: submission delay ~0.4s → SERVICE
+tail (retries + multihop intrinsic variance co-drive), not yet queue-amplified; near-saturation run is
+the remaining upgrade (config rate 0.1633 came from the faster decomp pilot). Numbers:
+evaluation/self_rag/retry_tail_measured.txt.
+REMAINING: mlx sweep to completion (8/31 staged, all bw ≤171 GB/s OK) → analyze_staged/score_quality/
+validate_pass/quality_power. Optional future: near-sat self_rag queue-amp run; 3D-UNet Mac Server run.
+
+## AMC FIX VERIFIED ON REAL DATA + Server run root-caused/in-progress
+[UPDATE 2] DECISION 1 MEASURED (§A.4 upgrade DONE for the high-load point). FromConfig fix WORKED (no
+config errors). ρ≈0.82 (qps=0.106, S=7.69s mean service) FIFO open-loop, 86 queries: p90 34s, p99 52.9s
+latency for a 7.7s-mean-service workload; QUEUE WAIT (HoL) alone reaches 43.5s; routine studies (4.5s
+service) inflated up to ~11× (max latency 49s). Parsed from mlperf_log_trace.json, cross-checked vs
+loadgen summary. Numbers in evaluation/unet3d/server_measured.md. Low-load ρ≈0.35 point running (waiter
+bp399zyft) for the p99-vs-load contrast. Then write §A.4 (replace 'simulated' w/ MEASURED) + commit.
+mlx staged 3/31 done (168.7/170.2/170.5 GB/s ALL ≤200 OK). No mlx reboot.
+
+## AMC FIX VERIFIED ON REAL DATA + Server run deferred (GB10 flaky)
+mlx sweep reached the STAGED cells. FRESH stage_a_B0 (fixed AMC sampler): peak total 168.7 GB/s —
+PHYSICALLY VALID (≤~200 GB/s M2 Pro LPDDR5), vs archived-broken 369 GB/s (all cells >200). The #1
+architect-reviewer blocker (impossible bandwidth totals) is RESOLVED on the actual re-run data, not
+just the calibration microbenchmark. Verifying each staged cell ≤200 as they land; full staged
+analysis (analyze_staged/score_quality/validate_pass/quality_power) on mlx completion.
+DECISION 1 (3D-UNet Server = measured §A.4): ROOT-CAUSED + IN PROGRESS. The prior "GB10 flakiness"
+was misdiagnosed — the real blocker was a run.py CONFIG BUG: it called FromConfig twice (mlperf.conf
++ user.conf, both conf_type=1), and loadgen 6.0.16 bundles mlperf.conf internally, so the explicit
+`build/mlperf.conf` (nonexistent) threw "can't open file" + "Multiple conf files ... not valid" →
+run marked INVALID → EMPTY summary (the Server runs DID execute ~340s, just produced no metrics).
+FIX: run.py now calls `FromConfig(user_conf, "3d-unet", scenario, 1)` ONLY (mlperf.conf auto-loads);
+backup run.py.bak_conf12. Also found assets live at data/kits19/preprocessed_mlperf (43 cases) +
+models/3dunet_kits19/*.ptc, NOT build/ defaults — must pass --preprocessed_data_dir/--model.
+Launch recipe that PERSISTS: setsid nohup env SCHED=.. LOG_PATH=.. <benchmark_nvidia python> run.py
+--scenario=Server ... </dev/null &. Smoke run (FIFO qps=0.106) launched + persisted; awaiting summary
+to (a) confirm valid p99 emits, (b) get mean service time to calibrate the rho-sweep. Then FIFO-vs-SJF
+p99 across a rho ladder → measured §A.4. DECISION 2 (retry-tail): Mac self_rag cells now DONE (multihop
+finished), so its Mac-blocking constraint is LIFTED; still needs GB10 GPU (after Server sweep).
+
 ## PAPER SECTIONS (3-round review→rewrite) + REPORTS DONE; mlx RESUMED
 Two paper-ready sections (A=3D-UNet/MLPerf, B=Self-RAG) taken through 3 rounds of ASPLOS-reviewer
 critique→rewrite; FULL TRACE in evaluation/PAPER_SECTIONS_TRACE.md (v1→R1→v2→R2→v3→R3→v4→author
