@@ -260,3 +260,159 @@ the majority of latency is in self-critique rather than generation, and it expos
 count as a data-dependent tail-latency variable that length-based schedulers cannot see —
 motivating (but not yet delivering) a difficulty-aware scheduler and an honest
 scaffold-vs-larger-model provisioning study.
+
+---
+
+# ROUND 2 — reviews (on v2)
+
+**Convergent: A Weak Accept (honesty fixed, a-priori-SJF core surprising+defensible); B Weak
+Reject/borderline (honesty fixed but OVER-HEDGED — named novelty moved to future-work, measured
+part near-trivial). Both sections' #1 fix is the SAME experiment shape: run the open-loop
+measurement each defers.**
+
+**Reviewer 1 (systems).** A→Weak Accept: all 5 R1 items fixed; NEW: Server concession quietly
+narrows headline (Server+SJF-admission WOULD reward it → "none of the scenarios shipped for THIS
+task"); speed-invariance is near-analytic (entailed, not independent evidence); A.4 near-hollow.
+Overclaim: A.5 states tail ~10× flatly (it's the ρ=0.35 sim). #1 fix: run LoadGen Server for real.
+B→Weak Reject (over-corrected): B.3 titled "novel object" but concedes tail unmeasured; measured
+core is modest/config-dependent. #1 fix: extract per-query retry-count + retry-vs-rescuability
+from EXISTING runs (offline). Reconcile every takeaway with its own conceded caveats.
+
+**Reviewer 2 (benchmarking).** A→Weak Accept conditional: "no Server task" is honest but NOT
+sufficient — LoadGen can drive Server against any SUT; choosing M/G/1 sim over the real harness is
+the weak link. Broken cross-ref (A.2 says §A.4 for reordering expt). "hardware-invariant" on n=2.
+Fairness: SJF starves large=sicker studies. Frame novelty as "uniquely rewards free a-priori SJF
+yet shipped w/o the scenario that'd show it." B→Weak Reject: honesty hollowed novelty; 1.9× is
+equal-size-grader artifact (CRAG uses small graders — the fix removes it); multihop null needs
+CI/power (you have quality_power); scheduler-gap mischaracterized (retry=fresh request to engine;
+gap is cross-request orchestration); cite Adaptive-RAG (Jeong 2024). B.4 arm-dependent.
+
+**Reviewer 3 (skeptic).** A→Weak Accept, still surprising — don't over-hedge further; keep the
+a-priori-realizability + no-instrument-for-this-workload conjunction. Overclaim: A.5 tail welded to
+measured number. B→leaning reject: over-hedged into "correct-but-unsurprising"; measured part is
+near-arithmetic (N calls ≈ N×) + known null (Huang). #1 fix: collect the retry-count distribution
+(measured) to convert B.3 from framing to contribution. Power the null or it reads underpowered.
+
+**Measured results added for v3 (from existing data, per all 3 reviewers' #1-B fix):**
+retry-count vs rescuability — 98% of retry compute lands on queries that end incorrect; retried
+EM 0.041 vs never-retried 0.380. Multi-hop null CI: ΔEM +0.033 [−0.017, +0.083].
+**New prior art to cite:** Adaptive-RAG (Jeong 2024), Schrage/SRPT, Dean&Barroso, Orca, vLLM.
+
+---
+
+# v3 — after Round 2
+
+## SECTION A — Free, a-priori scheduling that 3D-UNet's MLPerf scenarios cannot reward
+
+**A.1 Baseline and scope.** MLPerf Inference times only the model, under one of four
+scenarios; for 3D-UNet/KiTS19 the suite ships **only Offline (order-insensitive throughput)
+and SingleStream (closed-loop p90)** — not Server (open-loop Poisson under a p99 bound) or
+MultiStream. That throughput is order-insensitive by design, and that shortest-job-first
+minimizes mean flow time, are textbook (Schrage's SRPT); we claim neither. We claim what
+this workload makes uniquely *free and realizable*, and why the scenarios shipped for it
+cannot reward it.
+
+**A.2 The lever: the optimal schedule is exact and knowable pre-execution.** 3D-UNet issues
+8–144 sliding-window subvolumes per study as a deterministic function of the input header —
+so per-study service time (an 18–20× spread) is **known before inference, from the header,
+with no profiler or oracle.** Most workloads require estimation to schedule size-aware; this
+one does not. A size-aware (SJF) schedule therefore costs nothing to implement and, on the
+workload's deployment as a shared on-prem GPU, returns routine studies **10.3× sooner on M2
+(28.3→2.7 min) and 11.2× on GB10**, while reported Offline throughput is byte-identical for
+FIFO and SJF. (The cross-accelerator agreement is expected — the flow-time ratio is
+dimensionless in service time — so we read it as a consistency check on the mechanism, not
+as independent evidence; note the ratios differ slightly, 10.3× vs 11.2×, so speed is not
+entirely absent.)
+
+**A.3 In-harness verification.** To confirm the throughput/flow-time divergence is real and
+not an artifact of our own measurement, we reorder the issued batch shortest-first inside
+MLPerf's *own* Offline harness — which the Offline rules explicitly permit — and observe
+identical reported throughput with per-study flow times separating ~10× (accuracy
+unchanged). This is the one result taken inside the reference harness.
+
+**A.4 Tail latency under load (simulated).** A trace-driven M/G/1 analysis over the
+*measured* per-study service times — not a live load test — indicates a routine study's p99
+would be inflated ~9–10× by head-of-line blocking at ρ=0.35, the expected consequence of
+high service-time variance under FIFO. MLPerf's SingleStream never queues; its Server
+scenario would surface this, but 3D-UNet ships none. We flag two honest limits: this is a
+single-utilization analytic result (a ρ-sweep and a real open-loop run are the needed next
+step, §A.7), and standard operational fixes (separate batch/live queues; SJF admission)
+remove most of it — the point is that the shipped metrics reward none of them.
+
+**A.5 A fairness counterpoint we do not hide.** SJF/SRPT reduces mean and routine-study flow
+time by delaying the largest studies — which for KiTS19 may correlate with larger
+tumor/kidney volumes, i.e. potentially the more clinically urgent cases. Size-aware
+scheduling is therefore not obviously the correct *clinical* policy; our claim is about what
+the benchmark can and cannot see, not that SJF should be deployed unconditionally.
+
+**A.6 Preprocessing (bounded caveat).** MLPerf preprocesses offline; measured serially the
+excluded resample/normalize/pad is ~5% of end-to-end on M2 and 19% on GB10 (a per-study
+*maximum* of ~70% on the smallest study, where inference is near-zero). This is a
+CPU-resident, non-overlapped figure: pipelining hides 22% (serial 424→330s on GB10) and
+GPU-side preprocessing would close most of the rest, so for throughput MLPerf's offline model
+is defensible. We include it only as evidence that the excluded fraction is hardware-
+dependent, not as a headline.
+
+**A.7 Takeaway.** For a workload whose service time is *exactly* predictable from the input
+header, a free size-aware schedule improves routine time-to-result ~10× (measured, both
+accelerators), yet 3D-UNet ships neither of the MLPerf scenarios (Server, MultiStream) that
+would reward it — the well-known "measure latency under load" concern has, for this workload,
+no instrument at all. The remaining measurement — a real open-loop Server-mode run confirming
+the modeled ~10× p99 across a ρ-sweep — is the one experiment that would convert the tail
+result from analysis to measurement.
+
+---
+
+## SECTION B — The serving cost of multi-call critique-graph RAG
+
+**B.1 What this is.** We study a **multi-call critique-and-retry RAG graph** (relevance
+grader → generate → hallucination grader → answer grader → query-rewrite-and-retry; cf. CRAG
+[Yan et al. 2024], Adaptive-RAG [Jeong et al. 2024]). This is *not* Asai et al.'s
+reflection-token Self-RAG, which amortizes critique into one decoding pass; our pipeline
+issues **separate LLM calls** per critique role — the pattern most deployed agentic
+frameworks use — and its serving cost, per stage, is what we measure.
+
+**B.2 Where latency goes (serial breakdown; grader-size-dependent).** On single-hop factoid,
+decomposition improves EM +0.108 (4-bit) to +0.200 (bf16, McNemar p<0.001) — a real semantic
+gain, not a scoring artifact (identical answered-rate, token-F1 gain ≥ exact-match gain). In
+a serial per-stage breakdown the three auxiliary calls (two graders + rewriter) sum to ~1.9×
+the generator's latency (212s vs 110s), retrieval negligible (16s). We are explicit that this
+is **call-count-driven with equal-size grader models**; CRAG-style lightweight graders or
+prefix caching (vLLM) / continuous batching (Orca) would shrink it. The narrow claim: in the
+equal-size-grader pattern, most pipeline latency is critique, not generation — so tuning the
+answer model alone is insufficient.
+
+**B.3 Measured: the retry loop's compute is anti-correlated with its benefit.** From the
+existing run logs we recover per-query retry counts and correlate them with correctness. On
+multi-hop, **98% of all retry compute is spent on queries that end incorrect**; queries the
+loop retried score EM 0.041 versus 0.380 for queries it never retried, and every
+retry-exhausted query is wrong. The loop correctly *identifies* hard queries (its graders
+trigger the retries) but cannot *rescue* them — consistent with Huang et al. (2023) that LLMs
+cannot self-correct reasoning without external signal; our contribution is the measured
+*serving* consequence: retry count is a data-dependent variable, decoupled from sequence
+length, whose compute is almost entirely wasted. What we do **not** yet claim is the tail:
+retry count is a per-query cost multiplier, but whether it produces a heavy open-loop p99
+requires an under-load run we have not collected (§B.6). The multi-hop quality gain itself is
+a bounded near-null (ΔEM +0.033, 95% CI [−0.017, +0.083]), so the wasted retries buy nothing
+measurable.
+
+**B.4 An open provisioning tension.** A one-tier-larger monolith recovers the +0.108 gain —
+but only in the 4-bit arm; the bf16 decomposition gain (+0.200) was never raced against a
+larger bf16 monolith. Whether the scaffold is "a small-model crutch" or "a memory-saving
+alternative to a larger model" is unresolved and needs a memory/latency cost ledger for both
+sides across ≥2 model pairs; we present it as an open question, not a result.
+
+**B.5 The scheduler gap, stated precisely.** Per-request LLM schedulers (Orca, vLLM) treat a
+retry as a fresh request; the invisibility is not an engine defect but lives at the
+**orchestration layer** — cross-request retry dependence and the fact that a query's total
+cost (retry count) is data-dependent and unknown to a length-based cost model. This motivates
+a difficulty-aware admission/early-exit policy that predicts rescuability before spending the
+retry budget; we measure the wasted-compute opportunity (§B.3) but do not yet build the
+policy.
+
+**B.6 Takeaway.** In the deployed multi-call critique pattern, per-stage measurement shows
+most latency is self-critique rather than generation (under equal-size graders), and — the
+measured core — the retry loop spends 98% of its compute on queries it fails to rescue,
+making retry count a data-dependent, length-decoupled cost variable. Turning that into a
+measured *tail* result under open-loop load, and building the difficulty-aware scheduler it
+motivates, are the next steps this measurement enables.
