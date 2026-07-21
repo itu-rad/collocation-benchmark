@@ -29,7 +29,9 @@ from pathlib import Path
 
 import numpy as np
 
-CSV = Path("evaluation/unet3d/results_mps_r1.csv")
+import argparse as _ap
+_p=_ap.ArgumentParser(); _p.add_argument("--csv", default="evaluation/unet3d/results_mps_r1.csv"); _CSV=_p.parse_known_args()[0].csv
+CSV = Path(_CSV)
 SEED = 1234
 
 
