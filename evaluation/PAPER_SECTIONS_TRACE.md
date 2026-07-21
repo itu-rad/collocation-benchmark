@@ -603,3 +603,25 @@ Honesty deltas from the reviewed v4: (1) the measured inflation is MILDER than t
 (3) SJF-under-Server not measured (reference SUT is synchronous → reorder is a no-op at 1-query-at-a-
 time Server issue; needs async queue+worker SUT). SJF benefit stands measured in Offline (§A.2).
 REPORT.md §A.4, summary table, A.7 takeaway, and caveats updated; numbers in server_measured.md.
+
+---
+
+## POST-REVIEW MEASURED UPGRADE (2026-07-21) — Section B: retry-driven serving tail
+
+Reviewers flagged B.3 as "a compute-allocation result, not yet a serving-tail result" and asked for
+an open-loop under-load run. Recovered it from EXISTING data — no new run/instrumentation: the
+self_rag cells were already collected under Choreo's open-loop PoissonLoadScheduler with a per-query
+`<cell>_arrivals.csv` intended-arrival sidecar, and the trace's "End stage :: run"/end event is the
+per-query completion. New evaluation/self_rag/retry_tail.py computes per-request latency (completion −
+intended arrival) and segments retries per query.
+
+Measured (multihop, serial, GB10, n=110/arm): per-request latency heavy-tailed, p99/p50 ≈ 3.0× in
+EVERY arm (monolith 18.6→57.1s, decomposed 4.2→12.8s, monolith-4b 5.7→16.7s). 2-retry queries mean
+latency 1.4–2.3× a 0-retry query's; the worst-latency decile is retry-enriched in all three (45/55/
+100% retried vs 41–43% base). Added as §B.3b; B.6 updated.
+
+Honesty deltas: submission delay ~0.4s => this is the SERVICE-time tail (data-dependent retries +
+multihop's intrinsic hop/token variance co-drive it; 0-retry queries still show a tail), NOT yet a
+queue-amplified tail. The config rate (0.1633) was derived from the faster decomposed pilot, so the
+monolith runs near/above its own saturation already; a deliberate near-saturation sweep to show
+queue-amplification is the one remaining upgrade. Numbers in evaluation/self_rag/retry_tail_measured.txt.

@@ -1,0 +1,30 @@
+# Measured open-loop per-request latency tail (multihop, serial, Poisson, GB10)
+# via retry_tail.py on existing R=1 cuda cells — no new run/instrumentation.
+
+cell: e4_multihop_monolith_serial_cuda_r1   n=110
+submission delay (actual-intended): mean=0.36s max=0.74s  [>0 => scheduler-side queueing/coordinated omission]
+PER-REQUEST LATENCY (s): mean=21.4 p50=18.6 p90=45.5 p95=51.8 p99=57.1 max=65.7  (tail p99/p50=3.1x)
+retry dist: 0:65, 1:9, 2:36   retried=41%
+  retry=0 n= 65  latency mean= 18.3s p90= 42.1s max= 57.1s
+  retry=1 n=  9  latency mean= 24.9s p90= 46.2s max= 46.2s
+  retry=2 n= 36  latency mean= 26.0s p90= 45.5s max= 65.7s
+top-10% latency tail (n=11): 5 retried (45%) vs 41% retried overall => tail is retry-enriched
+
+cell: e4_multihop_decomposed_serial_cuda_r1   n=110
+submission delay (actual-intended): mean=0.46s max=0.89s  [>0 => scheduler-side queueing/coordinated omission]
+PER-REQUEST LATENCY (s): mean=4.4 p50=4.2 p90=7.1 p95=9.5 p99=12.8 max=12.8  (tail p99/p50=3.0x)
+retry dist: 0:65, 1:4, 2:41   retried=41%
+  retry=0 n= 65  latency mean=  3.4s p90=  5.6s max= 10.1s
+  retry=1 n=  4  latency mean=  6.9s p90= 12.8s max= 12.8s
+  retry=2 n= 41  latency mean=  5.8s p90=  7.1s max= 12.8s
+top-10% latency tail (n=11): 6 retried (55%) vs 41% retried overall => tail is retry-enriched
+
+cell: e4_multihop_monolith_4b_serial_cuda_r1   n=110
+submission delay (actual-intended): mean=0.40s max=0.82s  [>0 => scheduler-side queueing/coordinated omission]
+PER-REQUEST LATENCY (s): mean=6.1 p50=5.7 p90=12.1 p95=13.7 p99=16.7 max=17.2  (tail p99/p50=2.9x)
+retry dist: 0:63, 1:13, 2:34   retried=43%
+  retry=0 n= 63  latency mean=  4.0s p90=  8.0s max= 11.8s
+  retry=1 n= 13  latency mean=  8.5s p90= 14.3s max= 16.7s
+  retry=2 n= 34  latency mean=  9.1s p90= 12.6s max= 17.2s
+top-10% latency tail (n=11): 11 retried (100%) vs 43% retried overall => tail is retry-enriched
+

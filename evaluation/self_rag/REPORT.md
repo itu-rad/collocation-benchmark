@@ -155,9 +155,24 @@ instead on the **aggregate** result: the multi-hop quality gain is a bounded nea
 +0.033, 95% CI [−0.017, +0.083]), so the retries the loop concentrates on hard queries buy
 nothing measurable — consistent with Huang et al. (2023) that LLMs cannot self-correct
 reasoning without external signal. This is a measured **retry-count-vs-correctness
-correlation** — a compute-allocation result — *not* yet a serving-tail result: retry count is a
-per-query cost multiplier decoupled from sequence length, but whether it yields a heavy
-open-loop p99 requires an under-load run we have not collected (§B.6).
+correlation** — a compute-allocation result — that we now connect to a measured serving tail (§B.3b).
+
+**B.3b Measured: the retry loop's open-loop latency tail.** The self_rag cells were already
+collected under an **open-loop Poisson arrival process** (Choreo's `PoissonLoadScheduler` with a
+per-query `<cell>_arrivals.csv` intended-arrival sidecar), so we recover per-request end-to-end
+latency (completion − intended arrival) directly, and segment retries per query from the trace — no
+new instrumentation. On multi-hop (serial, GB10, n=110), the per-request latency is **heavy-tailed
+in every arm: p99/p50 ≈ 3.0×** (monolith 18.6→57.1 s, decomposed 4.2→12.8 s, monolith-4b 5.7→16.7 s).
+Retries measurably lengthen a request: a 2-retry query's mean latency is **1.4–2.3×** a 0-retry
+query's (monolith 26.0 vs 18.3 s; monolith-4b 9.1 vs 4.0 s), and the **worst-latency decile is
+retry-enriched in all three arms** — retried queries are 45 / 55 / **100%** of the top-10% tail
+against a 41–43% base rate. So retry count — a data-dependent cost multiplier a length-based cost
+model cannot see (§B.5) — is measurably over-represented in the serving tail. *Honest scope:* the
+scheduler-side submission delay is only ~0.4 s, so this is the **service-time** tail (data-dependent
+retries + multi-hop's intrinsic hop/token variance are co-drivers — 0-retry queries still show a
+tail), not yet a queue-amplified one; a near-saturation run (the config rate was derived from the
+faster decomposed pilot) would test whether the long retried requests queue-amplify. The tail is
+measured and retry-enriched; its *queueing* amplification is the one remaining upgrade.
 
 **B.4 An open provisioning tension.** A one-tier-larger monolith recovers the +0.108 gain —
 but only in the 4-bit arm; the bf16 decomposition gain (+0.200) was never raced against a
@@ -176,9 +191,11 @@ opportunity (§B.3) but do not yet build the policy.
 latency is self-critique rather than generation (under equal-size graders), and — the measured
 core — the retry loop concentrates its issues on hard queries whose aggregate quality gain is a
 bounded null, so its compute allocation is almost entirely unproductive, and retry count is a
-data-dependent cost variable a length-based cost model misprices. Turning that compute-
-allocation result into a measured *tail* under open-loop load, and building the difficulty-
-aware scheduler it motivates, are the next steps this measurement enables.
+data-dependent cost variable a length-based cost model misprices. That mispricing shows up in the
+**measured open-loop tail** (§B.3b): per-request latency is heavy-tailed (p99/p50 ≈ 3× in every
+arm) and its worst decile is retry-enriched (up to 100% retried). What remains is to drive the run
+to saturation so the long retried requests queue-amplify, and to build the difficulty-aware
+admission/early-exit scheduler this mispricing motivates — the next steps this measurement enables.
 
 ## CAVEATS & OPEN QUESTIONS (for Robert)
 
