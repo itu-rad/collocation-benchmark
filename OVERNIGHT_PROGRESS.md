@@ -1,0 +1,209 @@
+# Overnight autonomous progress — 2026-07-20
+
+## Done this session (committed, no attribution, feat/paper-hardening)
+- **AMC counter double-count FIXED** (`43d33a7`) — the "impossible totals" blocker.
+  Calibration (`evaluation/contention/amc_calibration.py`): known 62.3 GB/s CPU load was
+  reported as total 119.4 (2×) because the bare `DCS RD/WR` memory-controller *aggregate*
+  channel was bucketed as `other` and summed with its per-requestor components. Fix: the
+  no-DIE aggregate IS the total; per-requestor channels are the attribution. Also routed
+  `ANS`→ane bucket. After fix: total factor 1.005, cpu 1.004. Totals now respect ~200 GB/s.
+- **Verdict-machinery degenerate-CI guard** (`f6b5903`) — analyze_staged no longer emits
+  FALSIFIED/SUPPORTED from zero-width R=1 CIs; H1/H2 → NOT EVALUABLE at R<2. Also tracked
+  the previously-untracked analysis tooling (analyze_staged, staged_lib, validate_pass).
+- **Hot-path print() removal** (`e9ac227`) — per-query prints in the HF + MLX inference
+  `run()` paths (CAL measurement hygiene, review-flagged).
+- **validate_pass fg-only cell stats** (`31a053b`) — fixed the dispersion-check misfire on
+  orchestrated staged cells (was pooling bg co-runner latency with fg).
+- **Depth sweep → powers of 2** (main `c1bab3d` pushed; branch `ed84eca`).
+- **GB10 staged foreground → bf16** (`f30922f`) — decision 3; near the ~273 GB/s roof
+  (NF4 streamed ~37%, guaranteeing a flat null). E4/E7 ladder stays NF4.
+
+## Running NOW (both machines, full R=1 re-run on latest code, online to res17)
+- **Mac (mlx):** detached `run_collection --device mlx --runs-cap 1 --force`, /tmp/rerun_mlx.log.
+  Uses the FIXED AMC sampler → clean staged bytes/s. Prior results archived mlx_prev_*.
+- **GB10 (cuda):** nohup same for cuda, /tmp/rerun_cuda.log. bf16 staged fg. Prior archived cuda_nf4_*.
+- Overnight monitor+work loop scheduled (ScheduleWakeup, 2400s).
+
+## Remaining TODO (the loop continues these)
+Safe now (no framework-stage edits while re-runs live): paired-quality power analysis
+(decision 5, from archived _outputs.jsonl → N=120 vs 200); prepare extended dose ladder
+in generate_stage_configs (decision 2: B=4, fg 0.7-0.8× arm, stacked STREAM) + Ollama arm
+configs (decision 4) for a NEXT round; 3D-UNet Choreo stages + KiTS19 (decision 7, replace
+ResNet, GPU verify when a machine frees).
+Deferred until re-runs finish (would contaminate): retry-loop instrumentation in Self-RAG.
+
+## Decisions: 2/3/4/7 approved (7 = replace ResNet, build first); 1/5 defer to results;
+6 (quiesced hosts) gates full-R, which happens only AFTER all R=1 verified. NO full-R tonight.
+
+## Loop cycle 2 (09:5x) — safe TODO work while both R=1 re-runs progress
+Both re-runs alive & healthy all cycle (mlx on e4_factoid_decomposed_pipe, 3 csvs;
+cuda on e4_factoid_decomposed_serial, 4 csvs, 0 fails). No stall. Committed (no attrib):
+- **quality_power.py** (decision 5) — paired McNemar + bootstrap power analysis.
+  KEY FINDING on archived R=1 mlx: factoid decomposition does NOT merely preserve
+  quality, it **improves** it — ΔEM +0.108, McNemar mid-p=0.009 (decomposed &
+  decomposed_shared both beat monolith). That is a *detected difference*, not an
+  equivalence null → reframes the quality claim from "no loss" to "decomposition
+  helps on factoid". Multihop contrasts are near-zero (p=0.12–0.39) but their CIs
+  are too wide to CERTIFY equivalence at ±0.05 even at N=200 (N_needed 142–192).
+  Verdict: N=120 does not certify strict two-sided equivalence anywhere; but the
+  factoid story is now a positive result, not an equivalence defense. CAVEAT: R=1
+  captures only within-run variance → every N_needed is a lower bound.
+- **generate_stage_configs --extended** (decision 2) — B∈{3,4}, fg-throttled
+  0.7/0.8× arms, stacked 2×/3× STREAM. Distinct filenames (never overwrites base);
+  --out-dir dry-run verified into /tmp, live configs/ untouched. GAP: fg-throttle
+  needs the e5p_ragserve_fgmax pilot for real rates (null placeholder until then).
+- **residency_server_ollama_{cuda,mlx}.yml** (decision 4) — §3 server arm,
+  single-diff swap of only the generator to llm_server+ollama (concurrency=8).
+  Validated vs ServerModel. CAVEAT: qwen3.5:4b tag must resolve to same weights.
+- **unet3d_kits19** (decision 7) — faithful MLPerf 3D-UNet/KiTS19 port: kits19_lib
+  (preprocess + gaussian sliding window, offline unit-checked), 3 stages, both
+  configs, BUILD.md. PENDING (needs free GPU + downloads): pip install nibabel,
+  fetch TorchScript model, download KiTS19, smoke both configs, bitwise xcheck.
+
+## Still deferred until BOTH re-runs finish (would contaminate live framework):
+retry-loop instrumentation in Self-RAG stages; then a SECOND R=1 round with the
+new apparatus (extended dose ladder + Ollama arm) if the pilots are run.
+
+## Loop cycle 3 (11:2x) — INCIDENTS: Mac reboot + GB10 ssh blocked
+### (a) MAC REBOOTED at 09:51:57 (kern.boottime), ~25s after the cycle-2 check.
+Killed the detached mlx run + wiped /tmp (so /tmp/rerun_mlx.log is GONE). Only 3
+cells had completed (e4_factoid_monolith quality/serial/pipe); decomposed_pipe was
+mid-run, left no csv. Memory healthy post-boot (84% free), no stragglers. Cause
+unknown (panic under 16GB load, or macOS auto-update) — no persistent instability
+evidence. HEALED: relaunched in RESUME mode (NO --force → driver's
+`target.exists() and not force` skips the 3 done cells) via
+`conda run --no-capture-output` (applies MLFLOW creds from env config vars AND
+streams live logs, unlike plain conda run which buffers to exit). Log now at
+evaluation/collect/results/rerun_mlx.log (persistent, survives reboot). Confirmed:
+[skip]×3 then [run] e4_factoid_decomposed_pipe. Self-healing: any future reboot →
+next cycle resumes again, skipping more completed cells.
+### (b) GB10 / cuda UNREACHABLE — ssh publickey fails. ⚠️ NEEDS USER ACTION.
+The Mac reboot wiped the ssh-agent identities (`ssh-add -l` = "no identities").
+The only on-disk key is ~/.ssh/id_rsa, which babyxena REJECTS; the babyxena-
+accepting key lived only in the agent (was `ssh-add`ed from somewhere not in
+~/.ssh, or passphrase-protected). Cannot restore autonomously.
+**USER: on return, run `ssh-add <your babyxena key>` (or restart the agent with
+the key) to re-enable GB10 monitoring.** IMPORTANT: babyxena is a SEPARATE remote
+machine that did NOT reboot — the cuda R=1 re-run is very likely STILL RUNNING
+there uninterrupted; it just can't be observed/controlled until ssh is restored.
+No cuda intervention appears needed, only visibility is lost.
+
+## Loop cycle 4 (12:0x) — steady
+- mlx: no new reboot (boottime still 09:51). Healthy, live logs working. Completed
+  e4_factoid_decomposed_pipe (2285s ≈ 38min/cell), now on e4_factoid_decomposed_serial
+  (4 csvs). ~38min/heavy-cell → full mlx sweep is many hours out.
+- GB10 ssh: STILL blocked (agent empty; user hasn't re-added key). Retried, no change.
+- De-risk: verified score_quality runs cleanly on the FRESH mlx output format
+  (e4_factoid_monolith_quality: EM=0.467 F1=0.514 N=120) → completion analysis won't
+  hit format surprises. No new safe code work (all 4 decisions committed; retry-loop
+  + 3D-UNet downloads/nibabel deferred — must not add load to the 16GB Mac mid-run).
+
+## Loop cycle 5 (12:5x) — quality determinism validated
+- mlx: healthy, no reboot. 6 csvs (finished decomposed_serial 1102s, decomposed_quality
+  851s; on monolith_4b_pipe). GB10 ssh still blocked.
+- FINDING: fresh vs archived factoid-monolith quality outputs = distinct runs (0 query_id
+  overlap, Jul14 vs Jul20) but **100% byte-identical answers** → greedy decoding is
+  deterministic → EM/F1 have ~zero between-run variance. So (a) the "decomposition
+  improves factoid quality" result (ΔEM +0.108, p=0.009) REPLICATES EXACTLY on new code,
+  and (b) quality_power's N_needed is the ACTUAL required N (not a lower bound); R=1 is
+  SUFFICIENT for the quality claim. Full-R needed only for latency/throughput, never for
+  accuracy. Committed the tightened caveat to quality_power.py; memory decision-5 updated.
+
+## 3D-UNet DE-RISKED (17:xx, user-requested pause of mlx) — decision 7 VALIDATED
+User asked to pause mlx after the current cell and run the high-risk 3D-UNet (the
+experiment right after overheads in the paper). Paused mlx cleanly at 15 cells
+(resumed after, skips done). Acquired: nibabel, model 3dunet_kits19_pytorch.ptc
+(Zenodo, 124MB), cases 00000+00003 (imaging from HF, seg from repo). RESULT — full
+Choreo pipeline ran end-to-end on MPS online to res17 in 69.5s; direct verify on
+case_00000: MPS 3D-conv works (2.4s/128³ vs 21s CPU, parity 4e-5), 50 subvolumes,
+**Dice kidney 0.973 / tumor 0.840 / mean 0.907** (≥ reference card 0.935/0.789/0.862).
+The port is correct end-to-end. Committed (config model_path→.ptc, BUILD.md updated,
+conda-run/radt launch note). Remaining (non-gating): full 42-case run, CUDA smoke on
+GB10, bitwise xcheck vs reference SUT.
+
+## PAPER SECTIONS (3-round review→rewrite) + REPORTS DONE; mlx RESUMED
+Two paper-ready sections (A=3D-UNet/MLPerf, B=Self-RAG) taken through 3 rounds of ASPLOS-reviewer
+critique→rewrite; FULL TRACE in evaluation/PAPER_SECTIONS_TRACE.md (v1→R1→v2→R2→v3→R3→v4→author
+refinement, 580+ lines). Both went from unanimous REJECT (v1) to publishable (A: WA/WA/WR; B:
+Accept/WA/WR). v4 sections + "CAVEATS & OPEN QUESTIONS (for Robert)" inserted into evaluation/
+unet3d/REPORT.md and evaluation/self_rag/REPORT.md. Key measured wins found during the process:
+Section B B.3 = 98% of retries land on queries that end incorrect (from existing logs; the fix all
+3 reviewers named); multihop null bounded CI [−0.017,+0.083]. AUTHOR REFINEMENT (Robert): preprocessing
+is UN-PREFETCHABLE in online serving (data streams in with the request; pipelining needs concurrent
+requests) → rebuts reviewers' pipelining/DALI attack, re-elevates the preprocessing thread, unifies
+A's two threads (MLPerf models OFFLINE BATCH, workload served ONLINE). ⚠️ SERVER TENSION flagged in
+both caveats for Robert: reviewers unanimously say omitting MLPerf Server is fatal; user said don't
+mention it; v4 threads it as "3D-UNet ships no Server/MultiStream scenario"; recommended = actually
+run a Server-mode open-loop LoadGen (the #1 fix, sim→measured). Reviewers' unanimous #1 for BOTH
+sections = a real open-loop under-load run.
+mlx R=1 sweep RESUMED (pid, resumes at e4_multihop_decomposed_pipe, skips 15 done). MLPerf report §4a
+(real-harness FIFO/SJF flow-times) PENDING: GB10 SJF accuracy run still grinding (slow, 2.8GB dumps);
+FIFO done (build/logs_fifo). Loop finalizes §4a when SJF lands.
+
+## REAL FIFO-vs-SJF in BOTH harnesses, BOTH machines (user: "can we do this for real both in mlperf and choreo" + "full r=1 on both mac and gb10")
+The scheduling result must be REAL, not simulated. Mechanism: MLPerf Offline permits the SUT to
+process the issued batch in ANY order; patched base_SUT.py to reorder shortest-first when SCHED=sjf
+(subvolume count from volume shape). Choreo: loader emits in cases_json order (fifo_cases.json=name,
+sjf_cases.json=size-sorted, evaluation/unet3d/sched/). Batch configs pipeline_configs/unet3d_batch_{fifo,sjf}_{mlx,cuda}.yml (OfflineLoadScheduler, 42 queued). MLPerf Dice validated head-to-head:
+official 0.8617/0.9347/0.7887 = ref card = matches our Choreo 0.870 (gap = MLPerf postproc resample-back).
+RUNNING: GB10 char (cuda, waiter bkg4xszsu) → then GB10 MLPerf preprocess + Offline FIFO/SJF (the star:
+throughput IDENTICAL, per-query flow-times differ ~10x for small studies) + Choreo batch FIFO/SJF.
+Mac Choreo batch FIFO (main.py, mps) running (/tmp/choreo_fifo_mlx.log). Trace: framework writes tmp/<name>.csv (created,message,perf_ns). NOTE: per-study service time is order-INDEPENDENT on 1 GPU,
+so Choreo batch flow-times are EXACT from measured service times (not sim); the "for real" value is
+strongest on the MLPerf side (prove its harness gives identical throughput but different flow-times).
+GB10 setup DONE (43 cases, model, nibabel+loadgen). mlx STILL PAUSED. Server scenario: DROPPED (not
+supported for 3D-UNet, irrelevant — do not mention).
+
+## 3D-UNet → HEAD-TO-HEAD vs MLPerf (user directive: "no way we can get away without comparing against mlperf head-to-head")
+Full 42-case R=1 char run DONE (mps): Dice mean 0.870 (kidney 0.948/tumor 0.792 ≈ ref card);
+preprocess-fraction AMORTIZATION CURVE = 23.5% at 8 subvol → ~4% at >64 (median 4.8%, agg 5.1%);
+inference latency 10.2-186.6s = 18.2x spread. FRAMING EVOLUTION (user-driven): retired the
+zero-copy/decomposition angle (DataLoader critique — nobody decomposes single-model inference);
+the honest claim = MEASUREMENT COMPLETENESS: MLPerf times model-only on OFFLINE-preprocessed data,
+so it omits the raw→ready preprocessing (input-dependent 2-24%), invisible even for a linear pipeline.
+NOW RUNNING the real head-to-head: MLPerf's ACTUAL harness on the SAME M2 Pro/mps/model/43 cases.
+Setup done: mlperf_loadgen 6.0.16 (arm64 wheel); patched pytorch_SUT.py cuda-only→mps; fixed
+signal.gaussian→signal.windows.gaussian; ran their offline preprocess.py (checksum-verify fails =
+provenance only, HF data + new scipy ≠ canonical, NOT correctness — QSL doesn't enforce). Harness
+running SingleStream --accuracy on mps (~56min); waiter begcz0975. ON COMPLETION: parse
+mlperf_log_summary.txt (official latency) + run accuracy_kits.py (MLPerf Dice); head-to-head =
+MLPerf per-query latency (inference-only) vs Choreo end-to-end (results_mps_r1.csv total_s =
++preprocess). Expect MLPerf latency ≈ our inference_s (validates), Choreo end-to-end 2-24% higher.
+PENDING: framework-native Choreo run (main.py trace CSV) for final rigor; figure. mlx STILL PAUSED.
+
+## GB10 §4 STAGED BLOCK COMPLETE + ANALYZED (bf16 fg, R=1)
+cuda staged = 23/23 cells (stage_a×3, stage_b×4, stage_c/d × stream+clipgpu; NO
+clipane — GB10 has no ANE; the "31" was mlx incl. clipane). Ran analyze_staged
+--device cuda on babyxena (/opt/miniconda3/envs/benchmark_nvidia/bin/python; babyxena
+HEAD f30922f HAS the verdict guard). Report at babyxena:~/collocation-benchmark/
+evaluation/contention/analysis/cuda/staged_report.txt. VERDICTS (guards correct):
+- H1 NOT EVALUABLE on cuda — structural, not a bug: GB10 has no per-engine DRAM byte
+  counter, so only stream has a bytes/s axis, clipgpu is ops/s → can't match bytes/s.
+  CONFIRMS the complementary design: H1 from MLX (AMC bytes); GB10 lever = MPS on/off
+  (scheduling vs resource contention), NOT in this run → a future cuda MPS-on/off run
+  is what gives GB10 its H1 analog.
+- H2 NOT EVALUABLE (degenerate R=1 CI) — guard fires; ratios computed (clipgpu -8.9,
+  stream +0.32) but zero-width.
+- Point estimates (no verdicts at R=1): Stage A/B weak/under-dosed (fg p50 ~1.0-1.1s
+  flat across B and L%), Stage C/D small slopes. Consistent with prior under-dosed note.
+Note: cuda Stage B shows "no AMC bandwidth CSVs" — expected (AMC is Apple-only); the
+mlx staged cells (fixed AMC, ≤200GB/s) will supply the bytes/s H1 axis. cuda then moved
+to the E7 rung sweep (e7_rung_0.8b) — still running.
+
+## SSH RESTORED (17:xx) — GB10 cuda found ALIVE and nearly done
+User ran ssh-add. cuda ran uninterrupted the whole time (babyxena never rebooted):
+43 csvs, deep in the §4 STAGED cells (on stage_d_stream_L100 — one of the last).
+~1-3 cells from completion. Analyze on completion: analyze_staged --device cuda
+(guarded verdicts, H1/H2), score_quality, validate_pass. Note: AMC ≤200GB/s check
+is MLX-only (Apple counters); cuda bandwidth is via nvidia listeners.
+
+## Loop cycle 6 (13:3x) — AMC before-baseline captured
+- mlx: healthy, no reboot. 9 csvs (finished all monolith_4b cells, on decomposed_shared_pipe).
+  Fresh monolith_4b also improves monolith (ΔEM +0.108, p=0.007) — exact archived replication.
+  GB10 ssh still blocked.
+- **AMC FIX "BEFORE" BASELINE (archived broken 2×-double-count sampler):** ALL 30 archived
+  staged cells exceeded the physical ~200 GB/s LPDDR5 ceiling; peak 369.4 GB/s on
+  stage_d_stream_L50 (**1.85× over spec**). This is the architect-reviewer blocker on real
+  data. AT COMPLETION: extract the same peak total_gbps from the FRESH mlx staged cells
+  (fixed sampler, calibration factor 1.005) — they must ALL fall ≤~200 GB/s, directly
+  proving the fix on collected data. Before-numbers saved in scratchpad/staged_archive_before.
