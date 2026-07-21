@@ -1,0 +1,104 @@
+Staged contention analysis — device=mlx
+results: /Users/roba/Documents/work/research/collocation-benchmark/evaluation/collect/results/mlx
+
+========================================================================
+STAGE A — system view: fg degradation vs B
+
+   B             p50 resp (s)             p95 resp (s)           fg thr (1/s)    bg realized (q/s)
+   0       2.014 [1.935,2.12]                        —       0.2482 [nan,nan]                    —
+   1       2.034 [1.89,2.122]                        —       0.2403 [nan,nan]      6.423 [nan,nan]
+   2       2.139 [1.98,2.275]                        —       0.2193 [nan,nan]      15.19 [nan,nan]
+  (hierarchical run-cluster 95% CIs; p95 emitted only past the >=500-pooled-queries gate)
+
+========================================================================
+STAGE B — dose-response vs offered bg intensity
+
+    L%  offered q/s  realized q/s  AMC gpu GB/s           p50 resp (s)
+     0          nan             —         7.123     2.014 [1.935,2.12]
+   100        9.099         8.277          7.75    2.185 [2.045,2.278]
+    25        2.275         2.291         7.251    2.197 [2.015,2.288]
+    50         4.55         4.571         8.918    2.221 [2.096,2.377]
+    75        6.826         6.938         6.442     2.26 [2.174,2.425]
+
+========================================================================
+STAGE C — per-engine dose-response (y = fg median response (s))
+
+  co-runner clipane (engine ane), x-unit: bytes/s (AMC counter)
+    slope: 1.967e-10 per bytes/s (AMC counter) [1.967e-10, 1.967e-10]
+    normalized slope (fraction of zero-dose baseline per bytes/s (AMC counter)): 9.301e-11 [9.301e-11, 9.301e-11]
+  co-runner clipgpu (engine gpu), x-unit: bytes/s (AMC counter)
+    slope: 8.572e-11 per bytes/s (AMC counter) [8.572e-11, 8.572e-11]
+    normalized slope (fraction of zero-dose baseline per bytes/s (AMC counter)): 4.083e-11 [4.083e-11, 4.083e-11]
+  co-runner stream (engine cpu), x-unit: bytes/s (AMC counter)
+    slope: -3.852e-12 per bytes/s (AMC counter) [-3.852e-12, -3.852e-12]
+    normalized slope (fraction of zero-dose baseline per bytes/s (AMC counter)): -1.857e-12 [-1.857e-12, -1.857e-12]
+
+  slope ratio clipane/clipgpu at matched bytes/s (AMC counter): 2.278 [2.278, 2.278] -> NOT EVALUABLE (degenerate zero-width CI — need R>=2 replicate runs)
+  slope ratio clipane/stream at matched bytes/s (AMC counter): -50.08 [-50.08, -50.08] -> NOT EVALUABLE (degenerate zero-width CI — need R>=2 replicate runs)
+  slope ratio clipgpu/stream at matched bytes/s (AMC counter): -21.99 [-21.99, -21.99] -> NOT EVALUABLE (degenerate zero-width CI — need R>=2 replicate runs)
+
+========================================================================
+STAGE D — per-engine dose-response (y = fg decode tok/s)
+
+  co-runner clipane (engine ane), x-unit: bytes/s (AMC counter)
+    slope: 1.007e-10 per bytes/s (AMC counter) [1.007e-10, 1.007e-10]
+    normalized slope (fraction of zero-dose baseline per bytes/s (AMC counter)): 4.176e-12 [4.176e-12, 4.176e-12]
+  co-runner clipgpu (engine gpu), x-unit: bytes/s (AMC counter)
+    saturation knee: levels [75, 100]% excluded (realized < 90% of offered)
+    slope: -2.297e-09 per bytes/s (AMC counter) [-2.297e-09, -2.297e-09]
+    normalized slope (fraction of zero-dose baseline per bytes/s (AMC counter)): -7.251e-12 [-7.251e-12, -7.251e-12]
+  co-runner stream (engine cpu), x-unit: bytes/s (AMC counter)
+    saturation knee: levels [75]% excluded (realized < 90% of offered)
+    slope: -3.458e-10 per bytes/s (AMC counter) [-3.458e-10, -3.458e-10]
+    normalized slope (fraction of zero-dose baseline per bytes/s (AMC counter)): -1.15e-11 [-1.15e-11, -1.15e-11]
+
+  slope ratio clipane/clipgpu at matched bytes/s (AMC counter): -0.5759 [-0.5759, -0.5759] -> NOT EVALUABLE (degenerate zero-width CI — need R>=2 replicate runs)
+  slope ratio clipane/stream at matched bytes/s (AMC counter): -0.363 [-0.363, -0.363] -> NOT EVALUABLE (degenerate zero-width CI — need R>=2 replicate runs)
+  slope ratio clipgpu/stream at matched bytes/s (AMC counter): 0.6303 [0.6303, 0.6303] -> NOT EVALUABLE (degenerate zero-width CI — need R>=2 replicate runs)
+
+========================================================================
+PRE-REGISTERED HYPOTHESIS VERDICTS
+
+H1: NOT EVALUABLE — every pairwise slope-ratio CI is degenerate (R<2 gives no ratio variance). At R=1 the point ratios are directional only; collect replicate runs for a bootstrap/Fieller ratio interval before issuing a band verdict.
+
+H2 evaluation (TTFT vs per-token dose-response):
+  clipane: ttft-slope/per-token-slope (normalized, per bytes/s (AMC counter)) = 0.2346 [0.2346, 0.2346] -> H2 NOT EVALUABLE (degenerate CI — need R>=2 runs)
+  clipgpu: ttft-slope/per-token-slope (normalized, per bytes/s (AMC counter)) = 1.011 [1.011, 1.011] -> H2 NOT EVALUABLE (degenerate CI — need R>=2 runs)
+  stream: ttft-slope/per-token-slope (normalized, per bytes/s (AMC counter)) = 0.04801 [0.04801, 0.04801] -> H2 NOT EVALUABLE (degenerate CI — need R>=2 runs)
+
+========================================================================
+COLLECTION STATUS (mid-flight tolerant)
+
+Missing/partial cells (31 of 31 expected):
+  stage_a_B0_mlx: runs present [1] (expected r1..r5)
+  stage_a_B1_mlx: runs present [1] (expected r1..r5)
+  stage_a_B2_mlx: runs present [1] (expected r1..r5)
+  stage_b_L100_mlx: runs present [1] (expected r1..r5)
+  stage_b_L25_mlx: runs present [1] (expected r1..r5)
+  stage_b_L50_mlx: runs present [1] (expected r1..r5)
+  stage_b_L75_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipane_L100_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipane_L25_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipane_L50_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipane_L75_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipgpu_L100_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipgpu_L25_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipgpu_L50_mlx: runs present [1] (expected r1..r5)
+  stage_c_clipgpu_L75_mlx: runs present [1] (expected r1..r5)
+  stage_c_stream_L100_mlx: runs present [1] (expected r1..r5)
+  stage_c_stream_L25_mlx: runs present [1] (expected r1..r5)
+  stage_c_stream_L50_mlx: runs present [1] (expected r1..r5)
+  stage_c_stream_L75_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipane_L100_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipane_L25_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipane_L50_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipane_L75_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipgpu_L100_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipgpu_L25_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipgpu_L50_mlx: runs present [1] (expected r1..r5)
+  stage_d_clipgpu_L75_mlx: runs present [1] (expected r1..r5)
+  stage_d_stream_L100_mlx: runs present [1] (expected r1..r5)
+  stage_d_stream_L25_mlx: runs present [1] (expected r1..r5)
+  stage_d_stream_L50_mlx: runs present [1] (expected r1..r5)
+  stage_d_stream_L75_mlx: runs present [1] (expected r1..r5)
+

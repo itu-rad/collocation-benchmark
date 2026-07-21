@@ -1,0 +1,36 @@
+############ validate_pass --device mlx ############
+  e7_rung_27b_mlx                            WARN  layout: run failed (log present, no curated CSV; log idle 92 min); orphan trace left in evaluation/results/ (4276 B)
+  e7_rung_2b_mlx                             WARN  sidecar: 6/120 unanswered/empty answers (retry-exhaustion class; answered rate is itself a reported metric)
+  stage_a_B0_mlx_mlx                         WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_a_B1_mlx_mlx                         WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_a_B2_mlx_mlx                         FAIL  sidecar: stage_a_B2_mlx_mlx_r1.csv: 1 blocked puts (max 7.9 ms) — R-QDEPTH violated
+  stage_b_L100_mlx_mlx                       WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_b_L25_mlx_mlx                        FAIL  sidecar: stage_b_L25_mlx_mlx_r1.csv: 1 blocked puts (max 7.8 ms) — R-QDEPTH violated
+  stage_b_L50_mlx_mlx                        WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_b_L75_mlx_mlx                        FAIL  sidecar: stage_b_L75_mlx_mlx_r1.csv: 2 blocked puts (max 6.3 ms) — R-QDEPTH violated
+  stage_c_clipane_L100_mlx_mlx               WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_c_clipane_L25_mlx_mlx                FAIL  sidecar: stage_c_clipane_L25_mlx_mlx_r1.csv: 3 blocked puts (max 13.6 ms) — R-QDEPTH violated
+  stage_c_clipane_L50_mlx_mlx                FAIL  sidecar: stage_c_clipane_L50_mlx_mlx_r1.csv: 1 blocked puts (max 7.3 ms) — R-QDEPTH violated
+  stage_c_clipane_L75_mlx_mlx                WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_c_clipgpu_L100_mlx_mlx               WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_c_clipgpu_L25_mlx_mlx                FAIL  sidecar: stage_c_clipgpu_L25_mlx_mlx_r1.csv: 2 blocked puts (max 7.6 ms) — R-QDEPTH violated
+  stage_c_clipgpu_L50_mlx_mlx                WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_c_clipgpu_L75_mlx_mlx                FAIL  sidecar: stage_c_clipgpu_L75_mlx_mlx_r1.csv: 2 blocked puts (max 7.8 ms) — R-QDEPTH violated
+  stage_c_stream_L100_mlx_mlx                FAIL  sidecar: stage_c_stream_L100_mlx_mlx_r1.csv: 1 blocked puts (max 7.9 ms) — R-QDEPTH violated
+  stage_c_stream_L25_mlx_mlx                 WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_c_stream_L50_mlx_mlx                 WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_c_stream_L75_mlx_mlx                 WARN  stats: p95 gate: pooled 99 < 500 now; at planned R=5 pooled would be 495 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipane_L100_mlx_mlx               WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipane_L25_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipane_L50_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipane_L75_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipgpu_L100_mlx_mlx               WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipgpu_L25_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipgpu_L50_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_clipgpu_L75_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_stream_L100_mlx_mlx                WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_stream_L25_mlx_mlx                 WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_stream_L50_mlx_mlx                 WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+  stage_d_stream_L75_mlx_mlx                 WARN  stats: p95 gate: pooled 14 < 500 now; at planned R=5 pooled would be 70 — GATE UNREACHABLE at planned R: paper must raise max_queries/R or pre-register dropping p95 for this experiment
+
+  0 PASS / 43 WARN / 15 FAIL / 0 PEND
