@@ -58,8 +58,9 @@ endpoint), this variance breaks MLPerf's metrics:
 |---|---|---|
 | MLPerf Offline throughput, FIFO vs SJF | identical | identical |
 | **SJF small-study time-to-result speedup** | **10.3×** | **11.2×** |
-| **Open-loop p90 latency, ρ 0.35→0.82 (measured Server)** | — | **18.0 → 34.0 s** |
-| **HoL queue-wait tail (max), ρ 0.35→0.82 (measured)** | — | **16.7 → 43.5 s** |
+| **Open-loop p90 latency, ρ 0.35→0.82 (measured Server)** | 511 s @ρ0.99 | **18.0 → 34.0 s** |
+| **HoL queue-wait tail (max), measured Server** | 530 s @ρ0.99 | **16.7 → 43.5 s @ρ0.35→0.82** |
+| **Per-study service, mean (cross-device ~11×)** | 82.3 s | 7.69 s |
 
 - **Size-aware scheduling (SJF, using the pre-inference-known subvolume count) returns
   routine studies ~10× sooner** (Mac: 28.3 → 2.7 min) — while **MLPerf's throughput is
@@ -171,9 +172,14 @@ from a 16.7 s to a **43.5 s** tail (mean 1.6 s → 7.1 s). That 43.5 s wait exce
 and a worst case of 18.6→**49.1 s (~11× its own service)**, purely from waiting. Both runs are
 "INVALID" in loadgen's sense — no latency target is met — which is precisely the finding: under this
 service-time variance, FIFO has **no bounded-latency operating point**, and no MLPerf scenario
-shipped for 3D-UNet queues, so none exposes it. (Honest scope: GB10 only; n≈86 per point, so p99≈max
+shipped for 3D-UNet queues, so none exposes it. **Cross-device confirmation (M2 Pro/MPS, ρ≈0.99):** the
+same effect reproduces on a ~11×-slower accelerator — per-study service ~11× larger (mean 82 s vs
+7.7 s), and near saturation the HoL queue-wait tail reaches **530 s** (p90 latency 511 s) with a
+same-quantile inflation of 3.2–3.7×, *higher* than GB10's 2.2–2.9× at ρ=0.82 — consistent with the
+measured load-dependence. The mechanism is device-independent (dimensionless, service-variance-driven);
+absolute latencies scale with the hardware service ratio. (Honest scope: n≈43–86 per point, so p99≈max
 is undersampled — we lead with p90/p95, and the measured inflation is a *lower* bound on the true
-tail. This *measurement* supersedes an earlier single-ρ M/G/1 estimate that put the ρ=0.35 inflation
+tail; the Mac point is at ρ≈0.99, not a matched 0.82. This *measurement* supersedes an earlier single-ρ M/G/1 estimate that put the ρ=0.35 inflation
 at ~9–10×; the real run shows a milder but load-growing tail, so we report the measured numbers.)
 SJF relief under Server load needs an async queue+worker SUT (future work); the SJF benefit itself is
 measured inside the Offline harness (§A.2).
@@ -229,8 +235,9 @@ queue-wait tail 16.7→43.5 s. This required a one-line loadgen fix (run.py load
 only user.conf with conf_type=1). Framing to still make in the paper: 3D-UNet *ships* no
 Server/MultiStream scenario (true), so the effect is unseen by the shipped instruments — we
 demonstrate it by running the open-loop harness ourselves. Remaining caveats for you to weigh:
-  - **GB10 only, n≈86 per point.** p99≈max is undersampled; we lead with p90/p95. A Mac Server run
-    and higher query counts would firm the tail (the measured tail is a lower bound).
+  - **Cross-device done (GB10 ρ=0.35,0.82 + Mac ρ=0.99), n≈43–86 per point.** p99≈max is undersampled;
+    we lead with p90/p95 (the measured tail is a lower bound). Mac confirms the mechanism at ~11× service
+    and near saturation (HoL wait to 530 s, inflation 3.2–3.7×); the Mac point is ρ≈0.99, not matched 0.82.
   - **Milder than the old sim.** The M/G/1 estimate said ~9–10× at ρ=0.35; the real run shows ~2–4×
     at ρ=0.35 growing with load (up to ~11× routine-study worst case at ρ=0.82). We report measured.
   - **SJF-under-Server not yet measured** — needs an async queue+worker SUT (the reference SUT is

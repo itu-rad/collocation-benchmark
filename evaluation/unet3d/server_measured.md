@@ -21,6 +21,20 @@ Service (unloaded) distribution: 8–144 subvolumes, min 0.99s, mean **7.69s**, 
 - QUEUE wait (HoL): mean 1.6s, p50 0.0s (most served immediately), p90 8.3s, max 16.7s.
 - Routine studies (n=48, service mean 4.5s): latency p90 10.6s, max 18.6s, qwait mean 1.3s.
 
+## Point 3 — MAC (M2 Pro, MPS), ρ ≈ 0.99 (qps=0.012, S=82.3s), 43 queries  [logs_mac_rho08]
+Cross-device confirmation. Same FromConfig-fixed run.py (also added Server to --scenario choices).
+Mac mean service 82.3s exceeded the 65s estimate, so this point is near SATURATION (ρ≈0.99), not 0.82.
+- Result INVALID (no latency target met), same as GB10.
+- SERVICE (unloaded): min 11.5s, mean 82.3s, p50 63.8s, p90 158.8s, p99 187.2s
+  => ~11× GB10's service (7.69s mean) — the hardware ratio, confirmed cross-device.
+- TOTAL latency: p50 279s, p90 511s, p95 539s, p99 689s.
+- QUEUE wait (HoL): mean 220.7s, p90 477s, max 530.6s (exceeds the model's own 187s max service).
+- Routine studies (n=24, service mean 47.3s): latency p90 522s, max 588s, qwait mean 235s.
+- HoL same-quantile inflation: mean 3.7×, p90 3.2×, p99 3.7× — HIGHER than GB10's ρ=0.82 (2.2×/2.9×)
+  because closer to saturation, consistent with the measured GB10 load-dependence (0.35→0.82). Reading:
+  the HoL tail is device-independent in MECHANISM (dimensionless, service-variance-driven) and grows
+  toward ρ→1; absolute latencies scale with the ~11× hardware service ratio.
+
 ## Measured p99-vs-load contrast (the story)
 | metric | ρ≈0.35 | ρ≈0.82 |
 |---|---|---|
