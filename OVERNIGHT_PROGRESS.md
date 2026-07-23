@@ -121,6 +121,61 @@ The port is correct end-to-end. Committed (config model_path→.ptc, BUILD.md up
 conda-run/radt launch note). Remaining (non-gating): full 42-case run, CUDA smoke on
 GB10, bitwise xcheck vs reference SUT.
 
+## ✅ ALL WORK COMPLETE — core + every feasible optional item (final commit eb1cfac)
+[UPDATE 7 — DONE] Mac §A.4 cross-device Server point COMPLETE + committed (eb1cfac). Mac ρ≈0.99 (S=82.3s
+= ~11× GB10, hardware ratio confirmed): HoL queue-wait tail 530s, p90 lat 511s, p99 689s, same-quantile
+inflation 3.2-3.7× (higher than GB10's 2.2-2.9× at ρ0.82 — near-saturation, consistent w/ load-dependence).
+§A.4 now CROSS-DEVICE (GB10 ρ0.35+0.82, Mac ρ0.99). REPORT.md §A.4/table/caveats + server_measured.md +
+mac_server_rho099_summary.txt updated.
+FINAL STATE — everything committed, no Claude attribution:
+  55aefc6 §A.4 measured Server tail | 14c3df1 §B.3b measured retry tail | 7d197c2 rerun analysis (AMC
+  verified + engine contention + quality + E7 ladder) | ac54092 validate_pass e5 | eb1cfac §A.4 Mac column.
+Only genuinely-blocked item remaining: near-sat self_rag queue-amplification (GB10 radt-launch env; documented
+in this file; §B.3b stands without it). Nothing else pending. LOOP CAN STOP.
+
+## FULL SWEEP COMPLETE (53 cells) + Mac §A.4 Server run IN PROGRESS
+[UPDATE 6] mlx sweep fully DONE ("Collection pass complete", 53 cells). 27b resolved on its own:
+[FAIL] e7_rung_27b timeout 7200s (driver timeout fired at 2h; I did NOT kill it — good). After 27b the
+e5 MLPerf-scenario cells (server/singlestream/offline/multistream ±trace ±diskio) all ran + finished.
+27b = OOM ceiling (only a 673B log, no CSV) = the E7 capacity-ceiling finding. validate_pass re-run
+e5-inclusive: 0 PASS/51 WARN/18 FAIL (FAILs = R-QDEPTH ms-scale queue blocks; WARNs = p95-gate at R=1).
+OPTIONAL Mac §A.4 run IN PROGRESS: machine freed → running the 3D-UNet MLPerf Server point on MAC to add
+a Mac column to §A.4. Fixed Mac run.py (same FromConfig bug + added Server/MultiStream to --scenario
+choices; backup run.py.bak_conf12). KEY: Mac is ~11x SLOWER than GB10 (100 subvols 127s vs 11.4s; 32
+subvols 41s vs 3.8s) → mean service ~65-85s → each Server point ~60min. Running ONE point qps=0.012
+(rho~0.8), min_query_count=35, FIFO; waiter (pid ~50406) writes /tmp/mac_rho08_result.txt on completion
+(parses service+latency+queue-wait like server_measured.md). Compute exact rho post-hoc from measured S.
+ON result: add Mac column to REPORT.md §A.4 + server_measured.md (expect same dimensionless HoL ratio as
+GB10, ~11x larger absolutes → cross-device consistency, like the SJF 10x ratio). §A.4 fine either way.
+
+## ALL RERUN ANALYSES DONE + COMMITTED (7d197c2). Sweep functionally complete; 27b hung at OOM.
+[UPDATE 5] Full analysis suite run on the AMC-fixed data + committed (evaluation/collect/analysis/
+RERUN_RESULTS_SUMMARY.md + contention/analysis/mlx/ + quality_power_mlx.md + validate_pass_mlx.txt):
+- AMC fix VERIFIED: all 31 staged bw 168.7-184.8 GB/s ≤200 (vs broken 369).
+- Engine-specific contention (analyze_staged): clipANE 2.28× clipGPU >> CPU negligible. R=1 → CIs degenerate.
+- Quality (quality_power): factoid decomp ΔEM +0.108 p=0.009 SIG; multihop +0.050 p=0.118 null.
+- E7 capacity ladder: factoid EM 0.450/0.492/0.500 for 0.8B/2B/4B; 27B = OOM CEILING.
+- validate_pass: 0 PASS/43 WARN/15 FAIL. FAILs = R-QDEPTH tiny ms-scale queue blocks (1-3 puts ≤14ms);
+  WARNs = p95 gate unreachable at R=1 (need higher max_queries/R or drop p95). CAVEATS for the paper.
+27b STATUS: confirmed OOM-failed (validate_pass "run failed, log idle 92min"; pid 17653 hung, heavy
+swap). It is the LAST cell; driver still shows [run] (radt timeout 4791s did NOT fire — overdue). Per
+standing instruction NOT killed. All deliverables captured; only the OPTIONAL Mac Server run (§A.4 Mac
+column) is blocked (machine swapping on hung 27b). Robert may want to kill pid 17653 to free the machine.
+
+## STAGED SWEEP COMPLETE + AMC FIX VERIFIED + analyze_staged DONE (headline result)
+[UPDATE 4] ALL 31/31 STAGED CELLS DONE. Final AMC verification: every staged bw cell peaks 168.7-184.8
+GB/s (median 170.3), ALL ≤200 (physically valid bus), vs archived-broken 369. AMC FIX VERIFIED on the
+full re-collected dataset — the #1 architect-reviewer blocker is resolved.
+analyze_staged.py --device mlx RAN → evaluation/contention/analysis/mlx/ (staged_report.txt +
+staged_cell_estimates.csv + staged_per_run.csv). GENUINE FINDING (point estimates; CIs degenerate at
+R=1 as expected/flagged): ENGINE-SPECIFIC CONTENTION — Stage C fg-response dose-response normalized
+slopes: clipANE 9.30e-11 > clipGPU 4.08e-11 (ratio 2.28x) >> stream/CPU ~-1.9e-12 (negligible). I.e. an
+ANE co-runner degrades the fg LLM ~2.3x more per unit membw than a GPU co-runner; CPU co-runner barely
+matters. Directly supports the mock-review "engine-specific contention" reframe. Stage A/B: fg p50
+2.01->2.26s, thr -12% as bg intensity rises (now on valid AMC bandwidth).
+Sweep now on LAST cell e7_rung_27b (may OOM per 16GB ceiling). ON full completion: validate_pass +
+score_quality + quality_power (need e7 cells done), then commit analysis outputs.
+
 ## NEAR-SAT SELF_RAG RUN — ATTEMPTED, BLOCKED by GB10 radt-launch env (optional; §B.3b stands)
 Investigated the deferred near-saturation self_rag run to upgrade §B.3b (service tail → queue-amplified).
 GOOD NEWS: the stack IS ready on GB10 (Qwen3.5-9B cached 19GB; ChromaRetriever uses in-memory
