@@ -48,6 +48,17 @@ class ChromaRetriever(Stage):
             "collection_name", "self_rag_corpus"
         )
 
+        # Optional: use a dedicated sentence-transformer embedder instead of
+        # ChromaDB's default (all-MiniLM-L6-v2). Embeddings are precomputed so
+        # asymmetric query/passage prefixes (required by e5-style models) can be
+        # applied — ChromaDB's built-in embedding function cannot distinguish
+        # query text from document text. When unset, the legacy default path is
+        # used unchanged.
+        self._embedding_model_name = self.extra_config.get("embedding_model", None)
+        self._query_prefix = self.extra_config.get("query_prefix", "")
+        self._passage_prefix = self.extra_config.get("passage_prefix", "")
+        self._embedder = None
+
         self._collection = None
         self._client = None
 
@@ -115,12 +126,36 @@ class ChromaRetriever(Stage):
             name=self._collection_name,
         )
 
+        # Precompute passage embeddings with the configured embedder (if any).
+        passage_embs = None
+        if self._embedding_model_name:
+            from sentence_transformers import SentenceTransformer
+
+            print(
+                f"ChromaRetriever: embedding corpus with "
+                f"{self._embedding_model_name} (prefix={self._passage_prefix!r})"
+            )
+            self._embedder = SentenceTransformer(self._embedding_model_name)
+            passage_embs = self._embedder.encode(
+                [self._passage_prefix + d for d in documents],
+                batch_size=64,
+                normalize_embeddings=True,
+                show_progress_bar=False,
+            )
+
         # Add documents in batches (ChromaDB requires unique IDs)
         batch_size = 500
         for i in range(0, len(documents), batch_size):
             batch = documents[i : i + batch_size]
             ids = [f"doc_{j}" for j in range(i, i + len(batch))]
-            self._collection.add(documents=batch, ids=ids)
+            if passage_embs is not None:
+                self._collection.add(
+                    documents=batch,
+                    embeddings=passage_embs[i : i + len(batch)].tolist(),
+                    ids=ids,
+                )
+            else:
+                self._collection.add(documents=batch, ids=ids)
 
         print(
             f"ChromaRetriever: indexed {self._collection.count()} documents, "
@@ -140,11 +175,23 @@ class ChromaRetriever(Stage):
             question = question[0]
         query.context.pop("is_retry", None)
 
-        # Query ChromaDB
-        results = self._collection.query(
-            query_texts=[question],
-            n_results=self._top_k,
-        )
+        # Query ChromaDB (precomputed query embedding when a custom embedder is
+        # configured; else fall back to ChromaDB's default text embedding).
+        if self._embedder is not None:
+            q_emb = self._embedder.encode(
+                [self._query_prefix + question],
+                normalize_embeddings=True,
+                show_progress_bar=False,
+            )
+            results = self._collection.query(
+                query_embeddings=q_emb.tolist(),
+                n_results=self._top_k,
+            )
+        else:
+            results = self._collection.query(
+                query_texts=[question],
+                n_results=self._top_k,
+            )
         new_docs = results["documents"][0] if results["documents"] else []
 
         # Accumulate evidence across hops (dedup, preserve order) so the answer

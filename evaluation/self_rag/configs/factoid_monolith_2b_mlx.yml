@@ -45,7 +45,10 @@ pipelines:
             split: passages
             text_column: passage
             max_docs: 3200
-          top_k: 3
+          top_k: 5
+          embedding_model: intfloat/e5-base-v2
+          query_prefix: "query: "
+          passage_prefix: "passage: "
           collection_name: self_rag_factoid_monolith_corpus
 
       # --- Stage 2: Monolith Prompt Formatter ---

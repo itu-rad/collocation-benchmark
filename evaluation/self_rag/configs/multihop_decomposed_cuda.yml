@@ -51,6 +51,9 @@ pipelines:
             max_context_rows: 300
             max_docs: 20000
           top_k: 5
+          embedding_model: intfloat/e5-base-v2
+          query_prefix: "query: "
+          passage_prefix: "passage: "
           collection_name: self_rag_multihop_decomposed_corpus
 
       # --- Stage 2: Retrieval Grader Formatter ---

@@ -57,6 +57,9 @@ pipelines:
             max_context_rows: 300       # harvest contexts from first 300 questions
             max_docs: 20000
           top_k: 5
+          embedding_model: intfloat/e5-base-v2
+          query_prefix: "query: "
+          passage_prefix: "passage: "
           collection_name: self_rag_multihop_monolith_corpus
 
       # --- Stage 2: Monolith Prompt Formatter ---
