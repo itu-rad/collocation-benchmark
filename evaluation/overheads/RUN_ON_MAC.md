@@ -19,9 +19,20 @@ python evaluation/overheads/framework_overhead/run_matrix.py --runs 5 --online
 # Exp 3 — real-world decomposition overhead (EfficientNetV2-S fine-tune, bare vs wrapped).
 # First run auto-downloads Imagenette + weights (~1.5 GB, internet once) to tmp/.
 python evaluation/overheads/modularity_overhead/run_modularity.py --device mps --runs 5 --online
+
+# Exp 3b — MULTI-SCALE sweep: shows the fixed per-step overhead amortizes as the step grows.
+# Sweeps batch (1..64 @ EfficientNetV2-S) and model (EffNetV2-S -> M -> L -> ConvNeXt-L @ batch 8).
+# Run OFFLINE on an idle Mac (no --online) — this is the contention-free amortization curve.
+python evaluation/overheads/modularity_overhead/run_modularity.py \
+    --device mps --cells evaluation/overheads/modularity_overhead/configs/scale_sweep.yml
+# Quick smoke first (3 cells, ~10 min) to confirm it runs before the long sweep:
+python evaluation/overheads/modularity_overhead/run_modularity.py \
+    --device mps --runs 1 --cells evaluation/overheads/modularity_overhead/configs/scale_sweep_min.yml
 ```
 
 Drop `--online` to run fully local/offline (no credentials, for reproduction without server access).
+The **scale sweep (Exp 3b) is meant to run offline on a quiet machine** — its whole point is a
+clean per-step timing free of contention, so leave `--online` off for it.
 
 ## 3. What `--online` does (and a caveat)
 
@@ -51,7 +62,15 @@ python evaluation/overheads/modularity_overhead/analyze_operational_overhead.py 
 python evaluation/overheads/modularity_overhead/true_overhead_analysis.py --device mps         # tracing layer
 python evaluation/overheads/modularity_overhead/breakdown_overhead.py --device mps             # stage breakdown
 python evaluation/overheads/modularity_overhead/generate_latex_results.py --device mps > table2.tex
+
+# Exp 3b (scale sweep) — per-cell overhead table + the amortization figure:
+python evaluation/overheads/modularity_overhead/analyze_scale_sweep.py --device mps --latex \
+    --fig scale_sweep_amortization.pdf
 ```
+
+The scale-sweep analyzer pools every cell onto one `overhead % vs step-time` curve: the absolute
+µs overhead stays ~flat while its share of the step falls ~1/step_time. The worst realistic case
+(EfficientNetV2-S @ batch 1) is the ceiling; every heavier cell is cheaper.
 
 See `framework_overhead/framework_overhead.md` and `modularity_overhead/modularity_overhead.md`
 for the full write-ups and reference numbers.
@@ -59,3 +78,7 @@ for the full write-ups and reference numbers.
 ## 5. Rough wall-times
 - Exp 1 + 2: minutes to low-tens-of-minutes (15 depths × R × 2 arms; `--online` adds ~30 s per tracing-ON run for the flush).
 - Exp 3: ~30–60 min on an M2 (R=5 × baseline + 2 arms, 1100 steps each) + the one-time ~1.5 GB download.
+- Exp 3b (scale sweep): **~7–9 h on an M2 at the default R=5** — an overnight run (batch-64 is
+  ~1 s/step and the heavy models 200–470 ms/step). Use the `scale_sweep_min.yml` smoke (~10 min)
+  first. To shorten the full run, lower `--runs` or the per-cell `max_batches` in `scale_sweep.yml`
+  (each cell's CI is self-contained, so fewer steps only widens that cell's interval).

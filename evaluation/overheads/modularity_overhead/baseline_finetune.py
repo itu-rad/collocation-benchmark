@@ -68,11 +68,21 @@ def setup_logging(label="baseline_finetune"):
 def parse_args():
     ap = argparse.ArgumentParser(
         description="Hand-written PyTorch baseline for the modularity-overhead "
-        "experiment: EfficientNetV2-S Imagenette transfer-learning fine-tune, "
-        "monolithic (no Choreo framework)."
+        "experiment: a torchvision Imagenette transfer-learning fine-tune, "
+        "monolithic (no Choreo framework). Model/weights/batch are parametric so "
+        "the scale sweep can drive baseline and Choreo through identical cells."
     )
     ap.add_argument("--device", choices=["cuda", "mps", "cpu", "auto"],
                     default="auto", help="compute device (auto: cuda>mps>cpu)")
+    ap.add_argument("--model", default="efficientnet_v2_s",
+                    help="torchvision.models factory name (e.g. efficientnet_v2_s, "
+                         "efficientnet_v2_m, efficientnet_v2_l, convnext_large). "
+                         "MUST match the Choreo cell's model.component so both arms "
+                         "do identical per-step work.")
+    ap.add_argument("--weights", default="EfficientNet_V2_S_Weights.IMAGENET1K_V1",
+                    help="torchvision weights enum name for the preprocessing "
+                         "transform (input resolution). MUST match the Choreo cell's "
+                         "dataloader dataset.weights.")
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--num-workers", type=int, default=2,
                     help="DataLoader worker processes (match the Choreo config)")
@@ -98,6 +108,40 @@ def resolve_device(name):
     return torch.device("cpu")
 
 
+def replace_classifier_head(model, num_classes):
+    """Replace the model's final module with Linear(in_features, num_classes).
+
+    Ported VERBATIM from the Choreo stage's transfer-learning setup
+    (stages/torchvision_classification/classification.py: named_modules()[-1] +
+    _replace_last_module) so the baseline builds the byte-identical head — the
+    same last-layer location, in_features, and trainable-param set the wrapped
+    arm builds. If these two diverged the per-step overhead would be measuring
+    two different workloads. Returns the last module's dotted name so the caller
+    selects the same trainable params (`last_name in param_name`) as the stage.
+    """
+    *_, (last_name, last_mod) = model.named_modules()
+    new_head = nn.Linear(last_mod.in_features, num_classes)
+    parts = last_name.split(".")
+    if len(parts) == 1:
+        setattr(model, parts[0], new_head)
+    else:
+        model.__getattr__(".".join(parts[:-1]))[int(parts[-1])] = new_head
+    return last_name
+
+
+def multi_epoch(loader):
+    """Yield batches across as many epochs as needed. Small datasets (e.g.
+    Imagenette at large batch -> few batches/epoch: b64 gives only ~147) would
+    otherwise stop after one epoch, leaving too few steady-state steps once the
+    warm-up is dropped. The Choreo OfflineLoadScheduler already loops epochs
+    (its outer `while counter < max_queries`); this makes the baseline match, so
+    both arms reach the same step budget at any batch size. The caller bounds it
+    via `batch_count >= max_batches`."""
+    while True:
+        for batch in loader:
+            yield batch
+
+
 def run_training(args, logger):
     batch_size = args.batch_size
     num_classes = 10
@@ -108,7 +152,10 @@ def run_training(args, logger):
 
     logger.info(f"baseline_finetune, system, setup, start, device={device}")
 
-    weights = models.EfficientNet_V2_S_Weights.IMAGENET1K_V1
+    # Preprocessing transform (and thus input resolution) comes from the cell's
+    # weights enum — the same one the Choreo dataloader resolves via get_weight,
+    # so both arms feed the model identically shaped batches.
+    weights = models.get_weight(args.weights)
     preprocess = weights.transforms()
 
     # Same location the Choreo TorchVisionDataLoader uses (cwd/tmp/...), so both
@@ -138,17 +185,23 @@ def run_training(args, logger):
         drop_last=True,
     )
 
-    model = models.efficientnet_v2_s(weights=None)
+    # Build from the cell's factory name with random weights (weights=None), then
+    # replace the classifier head — mirrors the Choreo stage exactly.
+    model = models.get_model(args.model, weights=None)
 
-    # Freezing logic to match Choreo's Transfer Learning
+    # Freezing logic to match Choreo's Transfer Learning: freeze everything, then
+    # unfreeze only the replaced head's params (selected by name, like the stage).
     for param in model.parameters():
         param.requires_grad = False
 
-    num_ftrs = model.classifier[1].in_features
-    model.classifier[1] = nn.Linear(num_ftrs, num_classes)
+    last_name = replace_classifier_head(model, num_classes)
+    params_to_update = []
+    for name, param in model.named_parameters():
+        if last_name in name:
+            param.requires_grad = True
+            params_to_update.append(param)
     model = model.to(device)
 
-    params_to_update = [p for p in model.parameters() if p.requires_grad]
     optimizer = optim.Adam(params_to_update, lr=lr)
     criterion = nn.CrossEntropyLoss()
 
@@ -167,7 +220,9 @@ def run_training(args, logger):
     logger.info(f"baseline_finetune, training_loop, run, start")
 
     try:
-        for inputs, labels in train_loader:
+        # multi_epoch re-iterates the loader across epochs so we always reach
+        # max_batches, even when one epoch yields fewer batches (large batch size).
+        for inputs, labels in multi_epoch(train_loader):
             if batch_count >= max_batches:
                 break
 

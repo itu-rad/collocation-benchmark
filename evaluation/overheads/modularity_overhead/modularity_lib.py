@@ -33,10 +33,17 @@ import numpy as np
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
+# The optional `_m{tag}_b{batch}` group encodes a scale-sweep cell. Legacy files
+# (mod_baseline_d{dev}_r{r}.csv) omit it and map to the canonical anchor cell.
 _FNAME_RE = re.compile(
     r"^mod_(?P<impl>baseline|choreo)(?:_t(?P<trace>[01]))?"
+    r"(?:_m(?P<model>[a-z0-9]+)_b(?P<batch>\d+))?"
     r"_d(?P<dev>[a-z0-9]+)_r(?P<run>\d+)\.csv$"
 )
+
+# Legacy untagged files are the original published EfficientNetV2-S @ batch 8 point.
+_CANONICAL_MODEL = "canonical"
+_CANONICAL_BATCH = 8
 
 NS_PER_MS = 1e6
 NS_PER_US = 1e3
@@ -51,13 +58,19 @@ def default_results_dir():
 
 
 def parse_filename(path):
-    """Return dict(impl, trace, dev, run, path) or None."""
+    """Return dict(impl, trace, model, batch, dev, run, path) or None.
+
+    `model`/`batch` identify the scale-sweep cell; legacy untagged files fall back
+    to the canonical anchor (its own cell, distinct from a tagged effv2s cell, so
+    the two never collide on run ids)."""
     m = _FNAME_RE.match(os.path.basename(path))
     if not m:
         return None
     return {
         "impl": m["impl"],
         "trace": int(m["trace"]) if m["trace"] is not None else None,
+        "model": m["model"] if m["model"] is not None else _CANONICAL_MODEL,
+        "batch": int(m["batch"]) if m["batch"] is not None else _CANONICAL_BATCH,
         "dev": m["dev"],
         "run": int(m["run"]),
         "path": path,
@@ -163,15 +176,31 @@ def load_matrix(results_dir, device=None):
     return metas
 
 
-def select(metas, impl=None, trace=None):
+def select(metas, impl=None, trace=None, model=None, batch=None):
     out = []
     for m in metas:
         if impl is not None and m["impl"] != impl:
             continue
         if trace is not None and m["trace"] != trace:
             continue
+        if model is not None and m["model"] != model:
+            continue
+        if batch is not None and m["batch"] != batch:
+            continue
         out.append(m)
     return out
+
+
+def cells(metas):
+    """Group metas into scale cells keyed by (model, batch, dev).
+
+    Returns an ordered dict-like list of (key, cell_metas), sorted by device then
+    batch then model, so analyzers can iterate one (model, batch) workload at a
+    time and run the paired baseline-vs-Choreo comparison within it."""
+    groups = {}
+    for m in metas:
+        groups.setdefault((m["model"], m["batch"], m["dev"]), []).append(m)
+    return [(k, groups[k]) for k in sorted(groups)]
 
 
 def pool_steps(metas, parse_fn, warmup=200):
