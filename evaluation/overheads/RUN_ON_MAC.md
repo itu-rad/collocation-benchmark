@@ -22,17 +22,19 @@ python evaluation/overheads/modularity_overhead/run_modularity.py --device mps -
 
 # Exp 3b — MULTI-SCALE sweep: shows the fixed per-step overhead amortizes as the step grows.
 # Sweeps batch (1..64 @ EfficientNetV2-S) and model (EffNetV2-S -> M -> L -> ConvNeXt-L @ batch 8).
-# Run OFFLINE on an idle Mac (no --online) — this is the contention-free amortization curve.
+# Run --online on an IDLE Mac: the tracing-ON arm then measures the REAL production tracing cost
+# (async span export to res17; the uploader thread contends for the GIL). "Idle" isolates the
+# framework overhead from other load — it does NOT mean dropping --online.
 python evaluation/overheads/modularity_overhead/run_modularity.py \
-    --device mps --cells evaluation/overheads/modularity_overhead/configs/scale_sweep.yml
+    --device mps --cells evaluation/overheads/modularity_overhead/configs/scale_sweep.yml --online
 # Quick smoke first (3 cells, ~10 min) to confirm it runs before the long sweep:
 python evaluation/overheads/modularity_overhead/run_modularity.py \
-    --device mps --runs 1 --cells evaluation/overheads/modularity_overhead/configs/scale_sweep_min.yml
+    --device mps --runs 1 --online \
+    --cells evaluation/overheads/modularity_overhead/configs/scale_sweep_min.yml
 ```
 
-Drop `--online` to run fully local/offline (no credentials, for reproduction without server access).
-The **scale sweep (Exp 3b) is meant to run offline on a quiet machine** — its whole point is a
-clean per-step timing free of contention, so leave `--online` off for it.
+Drop `--online` only for offline reproduction without server access (the tracing-ON arm then
+measures the cheaper local-file-store cost, not the representative production tracing cost).
 
 ## 3. What `--online` does (and a caveat)
 
@@ -79,6 +81,7 @@ for the full write-ups and reference numbers.
 - Exp 1 + 2: minutes to low-tens-of-minutes (15 depths × R × 2 arms; `--online` adds ~30 s per tracing-ON run for the flush).
 - Exp 3: ~30–60 min on an M2 (R=5 × baseline + 2 arms, 1100 steps each) + the one-time ~1.5 GB download.
 - Exp 3b (scale sweep): **~7–9 h on an M2 at the default R=5** — an overnight run (batch-64 is
-  ~1 s/step and the heavy models 200–470 ms/step). Use the `scale_sweep_min.yml` smoke (~10 min)
-  first. To shorten the full run, lower `--runs` or the per-cell `max_batches` in `scale_sweep.yml`
-  (each cell's CI is self-contained, so fewer steps only widens that cell's interval).
+  ~1 s/step and the heavy models 200–470 ms/step); `--online` adds ~30 s per tracing-ON run for the
+  span flush (10 cells × R=5 ≈ +25 min). Use the `scale_sweep_min.yml` smoke (~10 min) first. To
+  shorten the full run, lower `--runs` or the per-cell `max_batches` in `scale_sweep.yml` (each
+  cell's CI is self-contained, so fewer steps only widens that cell's interval).
