@@ -42,6 +42,35 @@ _SHARED_RESULTS = os.path.join(_REPO_ROOT, "evaluation", "results")
 _CONFIG = os.path.join(_HERE, "configs", "torchvision_training.yml")
 _BASELINE = os.path.join(_HERE, "baseline_finetune.py")
 
+# The canonical anchor cell (the single published E2 point). Used when --cells is
+# not given, so no-arg behavior reproduces the original workload and filenames.
+_CANONICAL_CELL = {
+    "model": "efficientnet_v2_s",
+    "weights": "EfficientNet_V2_S_Weights.IMAGENET1K_V1",
+    "batch": 8,
+    "tag": None,  # None -> legacy label with no cell suffix
+}
+
+
+def load_cells(path, default_max_batches, default_runs):
+    """Load the scale-sweep manifest (a YAML list of cells) or fall back to the
+    single canonical anchor cell. Each cell: {model, weights, batch, tag?,
+    max_batches?, runs?}; missing max_batches/runs inherit the CLI defaults."""
+    if path:
+        with open(path, "r", encoding="utf-8") as f:
+            raw = yaml.safe_load(f)
+        cells = raw["cells"] if isinstance(raw, dict) else raw
+    else:
+        cells = [dict(_CANONICAL_CELL)]
+    for c in cells:
+        for k in ("model", "weights", "batch"):
+            if k not in c:
+                raise SystemExit(f"[cells] every cell needs '{k}': {c}")
+        c.setdefault("tag", None)
+        c.setdefault("max_batches", default_max_batches)
+        c.setdefault("runs", default_runs)
+    return cells
+
 
 RADT_PIN = "0.2.29"  # async_tracing fork @9dda7b8 (itu-rad/radt; environments/*.yaml pin)
 
@@ -117,8 +146,24 @@ def capture_env(device, runs, max_batches, num_workers=0, cooldown=0):
     print(text)
 
 
-def make_choreo_config(device, max_queries, num_workers):
-    """Write a temp Choreo config with device + max_queries + num_workers patched in."""
+def cell_suffix(cell):
+    """Filename suffix encoding the scale cell. A cell with no `tag` (the default
+    canonical EfficientNetV2-S @ batch 8) keeps the LEGACY label (no suffix), so
+    existing published CSVs / analyses reproduce byte-for-byte. Sweep cells carry
+    an explicit tag -> `_m{tag}_b{batch}`."""
+    tag = cell.get("tag")
+    if not tag:
+        return ""
+    return f"_m{tag}_b{cell['batch']}"
+
+
+def make_choreo_config(device, max_queries, num_workers, cell):
+    """Write a temp Choreo config with device + max_queries + num_workers AND the
+    cell's model / weights / batch patched in. Model weights are left unset
+    (random init) exactly as the canonical training config, so the wrapped arm
+    matches the bare baseline (which builds with weights=None). The Choreo stage
+    `name:` fields are deliberately NOT changed, so modularity_lib's stage-name
+    constants and the existing 47 CSVs keep parsing."""
     with open(_CONFIG, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     pipe = cfg["pipelines"][0]
@@ -126,16 +171,21 @@ def make_choreo_config(device, max_queries, num_workers):
     for stage in pipe["stages"]:
         if "TorchVisionClassification" in stage.get("component", ""):
             stage["config"]["device"] = device
+            stage["config"]["model"]["component"] = f"torchvision.models.{cell['model']}"
         if "TorchVisionDataLoader" in stage.get("component", ""):
             stage["config"]["num_workers"] = num_workers
+            stage["config"]["batch_size"] = cell["batch"]
+            # dataset.weights drives the preprocessing transform (input resolution),
+            # so both arms feed the model the same shape — match the cell's weights.
+            stage["config"]["dataset"]["weights"] = cell["weights"]
     fd, path = tempfile.mkstemp(prefix="mod_choreo_", suffix=".yml")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         yaml.safe_dump(cfg, f, sort_keys=False)
     return path
 
 
-def exec_baseline(device, max_batches, num_workers, timeout, r, force):
-    lab = f"mod_baseline_d{device}_r{r}"
+def exec_baseline(device, max_batches, num_workers, timeout, r, force, cell):
+    lab = f"mod_baseline{cell_suffix(cell)}_d{device}_r{r}"
     target = os.path.join(_RESULTS_DIR, lab + ".csv")
     if os.path.exists(target) and not force:
         print(f"[skip] {lab}")
@@ -146,6 +196,8 @@ def exec_baseline(device, max_batches, num_workers, timeout, r, force):
     try:
         rc = subprocess.run(
             [sys.executable, _BASELINE, "--device", device,
+             "--model", cell["model"], "--weights", cell["weights"],
+             "--batch-size", str(cell["batch"]),
              "--num-workers", str(num_workers),
              "--max-batches", str(max_batches), "--label", lab,
              "--no-radt", "--run", str(r)],
@@ -157,8 +209,8 @@ def exec_baseline(device, max_batches, num_workers, timeout, r, force):
     print(f"[{'ok ' if ok else 'FAIL'}] {lab} (rc={rc})")
 
 
-def exec_choreo(cfg, device, trace_on, timeout, r, force, online, experiment):
-    lab = f"mod_choreo_t{1 if trace_on else 0}_d{device}_r{r}"
+def exec_choreo(cfg, device, trace_on, timeout, r, force, online, experiment, cell):
+    lab = f"mod_choreo_t{1 if trace_on else 0}{cell_suffix(cell)}_d{device}_r{r}"
     target = os.path.join(_RESULTS_DIR, lab + ".csv")
     if os.path.exists(target) and not force:
         print(f"[skip] {lab}")
@@ -215,6 +267,11 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", choices=["cuda", "mps"], required=True,
                     help="cpu is refused (no GPU sync -> meaningless step timing)")
+    ap.add_argument("--cells", default=None,
+                    help="path to a scale-sweep manifest (YAML list of cells: "
+                         "model/weights/batch [+tag/max_batches/runs]). Omit to run "
+                         "the single canonical EfficientNetV2-S @ batch-8 anchor. "
+                         "See configs/scale_sweep.yml.")
     ap.add_argument("--runs", type=int, default=5)
     ap.add_argument("--max-batches", type=int, default=1100,
                     help="steps per run - one continuous epoch (200 dropped as "
@@ -248,28 +305,38 @@ def main():
     capture_env(args.device, args.runs, args.max_batches,
                 num_workers=args.num_workers, cooldown=args.cooldown)
 
+    cells = load_cells(args.cells, args.max_batches, args.runs)
     arms = {"off": [False], "on": [True], "both": [False, True]}[args.arms]
-    cfg = make_choreo_config(args.device, args.max_batches, args.num_workers) \
-        if not args.no_choreo else None
-    try:
-        # Interleave arms within each round so every arm sees the same thermal
-        # trajectory; cool down before each run so throttle can't drift between
-        # arms (the confound that made all-baseline-first look ~2% slower).
-        for r in range(1, args.runs + 1):
-            if not args.no_baseline:
-                if args.cooldown:
-                    print(f"[cool] {args.cooldown}s"); time.sleep(args.cooldown)
-                exec_baseline(args.device, args.max_batches, args.num_workers,
-                              args.timeout, r, args.force)
-            if not args.no_choreo:
-                for trace_on in arms:
+    print(f"[cells] {len(cells)} scale cell(s): "
+          + ", ".join(f"{c['model']}@b{c['batch']}(r{c['runs']},mb{c['max_batches']})"
+                      for c in cells))
+
+    # Each cell is an independent (model, batch) workload; within a cell the arms
+    # are interleaved run-by-run so every arm sees the same thermal trajectory
+    # (the paired difference relies on shared per-run conditions). Cells run to
+    # completion in sequence.
+    for cell in cells:
+        mb, runs = cell["max_batches"], cell["runs"]
+        print(f"\n=== cell {cell['model']} @ batch {cell['batch']} "
+              f"(tag={cell['tag']}, max_batches={mb}, runs={runs}) ===")
+        cfg = make_choreo_config(args.device, mb, args.num_workers, cell) \
+            if not args.no_choreo else None
+        try:
+            for r in range(1, runs + 1):
+                if not args.no_baseline:
                     if args.cooldown:
                         print(f"[cool] {args.cooldown}s"); time.sleep(args.cooldown)
-                    exec_choreo(cfg, args.device, trace_on, args.timeout, r,
-                                args.force, args.online, args.experiment)
-    finally:
-        if cfg:
-            os.unlink(cfg)
+                    exec_baseline(args.device, mb, args.num_workers,
+                                  args.timeout, r, args.force, cell)
+                if not args.no_choreo:
+                    for trace_on in arms:
+                        if args.cooldown:
+                            print(f"[cool] {args.cooldown}s"); time.sleep(args.cooldown)
+                        exec_choreo(cfg, args.device, trace_on, args.timeout, r,
+                                    args.force, args.online, args.experiment, cell)
+        finally:
+            if cfg:
+                os.unlink(cfg)
 
     print("\nDone. CSVs in:", _RESULTS_DIR)
 

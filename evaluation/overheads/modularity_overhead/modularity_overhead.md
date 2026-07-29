@@ -164,8 +164,15 @@ machinery (attribute construction + handing the span to the async export queue) 
   MLflow server, so spans export async to an isolated local file store; the case studies'
   as-used server cost may differ. The async export also leaves a p95 tail (periodic flushes);
   the median is the per-step summary.
-- **Single batch size / model.** EfficientNetV2-S batch 8 only; the step-size-independence of
-  the overhead is carried by §exp-noop rather than a stress config here.
+- **Single batch size / model — now addressed by the scale sweep.** The headline point above is
+  EfficientNetV2-S @ batch 8, the *worst realistic case* (a small, fast step where the fixed
+  wrapper cost is the largest fraction). `configs/scale_sweep.yml` + `analyze_scale_sweep.py`
+  sweep the step-time up ~1–2 orders of magnitude along two axes — batch (1→64 @ EffNetV2-S) and
+  model (EffNetV2-S→M→L→ConvNeXt-L @ batch 8) — to show the *relative* overhead collapses toward
+  zero as the step grows (the amortization curve). The fixed per-step µs cost is confirmed roughly
+  constant; its share of the step is fully explained by step-time. (Full R=5 numbers pending
+  collection on an idle machine; run via `RUN_ON_MAC.md`. The batch sweep loops epochs so large
+  batches on the small Imagenette split still reach the step budget.)
 - **Cross-DUT.** cuda and mps µs are not comparable; we report per device, direction only.
   The M2 Pro mps half is collected by the user with the same driver and radt branch.
 
