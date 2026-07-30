@@ -14,17 +14,14 @@ needs it). Add it to the env:
 
 ## 2. Model (TorchScript nnU-Net)
 
-MLPerf distributes the KiTS19 3D-UNet as an ONNX + PyTorch checkpoint. The stage
-loads a **TorchScript** `.pt` (`torch.jit.load`). Get it via the reference:
+The stage loads a **TorchScript** module via `torch.jit.load`. MLPerf's "PyTorch model" on
+Zenodo record 5597155 already IS that JIT-compiled TorchScript file (the "PyTorch/checkpoint"
+variant is the raw state_dict — do NOT use it, no conversion needed here). Download it directly
+(same file the reference Makefile fetches as `ZENODO_PYTORCH`):
 
-    # in scratchpad/mlperf-inference/vision/medical_imaging/3d-unet-kits19
-    # follow README "Download model" (Zenodo record 5597155): 3dunet_kits19_pytorch.ptc
-    # then trace/script to TorchScript if the download is a state_dict:
-    python unet_pytorch_to_onnx.py        # reference helper (also emits a scripted module)
-
-Place the TorchScript file at the config's `model_path`:
-
-    models/3dunet_kits19/3dunet_kits19_128x128x128.pt
+    mkdir -p models/3dunet_kits19
+    wget -O models/3dunet_kits19/3dunet_kits19_pytorch.ptc \
+      "https://zenodo.org/record/5597155/files/3dunet_kits19_pytorch.ptc?download=1"
 
 Input/output contract the stage assumes (verified against base_SUT.py):
 input `[1,1,128,128,128]` float, output `[1,3,128,128,128]` logits (3 classes:

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import sys
 import time
 from pathlib import Path
@@ -71,13 +72,23 @@ def main() -> int:
     ap.add_argument("--device", default="mps")
     ap.add_argument("--out", default="evaluation/unet3d/results_r1.csv")
     ap.add_argument("--cases", nargs="*", default=None, help="subset of case dirs")
+    ap.add_argument("--cases-file", default=None,
+                    help="JSON list of case names to run (e.g. evaluation/unet3d/"
+                         "inference_cases.json — the 42-case MLPerf inference set). Selects "
+                         "exactly those cases from --raw-dir instead of globbing the whole dir "
+                         "(the KiTS19 clone has ~210 cases; you want only the inference subset).")
     args = ap.parse_args()
 
     raw = Path(args.raw_dir)
-    cases = args.cases or sorted(
-        p.name for p in raw.iterdir()
-        if p.is_dir() and (p / "imaging.nii.gz").exists()
-        and (p / "segmentation.nii.gz").exists())
+    if args.cases:
+        cases = args.cases
+    elif args.cases_file:
+        cases = json.load(open(args.cases_file))
+    else:
+        cases = sorted(
+            p.name for p in raw.iterdir()
+            if p.is_dir() and (p / "imaging.nii.gz").exists()
+            and (p / "segmentation.nii.gz").exists())
     print(f"[unet3d-exp] {len(cases)} cases, device={args.device}, model={args.model}")
 
     model = torch.jit.load(args.model, map_location=args.device).eval()
