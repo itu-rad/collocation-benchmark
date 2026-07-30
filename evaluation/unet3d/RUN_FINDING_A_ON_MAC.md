@@ -15,27 +15,37 @@ conda activate benchmark_macos
 # fallback if the env predates the nibabel/scipy add:  pip install nibabel scipy
 ```
 
-## 2. Get the model (~124 MB, once)
+## 2. Get the model (~124 MB, once) — direct download, ready to use
 
-TorchScript nnU-Net from **Zenodo record 5597155** (`3dunet_kits19_pytorch.ptc`). Place it at:
+MLPerf's "PyTorch model" on Zenodo record 5597155 **is** the JIT-compiled TorchScript module
+(`torch.jit.load`-able) — nothing to convert. Pull it straight to the path the run command expects
+(this is the exact file the reference harness Makefile fetches as `ZENODO_PYTORCH`):
 
+```bash
+mkdir -p models/3dunet_kits19
+wget -O models/3dunet_kits19/3dunet_kits19_pytorch.ptc \
+  "https://zenodo.org/record/5597155/files/3dunet_kits19_pytorch.ptc?download=1"
 ```
-models/3dunet_kits19/3dunet_kits19_pytorch.ptc
-```
 
-Input/output contract: input `[1,1,128,128,128]` float → output `[1,3,128,128,128]` logits
-(background / kidney / tumor). See `stages/unet3d_kits19/BUILD.md` for provenance.
+Contract: input `[1,1,128,128,128]` float → output `[1,3,128,128,128]` logits (background/kidney/tumor).
 
-## 3. Get the KiTS19 raw data (~3.8 GB for the 42 inference cases, once)
+## 3. Get the KiTS19 raw data (~30 GB download, once)
 
 ```bash
 git clone https://github.com/neheller/kits19
-cd kits19 && python -m starter_code.get_imaging      # downloads imaging.nii.gz per case
+cd kits19
+pip3 install -r requirements.txt            # deps for the imaging downloader
+python3 -m starter_code.get_imaging         # downloads imaging.nii.gz into data/case_XXXXX/
 ```
 
-The 42 inference cases are listed in the reference `meta/inference_cases.json`. Point `--raw-dir`
-at the directory holding `case_00000/…` dirs (each with `imaging.nii.gz` + `segmentation.nii.gz`).
-We do **not** pre-preprocess — the resample/normalize/pad runs inside the timed path on purpose.
+This yields ~210 `<kits19>/data/case_XXXXX/` dirs, each with `imaging.nii.gz` (just downloaded)
+and `segmentation.nii.gz` (already in the clone). **Point `--raw-dir` at `<kits19>/data`** and
+select the inference subset with `--cases-file` (step 4) — the experiment runs exactly the **42
+cases** in `evaluation/unet3d/inference_cases.json`, not all ~210. We do **not** pre-preprocess —
+the resample/normalize/pad runs inside the timed path on purpose.
+
+(MLPerf's own harness pads this set to 43 by duplicating case_00185 as case_00400; that copy is a
+redundant identical case, so we run the 42 unique ones.)
 
 ## 4. Run the experiment (~1 h for 42 cases on an M2)
 
@@ -45,9 +55,10 @@ python evaluation/unet3d/run_full_experiment.py \
     --raw-dir <kits19>/data --model models/3dunet_kits19/3dunet_kits19_pytorch.ptc \
     --device mps --cases case_00160 case_00138 case_00112 --out /tmp/smoke.csv
 
-# Full run — write to the exact path the analyzer reads:
+# Full run — the 42 inference cases, written to the exact path the analyzer reads:
 python evaluation/unet3d/run_full_experiment.py \
     --raw-dir <kits19>/data --model models/3dunet_kits19/3dunet_kits19_pytorch.ptc \
+    --cases-file evaluation/unet3d/inference_cases.json \
     --device mps --out evaluation/unet3d/results_mps_r1.csv
 ```
 
