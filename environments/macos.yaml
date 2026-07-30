@@ -52,6 +52,14 @@ dependencies:
     ## Self-RAG case study
     - chromadb==1.5.9
 
+    ## 3D-UNet / KiTS19 preprocessing (evaluation/unet3d, Finding A)
+    # nibabel loads the NIfTI volumes; scipy does the resample/normalize/pad. Left
+    # unpinned — leaf deps pip resolves against the numpy the pinned stack already
+    # fixes. scipy was previously only transitive (via tensorflow/mlflow); declared
+    # explicitly here so a clean env has it.
+    - nibabel
+    - scipy
+
     ## local inference engines (stages.llm_server)
     # litellm talks to a local Ollama server over its HTTP API. vLLM is
     # NVIDIA-only, so only the Ollama engine is usable on macOS.
