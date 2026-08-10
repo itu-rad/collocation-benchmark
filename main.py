@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from multiprocessing import Process, Queue
 from pydantic_yaml import parse_yaml_raw_as
 from typing import Literal
-from utils.logger import Logger, PERF_FORMAT, install_perf_clock
+from utils.logger import Logger, PERF_FORMAT, install_perf_clock, upload_run_outputs
 from loadgen import run_loadgen
 from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
@@ -180,6 +180,12 @@ def radt_entrypoint(args):
         # Log config
         mlflow.log_artifact(args.config_file_path, "pipeline")
 
+        # Captured while the run is still open: the log files can only be
+        # uploaded once they are closed, by which point RADTBenchmark.__exit__
+        # has ended the run and the fluent API would start a new one.
+        active_run = mlflow.active_run()
+        log_run_id = active_run.info.run_id if active_run else None
+
         mlflow_config = {}
         build_mlflow_config(
             mlflow_config, benchmark_config.pipelines[args.pipeline_id], "pipeline"
@@ -222,6 +228,11 @@ def radt_entrypoint(args):
         logger.removeHandler(file_handler)
     except Exception:  # pylint: disable=broad-except
         pass
+
+    # Attach whatever this run produced, mirroring the pipeline spec above.
+    # Only radt's scheduler captures these otherwise, so on the direct `-p N`
+    # path they would exist on disk and never reach the server.
+    upload_run_outputs(log_run_id, log_file)
 
     # Drain MLflow trace spans BEFORE os._exit. atexit handlers don't fire
     # on os._exit, so this is the last chance to push pending spans.

@@ -1,7 +1,9 @@
+import glob
 import logging
 from logging.handlers import QueueListener
 import os
 import re
+import sys
 import time
 
 
@@ -18,6 +20,40 @@ import time
 PERF_FORMAT = "%(created)f, %(message)s, %(perf)d"
 
 _perf_clock_installed = False
+
+
+def upload_run_outputs(run_id, log_file, artifact_path="results"):
+    """Attach everything a finished run wrote to its mlflow run.
+
+    Every output is named from the run's label -- the timing CSV, the
+    TerminalCapture JSONL, and anything a stage adds later -- so a prefix glob
+    picks them all up without enumerating names.
+
+    Uses the client rather than the fluent API because the run is already
+    closed by the time the log file is. Never raises: this is the last thing
+    before ``os._exit``, and losing outputs must not lose the run.
+
+    Returns the number of files uploaded.
+    """
+    if not run_id or not log_file:
+        return 0
+
+    from mlflow.tracking import MlflowClient
+
+    directory = os.path.dirname(log_file) or "."
+    stem = os.path.splitext(os.path.basename(log_file))[0]
+
+    client = MlflowClient()
+    uploaded = 0
+    for path in sorted(glob.glob(os.path.join(directory, stem + "*"))):
+        if not os.path.isfile(path):
+            continue
+        try:
+            client.log_artifact(run_id, path, artifact_path=artifact_path)
+            uploaded += 1
+        except Exception as exc:  # pylint: disable=broad-except
+            print(f"[logger] failed to upload {path}: {exc}", file=sys.stderr, flush=True)
+    return uploaded
 
 
 def install_perf_clock():
