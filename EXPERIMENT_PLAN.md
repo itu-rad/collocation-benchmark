@@ -96,6 +96,28 @@ done
   (2) Operational: background jobs get reaped in this env — collection was driven/finished via
   foreground calls; completed runs persist their CSV + bulk artifact regardless.
 
+### E1 analysis + cuda re-collection (2026-08-18)
+- **E1 analysis consolidated** into a single self-contained `analyze_e1.py` (tables + `--latex DEVICE`
+  + figures); removed `noop_lib.py`, `analyze_noop_results.py`, `analyze_payload_results.py`,
+  `generate_latex_results.py`.
+- **cuda E1 RE-COLLECTED clean.** Pass-1 (unpinned) depth sweep was noisy (bimodal `O(d)`); root cause
+  = the heterogeneous **Grace** scheduler bouncing threads across cores → cache-cold migration. Pass-2
+  (10× X925 cluster `taskset -c 5-9,15-19`) fixed the transition cost but `O(d)` stayed bimodal
+  (intra-cluster migration). **Pass-3 = single performance core (`taskset -c 19`, cpu19 @ 4.0 GHz)**
+  is pristine: core-dispatch **25.15 µs/stage**, razor-tight CIs, no bimodality. This is the canonical
+  cuda E1. Backups on GB10: `cuda_pass1_noisy`, `cuda_pass2_cluster`. **mlx was already clean unpinned**
+  (macOS scheduler kept the closed loop stable) — a methodology asymmetry to note in the paper; strict
+  symmetry would need mlx single-core-pinned too (awkward on macOS: no `taskset`).
+- **Headline (tracing OFF, core dispatch):** mlx **39.4 µs/stage**, cuda(X925) **25.2 µs/stage**;
+  zero-copy `ref` flat (mlx ~26 µs / cuda ~14 µs) vs deep-copy at 10 MiB (mlx 1331 µs = 52×, cuda 703 µs
+  = 50×). Both: `ref` O(1), `copy` O(payload). **Caveat:** the cuda tracing-ON (proc) arm is slightly
+  noisier because the exporter child shares the single pinned core; the OFF-arm dispatch is the clean
+  headline. A clean cuda tracing-add would need workload + exporter on *separate* cores.
+- **OPEN: res17 `413`** — nginx rejects the bulk span artifact for deep pipelines (≥ depth ~100);
+  confirmed `depth_100` landed 0 span artifacts. Does **not** affect any E1 number (CSV-based). Fix TBD:
+  raise res17 `client_max_body_size` **or** chunk radt's bulk upload. Real workloads (E2+) have far
+  fewer spans/run so likely unaffected.
+
 ---
 
 ## E1 — NoOp / framework overhead
