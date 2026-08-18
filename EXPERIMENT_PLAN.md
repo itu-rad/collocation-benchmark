@@ -57,6 +57,25 @@ done
 
 **Exit gate:** four green workload smokes + the harness scaffolding in place. Nothing collects before.
 
+### P0 progress (2026-08-17)
+- **A.1 DONE.** Bulk+proc radt pinned `@0b497f6` in both `environments/{macos,nvidia}.yaml`;
+  editable-installed into `benchmark_macos` (mlflow → 3.15.1, matching GB10, which was already on it).
+  Modularity env gate now also asserts `radt.trace` exists (0.2.29 alone can't tell bulk from the old
+  async fork). Pinned checkout: `~/Documents/work/research/radt-bulk` (branch `pinned-0b497f6`).
+- **A.2 DONE.** Proc wiring committed on this branch (`utils/trace_span.py`, `main.py` hooks, 12 span
+  sites).
+- **A.4 core smoke GREEN (overhead family).** NoOp depth-16 via bulk+proc (direct `-p 0`, local file
+  store): rc=0, one gzipped `radt-trace/spans-000001.jsonl.gz` + `manifest.json`, deterministic
+  `event_count=10540` (2×5270 spans), no dropped events, no SIGTERM assertion, CSV timing intact.
+  **Still to smoke:** orchestrated path (no `-p`, listeners on) against res17 exp 142, and the
+  3D-UNet / Self-RAG / collocation families (need KiTS19 + LLM weights + GB10).
+- **A.3 DEFERRED.** Listener/SIGTERM assertion is non-fatal (teardown-only, data intact) and only
+  fires on a *killed* run; will fix in radt source only if the res17 orchestrated smoke shows it
+  actually recurs on bulk radt (must then sync GB10 + upstream).
+- **B.6 DONE (scaffolding).** Canonical `evaluation/collect/collect.sh` — `<config-glob> <device>
+  [runs] [exp]`, sets `CHOREO_PROC_TRACE=1`, loops configs×runs over `main.py` (no `-p`), sorts CSVs
+  into `evaluation/results/<device>/`. Per-experiment `gen_configs.py`/`analyze.py` still per E1–E5.
+
 ---
 
 ## E1 — NoOp / framework overhead
