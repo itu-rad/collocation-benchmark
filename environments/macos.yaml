@@ -17,13 +17,16 @@ dependencies:
     - mlflow==3.10.0
     - boto3==1.42.57
     - psutil==7.2.2
-    # radt async_tracing branch (non-blocking MLflow span export -> realistic tracing
-    # overhead). Pinned to commit 9dda7b8 (branch head incl. bounded async export queue) of feat/Sipondo/async_tracing; package in radt/ subdir.
-    - git+https://github.com/itu-rad/radt.git@9dda7b82d87daad792074ee21463669e503515a0#subdirectory=radt
+    # radt bulk+proc tracing branch (radt owns mlflow in a child process; all spans
+    # spooled into one gzipped artifact per run -> negligible workload overhead, 100%
+    # capture). Pinned to commit 0b497f6 of feat/proc-owned-bulk-tracing; package in
+    # radt/ subdir. Switched on in Choreo with CHOREO_PROC_TRACE=1. (Supersedes the old
+    # async_tracing @9dda7b8 in-process exporter — do not use it; see ENVIRONMENTS.md.)
+    - git+https://github.com/itu-rad/radt.git@0b497f6cdae90da3e01694dde66b92bf4ad67944#subdirectory=radt
     # NOTE: production install additionally applies evaluation/radt-patches/
-    # 0001-amc-bandwidth-listener.patch (AMCBandwidth listener, local commit
-    # f9a61e8 — unpushed by design): clone @9dda7b8, git am the patch, pip
-    # install ./radt. The listener no-ops on non-Apple hosts.
+    # 0001-amc-bandwidth-listener.patch (AMCBandwidth listener, needed for E5 AMC
+    # attribution): clone @0b497f6, git am the patch, pip install ./radt. The listener
+    # no-ops on non-Apple hosts.
 
     # Tracing + Perfetto export
     - sqlalchemy==2.0.47

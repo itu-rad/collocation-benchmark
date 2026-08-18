@@ -72,21 +72,26 @@ def load_cells(path, default_max_batches, default_runs):
     return cells
 
 
-RADT_PIN = "0.2.29"  # async_tracing fork @9dda7b8 (itu-rad/radt; environments/*.yaml pin)
+RADT_PIN = "0.2.29"  # bulk+proc fork @0b497f6 (itu-rad/radt; environments/*.yaml pin)
 
 
 def check_environment(device):
-    """Hard gate: the tracing-ON arm is only meaningful on the pinned
-    async_tracing radt (0.2.29 @9dda7b8), and a CPU-only torch wheel on a
-    cuda device silently measures nothing. Both have burned collection time
-    (2026-07-13). Refuse to run on a mismatched env."""
+    """Hard gate: the tracing arm is only meaningful on the pinned bulk+proc
+    radt (0.2.29 @0b497f6, exposing radt.trace + radt.run.mlflow_capture), and
+    a CPU-only torch wheel on a cuda device silently measures nothing. Both have
+    burned collection time (2026-07-13). Refuse to run on a mismatched env."""
     fatal = []
     try:
         import radt
         if radt.__version__ != RADT_PIN:
             fatal.append(f"radt {radt.__version__} != pinned {RADT_PIN} "
-                         "(async_tracing @9dda7b8) — create the env from "
+                         "(bulk+proc @0b497f6) — create the env from "
                          "environments/macos.yaml (benchmark_macos) / nvidia.yaml")
+        # 0.2.29 alone can't tell bulk+proc from the old async fork; require the
+        # proc surface so we never collect on the superseded in-process exporter.
+        if not hasattr(radt, "trace"):
+            fatal.append("radt lacks .trace — this is NOT the bulk+proc fork "
+                         "(@0b497f6); reinstall from environments/*.yaml")
     except ImportError:
         fatal.append("radt not importable")
     try:
