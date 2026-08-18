@@ -4,6 +4,7 @@ from time import time
 from queue import Queue
 
 import mlflow
+from utils.trace_span import trace_span
 
 from utils.schemas import Query
 from .scheduler import LoadScheduler
@@ -47,7 +48,7 @@ class SaturatingOfflineScheduler(LoadScheduler):
                             break
 
                         flow_id = uuid.uuid4()
-                        with mlflow.start_span(
+                        with trace_span(
                             name="generate query",
                             attributes={
                                 "out_flow_id": str(flow_id),

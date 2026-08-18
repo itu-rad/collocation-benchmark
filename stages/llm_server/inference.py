@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import litellm
 import mlflow
+from utils.trace_span import trace_span
 from transformers import AutoTokenizer
 
 from stages.stage import Stage, log_phase
@@ -141,7 +142,7 @@ class Inference(Stage):
         pending = []
         try:
             while True:
-                with mlflow.start_span(
+                with trace_span(
                     name=f"{self.name}.get_input",
                     attributes={"thread_id": threading.get_ident()},
                 ):

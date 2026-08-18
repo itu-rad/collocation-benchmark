@@ -5,6 +5,7 @@ from queue import Queue, Empty
 from threading import Event, Thread
 
 import mlflow
+from utils.trace_span import trace_span
 
 from stages import Stage
 from utils.component import get_stage_component
@@ -146,7 +147,7 @@ class Pipeline:
                 # the expected polling case, not an error, and letting it
                 # propagate makes MLflow tag the span as failed.
                 new_query = _EMPTY
-                with mlflow.start_span(
+                with trace_span(
                     name="pipeline retrieve_results",
                     attributes={"thread_id": threading.get_ident()},
                 ):
@@ -173,7 +174,7 @@ class Pipeline:
                     new_query.batch + 1,
                 )
 
-                with mlflow.start_span(
+                with trace_span(
                     name="pipeline query processed",
                     attributes={
                         "in_flow_id": str(new_query.out_flow_id) if new_query.out_flow_id else None,
@@ -276,7 +277,7 @@ class Pipeline:
             )
 
             out_flow_id = uuid.uuid4()
-            with mlflow.start_span(
+            with trace_span(
                 name="pipeline query",
                 attributes={
                     "in_flow_id": str(query.out_flow_id) if query.out_flow_id else None,

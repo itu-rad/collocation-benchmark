@@ -4,6 +4,7 @@ from random import expovariate
 from time import sleep, time
 
 import mlflow
+from utils.trace_span import trace_span
 
 from utils.schemas import Query
 from .arrival_log import ArrivalLog
@@ -95,7 +96,7 @@ class PoissonLoadScheduler(LoadScheduler):
                         sleep(self.offsets[counter])
 
                         flow_id = uuid.uuid4()
-                        with mlflow.start_span(
+                        with trace_span(
                             name="generate query",
                             attributes={
                                 "out_flow_id": str(flow_id),

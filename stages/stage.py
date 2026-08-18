@@ -9,6 +9,7 @@ from typing import Any
 import json
 
 import mlflow
+from utils.trace_span import trace_span
 
 from utils.queues.polling.polling_policy import PollingPolicy
 from utils.queues.peekable_queue import PeekableQueue
@@ -260,7 +261,7 @@ class Stage:
             outputs (dict[int, any]): dictionary of outputs, where keys are the stage IDs
                 and values are the outputs to be pushed to the corresponding output queue.
         """
-        with mlflow.start_span(
+        with trace_span(
             name=f"{self.name}.push_to_outputs",
             attributes={"thread_id": threading.get_ident()},
         ):
@@ -310,7 +311,7 @@ class Stage:
 
         in_flow_id = str(query.out_flow_id) if query.out_flow_id else None
         out_flow_id = uuid.uuid4()
-        with mlflow.start_span(
+        with trace_span(
             name=f"{self.name}.run",
             attributes={
                 "in_flow_id": in_flow_id,
@@ -335,7 +336,7 @@ class Stage:
         perform actions on them and push the results onto the output queues."""
         self.pre_run()
         while True:
-            with mlflow.start_span(
+            with trace_span(
                 name=f"{self.name}.get_input",
                 attributes={"thread_id": threading.get_ident()},
             ):

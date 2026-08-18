@@ -7,6 +7,7 @@ from queue import Queue
 import multiprocessing
 
 import mlflow
+from utils.trace_span import trace_span
 
 from loadgen.schedulers.scheduler import LoadScheduler
 from pipeline import Pipeline
@@ -81,7 +82,7 @@ class LoadGen:
 
         The execution is stopped when the max_queries is reached or timer elapses.
         """
-        with mlflow.start_span(
+        with trace_span(
             name="LoadGen.run",
             attributes={"thread_id": threading.get_ident()},
         ):

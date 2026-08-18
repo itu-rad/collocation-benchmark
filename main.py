@@ -83,6 +83,19 @@ def radt_entrypoint(args):
     if os.environ.get("CHOREO_DISABLE_TRACING", "").lower() in ("1", "true", "yes"):
         mlflow.tracing.disable()
 
+    # Prototype (radt-owned tracing): when enabled, every span site routes to
+    # radt.trace instead of mlflow — a lightweight event onto a queue drained by a
+    # radt-owned child process that owns ALL mlflow span machinery. Nothing
+    # mlflow/OTel span-related then runs in this (workload) process. Start it HERE
+    # on the main thread — before run_loadgen spawns pipeline threads and before
+    # CUDA init (fork-safety) — mirroring how RADTBenchmark starts its metrics
+    # children. NOTE: do NOT disable mlflow tracing here — under fork the child
+    # would inherit the disabled tracer and drop every reconstructed span; the
+    # parent simply never calls mlflow.start_span (all sites route to radt.trace),
+    # so no in-process span machinery spins up regardless.
+    if os.environ.get("CHOREO_PROC_TRACE", "").lower() in ("1", "true", "yes"):
+        radt.trace.start(experiment_id=args.experiment_id)
+
     # Belt-and-braces for the prior "RadT killed the subprocess before MLflow
     # drained" issue: catch SIGTERM, flush spans, then re-raise so the
     # default handler still terminates us.
@@ -92,6 +105,7 @@ def radt_entrypoint(args):
         # skips stage post_run(), so it must happen here.
         kill_all_servers()
         flush_traces()
+        radt.trace.shutdown()  # flush + join the proc-trace exporter (no-op if unused)
         # Tear down the radt listener/logger children and close the mlflow
         # run; without this a timeout-killed run stays status=RUNNING forever
         # and the listener processes only die with the process group. No-op
@@ -202,6 +216,13 @@ def radt_entrypoint(args):
         # by now (mlflow.log_params above auto-starts one even without radt).
         label = os.environ.get("CHOREO_OUTPUT_LABEL", "")
         mlflow.set_tag("choreo.label", label)
+        # Proc-trace: hand the active run id to the radt-owned exporter so it nests
+        # the reconstructed spans under this run (mlflow.sourceRun), matching the
+        # in-process arm. Emitted before run_loadgen, so it precedes every span.
+        if os.environ.get("CHOREO_PROC_TRACE", "").lower() in ("1", "true", "yes"):
+            _ar = mlflow.active_run()
+            if _ar is not None:
+                radt.trace.set_run(_ar.info.run_id)
         # Descriptive server-side run name: the cell label already encodes
         # experiment/task/arm/schedule/device/run (e.g.
         # e4_factoid_monolith_pipe_mlx_r1); append the pipeline name so
@@ -236,6 +257,7 @@ def radt_entrypoint(args):
     # the GPU is freed even if a stage's post_run() didn't run.
     kill_all_servers()
     flush_traces()
+    radt.trace.shutdown()  # flush + join the proc-trace exporter (no-op if unused)
     radt.shutdown()
     os._exit(0)
 
