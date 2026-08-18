@@ -79,6 +79,23 @@ done
   [runs] [exp]`, sets `CHOREO_PROC_TRACE=1`, loops configs×runs over `main.py` (no `-p`), sorts CSVs
   into `evaluation/results/<device>/`. Per-experiment `gen_configs.py`/`analyze.py` still per E1–E5.
 
+### Overnight collection (2026-08-18)
+- **E1 NoOp FULLY COLLECTED, both devices, all green.** 23 configs × {tracing-**proc**, tracing-**off**}
+  × R=10 = **460 runs/device (920 total)**, exp **138**, forced **bulk** backend (`RADT_TRACE_BACKEND=radt`),
+  direct `-p 0`. **0 failures, 0 empty CSVs.** Sanity-gated on a verified res17 `manifest.json`.
+  Wall: mlx ~97 min, cuda ~61 min. CSVs: `evaluation/results/mlx/` (local, 225 MB) and
+  `…/cuda/` (on GB10 — **still needs pulling for analysis**; spans for both are on res17 exp 138).
+  Note: proc & off arms log identical CSV markers (markers are span-independent); the arms differ in
+  per-step *timing* + span capture — that's the tracing-overhead comparison E1 makes.
+- **P0 family smokes green (exp 142), both devices:** overhead ✅, **3D-UNet ✅** (mlx 4-case 380s,
+  bulk `event_count=7224`/3 batches; cuda ✅), **Self-RAG ✅** (0.8B/5-query, bulk finalized). That's
+  3 of the 4 P0 families; **collocation (E5) smoke still pending.**
+- **Two issues found:** (1) **Self-RAG teardown race** — a span is emitted after `radt.trace`
+  shutdown closes the queue (`ValueError: Queue is closed`) on the multi-threaded LLM workload;
+  non-fatal (manifest still writes, smoke green) but **harden before full E4 *timing* collection.**
+  (2) Operational: background jobs get reaped in this env — collection was driven/finished via
+  foreground calls; completed runs persist their CSV + bulk artifact regardless.
+
 ---
 
 ## E1 — NoOp / framework overhead
