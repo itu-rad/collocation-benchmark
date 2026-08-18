@@ -1,0 +1,98 @@
+[
+  {
+    "cell": "cuda_factoid_monolith",
+    "dev": "cuda",
+    "task": "factoid",
+    "arm": "monolith",
+    "n": 120,
+    "em": 0.45
+  },
+  {
+    "cell": "cuda_factoid_monolith_4b",
+    "dev": "cuda",
+    "task": "factoid",
+    "arm": "monolith_4b",
+    "n": 120,
+    "em": 0.608
+  },
+  {
+    "cell": "cuda_factoid_decomposed",
+    "dev": "cuda",
+    "task": "factoid",
+    "arm": "decomposed",
+    "n": 120,
+    "em": 0.65
+  },
+  {
+    "cell": "cuda_multihop_monolith",
+    "dev": "cuda",
+    "task": "multihop",
+    "arm": "monolith",
+    "n": 120,
+    "em": 0.242
+  },
+  {
+    "cell": "cuda_multihop_monolith_4b",
+    "dev": "cuda",
+    "task": "multihop",
+    "arm": "monolith_4b",
+    "n": 120,
+    "em": 0.275
+  },
+  {
+    "cell": "cuda_multihop_decomposed",
+    "dev": "cuda",
+    "task": "multihop",
+    "arm": "decomposed",
+    "n": 120,
+    "em": 0.275
+  },
+  {
+    "cell": "mlx_factoid_monolith",
+    "dev": "mlx",
+    "task": "factoid",
+    "arm": "monolith",
+    "n": 120,
+    "em": 0.467
+  },
+  {
+    "cell": "mlx_factoid_monolith_4b",
+    "dev": "mlx",
+    "task": "factoid",
+    "arm": "monolith_4b",
+    "n": 120,
+    "em": 0.575
+  },
+  {
+    "cell": "mlx_factoid_decomposed",
+    "dev": "mlx",
+    "task": "factoid",
+    "arm": "decomposed",
+    "n": 120,
+    "em": 0.575
+  },
+  {
+    "cell": "mlx_multihop_monolith",
+    "dev": "mlx",
+    "task": "multihop",
+    "arm": "monolith",
+    "n": 120,
+    "em": 0.217
+  },
+  {
+    "cell": "mlx_multihop_monolith_4b",
+    "dev": "mlx",
+    "task": "multihop",
+    "arm": "monolith_4b",
+    "n": 120,
+    "em": 0.242
+  },
+  {
+    "cell": "mlx_multihop_decomposed",
+    "dev": "mlx",
+    "task": "multihop",
+    "arm": "decomposed",
+    "n": 120,
+    "em": 0.267
+  }
+]

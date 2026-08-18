@@ -1,0 +1,104 @@
+From 16c28b0acbcef39f13606e53ed1d0a7a279a4cc2 Mon Sep 17 00:00:00 2001
+From: Robert Bayer <roba@itu.dk>
+Date: Wed, 15 Jul 2026 05:47:46 -0700
+Subject: [PATCH] schedule: fix multi-run param_def reuse + deadlock on
+ pre-start errors
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Two fixes for the multi-pipeline schedule path hanging forever before any
+workload starts (observed as 1h driver timeouts; child runs stuck RUNNING
+with no parentRunId/runName tags and radtlock never removed):
+
+1. The post-launch tagging loop ('Group runs into workload children') did
+   not unpack param_def per definition, silently reusing the LAST launch
+   iteration's param_def for every run. With >1 run in direct mode,
+   log_params() then tried to change run A's already-logged 'params' value
+   to run B's, and the tracking server rejects changing param values
+   (RestException INVALID_PARAMETER_VALUE). Single-run schedules were
+   unaffected because the leftover param_def was the right one — which is
+   why this only surfaced on collocated (2-3 pipeline) cells.
+
+2. That exception (or any non-KeyboardInterrupt error raised between child
+   launch and radtlock removal) escaped a try that only caught
+   KeyboardInterrupt, so the ExitStack unwind called Popen.__exit__, which
+   waits on children that are themselves busy-waiting on the radtlock only
+   the scheduler can remove: a silent, eternal deadlock (stdout is block-
+   buffered under a pipe, so the driver log showed nothing). Add an
+   except-Exception handler that kills the children, best-effort marks
+   their mlflow runs KILLED, removes the radtlock/MLproject blockers, and
+   re-raises — failing fast with a traceback instead of hanging.
+
+Pre-dates the live-logging commits (present at 3ba61cb); exposed by the
+first multi-pipeline exercise of this path.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01N3eEMNU1BgTYrtFV6fJVp2
+---
+ radt/radt/schedule/schedule.py | 42 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 41 insertions(+), 1 deletion(-)
+
+diff --git a/radt/radt/schedule/schedule.py b/radt/radt/schedule/schedule.py
+index ff77359..5c28e90 100644
+--- a/radt/radt/schedule/schedule.py
++++ b/radt/radt/schedule/schedule.py
+@@ -366,7 +366,16 @@ def execute_workload(
+             # Group runs into workload children
+             # And add experiment/workload to name
+             parent_id = ""
+-            for _, _, letter, run_name, _, _, _, filepath, _ in defs:
++            # NOTE: param_def MUST be unpacked per def. It used to be skipped
++            # here, silently reusing the LAST launch-loop iteration's param_def
++            # for every run: with multiple pipelines, log_params below then
++            # tried to overwrite run A's already-logged 'params' with run B's
++            # value, and mlflow rejects changing a param value (RestException,
++            # INVALID_PARAMETER_VALUE) — which aborted this block before the
++            # radtlock removal and deadlocked the whole schedule (see the
++            # except-Exception handler below). Single-run schedules never hit
++            # it because the leftover param_def happened to be the right one.
++            for _, _, letter, run_name, _, _, param_def, filepath, _ in defs:
+                 if run_id := run_ids[letter]:
+                     client = MlflowClient()
+                     if run := client.get_run(run_id):
+@@ -468,6 +477,37 @@ def execute_workload(
+             except KeyboardInterrupt:
+                 pass
+ 
++        except Exception:
++            # Fail FAST instead of hanging forever. Children only start their
++            # workload once this process removes their radtlock; if anything
++            # above raised before that removal (e.g. an mlflow RestException
++            # while tagging), the bare unwind used to deadlock: ExitStack ->
++            # Popen.__exit__ waits on children that are themselves busy-waiting
++            # on the radtlock only we can remove. Kill the children first (so
++            # removing the locks can't release them into actually running the
++            # workload mid-teardown), best-effort mark their runs KILLED, clean
++            # the lock files, then re-raise the original error.
++            sysprint("Schedule failed before workload start; killing child runs.")
++            for _, _, p, _, _ in popens:
++                try:
++                    p.kill()
++                except OSError:
++                    pass
++            try:
++                cleanup_client = MlflowClient()
++                for run_id in run_ids.values():
++                    if run_id:
++                        cleanup_client.set_terminated(run_id, status="KILLED")
++            except Exception:
++                pass  # server unreachable — the re-raise below still matters more
++            for _, _, _, _, _, _, _, filepath, _ in defs:
++                for blocker in ("radtlock", "MLproject"):
++                    try:
++                        (Path(filepath) / blocker).unlink(missing_ok=True)
++                    except OSError:
++                        pass
++            raise
++
+         for _, letter, p, _, _ in popens:
+             returncodes[letter] = p.returncode
+ 
+-- 
+2.50.1 (Apple Git-155)
+

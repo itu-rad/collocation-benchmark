@@ -209,8 +209,11 @@ def exec_baseline(device, max_batches, num_workers, timeout, r, force, cell):
     print(f"[{'ok ' if ok else 'FAIL'}] {lab} (rc={rc})")
 
 
-def exec_choreo(cfg, device, trace_on, timeout, r, force, online, experiment, cell):
-    lab = f"mod_choreo_t{1 if trace_on else 0}{cell_suffix(cell)}_d{device}_r{r}"
+def exec_choreo(cfg, device, mode, timeout, r, force, online, experiment, cell):
+    # mode: "off" (t0, tracing off) | "on" (t1, current in-process mlflow) |
+    #       "proc" (t2, radt-owned out-of-process span export)
+    _t = {"off": 0, "on": 1, "proc": 2}[mode]
+    lab = f"mod_choreo_t{_t}{cell_suffix(cell)}_d{device}_r{r}"
     target = os.path.join(_RESULTS_DIR, lab + ".csv")
     if os.path.exists(target) and not force:
         print(f"[skip] {lab}")
@@ -226,8 +229,11 @@ def exec_choreo(cfg, device, trace_on, timeout, r, force, online, experiment, ce
         # RADT_LISTENER_* vars are set, so NO listener processes spawn (zero
         # measurement perturbation).
         env["RADT_PRESENT"] = "True"
-        if not trace_on:
+        if mode == "off":
             env["CHOREO_DISABLE_TRACING"] = "1"
+        elif mode == "proc":
+            env["CHOREO_PROC_TRACE"] = "1"
+            env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
         else:
             env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
     else:
@@ -238,12 +244,15 @@ def exec_choreo(cfg, device, trace_on, timeout, r, force, online, experiment, ce
         # lets MLflow's FileStore initialize the default experiment.
         tmpdir = tempfile.mkdtemp(prefix="mod_mlruns_")
         env["MLFLOW_TRACKING_URI"] = "file:" + os.path.join(tmpdir, "store")
-        if not trace_on:
+        if mode == "off":
             env["CHOREO_DISABLE_TRACING"] = "1"
+        elif mode == "proc":
+            env["CHOREO_PROC_TRACE"] = "1"
+            env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
         else:
             env["MLFLOW_ENABLE_ASYNC_TRACE_LOGGING"] = "true"
     cmd = [sys.executable, "main.py", cfg, "-p", "0", "--label", lab]
-    if online:
+    if online or mode == "proc":
         cmd += ["-e", str(experiment)]
     print(f"[run ] {lab}")
     try:
@@ -289,6 +298,9 @@ def main():
                          "Set >0 only to probe cold-start effects.")
     ap.add_argument("--timeout", type=int, default=1800)
     ap.add_argument("--arms", choices=["off", "on", "both"], default="both")
+    ap.add_argument("--proc-trace", action="store_true",
+                    help="add a 4th choreo arm (t2): radt-owned OUT-OF-PROCESS span "
+                         "export (CHOREO_PROC_TRACE=1). The prototype under test.")
     ap.add_argument("--no-baseline", action="store_true")
     ap.add_argument("--no-choreo", action="store_true")
     ap.add_argument("--online", action="store_true",
@@ -306,7 +318,9 @@ def main():
                 num_workers=args.num_workers, cooldown=args.cooldown)
 
     cells = load_cells(args.cells, args.max_batches, args.runs)
-    arms = {"off": [False], "on": [True], "both": [False, True]}[args.arms]
+    arms = {"off": ["off"], "on": ["on"], "both": ["off", "on"]}[args.arms]
+    if args.proc_trace:
+        arms = arms + ["proc"]
     print(f"[cells] {len(cells)} scale cell(s): "
           + ", ".join(f"{c['model']}@b{c['batch']}(r{c['runs']},mb{c['max_batches']})"
                       for c in cells))
@@ -329,10 +343,10 @@ def main():
                     exec_baseline(args.device, mb, args.num_workers,
                                   args.timeout, r, args.force, cell)
                 if not args.no_choreo:
-                    for trace_on in arms:
+                    for mode in arms:
                         if args.cooldown:
                             print(f"[cool] {args.cooldown}s"); time.sleep(args.cooldown)
-                        exec_choreo(cfg, args.device, trace_on, args.timeout, r,
+                        exec_choreo(cfg, args.device, mode, args.timeout, r,
                                     args.force, args.online, args.experiment, cell)
         finally:
             if cfg:
