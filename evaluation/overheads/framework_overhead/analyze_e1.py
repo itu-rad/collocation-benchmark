@@ -1,36 +1,59 @@
-"""E1 (framework overhead) analysis over the NEW overnight collection layout.
+#!/usr/bin/env python3
+"""E1 — Framework-overhead (NoOp) analysis. SELF-CONTAINED: everything E1 needs
+lives in this one file (parsing, statistics, both metric tables, figures) — it
+imports nothing from the other framework_overhead modules.
 
-Reuses the established metrics in noop_lib + the two analyzers verbatim; only the
-filename scheme differs (new: `noop_depth_D_size_S_mode_M_{proc|off}_{device}_rN.csv`;
-`proc` = tracing ON via the bulk+proc exporter, `off` = tracing disabled). Reads
-`evaluation/results/<device>/`, writes markdown to stdout + two figures.
+Reads the overnight collection layout
+``evaluation/results/<device>/noop_depth_D_size_S_mode_M_{proc|off}_{device}_rN.csv``
+(``proc`` = tracing ON via the bulk+proc exporter, ``off`` = tracing disabled),
+for device in {mlx, cuda}. Emits Markdown tables to stdout and two figures.
 
-    python analyze_e1.py [--fig-dir DIR]
+Two results:
+  1. Depth flatness — per-query latency L_q is linear in depth, i.e. a constant
+     marginal per-stage dispatch cost (no accumulation with graph depth).
+  2. Zero-copy — reference passing is O(1) in payload size, while the deep-copy
+     counterfactual is O(payload).
+Plus the per-stage cost the tracing layer adds (proc − off).
+
+All latencies come from the monotonic ``perf_counter_ns`` column (trailing field
+of every trace line), never wall-clock column 0. CIs are hierarchical bootstrap
+with the RUN as the unit of replication.
+
+    python analyze_e1.py [--fig-dir DIR] [--warmup K]
 """
+
+from __future__ import annotations
+
 import argparse
 import glob
-import io
+import math
 import os
 import re
 import sys
-from contextlib import redirect_stdout
+from bisect import bisect_right
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
-sys.path.insert(0, HERE)
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+NS_PER_MS = 1e6
+NS_PER_US = 1e3
+SIZES = [0, 1024, 1048576, 10485760]
+SIZE_LABEL = {0: "0", 1024: "1 KiB", 1048576: "1 MiB", 10485760: "10 MiB"}
+WARMUP_K = 1                      # warm-up epochs dropped per run
+DEVICES = ("mlx", "cuda")
 
-import noop_lib as nl                         # noqa: E402
-import analyze_noop_results as ann            # noqa: E402
-import analyze_payload_results as apr         # noqa: E402
-
-NEW_RE = re.compile(
+_FNAME_RE = re.compile(
     r"^noop_depth_(?P<depth>\d+)_size_(?P<size>\d+)_mode_(?P<mode>ref|copy)"
     r"_(?P<arm>proc|off)_(?P<device>mlx|cuda)_r(?P<run>\d+)\.csv$"
 )
 
 
-def parse_new(path):
-    m = NEW_RE.match(os.path.basename(path))
+def parse_filename(path):
+    """Return dict(depth,size,mode,trace,device,run,path) or None.
+
+    ``trace`` = 1 for the proc (tracing-ON) arm, 0 for the off arm — so the same
+    selectors work as in the historical two-arm scheme."""
+    m = _FNAME_RE.match(os.path.basename(path))
     if not m:
         return None
     return {"depth": int(m["depth"]), "size": int(m["size"]), "mode": m["mode"],
@@ -38,78 +61,467 @@ def parse_new(path):
             "device": m["device"], "run": int(m["run"]), "path": path}
 
 
-def load_device(device):
-    runs = []
-    d = os.path.join(ROOT, "evaluation", "results", device)
-    for p in sorted(glob.glob(os.path.join(d, "noop_*.csv"))):
-        meta = parse_new(p)
-        if not meta:
+# ---------------------------------------------------------------------------
+# CSV parsing -> per-query timing vectors
+#
+# Trace line layouts (", "-separated; the pipeline name has spaces but no comma):
+#   stage row    : wall, parent, "<Mode> Stage K", run, {start|end}, perf
+#   pipeline row : wall, parent, "pipeline - <split>", run, {start|end},
+#                  query_id, query_ts, epoch, batch, perf
+#   prepare row  : wall, parent, "pipeline", prepare, {start|end}, perf
+# Under the closed-loop OfflineLoadScheduler exactly one query is in flight, so
+# each query's pipeline [start,end] perf window is disjoint; a stage event is
+# attributed to the epoch whose window contains its perf timestamp.
+# ---------------------------------------------------------------------------
+def _stage_index(module):
+    tail = module.rsplit(" ", 1)[-1]
+    return int(tail) if tail.isdigit() else None
+
+
+class Run:
+    """Per-query timing vectors for one CSV (one cell, one repetition)."""
+
+    def __init__(self, meta):
+        self.meta = meta
+        self.latency_ns = {}                 # epoch -> L_q
+        self.transition_ns = {}              # epoch -> {k: end(k)->start(k+1)}
+        self.stage_dur_ns = {}               # epoch -> {k: start(k)->end(k)}
+
+    @property
+    def epochs(self):
+        return sorted(self.latency_ns)
+
+
+def parse_run(path):
+    """Parse one CSV into a Run (latency, transition, stage-duration)."""
+    run = Run(parse_filename(path) or {"path": path})
+    pipe_start, pipe_end = {}, {}
+    stage_events = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) < 6:
+                continue
+            module, phase, event = parts[2], parts[3], parts[4]
+            try:
+                perf = int(parts[-1])
+            except ValueError:
+                continue
+            if module.startswith("pipeline -") and phase == "run":
+                try:
+                    epoch = int(parts[7])
+                except (IndexError, ValueError):
+                    continue
+                (pipe_start if event == "start" else pipe_end)[epoch] = perf
+            elif phase == "run":
+                idx = _stage_index(module)
+                if idx is not None:
+                    stage_events.append((perf, idx, event))
+
+    epochs = sorted(e for e in pipe_start if e in pipe_end)
+    starts = [pipe_start[e] for e in epochs]
+    per_epoch = {e: {} for e in epochs}
+    for perf, idx, event in stage_events:
+        i = bisect_right(starts, perf) - 1
+        if i < 0:
             continue
-        r = nl.parse_run(p)      # content parse is filename-agnostic
-        r.meta = meta            # attach our metadata (trace/size/mode/depth)
-        runs.append(r)
+        e = epochs[i]
+        if perf > pipe_end[e]:               # falls between queries
+            continue
+        per_epoch[e].setdefault(idx, {})[event] = perf
+
+    for e in epochs:
+        run.latency_ns[e] = pipe_end[e] - pipe_start[e]
+        stages = per_epoch[e]
+        durs, trans = {}, {}
+        for k, ev in stages.items():
+            if "start" in ev and "end" in ev:
+                durs[k] = ev["end"] - ev["start"]
+        for k in stages:
+            nxt = stages.get(k + 1)
+            if nxt and "end" in stages[k] and "start" in nxt:
+                trans[k] = nxt["start"] - stages[k]["end"]
+        run.stage_dur_ns[e] = durs
+        run.transition_ns[e] = trans
+    return run
+
+
+def load_device(device, root):
+    """Return list[Run] for one device's NoOp CSVs under <root>/evaluation/results."""
+    runs = []
+    d = os.path.join(root, "evaluation", "results", device)
+    for p in sorted(glob.glob(os.path.join(d, "noop_*.csv"))):
+        if parse_filename(p):
+            runs.append(parse_run(p))
     return runs
+
+
+# ---------------------------------------------------------------------------
+# Selection + run-structured pooling (run = unit of replication)
+# ---------------------------------------------------------------------------
+def select(runs, depth=None, size=None, mode=None, trace=None):
+    out = []
+    for r in runs:
+        m = r.meta
+        if depth is not None and m.get("depth") != depth:
+            continue
+        if size is not None and m.get("size") != size:
+            continue
+        if mode is not None and m.get("mode") != mode:
+            continue
+        if trace is not None and m.get("trace") != trace:
+            continue
+        out.append(r)
+    return out
+
+
+def _drop_warmup(run):
+    eps = run.epochs
+    return eps[WARMUP_K:] if len(eps) > WARMUP_K else eps
+
+
+def pool_latency_by_run(runs):
+    out = []
+    for r in runs:
+        vec = [r.latency_ns[e] for e in _drop_warmup(r)]
+        if vec:
+            out.append(vec)
+    return out
+
+
+def pool_transition_by_run(runs):
+    out = []
+    for r in runs:
+        vec = []
+        for e in _drop_warmup(r):
+            vec.extend(r.transition_ns.get(e, {}).values())
+        if vec:
+            out.append(vec)
+    return out
+
+
+def pool_stage_dur_by_run(runs, min_idx=0):
+    out = []
+    for r in runs:
+        vec = []
+        for e in _drop_warmup(r):
+            for k, d in r.stage_dur_ns.get(e, {}).items():
+                if k >= min_idx:
+                    vec.append(d)
+        if vec:
+            out.append(vec)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Statistics
+# ---------------------------------------------------------------------------
+def _percentile(sorted_vec, q):
+    if not sorted_vec:
+        return float("nan")
+    pos = q * (len(sorted_vec) - 1)
+    lo, hi = math.floor(pos), math.ceil(pos)
+    if lo == hi:
+        return sorted_vec[int(pos)]
+    return sorted_vec[lo] * (hi - pos) + sorted_vec[hi] * (pos - lo)
+
+
+def median(vec):
+    return _percentile(sorted(vec), 0.5) if vec else float("nan")
+
+
+def p95(vec):
+    return _percentile(sorted(vec), 0.95) if vec else float("nan")
+
+
+def ols_slope(xs, ys):
+    """Slope + intercept of an ordinary least-squares fit (for depth-flatness)."""
+    n = len(xs)
+    if n < 2:
+        return float("nan"), float("nan")
+    mx, my = sum(xs) / n, sum(ys) / n
+    sxx = sum((x - mx) ** 2 for x in xs)
+    if sxx == 0:
+        return float("nan"), float("nan")
+    sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    slope = sxy / sxx
+    return slope, my - slope * mx
+
+
+_BOOT_WORK_BUDGET = 5e7
+
+
+def hier_bootstrap_ci(run_vecs, alpha=0.05, seed=0, n=10000):
+    """Hierarchical (cluster) bootstrap CI for the pooled median: resample RUNS
+    with replacement, then queries within each resampled run, pool, take median.
+    The run is the unit of replication (query-pooling understates variance)."""
+    run_vecs = [v for v in run_vecs if v]
+    if not run_vecs or sum(len(v) for v in run_vecs) < 2:
+        return (float("nan"), float("nan"))
+    pooled_n = sum(len(v) for v in run_vecs)
+    try:
+        import numpy as np
+        n_eff = int(min(n, max(1000, _BOOT_WORK_BUDGET // max(pooled_n, 1))))
+        rng = np.random.default_rng(seed)
+        arrs = [np.asarray(v, dtype=np.float64) for v in run_vecs]
+        R = len(arrs)
+        stats = np.empty(n_eff)
+        for i in range(n_eff):
+            parts = [arrs[j][rng.integers(0, arrs[j].size, arrs[j].size)]
+                     for j in rng.integers(0, R, R)]
+            stats[i] = np.median(np.concatenate(parts))
+        lo, hi = np.percentile(stats, [100 * alpha / 2, 100 * (1 - alpha / 2)])
+        return (float(lo), float(hi))
+    except ImportError:
+        import random
+        n_eff = int(min(n, max(200, (_BOOT_WORK_BUDGET / 10) // max(pooled_n, 1))))
+        rng = random.Random(seed)
+        R = len(run_vecs)
+        stats = []
+        for _ in range(n_eff):
+            pooled = []
+            for _ in range(R):
+                pooled.extend(rng.choices(run_vecs[rng.randrange(R)],
+                                          k=len(run_vecs[rng.randrange(R)])))
+            stats.append(median(pooled))
+        stats.sort()
+        return (_percentile(stats, alpha / 2), _percentile(stats, 1 - alpha / 2))
+
+
+def summarize(run_vecs, unit_ns=NS_PER_US):
+    """median/mean/p95 + hierarchical 95% CI on the median, scaled to unit_ns.
+    Expects run-structured input (list of per-run vectors). p95 gated at >= 500
+    pooled queries. Returns per-run medians too (printed beside every CI)."""
+    run_vecs = [list(v) for v in run_vecs if v]
+    flat = [x for v in run_vecs for x in v]
+    n = len(flat)
+    if n == 0:
+        return {"n": 0, "median": float("nan"), "mean": float("nan"),
+                "p95": float("nan"), "ci_lo": float("nan"), "ci_hi": float("nan"),
+                "run_medians": []}
+    lo, hi = hier_bootstrap_ci(run_vecs)
+    return {
+        "n": n,
+        "median": median(flat) / unit_ns,
+        "mean": (sum(flat) / n) / unit_ns,
+        "p95": (p95(flat) / unit_ns) if n >= 500 else float("nan"),
+        "ci_lo": lo / unit_ns,
+        "ci_hi": hi / unit_ns,
+        "run_medians": [median(v) / unit_ns for v in run_vecs],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Result 1: depth flatness (+ tracing-layer add)
+# ---------------------------------------------------------------------------
+def depth_table(runs, arm_label):
+    """Print the depth sweep (size 0, mode ref) and return {depth: O(d) summary}."""
+    sel_arm = select(runs, size=0, mode="ref")
+    depths = sorted({r.meta["depth"] for r in sel_arm})
+    print(f"\n## Depth sweep -- {arm_label} (size 0, mode ref)\n")
+    print("| depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | "
+          "transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |")
+    print("|------:|--:|----------------:|----------------:|:------------------:|"
+          "----------------:|--------------:|:---|")
+    xs, lq_ns, od_by_depth = [], [], {}
+    for d in depths:
+        sel = select(sel_arm, depth=d)
+        lat_runs = pool_latency_by_run(sel)
+        if not lat_runs:
+            continue
+        od_runs = [[v / d for v in run] for run in lat_runs]
+        lq = summarize(lat_runs, NS_PER_MS)
+        od = summarize(od_runs, NS_PER_US)
+        tr = summarize(pool_transition_by_run(sel), NS_PER_US)
+        od_by_depth[d] = od
+        xs.append(d)
+        lq_ns.append(median([v for run in lat_runs for v in run]))
+        tr_s = f"{tr['median']:.2f}" if tr["n"] else "—"
+        p95_s = f"{od['p95']:.2f}" if od["p95"] == od["p95"] else "n/a"
+        rm = " / ".join(f"{v:.1f}" for v in od["run_medians"])
+        print(f"| {d} | {lq['n']} | {lq['median']:.4f} | {od['median']:.2f} | "
+              f"[{od['ci_lo']:.1f}, {od['ci_hi']:.1f}] | {tr_s} | {p95_s} | {rm} |")
+
+    slope_ns, intercept_ns = ols_slope(xs, lq_ns)
+    print(f"\n**Marginal per-stage cost** (slope of L_q vs depth): "
+          f"{slope_ns / NS_PER_US:.2f} us/stage  \n"
+          f"**Fixed per-query overhead** (intercept): "
+          f"{intercept_ns / NS_PER_US:.2f} us")
+    return od_by_depth
 
 
 def tracing_add_table(od_off, od_on):
     print("\n### Tracing-layer per-stage cost (proc − off)\n")
-    print("| depth | O(d) off (µs) | O(d) proc (µs) | tracing add (µs) |")
+    print("| depth | O(d) off (us) | O(d) proc (us) | tracing add (us) |")
     print("|------:|--------------:|---------------:|-----------------:|")
     for d in sorted(set(od_off) & set(od_on)):
         a, b = od_off[d]["median"], od_on[d]["median"]
         print(f"| {d} | {a:.2f} | {b:.2f} | {b - a:+.2f} |")
 
 
+# ---------------------------------------------------------------------------
+# Result 2: zero-copy vs deep-copy (depth 10, tracing OFF, stages >= 1)
+# ---------------------------------------------------------------------------
+def payload_collect(runs):
+    out = {"ref": {}, "copy": {}}
+    for mode in ("ref", "copy"):
+        for size in SIZES:
+            sel = select(runs, depth=10, size=size, mode=mode, trace=0)
+            dur_runs = pool_stage_dur_by_run(sel, min_idx=1)
+            if dur_runs:
+                out[mode][size] = summarize(dur_runs, NS_PER_US)
+    return out
+
+
+def payload_table(data):
+    print("\n## Zero-copy: per-stage duration vs payload (depth 10, tracing OFF)\n")
+    print("| payload | ref (us) | ref 95% CI (hier.) | copy (us) | copy 95% CI (hier.) | copy/ref |")
+    print("|--------:|---------:|:------------------:|----------:|:-------------------:|---------:|")
+    for size in SIZES:
+        r, c = data["ref"].get(size), data["copy"].get(size)
+        if not r and not c:
+            continue
+        r_s = f"{r['median']:.2f}" if r else "—"
+        r_ci = f"[{r['ci_lo']:.1f}, {r['ci_hi']:.1f}]" if r else "—"
+        c_s = f"{c['median']:.2f}" if c else "—"
+        c_ci = f"[{c['ci_lo']:.1f}, {c['ci_hi']:.1f}]" if c else "—"
+        ratio = f"{c['median'] / r['median']:.1f}x" if (r and c and r["median"]) else "—"
+        print(f"| {SIZE_LABEL[size]} | {r_s} | {r_ci} | {c_s} | {c_ci} | {ratio} |")
+    for mode in ("ref", "copy"):
+        for size in SIZES:
+            s = data[mode].get(size)
+            if s and s.get("run_medians"):
+                rm = " / ".join(f"{v:.2f}" for v in s["run_medians"])
+                print(f"- per-run medians (us), {mode} @ {SIZE_LABEL[size]}: {rm}")
+
+    cx = [s for s in SIZES if s > 0 and s in data["copy"]]
+    if len(cx) >= 2:
+        cy = [data["copy"][s]["median"] for s in cx]
+        slope, intercept = ols_slope(cx, cy)
+        print(f"\n**copy** cost vs payload: {slope * 1e6:.3f} us/MB "
+              f"(intercept {intercept:.2f} us) -> grows with payload (O(payload)).")
+    rx = [s for s in SIZES if s in data["ref"]]
+    if len(rx) >= 2:
+        ry = [data["ref"][s]["median"] for s in rx]
+        slope, _ = ols_slope(rx, ry)
+        print(f"**ref** cost vs payload: {slope * 1e6:.3f} us/MB "
+              f"-> flat (O(1) in payload size).")
+
+
+# ---------------------------------------------------------------------------
+# LaTeX tables (paper output) — same statistics as the Markdown tables
+# ---------------------------------------------------------------------------
+SIZE_TEX = {0: "0", 1024: "\\SI{1}{\\kibi\\byte}",
+            1048576: "\\SI{1}{\\mebi\\byte}", 10485760: "\\SI{10}{\\mebi\\byte}"}
+DEVICE_TEX = {"mlx": "Apple~M2~Pro", "cuda": "NVIDIA~GB10"}
+
+
+def latex_depth_table(runs, device):
+    sel = select(runs, trace=0, size=0, mode="ref")
+    depths = sorted({r.meta["depth"] for r in sel})
+    print("% --- Framework overhead: depth scaling (core dispatch, tracing off) ---")
+    print("\\begin{table}[t]\n\\centering")
+    print("\\caption{Per-stage framework overhead is flat in pipeline depth "
+          f"(no-op chains, tracing disabled, {DEVICE_TEX.get(device, device)}). "
+          "Median over $R$ runs; hierarchical bootstrap \\SI{95}{\\percent} CI in "
+          "brackets (runs resampled first, then queries). Raw per-run values in "
+          "the artifact.}")
+    print("\\label{tab:noop-depth}")
+    print("\\begin{tabular}{rrr}\n\\toprule")
+    print("Depth & Per-query latency (\\si{\\milli\\second}) & "
+          "Per-stage (\\si{\\micro\\second}) \\\\\n\\midrule")
+    for d in depths:
+        lat_runs = pool_latency_by_run(select(sel, depth=d))
+        if not lat_runs:
+            continue
+        lq = summarize(lat_runs, NS_PER_MS)
+        od = summarize([[v / d for v in run] for run in lat_runs], NS_PER_US)
+        print(f"% d={d} per-stage per-run medians (us): "
+              + ", ".join(f"{v:.1f}" for v in od["run_medians"]))
+        print(f"{d} & {lq['median']:.3f} & "
+              f"{od['median']:.1f} [{od['ci_lo']:.1f}, {od['ci_hi']:.1f}] \\\\")
+    print("\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+
+
+def latex_payload_table(runs, device):
+    print("% --- Framework overhead: zero-copy payload sweep (tracing off) ---")
+    print("\\begin{table}[t]\n\\centering")
+    print("\\caption{Reference passing is constant in payload size while deep-copy "
+          f"is linear (no-op chains, depth~10, tracing disabled, "
+          f"{DEVICE_TEX.get(device, device)}). Per-stage duration, "
+          "\\si{\\micro\\second}, median [hierarchical bootstrap 95\\% CI].}")
+    print("\\label{tab:noop-zerocopy}")
+    print("\\begin{tabular}{lrr}\n\\toprule")
+    print("Payload & Reference (\\si{\\micro\\second}) & "
+          "Deep-copy (\\si{\\micro\\second}) \\\\\n\\midrule")
+    for size in SIZES:
+        r = pool_stage_dur_by_run(
+            select(runs, trace=0, depth=10, size=size, mode="ref"), min_idx=1)
+        c = pool_stage_dur_by_run(
+            select(runs, trace=0, depth=10, size=size, mode="copy"), min_idx=1)
+        rs = summarize(r, NS_PER_US) if r else None
+        cs = summarize(c, NS_PER_US) if c else None
+        r_txt = (f"{rs['median']:.1f} [{rs['ci_lo']:.1f}, {rs['ci_hi']:.1f}]"
+                 if rs else "---")
+        c_txt = (f"{cs['median']:.1f} [{cs['ci_lo']:.1f}, {cs['ci_hi']:.1f}]"
+                 if cs else "---")
+        print(f"{SIZE_TEX[size]} & {r_txt} & {c_txt} \\\\")
+    print("\\bottomrule\n\\end{tabular}\n\\end{table}")
+
+
+# ---------------------------------------------------------------------------
+# Figures
+# ---------------------------------------------------------------------------
 def make_figures(per_device, fig_dir):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     # Fig 1: per-query latency L_q vs depth (linearity / flat marginal cost).
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6), sharey=False)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6))
     for ax, dev in zip(axes, per_device):
         runs = per_device[dev]
         for trace, color, lbl in [(0, "tab:blue", "off"), (1, "tab:red", "proc")]:
             depths, meds = [], []
             for d in sorted({r.meta["depth"] for r in runs
                              if r.meta["size"] == 0 and r.meta["mode"] == "ref"}):
-                sel = nl.select(runs, depth=d, size=0, mode="ref", trace=trace)
-                s = nl.summarize(nl.pool_latency_by_run(sel), nl.NS_PER_MS)
+                s = summarize(pool_latency_by_run(
+                    select(runs, depth=d, size=0, mode="ref", trace=trace)), NS_PER_MS)
                 if s["n"]:
                     depths.append(d); meds.append(s["median"])
             if depths:
                 ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3, label=f"tracing {lbl}")
-                lq_ns = [m * nl.NS_PER_MS for m in meds]
-                slope, icpt = nl.ols_slope(depths, lq_ns)
+                lq_ns = [m * NS_PER_MS for m in meds]
+                slope, icpt = ols_slope(depths, lq_ns)
                 xs = [min(depths), max(depths)]
-                ax.plot(xs, [(slope * x + icpt) / nl.NS_PER_MS for x in xs],
+                ax.plot(xs, [(slope * x + icpt) / NS_PER_MS for x in xs],
                         "--", color=color, lw=0.9, alpha=0.7)
-                ax.annotate(f"{lbl}: {slope / nl.NS_PER_US:.1f} µs/stage",
+                ax.annotate(f"{lbl}: {slope / NS_PER_US:.1f} us/stage",
                             xy=(0.05, 0.9 if trace else 0.8), xycoords="axes fraction",
                             color=color, fontsize=9)
         ax.set_title(f"{dev}: per-query latency vs depth")
         ax.set_xlabel("pipeline depth (stages)"); ax.set_ylabel("L_q median (ms)")
         ax.grid(alpha=0.3); ax.legend(fontsize=8)
-    fig.suptitle("E1 — framework dispatch is linear in depth (constant marginal per-stage cost)")
+    fig.suptitle("E1 -- framework dispatch is linear in depth (constant marginal per-stage cost)")
     fig.tight_layout()
     f1 = os.path.join(fig_dir, "e1_depth_flatness.png")
     fig.savefig(f1, dpi=140); plt.close(fig)
 
     # Fig 2: per-stage self-duration vs payload (zero-copy vs deep-copy), off arm.
     fig, ax = plt.subplots(figsize=(7.5, 5))
-    styles = {"mlx": "o", "cuda": "s"}
+    marker = {"mlx": "o", "cuda": "s"}
     for dev in per_device:
-        data = apr.collect(per_device[dev])
+        data = payload_collect(per_device[dev])
         for mode, color in [("ref", "tab:green"), ("copy", "tab:red")]:
-            xs = [s for s in apr.SIZES if s in data[mode]]
+            xs = [s for s in SIZES if s in data[mode]]
             ys = [data[mode][s]["median"] for s in xs]
-            xplot = [max(x, 1) for x in xs]   # 0 -> 1 byte for log axis
-            ax.plot(xplot, ys, styles[dev] + "-", color=color, ms=6, lw=1.3,
+            xplot = [max(x, 1) for x in xs]      # 0 -> 1 byte for the log axis
+            ax.plot(xplot, ys, marker[dev] + "-", color=color, ms=6, lw=1.3,
                     label=f"{dev} {mode}")
     ax.set_xscale("log"); ax.set_yscale("log")
-    ax.set_xlabel("payload size (bytes; 0→1 for log axis)")
-    ax.set_ylabel("per-stage self-duration median (µs)")
-    ax.set_title("E1 — reference passing is O(1) in payload; deep-copy is O(payload)")
+    ax.set_xlabel("payload size (bytes; 0->1 for log axis)")
+    ax.set_ylabel("per-stage self-duration median (us)")
+    ax.set_title("E1 -- reference passing is O(1) in payload; deep-copy is O(payload)")
     ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
     fig.tight_layout()
     f2 = os.path.join(fig_dir, "e1_payload_zero_copy.png")
@@ -117,29 +529,53 @@ def make_figures(per_device, fig_dir):
     return f1, f2
 
 
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
+    global WARMUP_K
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.abspath(os.path.join(here, "..", "..", ".."))
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--fig-dir", default=os.path.join(here, "paper_assets"))
+    ap.add_argument("--warmup", type=int, default=WARMUP_K,
+                    help="warm-up epochs dropped per run")
+    ap.add_argument("--root", default=root, help="repo root (holds evaluation/results/)")
+    ap.add_argument("--latex", metavar="DEVICE", nargs="?", const="mlx", default=None,
+                    help="emit the paper LaTeX tables for DEVICE (default mlx) to "
+                         "stdout and exit; no Markdown/figures")
     args = ap.parse_args()
-    os.makedirs(args.fig_dir, exist_ok=True)
 
-    per_device = {}
-    print("# E1 — Framework overhead (NoOp) — overnight collection\n")
-    print(f"Warm-up epochs dropped per run: WARMUP_K={nl.WARMUP_K}. "
-          "Latencies from the monotonic perf clock. CIs are hierarchical "
-          "(run = unit of replication).\n")
-    for dev in ("mlx", "cuda"):
-        runs = load_device(dev)
+    WARMUP_K = args.warmup
+
+    # LaTeX mode: emit the two paper tables for one device and stop.
+    if args.latex is not None:
+        dev = args.latex
+        runs = load_device(dev, args.root)
         if not runs:
-            print(f"## {dev}: NO runs found\n")
+            sys.exit(f"No NoOp CSVs for {dev} under {args.root}/evaluation/results/{dev}")
+        latex_depth_table(runs, dev)
+        latex_payload_table(runs, dev)
+        return
+
+    os.makedirs(args.fig_dir, exist_ok=True)
+    print("# E1 -- Framework overhead (NoOp)\n")
+    print(f"Warm-up epochs dropped per run: WARMUP_K={WARMUP_K}. Latencies from the "
+          "monotonic perf clock. CIs are hierarchical (run = unit of replication).\n")
+    per_device = {}
+    for dev in DEVICES:
+        runs = load_device(dev, args.root)
+        if not runs:
+            print(f"## {dev}: NO runs found under {args.root}/evaluation/results/{dev}\n")
             continue
         per_device[dev] = runs
-        n_files = len(runs)
-        print(f"\n# ===== {dev} ({n_files} run-files) =====")
-        od_off = ann._depth_table(nl.select(runs, trace=0), f"{dev} — tracing OFF (core dispatch)")
-        od_on = ann._depth_table(nl.select(runs, trace=1), f"{dev} — tracing ON (bulk+proc)")
-        tracing_add_table(od_off, od_on)
-        apr.print_table(apr.collect(runs))
+        print(f"\n# ===== {dev} ({len(runs)} run-files) =====")
+        od_off = depth_table(select(runs, trace=0), f"{dev} -- tracing OFF (core dispatch)")
+        od_on = depth_table(select(runs, trace=1), f"{dev} -- tracing ON (bulk+proc)")
+        if od_off and od_on:
+            tracing_add_table(od_off, od_on)
+        payload_table(payload_collect(runs))
 
     if per_device:
         f1, f2 = make_figures(per_device, args.fig_dir)

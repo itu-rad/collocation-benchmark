@@ -1,11 +1,11 @@
-# E1 — Framework overhead (NoOp) — overnight collection
+# E1 -- Framework overhead (NoOp)
 
 Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf clock. CIs are hierarchical (run = unit of replication).
 
 
 # ===== mlx (460 run-files) =====
 
-## Depth sweep -- mlx — tracing OFF (core dispatch) (size 0, mode ref)
+## Depth sweep -- mlx -- tracing OFF (core dispatch) (size 0, mode ref)
 
 | depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |
 |------:|--:|----------------:|----------------:|:------------------:|----------------:|--------------:|:---|
@@ -29,7 +29,7 @@ Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf cl
 **Marginal per-stage cost** (slope of L_q vs depth): 39.36 us/stage  
 **Fixed per-query overhead** (intercept): 122.28 us
 
-## Depth sweep -- mlx — tracing ON (bulk+proc) (size 0, mode ref)
+## Depth sweep -- mlx -- tracing ON (bulk+proc) (size 0, mode ref)
 
 | depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |
 |------:|--:|----------------:|----------------:|:------------------:|----------------:|--------------:|:---|
@@ -55,7 +55,7 @@ Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf cl
 
 ### Tracing-layer per-stage cost (proc − off)
 
-| depth | O(d) off (µs) | O(d) proc (µs) | tracing add (µs) |
+| depth | O(d) off (us) | O(d) proc (us) | tracing add (us) |
 |------:|--------------:|---------------:|-----------------:|
 | 1 | 131.00 | 200.04 | +69.04 |
 | 2 | 94.91 | 154.20 | +59.29 |
@@ -96,7 +96,7 @@ Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf cl
 
 # ===== cuda (460 run-files) =====
 
-## Depth sweep -- cuda — tracing OFF (core dispatch) (size 0, mode ref)
+## Depth sweep -- cuda -- tracing OFF (core dispatch) (size 0, mode ref)
 
 | depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |
 |------:|--:|----------------:|----------------:|:------------------:|----------------:|--------------:|:---|
@@ -120,7 +120,7 @@ Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf cl
 **Marginal per-stage cost** (slope of L_q vs depth): 92.26 us/stage  
 **Fixed per-query overhead** (intercept): -36.84 us
 
-## Depth sweep -- cuda — tracing ON (bulk+proc) (size 0, mode ref)
+## Depth sweep -- cuda -- tracing ON (bulk+proc) (size 0, mode ref)
 
 | depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |
 |------:|--:|----------------:|----------------:|:------------------:|----------------:|--------------:|:---|
@@ -146,7 +146,7 @@ Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf cl
 
 ### Tracing-layer per-stage cost (proc − off)
 
-| depth | O(d) off (µs) | O(d) proc (µs) | tracing add (µs) |
+| depth | O(d) off (us) | O(d) proc (us) | tracing add (us) |
 |------:|--------------:|---------------:|-----------------:|
 | 1 | 136.39 | 198.23 | +61.84 |
 | 2 | 87.78 | 178.35 | +90.57 |
