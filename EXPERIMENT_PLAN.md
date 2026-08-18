@@ -64,11 +64,14 @@ done
   async fork). Pinned checkout: `~/Documents/work/research/radt-bulk` (branch `pinned-0b497f6`).
 - **A.2 DONE.** Proc wiring committed on this branch (`utils/trace_span.py`, `main.py` hooks, 12 span
   sites).
-- **A.4 core smoke GREEN (overhead family).** NoOp depth-16 via bulk+proc (direct `-p 0`, local file
-  store): rc=0, one gzipped `radt-trace/spans-000001.jsonl.gz` + `manifest.json`, deterministic
-  `event_count=10540` (2×5270 spans), no dropped events, no SIGTERM assertion, CSV timing intact.
-  **Still to smoke:** orchestrated path (no `-p`, listeners on) against res17 exp 142, and the
-  3D-UNet / Self-RAG / collocation families (need KiTS19 + LLM weights + GB10).
+- **A.4 GREEN (overhead family, all three paths).** NoOp depth-16 via bulk+proc: (a) direct `-p 0`
+  local file store and (b) orchestrated via `collect.sh` (no `-p`, macmon listener) uploading to res17
+  exp 142 — both rc=0, deterministic `event_count=10540` (2×5270 spans), one gzipped
+  `radt-trace/spans-000001.jsonl.gz` + `manifest.json` (confirmed *on res17* for the inner run), no
+  dropped events, no SIGTERM assertion, CSV timing intact, CSV sorted into `evaluation/results/mlx/`.
+  Minor teardown cosmetic: macmon prints "Broken pipe" when its stdout closes on listener teardown —
+  non-fatal (run + upload succeed). **Still to smoke:** 3D-UNet / Self-RAG / collocation families
+  (need KiTS19 + LLM weights + GB10).
 - **A.3 DEFERRED.** Listener/SIGTERM assertion is non-fatal (teardown-only, data intact) and only
   fires on a *killed* run; will fix in radt source only if the res17 orchestrated smoke shows it
   actually recurs on bulk radt (must then sync GB10 + upstream).
