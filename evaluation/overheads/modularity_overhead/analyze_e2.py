@@ -211,12 +211,32 @@ def summarize(by_run, unit_ns=NS_PER_MS, n_boot=10000, seed=0):
             "run_medians": [float(np.median(v)) / unit_ns for v in arrs]}
 
 
-def paired_overhead(base_by_run, arm_by_run, n_boot=10000, seed=0):
+# Point estimator for combining the per-run paired differences.
+#   "median" (default) — robust: a single contaminated repetition cannot move it.
+#   "mean"             — the classic average; kept for comparison and reported
+#                        alongside, since swapping estimators after seeing the
+#                        data must be visible, not silent.
+# Why median is the default: real collections produce occasional bad runs
+# (machine interference, a stray process). At the 2026-08-18 mps anchor, 8 of 9
+# repetitions agreed within +/-55 us but one read -1241.8 us, which dragged the
+# MEAN to -145 us (a nonsensical "the wrapper makes it faster") while the MEDIAN
+# read -6 us. The effect under test is ~50 us, far smaller than one bad run.
+ESTIMATOR = "median"
+
+
+def _combine(vals, estimator=None):
+    est = ESTIMATOR if estimator is None else estimator
+    return float(np.median(vals)) if est == "median" else float(np.mean(vals))
+
+
+def paired_overhead(base_by_run, arm_by_run, n_boot=10000, seed=0, estimator=None):
     """Paired across-run overhead — the statistic of record.
 
-    d_i = median(arm_i) - median(base_i) over runs shared by both arms; the CI
-    resamples PAIRS with replacement and re-resamples steps within each chosen
-    run. Also reports the difference as a % of the pooled baseline median."""
+    d_i = median(arm_i) - median(base_i) over runs shared by both arms, combined
+    across runs by ESTIMATOR (median by default; see above). The CI resamples
+    PAIRS with replacement and re-resamples steps within each chosen run, and
+    applies the same estimator to each bootstrap replicate. Also reports the
+    difference as a % of the pooled baseline median."""
     shared = sorted(set(base_by_run) & set(arm_by_run))
     if len(shared) < 2:
         return None
@@ -224,7 +244,7 @@ def paired_overhead(base_by_run, arm_by_run, n_boot=10000, seed=0):
     c = {r: np.asarray(arm_by_run[r], dtype=np.float64) for r in shared}
     med_base = float(np.median(np.concatenate([b[r] for r in shared])))
     d_runs = {r: float(np.median(c[r])) - float(np.median(b[r])) for r in shared}
-    d_point = float(np.mean(list(d_runs.values())))
+    d_point = _combine(list(d_runs.values()), estimator)
 
     rng = np.random.default_rng(seed)
     R = len(shared)
@@ -236,9 +256,13 @@ def paired_overhead(base_by_run, arm_by_run, n_boot=10000, seed=0):
             rb = b[r][rng.integers(0, b[r].size, b[r].size)]
             rc = c[r][rng.integers(0, c[r].size, c[r].size)]
             ds.append(np.median(rc) - np.median(rb))
-        boots[i] = np.mean(ds)
+        boots[i] = _combine(ds, estimator)
     lo, hi = np.percentile(boots, [2.5, 97.5])
+    dv = list(d_runs.values())
     return {"pairs": R, "step_base_ms": med_base / NS_PER_MS,
+            "estimator": ESTIMATOR if estimator is None else estimator,
+            "abs_median_us": float(np.median(dv)) / NS_PER_US,
+            "abs_mean_us": float(np.mean(dv)) / NS_PER_US,
             "abs_us": d_point / NS_PER_US,
             "abs_lo_us": float(lo) / NS_PER_US, "abs_hi_us": float(hi) / NS_PER_US,
             "pct": 100.0 * d_point / med_base,
@@ -289,15 +313,18 @@ def _ov(o):
 
 def print_cells(cells, device):
     print(f"\n## {device} — per-cell overhead (paired across runs)\n")
-    print("| cell | R | step (ms) | core (µs/step) | core % | +tracing (µs/step) | total % |")
-    print("|---|--:|--:|---|--:|---|--:|")
+    print(f"| cell | R | step (ms) | core (µs/step, {ESTIMATOR}) | core % | "
+          f"core (mean) | +tracing (µs/step) | total % |")
+    print("|---|--:|--:|---|--:|--:|---|--:|")
     for c in cells:
         name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
         core_abs, core_pct = _ov(c["core"])
         tot_abs, tot_pct = _ov(c["total"])
         R = c["core"]["pairs"] if c["core"] else 0
+        cmean = f"{c['core']['abs_mean_us']:+.1f}" if c["core"] else "—"
         print(f"| {name} | {R} | {c['base']['median']:.2f} | {core_abs} | "
-              f"{core_pct.split(' ')[0]} | {tot_abs} | {tot_pct.split(' ')[0]} |")
+              f"{core_pct.split(' ')[0]} | {cmean} | {tot_abs} | "
+              f"{tot_pct.split(' ')[0]} |")
     print("\n(core = Choreo wrapper, tracing off, vs the bare monolith; "
           "+tracing = wrapper + radt bulk/proc span export. "
           "Brackets: 95% CI, bootstrap over run pairs.)")
@@ -332,11 +359,18 @@ def print_sweeps(cells, device):
             steps = [c["base"]["median"] for c in sel]
             pcts = [c["core"]["pct"] for c in sel]
             abss = [c["core"]["abs_us"] for c in sel]
+            # Report what the numbers do; do NOT assert the expected conclusion.
+            # The claim (relative shrinks, absolute ~fixed) only holds if the
+            # per-cell spread is small next to the effect — say so either way.
+            spread = max(abss) - min(abss)
+            rel_drops = abs(pcts[-1]) < abs(pcts[0])
             print(f"\nstep {steps[0]:.1f} → {steps[-1]:.1f} ms "
                   f"({steps[-1]/max(steps[0],1e-9):.1f}×): "
-                  f"core {pcts[0]:+.3f}% → {pcts[-1]:+.3f}% (relative amortizes), "
+                  f"core {pcts[0]:+.3f}% → {pcts[-1]:+.3f}% "
+                  f"({'relative shrinks' if rel_drops else 'relative does NOT shrink'}), "
                   f"absolute {abss[0]:+.1f} → {abss[-1]:+.1f} µs/step "
-                  f"(spread {max(abss)-min(abss):.1f} µs — ~fixed).")
+                  f"(spread {spread:.1f} µs across cells; "
+                  f"{'consistent with a ~fixed cost' if spread < 200 else 'TOO NOISY to call fixed'}).")
 
 
 # ---------------------------------------------------------------------------
@@ -416,7 +450,7 @@ def make_figure(per_device, fig_dir):
 
 # ---------------------------------------------------------------------------
 def main():
-    global DROP_RUNS
+    global DROP_RUNS, ESTIMATOR
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
@@ -427,10 +461,14 @@ def main():
                     help="discard the first N repetitions of each cell entirely "
                          "(SYSTEM warm-up: the first run of a collection is slower "
                          "for its whole duration; see DROP_RUNS)")
+    ap.add_argument("--estimator", choices=["median", "mean"], default=ESTIMATOR,
+                    help="how per-run paired differences are combined "
+                         "(median = robust to a contaminated repetition)")
     ap.add_argument("--fig-dir", default=os.path.join(HERE, "..", "paper_assets"))
     ap.add_argument("--latex", metavar="DEVICE", nargs="?", const="cuda", default=None)
     args = ap.parse_args()
     DROP_RUNS = args.drop_runs
+    ESTIMATOR = args.estimator
 
     if args.latex is not None:
         metas = load(args.results_dir, args.latex)
@@ -443,6 +481,8 @@ def main():
     fig_dir = os.path.abspath(args.fig_dir)
     os.makedirs(fig_dir, exist_ok=True)
     print("# E2 — Modularity overhead (real workload, scale sweep)\n")
+    print(f"Estimator: {ESTIMATOR} of per-run paired differences "
+          f"(runs dropped as system warm-up: {DROP_RUNS}).")
     print(f"Warm-up steps dropped per run: {args.warmup}. Metric: training-stage step "
           "(monotonic perf clock). Statistic: paired across-run difference "
           "(arms interleaved per repetition); 95% CI bootstrapped over run pairs.\n")

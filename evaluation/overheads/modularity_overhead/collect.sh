@@ -42,6 +42,19 @@ SUM="$HERE/collect_summary_${DEVICE}.tsv"
 
 log(){ echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
 
+# Optional CPU pinning. On GB10 the Grace CPU is heterogeneous (10x Cortex-X925
+# performance + 10x A725 efficiency cores) and an unpinned workload migrates
+# between them, which added several hundred us of run-to-run noise to E1. E2
+# steps are ms-scale so the CLUSTER (all X925) is enough here — unlike E1 we must
+# NOT pin to a single core, because the dataloader thread and (for t2) the span
+# exporter child need their own cores or they would serialise onto the workload.
+#   PIN=5-9,15-19 collect.sh cuda ...
+PINCMD=()
+if [ -n "${PIN:-}" ] && command -v taskset >/dev/null 2>&1; then
+  PINCMD=(taskset -c "$PIN")
+  log "pinning workload to cores [$PIN]"
+fi
+
 fail=0
 shopt -s nullglob
 cfgs=( "$HERE"/configs/generated/mod_${CELLGLOB}_"$DEVICE".yml )
@@ -68,7 +81,7 @@ PY
     lab="mod_baseline_${cell}_d${DEVICE}_r${r}"
     rm -f "$RESULTS/$lab.csv"            # never append onto a stale baseline CSV
     start=$(date +%s)
-    python evaluation/overheads/modularity_overhead/baseline_finetune.py \
+    "${PINCMD[@]}" python evaluation/overheads/modularity_overhead/baseline_finetune.py \
       --device "$DEVICE" --model "$MODEL" --weights "$WEIGHTS" \
       --batch-size "$BATCH" --num-workers 0 --max-batches "$MAXB" \
       --label "$lab" --no-radt --run "$r"
@@ -87,7 +100,7 @@ PY
         export CHOREO_PROC_TRACE=1; unset CHOREO_DISABLE_TRACING
       fi
       start=$(date +%s)
-      python main.py "$cfg" -p 0 -e "$EXP" --label "$lab"
+      "${PINCMD[@]}" python main.py "$cfg" -p 0 -e "$EXP" --label "$lab"
       rc=$?; secs=$(( $(date +%s) - start ))
       [ -f "$CHOREO_OUT/$lab.csv" ] && mv "$CHOREO_OUT/$lab.csv" "$RESULTS/"
       [ -f "$CHOREO_OUT/$lab.jsonl" ] && mv "$CHOREO_OUT/$lab.jsonl" "$RESULTS/"
