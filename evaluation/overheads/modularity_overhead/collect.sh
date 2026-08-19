@@ -49,6 +49,8 @@ log(){ echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
 # NOT pin to a single core, because the dataloader thread and (for t2) the span
 # exporter child need their own cores or they would serialise onto the workload.
 #   PIN=5-9,15-19 collect.sh cuda ...
+# NOTE: expanded as ${PINCMD[@]+"${PINCMD[@]}"} below — macOS bash 3.2 treats a
+# plain "${PINCMD[@]}" on an EMPTY array as an unbound variable under `set -u`.
 PINCMD=()
 if [ -n "${PIN:-}" ] && command -v taskset >/dev/null 2>&1; then
   PINCMD=(taskset -c "$PIN")
@@ -81,7 +83,7 @@ PY
     lab="mod_baseline_${cell}_d${DEVICE}_r${r}"
     rm -f "$RESULTS/$lab.csv"            # never append onto a stale baseline CSV
     start=$(date +%s)
-    "${PINCMD[@]}" python evaluation/overheads/modularity_overhead/baseline_finetune.py \
+    ${PINCMD[@]+"${PINCMD[@]}"} python evaluation/overheads/modularity_overhead/baseline_finetune.py \
       --device "$DEVICE" --model "$MODEL" --weights "$WEIGHTS" \
       --batch-size "$BATCH" --num-workers 0 --max-batches "$MAXB" \
       --label "$lab" --no-radt --run "$r"
@@ -100,7 +102,7 @@ PY
         export CHOREO_PROC_TRACE=1; unset CHOREO_DISABLE_TRACING
       fi
       start=$(date +%s)
-      "${PINCMD[@]}" python main.py "$cfg" -p 0 -e "$EXP" --label "$lab"
+      ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab"
       rc=$?; secs=$(( $(date +%s) - start ))
       [ -f "$CHOREO_OUT/$lab.csv" ] && mv "$CHOREO_OUT/$lab.csv" "$RESULTS/"
       [ -f "$CHOREO_OUT/$lab.jsonl" ] && mv "$CHOREO_OUT/$lab.jsonl" "$RESULTS/"
