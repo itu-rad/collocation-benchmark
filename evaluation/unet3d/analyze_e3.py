@@ -1,0 +1,305 @@
+#!/usr/bin/env python3
+"""E3 — MLPerf / 3D-UNet analysis. SELF-CONTAINED: parsing, statistics, tables
+and figures in this one file.
+
+Two prongs:
+
+  1. PARITY (GB10 only). Choreo reproduces MLPerf's own reference harness on the
+     SAME device, on both axes:
+       * accuracy    — mean Dice, Choreo stage code vs the MLPerf reference
+       * performance — MLPerf times ONLY inference, so the like-for-like Choreo
+                       number is its inference-stage duration, not end-to-end.
+     Same box, same model, same 42-case set => a clean apples-to-apples check.
+
+  2. MEASUREMENT BOUNDARY (both devices). MLPerf preprocesses the dataset offline
+     (its QSL preload) and times only inference. That is valid for offline batch,
+     but in ONLINE serving a request arrives with its own raw data: there is
+     nothing to prefetch, so loading+preprocessing sit on the per-request critical
+     path. Choreo times the whole graph and exposes that share — variable across
+     samples, and a LARGER fraction on the faster device (Amdahl: a faster GPU
+     shrinks the inference denominator, so preprocessing dominates more).
+
+Inputs
+  Choreo timing : evaluation/unet3d/results/<dev>/unet3d_42_<dev>_r<N>.csv
+                  (main.py stage markers; monotonic perf_counter_ns, last field)
+  Choreo Dice   : evaluation/unet3d/results/choreo_dice_<dev>.csv
+  MLPerf perf   : evaluation/unet3d/mlperf_gb10/logs_perf/mlperf_log_summary.txt
+  MLPerf Dice   : evaluation/unet3d/mlperf_gb10/mlperf_accuracy_dice.txt
+
+    python analyze_e3.py [--devices cuda mps] [--fig-dir DIR]
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import glob
+import os
+import re
+import statistics as st
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+NS_MS = 1e6
+
+LOAD_STAGE = "KiTS19 case loader"
+PREP_STAGE = "KiTS19 preprocess"
+INFER_STAGE = "3D-UNet sliding-window inference"
+DEV_LABEL = {"cuda": "GB10 (cuda)", "mps": "M2 Pro (mps)"}
+
+
+# ---------------------------------------------------------------------------
+# Choreo timing CSVs
+# ---------------------------------------------------------------------------
+def _rows(path):
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) < 6:
+                continue
+            try:
+                perf = int(parts[-1])
+            except ValueError:
+                continue
+            yield parts[2], parts[3], parts[4], perf, parts
+
+
+def parse_run(path):
+    """Per-request timings for one run.
+
+    Returns list of dicts (one per request, in arrival order) with load/prep/
+    infer/e2e in ms. queue_depth=1 + serialize_queries, so exactly one request is
+    in flight and stage markers pair unambiguously in order."""
+    per_stage = {LOAD_STAGE: [], PREP_STAGE: [], INFER_STAGE: []}
+    open_ev = {}
+    e2e = []
+    pipe_open = None
+    for mod, phase, event, perf, parts in _rows(path):
+        if mod.startswith("pipeline -") and phase == "run":
+            if event == "start":
+                pipe_open = perf
+            elif event == "end" and pipe_open is not None:
+                e2e.append((perf - pipe_open) / NS_MS)
+                pipe_open = None
+        elif mod in per_stage and phase == "run":
+            if event == "start":
+                open_ev[mod] = perf
+            elif event == "end" and mod in open_ev:
+                per_stage[mod].append((perf - open_ev.pop(mod)) / NS_MS)
+    n = min(len(e2e), *(len(v) for v in per_stage.values())) if e2e else 0
+    out = []
+    for i in range(n):
+        load, prep, inf = (per_stage[LOAD_STAGE][i], per_stage[PREP_STAGE][i],
+                           per_stage[INFER_STAGE][i])
+        tot = e2e[i]
+        out.append({"idx": i, "load": load, "prep": prep, "infer": inf, "e2e": tot,
+                    "pre_frac": 100.0 * (load + prep) / tot if tot else float("nan")})
+    return out
+
+
+def load_device(device):
+    """All runs for a device: list of per-request lists."""
+    d = os.path.join(HERE, "results", device)
+    runs = []
+    for p in sorted(glob.glob(os.path.join(d, f"unet3d_42_{device}_r*.csv"))):
+        r = parse_run(p)
+        if r:
+            runs.append(r)
+    return runs
+
+
+def per_case_median(runs):
+    """Median across repetitions for each request index (cases are iterated in a
+    fixed order, so index k is the same case in every run)."""
+    if not runs:
+        return []
+    n = min(len(r) for r in runs)
+    out = []
+    for i in range(n):
+        vals = [r[i] for r in runs]
+        out.append({k: st.median([v[k] for v in vals])
+                    for k in ("load", "prep", "infer", "e2e", "pre_frac")} | {"idx": i})
+    return out
+
+
+# ---------------------------------------------------------------------------
+# MLPerf reference outputs
+# ---------------------------------------------------------------------------
+def parse_mlperf_summary(path):
+    """Pull the SingleStream latency percentiles out of mlperf_log_summary.txt."""
+    if not os.path.exists(path):
+        return {}
+    out = {}
+    for line in open(path, encoding="utf-8", errors="replace"):
+        m = re.match(r"\s*(Mean latency \(ns\)|90th percentile latency \(ns\)|"
+                     r"Early stopping.*|Result is|Min latency \(ns\)|"
+                     r"Max latency \(ns\)|50.00 percentile latency \(ns\))\s*:\s*(.+)", line)
+        if m:
+            k, v = m.group(1).strip(), m.group(2).strip()
+            try:
+                out[k] = float(v) / 1e6          # ns -> ms
+            except ValueError:
+                out[k] = v
+        if line.startswith("Scenario"):
+            out["Scenario"] = line.split(":", 1)[1].strip()
+    return out
+
+
+def parse_mlperf_dice(path):
+    """Mean Dice from accuracy_kits.py output."""
+    if not os.path.exists(path):
+        return None
+    txt = open(path, encoding="utf-8", errors="replace").read()
+    m = re.search(r"mean\s*=\s*([0-9.]+)", txt) or re.search(r"([0-9]*\.[0-9]+)", txt)
+    return float(m.group(1)) if m else None
+
+
+def parse_choreo_dice(path):
+    if not os.path.exists(path):
+        return None
+    vals = []
+    for r in csv.DictReader(open(path)):
+        if r.get("error"):
+            continue
+        try:
+            vals.append(float(r["dice_mean"]))
+        except (ValueError, KeyError):
+            continue
+    return st.median(vals) if vals else None
+
+
+# ---------------------------------------------------------------------------
+# Tables
+# ---------------------------------------------------------------------------
+def parity_table(cuda_runs, mlperf_dir):
+    print("\n## Prong 1 — parity with the MLPerf reference harness (GB10, same device)\n")
+    summ = parse_mlperf_summary(os.path.join(mlperf_dir, "logs_perf",
+                                             "mlperf_log_summary.txt"))
+    ref_dice = parse_mlperf_dice(os.path.join(mlperf_dir, "mlperf_accuracy_dice.txt"))
+    cho_dice = parse_choreo_dice(os.path.join(HERE, "results", "choreo_dice_cuda.csv"))
+    if not cuda_runs:
+        print("_no Choreo cuda runs yet_\n")
+    infer = [q["infer"] for r in cuda_runs for q in r]
+    e2e = [q["e2e"] for r in cuda_runs for q in r]
+
+    print("| quantity | MLPerf reference | Choreo | note |")
+    print("|---|--:|--:|---|")
+    rd = f"{ref_dice:.4f}" if ref_dice is not None else "—"
+    cd = f"{cho_dice:.4f}" if cho_dice is not None else "—"
+    print(f"| mean Dice (accuracy) | {rd} | {cd} | same 42-case KiTS19 set |")
+    ml = summ.get("Mean latency (ns)")
+    mp90 = summ.get("90th percentile latency (ns)")
+    ci = f"{st.median(infer):.0f}" if infer else "—"
+    print(f"| inference latency, mean (ms) | {ml:.0f} | {ci} | "
+          f"like-for-like: MLPerf times ONLY inference |" if ml else
+          f"| inference latency, mean (ms) | — | {ci} | like-for-like |")
+    if mp90 and infer:
+        p90 = sorted(infer)[int(0.9 * (len(infer) - 1))]
+        print(f"| inference latency, p90 (ms) | {mp90:.0f} | {p90:.0f} | |")
+    if e2e:
+        print(f"| end-to-end per request (ms) | not measured | {st.median(e2e):.0f} | "
+              f"MLPerf's boundary excludes load+preprocess — prong 2 |")
+    if summ.get("Scenario"):
+        print(f"\nMLPerf scenario: **{summ['Scenario']}**. "
+              "Query count reduced to one QSL pass — a same-device parity check, "
+              "NOT a compliant MLPerf submission.")
+
+
+def boundary_table(per_device):
+    print("\n## Prong 2 — what MLPerf's measurement boundary hides (online serving)\n")
+    print("| device | n cases | e2e median (ms) | load+preprocess (ms) | inference (ms) "
+          "| preprocessing share | share range across cases |")
+    print("|---|--:|--:|--:|--:|--:|---|")
+    for dev, cases in per_device.items():
+        if not cases:
+            continue
+        e2e = [c["e2e"] for c in cases]
+        pre = [c["load"] + c["prep"] for c in cases]
+        inf = [c["infer"] for c in cases]
+        fr = [c["pre_frac"] for c in cases]
+        print(f"| {DEV_LABEL.get(dev, dev)} | {len(cases)} | {st.median(e2e):.0f} | "
+              f"{st.median(pre):.0f} | {st.median(inf):.0f} | "
+              f"**{st.median(fr):.1f}%** | {min(fr):.1f}–{max(fr):.1f}% |")
+    print("\nThe preprocessing share is what an offline-preload benchmark reports as "
+          "zero. It cannot be hidden online: a request arrives with its own raw "
+          "volume, so there is nothing to prefetch.")
+
+
+# ---------------------------------------------------------------------------
+# Figures (no titles — captions carry that in the paper)
+# ---------------------------------------------------------------------------
+def make_figures(per_device, fig_dir):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    devs = [d for d in ("mps", "cuda") if per_device.get(d)]
+    if not devs:
+        return []
+    # Fig 1: per-case stacked breakdown, one panel per device
+    fig, axes = plt.subplots(1, len(devs), figsize=(6.2 * len(devs), 4.4), squeeze=False)
+    for ax, dev in zip(axes[0], devs):
+        cases = per_device[dev]
+        x = range(len(cases))
+        load = [c["load"] for c in cases]
+        prep = [c["prep"] for c in cases]
+        inf = [c["infer"] for c in cases]
+        ax.bar(x, load, color="tab:green", label="load")
+        ax.bar(x, prep, bottom=load, color="tab:orange", label="preprocess")
+        ax.bar(x, inf, bottom=[a + b for a, b in zip(load, prep)],
+               color="tab:blue", label="inference (all MLPerf times)")
+        ax.set_xlabel(f"{DEV_LABEL.get(dev, dev)} — KiTS19 case (42, arrival order)")
+        ax.set_ylabel("per-request latency (ms)")
+        ax.grid(alpha=0.3, axis="y")
+        ax.legend(fontsize=8)
+    fig.tight_layout()
+    f1 = os.path.join(fig_dir, "e3_request_breakdown.png")
+    fig.savefig(f1, dpi=140); plt.close(fig)
+
+    # Fig 2: preprocessing share per case, both devices
+    fig, ax = plt.subplots(figsize=(7.5, 4.4))
+    for dev, color in (("mps", "tab:blue"), ("cuda", "tab:orange")):
+        cases = per_device.get(dev)
+        if not cases:
+            continue
+        fr = sorted(c["pre_frac"] for c in cases)
+        ax.plot(range(len(fr)), fr, "o-", color=color, ms=4, lw=1.3,
+                label=f"{DEV_LABEL.get(dev, dev)} (median {st.median(fr):.1f}%)")
+    ax.set_xlabel("KiTS19 case (sorted by preprocessing share)")
+    ax.set_ylabel("load+preprocess share of per-request latency (%)")
+    ax.grid(alpha=0.3); ax.legend(fontsize=8)
+    fig.tight_layout()
+    f2 = os.path.join(fig_dir, "e3_preprocessing_share.png")
+    fig.savefig(f2, dpi=140); plt.close(fig)
+    return [f1, f2]
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--devices", nargs="+", default=["cuda", "mps"])
+    ap.add_argument("--fig-dir", default=os.path.join(HERE, "..", "overheads", "paper_assets"))
+    ap.add_argument("--mlperf-dir", default=os.path.join(HERE, "mlperf_gb10"))
+    args = ap.parse_args()
+    fig_dir = os.path.abspath(args.fig_dir)
+    os.makedirs(fig_dir, exist_ok=True)
+
+    print("# E3 — MLPerf / 3D-UNet: reproduction + the measurement boundary\n")
+    print("Online serving regime: one request in flight (serialize_queries, "
+          "queue_depth 1, batch 1). Latencies from the monotonic perf clock; "
+          "per-case values are medians across repetitions.\n")
+
+    raw = {d: load_device(d) for d in args.devices}
+    per_device = {d: per_case_median(r) for d, r in raw.items()}
+    for d in args.devices:
+        print(f"- {DEV_LABEL.get(d, d)}: {len(raw[d])} run(s), "
+              f"{len(per_device[d])} cases per run")
+
+    parity_table(raw.get("cuda", []), os.path.abspath(args.mlperf_dir))
+    boundary_table(per_device)
+    figs = make_figures(per_device, fig_dir)
+    for f in figs:
+        print(f"\n**Figure:** `{f}`")
+
+
+if __name__ == "__main__":
+    main()
