@@ -1,0 +1,9 @@
+arm	run	rc	seconds	csv_rows
+factoid_decomposed_mlx	1	0	1917	1827
+factoid_decomposed_shared_mlx	1	0	1206	3900
+factoid_monolith_4b_mlx	1	0	1100	2172
+factoid_monolith_mlx	1	0	1153	2262
+multihop_decomposed_mlx	1	0	5597	3392
+multihop_decomposed_shared_mlx	1	0	5581	4380
+multihop_monolith_4b_mlx	1	0	5154	3234
+multihop_monolith_mlx	1	0	4957	3666
