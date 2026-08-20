@@ -185,8 +185,13 @@ def parse_choreo_dice(path):
 # ---------------------------------------------------------------------------
 def parity_table(cuda_runs, mlperf_dir):
     print("\n## Prong 1 — parity with the MLPerf reference harness (GB10, same device)\n")
-    summ = parse_mlperf_summary(os.path.join(mlperf_dir, "logs_perf",
-                                             "mlperf_log_summary.txt"))
+    # Prefer the COMPLIANT run (1024 queries, logs_perf_full) when it exists;
+    # fall back to the bounded 43-query run, which loadgen flags INVALID.
+    full = os.path.join(mlperf_dir, "logs_perf_full", "mlperf_log_summary.txt")
+    bounded = os.path.join(mlperf_dir, "logs_perf", "mlperf_log_summary.txt")
+    src = full if os.path.exists(full) else bounded
+    summ = parse_mlperf_summary(src)
+    print(f"_reference latency from `{os.path.basename(os.path.dirname(src))}`_\n")
     ref = parse_mlperf_dice(os.path.join(mlperf_dir, "mlperf_accuracy_dice.txt"))
     cho = parse_choreo_dice(os.path.join(HERE, "results", "choreo_dice_cuda.csv"))
     if not cuda_runs:
@@ -333,7 +338,9 @@ def matched_parity(cuda_runs, mlperf_dir, dice_csv, cases_json):
     serialisation (final_result.tobytes() over a multi-MB volume) and
     QuerySamplesComplete, which Choreo's stage marker excludes; that is part of
     why the aggregate numbers differ."""
-    log = os.path.join(mlperf_dir, "mlperf_perf_run.log")
+    full_log = os.path.join(mlperf_dir, "mlperf_perf_full.log")
+    log = full_log if os.path.exists(full_log) else os.path.join(
+        mlperf_dir, "mlperf_perf_run.log")
     if not (os.path.exists(log) and os.path.exists(dice_csv) and cuda_runs):
         return
     ml = []
