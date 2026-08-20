@@ -219,13 +219,15 @@ def make_figure(per_device, fig_dir):
     for ax, dev in zip(axes[0], devs):
         agg = per_device[dev]
         keys = [k for k in sorted(agg, key=lambda k: (k[0], k[1])) if agg[k]["prefill"]]
-        labels = [f"{t}\n{a}" for t, a in keys]
+        labels = [f"{t} {a}" for t, a in keys]
         pf = [st.median(agg[k]["prefill"]) for k in keys]
         dc = [st.median(agg[k]["decode"]) for k in keys]
         x = range(len(keys))
         ax.bar(x, pf, color="tab:red", label="prefill (compute-bound)")
         ax.bar(x, dc, bottom=pf, color="tab:blue", label="decode (memory-bound)")
-        ax.set_xticks(list(x)); ax.set_xticklabels(labels, fontsize=7)
+        ax.set_xticks(list(x))
+        # rotate: 8 arm labels collide badly at horizontal orientation
+        ax.set_xticklabels(labels, fontsize=7, rotation=45, ha="right")
         ax.set_ylabel(f"{DEV_LABEL.get(dev, dev)} — per-query LLM stage time (ms)")
         ax.grid(alpha=0.3, axis="y"); ax.legend(fontsize=8)
     fig.tight_layout()
