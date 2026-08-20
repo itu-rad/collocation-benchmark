@@ -78,8 +78,17 @@ print(tr["model"]["component"].rsplit(".", 1)[-1], dl["dataset"]["weights"],
 PY
 )"
 
-  for r in $(seq 1 "$RUNS"); do
-    # ---- monolith baseline (writes straight into $RESULTS) ----
+  # One arm = one function, so the ORDER of the three arms inside a repetition
+  # can be varied. Without that, collect.sh always runs baseline -> t0 -> t2, and
+  # any within-repetition warm-up / clock ramp systematically penalises whichever
+  # arm goes first (the baseline) — which shows up as a NEGATIVE overhead, the
+  # suspected cause of EfficientNetV2-L b8 on mps reading -575.8 us
+  # [-737.8, -420.6] consistently across all 3 runs. A wrapper cannot make work
+  # faster, so that is apparatus, not a finding.
+  #   ALTERNATE=1 -> reverse the whole arm order on even repetitions, so across
+  #   repetitions every arm spends equal time in the penalised first slot.
+  run_baseline() {
+    local r=$1 lab start rc secs rows
     lab="mod_baseline_${cell}_d${DEVICE}_r${r}"
     rm -f "$RESULTS/$lab.csv"            # never append onto a stale baseline CSV
     start=$(date +%s)
@@ -92,26 +101,36 @@ PY
     printf 'baseline\t%s\t%s\t%s\t%s\t%s\n' "$cell" "$r" "$rc" "$secs" "$rows" >> "$SUM"
     [ "$rc" -ne 0 ] && { fail=$((fail+1)); log "  !! $lab rc=$rc"; }
     log "  $lab rc=$rc ${secs}s rows=$rows"
+  }
 
-    # ---- Choreo arms ----
-    for arm in t0 t2; do
-      lab="mod_choreo_${arm}_${cell}_d${DEVICE}_r${r}"
-      if [ "$arm" = t0 ]; then
-        export CHOREO_DISABLE_TRACING=1; unset CHOREO_PROC_TRACE
-      else
-        export CHOREO_PROC_TRACE=1; unset CHOREO_DISABLE_TRACING
-      fi
-      start=$(date +%s)
-      ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab"
-      rc=$?; secs=$(( $(date +%s) - start ))
-      [ -f "$CHOREO_OUT/$lab.csv" ] && mv "$CHOREO_OUT/$lab.csv" "$RESULTS/"
-      [ -f "$CHOREO_OUT/$lab.jsonl" ] && mv "$CHOREO_OUT/$lab.jsonl" "$RESULTS/"
-      rows=$( [ -f "$RESULTS/$lab.csv" ] && wc -l < "$RESULTS/$lab.csv" | tr -d ' ' || echo 0 )
-      printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$cell" "$r" "$rc" "$secs" "$rows" >> "$SUM"
-      [ "$rc" -ne 0 ] && { fail=$((fail+1)); log "  !! $lab rc=$rc"; }
-      log "  $lab rc=$rc ${secs}s rows=$rows"
+  run_choreo() {
+    local arm=$1 r=$2 lab start rc secs rows ext
+    lab="mod_choreo_${arm}_${cell}_d${DEVICE}_r${r}"
+    if [ "$arm" = t0 ]; then
+      export CHOREO_DISABLE_TRACING=1; unset CHOREO_PROC_TRACE
+    else
+      export CHOREO_PROC_TRACE=1; unset CHOREO_DISABLE_TRACING
+    fi
+    start=$(date +%s)
+    ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab"
+    rc=$?; secs=$(( $(date +%s) - start ))
+    for ext in csv jsonl; do
+      [ -f "$CHOREO_OUT/$lab.$ext" ] && mv "$CHOREO_OUT/$lab.$ext" "$RESULTS/"
     done
+    rows=$( [ -f "$RESULTS/$lab.csv" ] && wc -l < "$RESULTS/$lab.csv" | tr -d ' ' || echo 0 )
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$cell" "$r" "$rc" "$secs" "$rows" >> "$SUM"
+    [ "$rc" -ne 0 ] && { fail=$((fail+1)); log "  !! $lab rc=$rc"; }
+    log "  $lab rc=$rc ${secs}s rows=$rows"
     unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  }
+
+  for r in $(seq 1 "$RUNS"); do
+    if [ "${ALTERNATE:-0}" = "1" ] && [ $(( r % 2 )) -eq 0 ]; then
+      log "  (alternating: t2 -> t0 -> baseline for r$r)"
+      run_choreo t2 "$r"; run_choreo t0 "$r"; run_baseline "$r"
+    else
+      run_baseline "$r"; run_choreo t0 "$r"; run_choreo t2 "$r"
+    fi
   done
 done
 
