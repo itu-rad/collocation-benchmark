@@ -4,13 +4,12 @@ Estimator: median of per-run paired differences (runs dropped as system warm-up:
 Warm-up steps dropped per run: 200. Metric: training-stage step (monotonic perf clock). Statistic: paired across-run difference (arms interleaved per repetition); 95% CI bootstrapped over run pairs.
 
 
-# ===== mps (174 CSVs, 10 cells) =====
+# ===== mps (162 CSVs, 9 cells) =====
 
 ## mps — per-cell overhead (paired across runs)
 
 | cell | R | step (ms) | core (µs/step, median) | core % | core (mean) | +tracing (µs/step) | total % |
 |---|--:|--:|---|--:|--:|---|--:|
-| ConvNeXt-L b8 | 3 | 193.91 | +482.9 [+86.1, +660.0] | +0.249% | +422.7 | +546.0 [+425.5, +797.3] | +0.282% |
 | EfficientNetV2-L b8 | 3 | 460.54 | -575.8 [-737.8, -420.6] | -0.125% | -573.0 | -27.5 [-564.9, +264.0] | -0.006% |
 | EfficientNetV2-M b8 | 3 | 247.31 | -88.7 [-205.1, +78.8] | -0.036% | -66.5 | +41.4 [-146.6, +181.0] | +0.017% |
 | EfficientNetV2-S b1 | 7 | 29.30 | +78.3 [-126.3, +167.4] | +0.267% | +8.0 | +224.9 [+55.6, +440.0] | +0.768% |
@@ -24,7 +23,6 @@ Warm-up steps dropped per run: 200. Metric: training-stage step (monotonic perf 
 (core = Choreo wrapper, tracing off, vs the bare monolith; +tracing = wrapper + radt bulk/proc span export. Brackets: 95% CI, bootstrap over run pairs.)
 - MIXED-REGIME repetitions dropped, EfficientNetV2-S b2: [12, 14] (arms landed in different step-time regimes)
 - MIXED-REGIME repetitions dropped, EfficientNetV2-S b4: [11, 12, 13, 14] (arms landed in different step-time regimes)
-- per-run paired core diffs (µs), ConvNeXt-L b8: +482.9 / +140.3 / +644.9
 - per-run paired core diffs (µs), EfficientNetV2-L b8: -514.5 / -575.8 / -628.7
 - per-run paired core diffs (µs), EfficientNetV2-M b8: -88.7 / -180.0 / +69.1
 - per-run paired core diffs (µs), EfficientNetV2-S b1: -32.4 / +78.3 / +79.5 / +109.7 / -359.5 / +43.0 / +137.3
@@ -54,19 +52,17 @@ step 29.3 → 690.7 ms (23.6×): core +0.267% → +0.091% (relative shrinks), ab
 | model | step (ms) | core µs/step | core % of step | total µs/step | total % |
 |---|--:|--:|--:|--:|--:|
 | EfficientNetV2-S | 89.35 | -6.0 | -0.007% | -0.4 | -0.000% |
-| ConvNeXt-L | 193.91 | +482.9 | +0.249% | +546.0 | +0.282% |
 | EfficientNetV2-M | 247.31 | -88.7 | -0.036% | +41.4 | +0.017% |
 | EfficientNetV2-L | 460.54 | -575.8 | -0.125% | -27.5 | -0.006% |
 
-step 89.4 → 460.5 ms (5.2×): core -0.007% → -0.125% (relative does NOT shrink), absolute -6.0 → -575.8 µs/step (spread 1058.7 µs across cells; TOO NOISY to call fixed).
+step 89.4 → 460.5 ms (5.2×): core -0.007% → -0.125% (relative does NOT shrink), absolute -6.0 → -575.8 µs/step (spread 569.9 µs across cells; TOO NOISY to call fixed).
 
-# ===== cuda (138 CSVs, 10 cells) =====
+# ===== cuda (126 CSVs, 9 cells) =====
 
 ## cuda — per-cell overhead (paired across runs)
 
 | cell | R | step (ms) | core (µs/step, median) | core % | core (mean) | +tracing (µs/step) | total % |
 |---|--:|--:|---|--:|--:|---|--:|
-| ConvNeXt-L b8 | 3 | 67.90 | -65.8 [-182.3, +96.8] | -0.097% | -52.8 | +303.3 [+153.6, +384.1] | +0.447% |
 | EfficientNetV2-L b8 | 3 | 189.96 | +640.8 [-833.3, +1183.2] | +0.337% | +330.0 | +271.7 [-166.5, +352.7] | +0.143% |
 | EfficientNetV2-M b8 | 3 | 104.70 | -30.3 [-86.8, +514.6] | -0.029% | +133.6 | +40.8 [-48.1, +747.2] | +0.039% |
 | EfficientNetV2-S b1 | 3 | 9.15 | +18.4 [-53.3, +152.2] | +0.201% | +45.5 | -203.6 [-370.2, +231.3] | -2.226% |
@@ -78,7 +74,6 @@ step 89.4 → 460.5 ms (5.2×): core -0.007% → -0.125% (relative does NOT shri
 | EfficientNetV2-S b64 | 3 | 369.56 | +19.1 [-456.0, +270.0] | +0.005% | -55.0 | -189.5 [-699.7, +759.0] | -0.051% |
 
 (core = Choreo wrapper, tracing off, vs the bare monolith; +tracing = wrapper + radt bulk/proc span export. Brackets: 95% CI, bootstrap over run pairs.)
-- per-run paired core diffs (µs), ConvNeXt-L b8: -163.4 / +70.7 / -65.8
 - per-run paired core diffs (µs), EfficientNetV2-L b8: +640.8 / -801.5 / +1150.9
 - per-run paired core diffs (µs), EfficientNetV2-M b8: -44.1 / +475.3 / -30.3
 - per-run paired core diffs (µs), EfficientNetV2-S b1: -19.2 / +137.2 / +18.4
@@ -108,11 +103,10 @@ step 9.1 → 369.6 ms (40.4×): core +0.201% → +0.005% (relative shrinks), abs
 | model | step (ms) | core µs/step | core % of step | total µs/step | total % |
 |---|--:|--:|--:|--:|--:|
 | EfficientNetV2-S | 39.06 | +257.1 | +0.658% | +264.0 | +0.676% |
-| ConvNeXt-L | 67.90 | -65.8 | -0.097% | +303.3 | +0.447% |
 | EfficientNetV2-M | 104.70 | -30.3 | -0.029% | +40.8 | +0.039% |
 | EfficientNetV2-L | 189.96 | +640.8 | +0.337% | +271.7 | +0.143% |
 
-step 39.1 → 190.0 ms (4.9×): core +0.658% → +0.337% (relative shrinks), absolute +257.1 → +640.8 µs/step (spread 706.5 µs across cells; TOO NOISY to call fixed).
+step 39.1 → 190.0 ms (4.9×): core +0.658% → +0.337% (relative shrinks), absolute +257.1 → +640.8 µs/step (spread 671.1 µs across cells; TOO NOISY to call fixed).
 
 **Figure:** `/Users/roba/Documents/work/research/collocation-benchmark/evaluation/overheads/paper_assets/e2_modularity_scale.png`
 

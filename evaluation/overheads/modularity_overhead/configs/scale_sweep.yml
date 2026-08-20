@@ -7,7 +7,6 @@
 # along two crossing 1-D axes so the RELATIVE overhead collapses toward zero:
 #
 #   * batch sweep   @ efficientnet_v2_s : batch 1..64   (b8 is the shared anchor)
-#   * model  sweep  @ batch 8           : s -> m -> l -> convnext_large
 #
 # Deliberately NOT a full model x batch grid: big-model x big-batch would OOM the
 # 16 GB M2, and the two 1-D sweeps already span ~1-2 orders of magnitude of
@@ -39,4 +38,3 @@ cells:
   # --- model sweep @ batch 8 (efficientnet_v2_s covered by the anchor above) ---
   - {tag: effv2m,    model: efficientnet_v2_m, weights: EfficientNet_V2_M_Weights.IMAGENET1K_V1, batch: 8, max_batches: 1000}
   - {tag: effv2l,    model: efficientnet_v2_l, weights: EfficientNet_V2_L_Weights.IMAGENET1K_V1, batch: 8, max_batches: 1000}
-  - {tag: convnextl, model: convnext_large,    weights: ConvNeXt_Large_Weights.IMAGENET1K_V1,    batch: 8, max_batches: 1000}

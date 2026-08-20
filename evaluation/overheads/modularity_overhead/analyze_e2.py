@@ -51,9 +51,13 @@ BASELINE_LOOP = "training_loop"           # session marker (see parse_baseline_s
 # (t1, the superseded in-process mlflow exporter, is not collected.)
 ARM_CORE, ARM_TRACED = 0, 2
 
+# The model sweep is a SIZE ladder within one architecture family (S -> M -> L),
+# so step time is the only thing changing. ConvNeXt-L was dropped: a different
+# architecture confounds size with architecture and adds nothing to the
+# amortization claim. Its data is archived under results/_archive_convnextl_dropped/.
 MODEL_DISPLAY = {"effv2s": "EfficientNetV2-S", "effv2m": "EfficientNetV2-M",
-                 "effv2l": "EfficientNetV2-L", "convnextl": "ConvNeXt-L"}
-MODEL_ORDER = ["effv2s", "effv2m", "convnextl", "effv2l"]   # by step-time, re-sorted at runtime
+                 "effv2l": "EfficientNetV2-L"}
+MODEL_ORDER = ["effv2s", "effv2m", "effv2l"]   # by step-time, re-sorted at runtime
 BATCHES = [1, 2, 4, 8, 16, 32, 64]
 ANCHOR_MODEL, ANCHOR_BATCH = "effv2s", 8
 
@@ -333,7 +337,8 @@ def cell_result(metas, model, batch, warmup):
 
 
 def collect_cells(metas, warmup):
-    seen = sorted({(m["model"], m["batch"]) for m in metas})
+    seen = sorted({(m["model"], m["batch"]) for m in metas
+                   if m["model"] in MODEL_DISPLAY})
     cells = []
     for model, batch in seen:
         c = cell_result(metas, model, batch, warmup)
