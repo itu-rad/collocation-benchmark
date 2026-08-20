@@ -165,6 +165,20 @@ done
   python evaluation/overheads/modularity_overhead/analyze_scale_panels.py --device {mps,cuda} --fig e2.png
   ```
 
+### E2 — OPEN (deferred, not blocking)
+- **Arm-ordering bias.** `collect.sh` runs the arms in a fixed order within each
+  repetition (baseline -> t0 -> t2), so any within-repetition warm-up/clock ramp
+  systematically penalises whichever arm goes first — the baseline. Suspected cause of
+  the **EfficientNetV2-L b8 mps** result: core = **-575.8 us [-737.8, -420.6]**, i.e. a
+  *consistent* negative across all 3 runs (-514.5 / -575.8 / -628.7) with a tight CI.
+  A wrapper cannot make work faster, so this is apparatus, not a finding. Cheap test:
+  alternate the arm order across repetitions (baseline-first on odd runs, t2-first on
+  even) and see whether the negative disappears. Until then, do NOT present Eff-L b8 mps.
+- **Bistable cells (mps small batch).** effv2s b2/b4 land in one of two step-time regimes
+  per process launch (~46 ms vs ~105 ms at b4, same config). `--max-regime-ratio 1.25`
+  drops repetitions whose arms straddle regimes, but too few valid pairs remain. Exclude
+  the mps small-batch cells from the amortization claim and say why.
+
 ## E3 — MLPerf / 3D-UNet
 - **Thesis.** (1) **match MLPerf's own reference harness on GB10** — accuracy (Dice) AND performance
   (latency/throughput), *same device* → clean parity, proves Choreo reproduces the MLPerf setup
