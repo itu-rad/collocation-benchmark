@@ -272,6 +272,32 @@ done
 - **Lesson:** before launching on GB10, check for *orphaned* `run.py`/`main.py` (ppid=1),
   not just the wrapper scripts — see [[gb10-collection-gotchas]].
 
+### E4 — FIRST CROSS-DEVICE RESULT + the confound it raises (2026-08-20, r=1)
+**The predicted asymmetry is there, and it is large.** mlx -> cuda speedup, per arm:
+
+| arm | prefill speedup | decode speedup |
+|---|--:|--:|
+| factoid decomposed | **15.7x** | 1.05x |
+| factoid decomposed_shared | 6.2x | 0.27x |
+| factoid monolith (9B) | 8.1x | 0.62x |
+| factoid monolith_4b | 6.2x | 0.42x |
+| multihop decomposed | 11.1x | 0.64x |
+
+Compute-bound **prefill speeds up 6-16x** on GB10; memory-bound **decode does not speed up
+at all** (0.27-1.05x, i.e. often SLOWER on GB10). That asymmetry is precisely the mechanism
+the flip claim rests on.
+
+**Confound to settle before publishing this.** Both arms run 4-bit weights — mlx
+`Qwen3.5-*-OptiQ-4bit`, cuda `quantize: true` = BitsAndBytes `load_in_4bit` (NF4) with
+bf16 compute — so it is NOT a 4-bit vs bf16 mismatch (I checked `stages/llm_huggingface/
+inference.py:131`). But **bitsandbytes NF4 is known to pay a per-token dequantisation cost
+that hurts decode**, while MLX's 4-bit path is natively optimised. So "decode is
+device-invariant" may partly be "bitsandbytes decode is slow", i.e. kernel quality rather
+than memory bandwidth. A reviewer will raise this.
+**Cheap test:** re-run one cuda arm with `quantize: false` (bf16 weights, more bandwidth per
+token but no dequant) and see which way decode moves. If decode improves, the current
+decode gap is implementation, not hardware.
+
 ### E4 — OPEN CONCERN found during collection (2026-08-20)
 - **The serving config is SATURATED, so the phase split includes contention.** First
   `factoid_decomposed_mlx` run: 110 queries arrive at the pilot-tuned Poisson rate
