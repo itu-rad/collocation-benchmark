@@ -145,26 +145,35 @@ def parse_mlperf_summary(path):
 
 
 def parse_mlperf_dice(path):
-    """Mean Dice from accuracy_kits.py output."""
+    """Dice from accuracy_kits.py, which prints
+    `Accuracy: mean = X, kidney = Y, tumor = Z`. Returns {mean,kidney,tumor}."""
     if not os.path.exists(path):
-        return None
+        return {}
     txt = open(path, encoding="utf-8", errors="replace").read()
-    m = re.search(r"mean\s*=\s*([0-9.]+)", txt) or re.search(r"([0-9]*\.[0-9]+)", txt)
-    return float(m.group(1)) if m else None
+    out = {}
+    for key in ("mean", "kidney", "tumor"):
+        m = re.search(key + r"\s*=\s*([0-9.]+)", txt)
+        if m:
+            out[key] = float(m.group(1))
+    return out
 
 
 def parse_choreo_dice(path):
+    """Per-case Dice from run_full_experiment.py (the same stage code path as the
+    Choreo pipeline). Returns {mean,kidney,tumor} as medians over cases."""
     if not os.path.exists(path):
-        return None
-    vals = []
+        return {}
+    cols = {"mean": "dice_mean", "kidney": "dice_kidney", "tumor": "dice_tumor"}
+    acc = {k: [] for k in cols}
     for r in csv.DictReader(open(path)):
         if r.get("error"):
             continue
-        try:
-            vals.append(float(r["dice_mean"]))
-        except (ValueError, KeyError):
-            continue
-    return st.median(vals) if vals else None
+        for k, c in cols.items():
+            try:
+                acc[k].append(float(r[c]))
+            except (ValueError, KeyError):
+                pass
+    return {k: st.mean(v) for k, v in acc.items() if v}
 
 
 # ---------------------------------------------------------------------------
@@ -174,8 +183,8 @@ def parity_table(cuda_runs, mlperf_dir):
     print("\n## Prong 1 — parity with the MLPerf reference harness (GB10, same device)\n")
     summ = parse_mlperf_summary(os.path.join(mlperf_dir, "logs_perf",
                                              "mlperf_log_summary.txt"))
-    ref_dice = parse_mlperf_dice(os.path.join(mlperf_dir, "mlperf_accuracy_dice.txt"))
-    cho_dice = parse_choreo_dice(os.path.join(HERE, "results", "choreo_dice_cuda.csv"))
+    ref = parse_mlperf_dice(os.path.join(mlperf_dir, "mlperf_accuracy_dice.txt"))
+    cho = parse_choreo_dice(os.path.join(HERE, "results", "choreo_dice_cuda.csv"))
     if not cuda_runs:
         print("_no Choreo cuda runs yet_\n")
     infer = [q["infer"] for r in cuda_runs for q in r]
@@ -183,9 +192,13 @@ def parity_table(cuda_runs, mlperf_dir):
 
     print("| quantity | MLPerf reference | Choreo | note |")
     print("|---|--:|--:|---|")
-    rd = f"{ref_dice:.4f}" if ref_dice is not None else "—"
-    cd = f"{cho_dice:.4f}" if cho_dice is not None else "—"
-    print(f"| mean Dice (accuracy) | {rd} | {cd} | same 42-case KiTS19 set |")
+    for key, label in (("mean", "mean Dice (composite)"), ("kidney", "Dice kidney"),
+                       ("tumor", "Dice tumor")):
+        rd = f"{ref[key]:.4f}" if key in ref else "—"
+        cd = f"{cho[key]:.4f}" if key in cho else "—"
+        delta = (f"Δ {abs(ref[key] - cho[key]):.4f}"
+                 if key in ref and key in cho else "same 42-case KiTS19 set")
+        print(f"| {label} | {rd} | {cd} | {delta} |")
     ml = summ.get("Mean latency (ns)")
     mp90 = summ.get("90th percentile latency (ns)")
     ci = f"{st.median(infer):.0f}" if infer else "—"

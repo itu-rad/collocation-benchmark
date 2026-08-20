@@ -212,6 +212,27 @@ done
   python evaluation/unet3d/analyze.py results/{mps,cuda}   # parity (GB10) + preprocessing-fraction of latency
   ```
 
+### E3 progress (2026-08-20)
+- **Harness built.** Static 42-case configs per device (`evaluation/unet3d/configs/unet3d_42_{cuda,mps}.yml`)
+  in the ONLINE regime (`serialize_queries`, `queue_depth 1`, batch 1 = MLPerf SingleStream, the
+  regime where load+preprocess cannot be prefetched); `evaluation/unet3d/collect.sh`; and the
+  single-file `evaluation/unet3d/analyze_e3.py` (parity table + boundary table + 2 figures).
+- **MLPerf reference IS runnable on GB10** — loadgen built in `benchmark_nvidia`, 44 preprocessed
+  MLPerf cases + `preprocessed_files.pkl` present, model present. Prior GB10 logs were **Server**
+  scenario (from the old scheduling work); E3 uses **SingleStream**.
+- **Sequenced GB10 run** (`scratchpad/overnight/e3_gb10.sh`, GPU is exclusive so never overlapped):
+  MLPerf perf → MLPerf accuracy (+`accuracy_kits.py` Dice) → Choreo 42-case R=5 → Choreo stage-code
+  Dice (`run_full_experiment.py`, same code path as the pipeline stages).
+- **CAVEAT to state in the paper:** the reference run uses `min_query_count = 43` (one QSL pass)
+  instead of the 1024 an official SingleStream submission requires — at ~8 s/query that would be ~3 h.
+  This is a **same-device parity check, NOT a compliant MLPerf submission.**
+- **Cost measured:** GB10 ~8 s/case inference; mps ~84 s/case (42 cases ≈ 59 min/run), so **mps is
+  capped at 2 runs** — the preprocessing share is a within-request ratio and stable across
+  repetitions, and 42 cases already give the sample-to-sample variation prong 2 needs.
+- **Prong-2 signal already visible (mps, first cases):** load ≈ 0 ms (the loader only resolves paths;
+  the NIfTI read happens inside preprocess), preprocess 3.9–10.4 s, inference 64–139 s →
+  preprocessing share **5.8–9.9 %** of per-request latency on the M2.
+
 ## E4 — Self-RAG decomposition & prefill/decode split
 - **Thesis.** decomposition = prefill/decode rebalance; optimum flips across devices.
 - **Done.** 4 arms × factoid/multihop × cuda/mlx configs; **quality validated** (16 cells, greedy
