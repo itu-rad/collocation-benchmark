@@ -228,9 +228,17 @@ def parity_table(cuda_runs, mlperf_dir):
         print(f"| end-to-end per request (ms) | not measured | {st.median(e2e):.0f} | "
               f"MLPerf's boundary excludes load+preprocess — prong 2 |")
     if summ.get("Scenario"):
-        print(f"\nMLPerf scenario: **{summ['Scenario']}**. "
-              "Query count reduced to one QSL pass — a same-device parity check, "
-              "NOT a compliant MLPerf submission.")
+        print(f"\nMLPerf scenario: **{summ['Scenario']}**"
+              + (f" (loadgen verdict: {summ['Result is']})" if "Result is" in summ else "")
+              + ". A bounded run (one QSL pass) is a same-device parity check, NOT a "
+                "compliant submission — loadgen requires 1024 SingleStream queries.")
+    print("\n**Accuracy caveat — two differences, both known:** (a) the MLPerf "
+          "reference postprocesses its logged predictions back to the ORIGINAL voxel "
+          "spacing before scoring, while the Choreo number is scored on the resampled "
+          "grid the model actually runs on; (b) the reference scores 43 cases while "
+          "Choreo's inference_cases.json is a strict 42-case subset (it omits "
+          "case_00400). So read the agreement as 'both clear the MLPerf accuracy gate "
+          "(99% of 0.86170 = 0.8531)', not as a bit-exact match.")
 
 
 def boundary_table(per_device):
