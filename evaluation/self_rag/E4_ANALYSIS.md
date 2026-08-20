@@ -3,7 +3,7 @@
 prefill = first_token(start->end) (TTFT, compute-bound); decode = run_end - first_token_end (memory-bandwidth-bound). Pooled over LLM stages and repetitions; medians.
 
 - M2 Pro (mlx): 8 run-file(s)
-- GB10 (cuda): 21 run-file(s)
+- GB10 (cuda): 24 run-file(s)
 
 ## M2 Pro (mlx) — prefill vs decode per arm
 
@@ -27,9 +27,9 @@ prefill = first_token(start->end) (TTFT, compute-bound); decode = run_end - firs
 | factoid | monolith | 390 | 554 | 1906 | 22.5% | 17.6 |
 | factoid | monolith_4b | 402 | 422 | 1181 | 26.3% | 22.3 |
 | multihop | decomposed | 1280 | 468 | 249 | 65.3% | 23.7 |
-| multihop | decomposed_shared | 854 | 382 | 162 | 70.2% | 25.4 |
-| multihop | monolith | 530 | 596 | 1692 | 26.0% | 17.8 |
-| multihop | monolith_4b | 568 | 438 | 1068 | 29.1% | 22.8 |
+| multihop | decomposed_shared | 1280 | 382 | 162 | 70.2% | 25.3 |
+| multihop | monolith | 794 | 596 | 1699 | 26.0% | 17.8 |
+| multihop | monolith_4b | 852 | 438 | 1064 | 29.2% | 22.7 |
 
 ### M2 Pro (mlx) — per-role phase shape
 
@@ -56,14 +56,14 @@ prefill = first_token(start->end) (TTFT, compute-bound); decode = run_end - firs
 | decomposed | Grader LLM | 945 | 483 | 161 | 74.9% | 24.8 |
 | decomposed | Hallucination LLM | 613 | 455 | 189 | 70.7% | 21.2 |
 | decomposed | Query rewrite LLM | 285 | 391 | 599 | 39.5% | 22.7 |
-| decomposed_shared | Shared LLM (generate) | 533 | 364 | 189 | 65.8% | 25.3 |
-| decomposed_shared | Shared LLM (grade) | 757 | 401 | 153 | 72.4% | 26.2 |
-| decomposed_shared | Shared LLM (hallucination) | 533 | 347 | 151 | 69.7% | 26.5 |
-| decomposed_shared | Shared LLM (rewrite) | 207 | 335 | 504 | 39.9% | 23.2 |
-| monolith | Monolith LLM | 735 | 611 | 1861 | 24.7% | 17.6 |
-| monolith | Query rewrite LLM | 185 | 456 | 662 | 40.8% | 18.2 |
-| monolith_4b | Monolith LLM | 760 | 472 | 1166 | 28.8% | 22.4 |
-| monolith_4b | Query rewrite LLM | 210 | 333 | 477 | 41.1% | 23.8 |
+| decomposed_shared | Shared LLM (generate) | 613 | 367 | 211 | 63.5% | 25.2 |
+| decomposed_shared | Shared LLM (grade) | 945 | 403 | 153 | 72.4% | 26.1 |
+| decomposed_shared | Shared LLM (hallucination) | 613 | 355 | 151 | 70.2% | 26.5 |
+| decomposed_shared | Shared LLM (rewrite) | 285 | 335 | 496 | 40.3% | 23.6 |
+| monolith | Monolith LLM | 922 | 615 | 1845 | 25.0% | 17.6 |
+| monolith | Query rewrite LLM | 262 | 457 | 665 | 40.8% | 18.2 |
+| monolith_4b | Monolith LLM | 957 | 475 | 1159 | 29.0% | 22.4 |
+| monolith_4b | Query rewrite LLM | 297 | 334 | 459 | 42.1% | 23.8 |
 
 ## Cross-device: prefill/decode balance (M2 Pro (mlx) vs GB10 (cuda))
 
@@ -75,8 +75,8 @@ prefill = first_token(start->end) (TTFT, compute-bound); decode = run_end - firs
 | factoid | monolith_4b | 2601 | 422 | **6.16x** | 502 | 1181 | **0.43x** |
 | multihop | decomposed | 5184 | 468 | **11.07x** | 162 | 249 | **0.65x** |
 | multihop | decomposed_shared | 2212 | 382 | **5.79x** | 41 | 162 | **0.25x** |
-| multihop | monolith | 4749 | 596 | **7.97x** | 1095 | 1692 | **0.65x** |
-| multihop | monolith_4b | 2712 | 438 | **6.19x** | 459 | 1068 | **0.43x** |
+| multihop | monolith | 4749 | 596 | **7.97x** | 1095 | 1699 | **0.64x** |
+| multihop | monolith_4b | 2712 | 438 | **6.19x** | 459 | 1064 | **0.43x** |
 
 If the compute-bound prefill speeds up much more than the memory-bound decode across devices, the phase balance shifts — which is what moves the optimal decomposition and can flip which arm wins.
 
