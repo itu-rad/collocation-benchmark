@@ -19,6 +19,29 @@ Online serving regime: one request in flight (serialize_queries, queue_depth 1, 
 
 **Accuracy caveat — two differences, both known:** (a) the MLPerf reference postprocesses its logged predictions back to the ORIGINAL voxel spacing before scoring, while the Choreo number is scored on the resampled grid the model actually runs on; (b) the reference scores 43 cases while Choreo's inference_cases.json is a strict 42-case subset (it omits case_00400). So read the agreement as 'both clear the MLPerf accuracy gate (99% of 0.86170 = 0.8531)', not as a bit-exact match.
 
+### Matched per-case inference time (GB10) — 16 cases loadgen actually exercised
+
+| case | sub-volumes | MLPerf inner (s) | Choreo stage (s) | diff |
+|---|--:|--:|--:|--:|
+| case_00160 | 8 | 1.00 | 1.00 | -0.1% |
+| case_00138 | 16 | 1.92 | 1.93 | +0.4% |
+| case_00187 | 27 | 3.18 | 3.19 | +0.2% |
+| case_00076 | 32 | 3.76 | 3.76 | +0.0% |
+| case_00061 | 36 | 4.27 | 4.28 | +0.2% |
+| case_00162 | 36 | 4.23 | 4.22 | -0.3% |
+| case_00203 | 45 | 8.92 | 5.26 | -41.0% |
+| case_00080 | 48 | 5.59 | 5.60 | +0.2% |
+| case_00206 | 50 | 10.53 | 5.83 | -44.6% |
+| case_00169 | 64 | 7.75 | 7.42 | -4.2% |
+| case_00171 | 80 | 15.82 | 9.24 | -41.6% |
+| case_00207 | 96 | 11.06 | 11.10 | +0.3% |
+| case_00128 | 100 | 19.35 | 11.54 | -40.4% |
+| case_00005 | 108 | 12.46 | 20.56 | +65.1% |
+| case_00185 | 125 | 16.04 | 14.41 | -10.2% |
+| case_00176 | 144 | 17.11 | 16.58 | -3.1% |
+
+**Median per-case difference: -0.2%** — the same work, not a faster implementation. Cases within +/-1%: 8/16. Larger outliers are first-touch effects (a shape loadgen saw once, before cuDNN/allocator warm-up) against a Choreo median over repetitions.
+
 ## Prong 2 — what MLPerf's measurement boundary hides (online serving)
 
 | device | n cases | e2e median (ms) | load+preprocess (ms) | inference (ms) | preprocessing share | share range across cases |

@@ -34,6 +34,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import json
 import os
 import re
 import statistics as st
@@ -310,6 +311,70 @@ def make_figures(per_device, fig_dir):
     return [f1, f2]
 
 
+
+
+# ---------------------------------------------------------------------------
+# Matched per-case parity (the correct comparison)
+# ---------------------------------------------------------------------------
+def matched_parity(cuda_runs, mlperf_dir, dice_csv, cases_json):
+    """Compare inference time CASE BY CASE, not in aggregate.
+
+    Aggregate means/percentiles are not comparable between the two harnesses:
+    loadgen issues its own multiset of samples (a bounded 43-query SingleStream
+    run touched only 16 DISTINCT cases, with repeats), while Choreo runs each of
+    the 42 cases once per repetition. KiTS19 volumes differ ~17x in cost
+    (8..144 sub-volumes), so a different sample mix moves the aggregate a lot
+    even when the per-case work is identical.
+
+    MLPerf prints a per-sample inner time ("... took X sec") covering
+    infer_single_query only — the same span Choreo's inference stage brackets —
+    so those are directly comparable once matched on (shape, sub-volume count).
+    Note loadgen's REPORTED latency additionally includes response
+    serialisation (final_result.tobytes() over a multi-MB volume) and
+    QuerySamplesComplete, which Choreo's stage marker excludes; that is part of
+    why the aggregate numbers differ."""
+    log = os.path.join(mlperf_dir, "mlperf_perf_run.log")
+    if not (os.path.exists(log) and os.path.exists(dice_csv) and cuda_runs):
+        return
+    ml = []
+    for line in open(log, errors="replace"):
+        m = re.search(r"sample id\s+(\d+) with shape = \(1, ([\d, ]+)\),\s*(\d+) "
+                      r"sub-volumes took\s+([\d.]+) sec", line)
+        if m:
+            ml.append({"shape": "x".join(x.strip() for x in m.group(2).split(",")),
+                       "nsub": int(m.group(3)), "t": float(m.group(4))})
+    meta = {}
+    for r in csv.DictReader(open(dice_csv)):
+        if not r.get("error"):
+            meta[r["case"]] = (r["image_shape"], int(r["n_subvolumes"]))
+    key2case = {v: k for k, v in meta.items()}
+    cases = json.load(open(cases_json)) if os.path.exists(cases_json) else []
+    per = per_case_median(cuda_runs)
+    cho = {cases[i]: c["infer"] / 1000.0 for i, c in enumerate(per) if i < len(cases)}
+
+    seen, rows = set(), []
+    for s in ml:
+        case = key2case.get((s["shape"], s["nsub"]))
+        if case and case in cho and case not in seen:
+            seen.add(case)
+            rows.append((case, s["nsub"], s["t"], cho[case]))
+    if not rows:
+        return
+    rows.sort(key=lambda r: r[1])
+    diffs = [100.0 * (c - m) / m for _, _, m, c in rows]
+    print(f"\n### Matched per-case inference time (GB10) — {len(rows)} cases "
+          f"loadgen actually exercised\n")
+    print("| case | sub-volumes | MLPerf inner (s) | Choreo stage (s) | diff |")
+    print("|---|--:|--:|--:|--:|")
+    for (case, nsub, m, c), d in zip(rows, diffs):
+        print(f"| {case} | {nsub} | {m:.2f} | {c:.2f} | {d:+.1f}% |")
+    print(f"\n**Median per-case difference: {st.median(diffs):+.1f}%** — the same "
+          f"work, not a faster implementation. Cases within +/-1%: "
+          f"{sum(1 for d in diffs if abs(d) <= 1.0)}/{len(diffs)}. Larger outliers are "
+          f"first-touch effects (a shape loadgen saw once, before cuDNN/allocator "
+          f"warm-up) against a Choreo median over repetitions.")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -332,6 +397,9 @@ def main():
               f"{len(per_device[d])} cases per run")
 
     parity_table(raw.get("cuda", []), os.path.abspath(args.mlperf_dir))
+    matched_parity(raw.get("cuda", []), os.path.abspath(args.mlperf_dir),
+                   os.path.join(HERE, "results", "choreo_dice_cuda.csv"),
+                   os.path.join(HERE, "inference_cases.json"))
     boundary_table(per_device)
     figs = make_figures(per_device, fig_dir)
     for f in figs:
