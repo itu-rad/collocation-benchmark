@@ -274,6 +274,37 @@ def paired_overhead(base_by_run, arm_by_run, n_boot=10000, seed=0, estimator=Non
 # ---------------------------------------------------------------------------
 # Per-cell assembly
 # ---------------------------------------------------------------------------
+# Some cells are BISTABLE: a given process launch lands in one of two distinct
+# step-time regimes (mps EfficientNetV2-S b4: ~46 ms or ~105 ms, a 2.3x gap, same
+# config). If the arms of one repetition land in DIFFERENT regimes, that pair
+# measures the regime gap (~60 ms), not the wrapper (~50 us) — it is not a valid
+# pair at all. MAX_REGIME_RATIO drops such repetitions.
+#
+# This filter is deliberately OUTCOME-INDEPENDENT: it looks only at the arms'
+# absolute step times, never at the overhead they imply, so it cannot bias the
+# result toward the answer we expect. Discarding pairs because their *difference*
+# looked wrong would be exactly that bias; this is not that.
+MAX_REGIME_RATIO = 0.0          # 0 = disabled; 1.25 = arms must agree within 25%
+
+
+def _regime_filter(arms, ratio):
+    """Drop repetitions whose arms sit in different step-time regimes.
+    `arms` = list of {run: steps}; returns (filtered arms, dropped run ids)."""
+    if not ratio:
+        return arms, []
+    shared = set(arms[0])
+    for a in arms[1:]:
+        shared &= set(a)
+    dropped = []
+    for r in sorted(shared):
+        meds = [float(np.median(a[r])) for a in arms]
+        if min(meds) > 0 and max(meds) / min(meds) > ratio:
+            dropped.append(r)
+    if dropped:
+        arms = [{k: v for k, v in a.items() if k not in dropped} for a in arms]
+    return arms, dropped
+
+
 def cell_result(metas, model, batch, warmup):
     """core/total overhead for one (model,batch) cell, or None if incomplete."""
     base = steps_by_run(select(metas, impl="baseline", model=model, batch=batch), warmup)
@@ -281,7 +312,17 @@ def cell_result(metas, model, batch, warmup):
     t2 = steps_by_run(select(metas, impl="choreo", trace=ARM_TRACED, model=model, batch=batch), warmup)
     if not base or not t0:
         return None
-    out = {"model": model, "batch": batch,
+    dropped = []
+    if MAX_REGIME_RATIO:
+        arms = [base, t0, t2] if t2 else [base, t0]
+        arms, dropped = _regime_filter(arms, MAX_REGIME_RATIO)
+        if t2:
+            base, t0, t2 = arms
+        else:
+            base, t0 = arms
+        if not base or not t0:
+            return None
+    out = {"model": model, "batch": batch, "regime_dropped": dropped,
            "base": summarize(base), "t0": summarize(t0),
            "core": paired_overhead(base, t0)}
     out["t2"] = summarize(t2) if t2 else None
@@ -328,6 +369,11 @@ def print_cells(cells, device):
     print("\n(core = Choreo wrapper, tracing off, vs the bare monolith; "
           "+tracing = wrapper + radt bulk/proc span export. "
           "Brackets: 95% CI, bootstrap over run pairs.)")
+    for c in cells:
+        if c.get("regime_dropped"):
+            print(f"- MIXED-REGIME repetitions dropped, "
+                  f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}: "
+                  f"{c['regime_dropped']} (arms landed in different step-time regimes)")
     for c in cells:
         if c["core"]:
             pp = " / ".join(f"{v:+.1f}" for v in c["core"]["per_pair_us"])
@@ -450,7 +496,7 @@ def make_figure(per_device, fig_dir):
 
 # ---------------------------------------------------------------------------
 def main():
-    global DROP_RUNS, ESTIMATOR
+    global DROP_RUNS, ESTIMATOR, MAX_REGIME_RATIO
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
@@ -461,6 +507,11 @@ def main():
                     help="discard the first N repetitions of each cell entirely "
                          "(SYSTEM warm-up: the first run of a collection is slower "
                          "for its whole duration; see DROP_RUNS)")
+    ap.add_argument("--max-regime-ratio", type=float, default=MAX_REGIME_RATIO,
+                    help="drop repetitions whose arms differ in step time by more "
+                         "than this ratio (e.g. 1.25); catches bistable cells. "
+                         "0 disables. Outcome-independent: looks at step times, "
+                         "not at the measured overhead.")
     ap.add_argument("--estimator", choices=["median", "mean"], default=ESTIMATOR,
                     help="how per-run paired differences are combined "
                          "(median = robust to a contaminated repetition)")
@@ -469,6 +520,7 @@ def main():
     args = ap.parse_args()
     DROP_RUNS = args.drop_runs
     ESTIMATOR = args.estimator
+    MAX_REGIME_RATIO = args.max_regime_ratio
 
     if args.latex is not None:
         metas = load(args.results_dir, args.latex)
