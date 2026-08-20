@@ -203,15 +203,27 @@ def parity_table(cuda_runs, mlperf_dir):
                  if key in ref and key in cho else "same 42-case KiTS19 set")
         print(f"| {label} | {rd} | {cd} | {delta} |")
     ml = summ.get("Mean latency (ns)")
+    mp50 = next((v for k, v in summ.items()
+                 if re.match(r"50(\.0+)?(th)? percentile latency \(ns\)", k)), None)
     mp90 = next((v for k, v in summ.items()
-                 if re.match(r"90(\.0+)?th percentile latency \(ns\)", k)), None)
-    ci = f"{st.median(infer):.0f}" if infer else "—"
-    print(f"| inference latency, mean (ms) | {ml:.0f} | {ci} | "
-          f"like-for-like: MLPerf times ONLY inference |" if ml else
-          f"| inference latency, mean (ms) | — | {ci} | like-for-like |")
-    if mp90 and infer:
+                 if re.match(r"90(\.0+)?(th)? percentile latency \(ns\)", k)), None)
+    # Compare MEDIANS first: MLPerf's own headline for SingleStream is a
+    # percentile, and the mean is pulled around by the case mix (volume sizes
+    # differ ~10x across KiTS19 cases, and the two harnesses do not issue the
+    # identical multiset of samples).
+    if infer:
+        cmed = st.median(infer)
+        cmean = st.mean(infer)
         p90 = sorted(infer)[int(0.9 * (len(infer) - 1))]
-        print(f"| inference latency, p90 (ms) | {mp90:.0f} | {p90:.0f} | |")
+        if mp50:
+            d = 100.0 * abs(cmed - mp50) / mp50
+            print(f"| inference latency, median (ms) | {mp50:.0f} | {cmed:.0f} | "
+                  f"**{d:.1f}% apart** — like-for-like: MLPerf times ONLY inference |")
+        if ml:
+            print(f"| inference latency, mean (ms) | {ml:.0f} | {cmean:.0f} | "
+                  f"mean is case-mix sensitive; see median |")
+        if mp90:
+            print(f"| inference latency, p90 (ms) | {mp90:.0f} | {p90:.0f} | |")
     if e2e:
         print(f"| end-to-end per request (ms) | not measured | {st.median(e2e):.0f} | "
               f"MLPerf's boundary excludes load+preprocess — prong 2 |")
