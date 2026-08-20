@@ -258,6 +258,20 @@ done
   # quality (only if configs changed):  Workflow  llm-judge-selfrag
   ```
 
+### E3 — compliant MLPerf run: DISCARDED, needs a rerun (2026-08-20)
+- The 1024-query compliant SingleStream run was accidentally started **twice** (an armed
+  chain raced my `pkill` by ~4 s and survived as an orphan, ppid=1, while a second copy
+  started 15 min later). The two contended for the GPU and wrote the same log, so **their
+  latency numbers are meaningless** — quarantined as `DISCARDED_contended_perf_full.log`.
+- **What is unaffected:** the bounded 43-query reference run (04:33–04:39, sole GPU user)
+  and therefore every E3 number currently reported; and the Choreo Dice values, which are
+  accuracy, not timing.
+- **Still to do:** one clean compliant run (~2 h on an idle GPU) to replace the
+  `INVALID`-flagged bounded reference latency. `analyze_e3.py` already prefers
+  `logs_perf_full/` automatically when present, so it only needs the run.
+- **Lesson:** before launching on GB10, check for *orphaned* `run.py`/`main.py` (ppid=1),
+  not just the wrapper scripts — see [[gb10-collection-gotchas]].
+
 ### E4 — OPEN CONCERN found during collection (2026-08-20)
 - **The serving config is SATURATED, so the phase split includes contention.** First
   `factoid_decomposed_mlx` run: 110 queries arrive at the pilot-tuned Poisson rate
