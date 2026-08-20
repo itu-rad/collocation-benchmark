@@ -446,47 +446,72 @@ def print_latex(cells, device):
 # Figure: 2x2 amortization panels
 # ---------------------------------------------------------------------------
 def make_figure(per_device, fig_dir):
+    """Overhead vs STEP TIME — the variable the amortization claim is about.
+
+    Plots 95% CIs, because most sweep cells have only 3 usable repetitions and
+    their intervals cross zero: without error bars a noisy cell would look
+    exactly as authoritative as the R=9 anchor. No titles — the caption carries
+    that in the paper; panels are identified by their axis labels."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots(2, 2, figsize=(12.5, 8))
-    colors = {"mps": "tab:blue", "cuda": "tab:orange"}
+    style = {"mps": ("tab:blue", "o", "M2 Pro (mps)"),
+             "cuda": ("tab:orange", "s", "GB10 (cuda)")}
+    fig, ax = plt.subplots(1, 2, figsize=(12, 4.6))
+
     for dev, cells in per_device.items():
-        bs = sorted([c for c in cells if c["model"] == ANCHOR_MODEL], key=lambda c: c["batch"])
-        ms = sorted([c for c in cells if c["batch"] == ANCHOR_BATCH],
-                    key=lambda c: c["base"]["median"])
-        col = colors.get(dev, None)
-        for j, (sel, xlabel) in enumerate(((bs, "batch size"), (ms, "model (by step-time)"))):
-            if len(sel) < 2:
-                continue
-            xs = list(range(len(sel)))
-            ticks = ([str(c["batch"]) for c in sel] if j == 0
-                     else [MODEL_DISPLAY.get(c["model"], c["model"]).replace("EfficientNetV2-", "Eff-")
-                           for c in sel])
-            # top row: relative (%); bottom row: absolute (µs/step)
-            for i, (key, ylabel) in enumerate((("pct", "core overhead (% of step)"),
-                                               ("abs_us", "core overhead (µs/step)"))):
-                a = ax[i][j]
-                ys = [c["core"][key] for c in sel]
-                a.plot(xs, ys, "o-", color=col, lw=1.4, ms=5, label=f"{dev} core")
-                tot = [c["total"][key] for c in sel if c["total"]]
-                if len(tot) == len(sel):
-                    a.plot(xs, tot, "s--", color=col, lw=1.1, ms=4, alpha=0.6,
-                           label=f"{dev} +tracing")
-                a.set_xticks(xs); a.set_xticklabels(ticks, fontsize=8)
-                a.set_xlabel(xlabel); a.set_ylabel(ylabel)
-                a.grid(alpha=0.3)
-                a.axhline(0, color="k", lw=0.6, alpha=0.4)
-                if i == 0:
-                    a.set_title(("Relative overhead vs batch" if j == 0
-                                 else "Relative overhead vs model (batch 8)"), fontsize=10)
-                else:
-                    a.set_title(("Absolute overhead vs batch" if j == 0
-                                 else "Absolute overhead vs model"), fontsize=10)
-                a.legend(fontsize=7)
-    fig.suptitle("E2 — modularity overhead: relative (top) amortizes as the step grows; "
-                 "absolute (bottom) is a ~fixed per-step cost", fontsize=12)
+        color, marker, label = style.get(dev, ("tab:gray", "^", dev))
+        cs = sorted([c for c in cells if c["core"]], key=lambda c: c["base"]["median"])
+        xs = [c["base"]["median"] for c in cs]
+        for a, key, lo_k, hi_k in ((ax[0], "pct", "pct_lo", "pct_hi"),
+                                   (ax[1], "abs_us", "abs_lo_us", "abs_hi_us")):
+            ys = [c["core"][key] for c in cs]
+            lo = [c["core"][key] - c["core"][lo_k] for c in cs]
+            hi = [c["core"][hi_k] - c["core"][key] for c in cs]
+            a.errorbar(xs, ys, yerr=[lo, hi], fmt=marker + "-", color=color,
+                       ms=5, lw=1.3, capsize=3, elinewidth=1, alpha=0.9,
+                       label=f"{label} core")
+        # ring the high-confidence anchor cell (R=9)
+        for c in cs:
+            if c["model"] == ANCHOR_MODEL and c["batch"] == ANCHOR_BATCH:
+                for a, key in ((ax[0], "pct"), (ax[1], "abs_us")):
+                    a.plot([c["base"]["median"]], [c["core"][key]], marker,
+                           color=color, ms=12, mfc="none", mew=2,
+                           label=f"{label} anchor (R=9)")
+
+    # A single pathological cell (mps b2, CI to +25%) would squash every other
+    # point, so clip each axis to the bulk of the data and mark any interval that
+    # runs off-scale rather than silently cropping it.
+    for a, key, lo_k, hi_k in ((ax[0], "pct", "pct_lo", "pct_hi"),
+                               (ax[1], "abs_us", "abs_lo_us", "abs_hi_us")):
+        pts, los, his = [], [], []
+        for cells in per_device.values():
+            for c in cells:
+                if c["core"]:
+                    pts.append(c["core"][key])
+                    los.append(c["core"][lo_k])
+                    his.append(c["core"][hi_k])
+        if not pts:
+            continue
+        span = max(max(pts) - min(pts), 1e-9)
+        lim_lo = min(min(pts) - 0.6 * span, np.percentile(los, 25))
+        lim_hi = max(max(pts) + 0.6 * span, np.percentile(his, 75))
+        a.set_ylim(lim_lo, lim_hi)
+        n_clip = sum(1 for l, h in zip(los, his) if l < lim_lo or h > lim_hi)
+        if n_clip:
+            a.annotate(f"{n_clip} interval(s) extend off-scale",
+                       xy=(0.02, 0.03), xycoords="axes fraction",
+                       fontsize=7, style="italic", color="0.35")
+
+    ax[0].set_ylabel("core overhead (% of step)")
+    ax[1].set_ylabel("core overhead (µs/step)")
+    for a in ax:
+        a.set_xscale("log")
+        a.set_xlabel("baseline step time (ms, log scale)")
+        a.axhline(0, color="k", lw=0.8, alpha=0.5)
+        a.grid(alpha=0.3, which="both")
+        a.legend(fontsize=8)
     fig.tight_layout()
     out = os.path.join(fig_dir, "e2_modularity_scale.png")
     fig.savefig(out, dpi=140)

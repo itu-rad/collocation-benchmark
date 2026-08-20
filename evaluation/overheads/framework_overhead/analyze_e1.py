@@ -490,19 +490,21 @@ def make_figures(per_device, fig_dir):
                 if s["n"]:
                     depths.append(d); meds.append(s["median"])
             if depths:
-                ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3, label=f"tracing {lbl}")
+                ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3,
+                        label=f"{dev}: tracing {lbl}")
                 lq_ns = [m * NS_PER_MS for m in meds]
                 slope, icpt = ols_slope(depths, lq_ns)
                 xs = [min(depths), max(depths)]
                 ax.plot(xs, [(slope * x + icpt) / NS_PER_MS for x in xs],
                         "--", color=color, lw=0.9, alpha=0.7)
-                ax.annotate(f"{lbl}: {slope / NS_PER_US:.1f} us/stage",
+                ax.annotate(f"{dev} {lbl}: {slope / NS_PER_US:.1f} us/stage",
                             xy=(0.05, 0.9 if trace else 0.8), xycoords="axes fraction",
                             color=color, fontsize=9)
-        ax.set_title(f"{dev}: per-query latency vs depth")
-        ax.set_xlabel("pipeline depth (stages)"); ax.set_ylabel("L_q median (ms)")
+        # No titles: the caption carries that in the paper. Device identity is in
+        # the legend and the fitted-slope annotation instead.
+        ax.set_xlabel("pipeline depth (stages)")
+        ax.set_ylabel(f"{dev}: per-query latency L_q median (ms)")
         ax.grid(alpha=0.3); ax.legend(fontsize=8)
-    fig.suptitle("E1 -- framework dispatch is linear in depth (constant marginal per-stage cost)")
     fig.tight_layout()
     f1 = os.path.join(fig_dir, "e1_depth_flatness.png")
     fig.savefig(f1, dpi=140); plt.close(fig)
@@ -521,7 +523,6 @@ def make_figures(per_device, fig_dir):
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("payload size (bytes; 0->1 for log axis)")
     ax.set_ylabel("per-stage self-duration median (us)")
-    ax.set_title("E1 -- reference passing is O(1) in payload; deep-copy is O(payload)")
     ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
     fig.tight_layout()
     f2 = os.path.join(fig_dir, "e1_payload_zero_copy.png")

@@ -186,3 +186,4 @@ Warm-up epochs dropped per run: WARMUP_K=1. Latencies from the monotonic perf cl
 **ref** cost vs payload: 0.007 us/MB -> flat (O(1) in payload size).
 
 **Figures:** `/Users/roba/Documents/work/research/collocation-benchmark/evaluation/overheads/framework_overhead/paper_assets/e1_depth_flatness.png`, `/Users/roba/Documents/work/research/collocation-benchmark/evaluation/overheads/framework_overhead/paper_assets/e1_payload_zero_copy.png`
+
