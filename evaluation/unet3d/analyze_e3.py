@@ -129,16 +129,19 @@ def parse_mlperf_summary(path):
     if not os.path.exists(path):
         return {}
     out = {}
+    # Percentile labels vary across loadgen versions ("90th" vs "90.0th"), so
+    # match any "<number>th percentile" as well as the named rows.
     for line in open(path, encoding="utf-8", errors="replace"):
-        m = re.match(r"\s*(Mean latency \(ns\)|90th percentile latency \(ns\)|"
-                     r"Early stopping.*|Result is|Min latency \(ns\)|"
-                     r"Max latency \(ns\)|50.00 percentile latency \(ns\))\s*:\s*(.+)", line)
-        if m:
-            k, v = m.group(1).strip(), m.group(2).strip()
-            try:
-                out[k] = float(v) / 1e6          # ns -> ms
-            except ValueError:
-                out[k] = v
+        m = re.match(r"\s*([A-Za-z0-9_.]+(?:\s+[A-Za-z()/_.]+)*)\s*:\s*(.+)", line)
+        if not m:
+            continue
+        k, v = m.group(1).strip(), m.group(2).strip()
+        if not re.search(r"latency|Result is|Early stopping|QPS", k):
+            continue
+        try:
+            out[k] = float(v) / 1e6 if "(ns)" in k else float(v)
+        except ValueError:
+            out[k] = v
         if line.startswith("Scenario"):
             out["Scenario"] = line.split(":", 1)[1].strip()
     return out
@@ -200,7 +203,8 @@ def parity_table(cuda_runs, mlperf_dir):
                  if key in ref and key in cho else "same 42-case KiTS19 set")
         print(f"| {label} | {rd} | {cd} | {delta} |")
     ml = summ.get("Mean latency (ns)")
-    mp90 = summ.get("90th percentile latency (ns)")
+    mp90 = next((v for k, v in summ.items()
+                 if re.match(r"90(\.0+)?th percentile latency \(ns\)", k)), None)
     ci = f"{st.median(infer):.0f}" if infer else "—"
     print(f"| inference latency, mean (ms) | {ml:.0f} | {ci} | "
           f"like-for-like: MLPerf times ONLY inference |" if ml else
