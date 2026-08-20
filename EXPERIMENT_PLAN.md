@@ -272,6 +272,14 @@ done
   SERIALIZED pass (`serialize_queries`, `queue_depth 1`, as E3 uses) for a clean
   per-call phase characterisation, and use the serving runs only for end-to-end. (b) is
   the measurement that actually supports the flip claim. **Author decision needed.**
+- **Early mlx signal (factoid, r=1) — two things worth keeping:** (i) *decomposition is
+  prefill-amplifying* — prefill share 96.9% (decomposed) / 98.1% (decomposed_shared) vs
+  **79.1%** (monolith 9B) / 83.8% (monolith 4B), because each sub-call re-reads the
+  retrieved context but emits few tokens, converting decode work into repeated prefill;
+  (ii) *decomposed* decodes at **11.5 tok/s** while *decomposed_shared* reaches **48.3** on
+  the same 4B weights — consistent with four separate model copies causing memory pressure
+  on the 16 GB M2, which the shared arm avoids. (ii) is a confound for the phase-balance
+  claim on mlx and may not reproduce on the 128 GB GB10 — check the cross-device table.
 - Note the rate knob was tuned before the e5-base-v2 retriever upgrade, so 0.6x-saturation
   may no longer hold — re-pilot the rate if we keep the serving config.
 
