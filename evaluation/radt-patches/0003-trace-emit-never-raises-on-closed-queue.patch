@@ -1,0 +1,31 @@
+diff --git a/radt/radt/run/trace.py b/radt/radt/run/trace.py
+index cf7bef0..cdf062d 100644
+--- a/radt/radt/run/trace.py
++++ b/radt/radt/run/trace.py
+@@ -89,14 +89,25 @@ def _next_id():
+ 
+ 
+ def _emit(item):
++    """Append one event. Never raises: the workload thread must not die because
++    tracing is shutting down."""
+     global _dropped
+     q = _queue
+-    if q is None:
++    if q is None or not _enabled:
+         return
+     try:
+         q.put_nowait(item)
+     except queue.Full:
+         _dropped += 1
++    except (ValueError, OSError, AssertionError):
++        # The queue was closed underneath us. span() checks _enabled on ENTRY,
++        # but its finally-block emits the end event later: a pipeline thread can
++        # still be inside a span when the main thread calls shutdown(), which
++        # closes the queue. Previously that surfaced as
++        # "ValueError: Queue is closed" out of the workload thread (seen on the
++        # multi-threaded Self-RAG pipeline). Count it as a drop instead; the
++        # batch exporter already tolerates incomplete traces.
++        _dropped += 1
+ 
+ 
+ @contextlib.contextmanager
