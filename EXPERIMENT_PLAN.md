@@ -258,6 +258,23 @@ done
   # quality (only if configs changed):  Workflow  llm-judge-selfrag
   ```
 
+### E4 — OPEN CONCERN found during collection (2026-08-20)
+- **The serving config is SATURATED, so the phase split includes contention.** First
+  `factoid_decomposed_mlx` run: 110 queries arrive at the pilot-tuned Poisson rate
+  (0.1167 q/s) but only **28 reached the End stage** in 1917 s; per-role prefill share is
+  **89–98%** and decode only **9–14 tok/s** (low for a 4B on an M2). With `queue_depth 110`
+  several LLM stages run concurrently on one GPU, so each stage's wall-clock prefill/decode
+  includes time-slicing against the others.
+- **Why it matters:** E4's claim is about the prefill(compute)/decode(memory) BALANCE. A
+  contended measurement inflates both phases and can distort their ratio, which is exactly
+  the quantity the cross-device flip rests on.
+- **Options:** (a) keep this as the *serving* view and report the caveat; (b) add a
+  SERIALIZED pass (`serialize_queries`, `queue_depth 1`, as E3 uses) for a clean
+  per-call phase characterisation, and use the serving runs only for end-to-end. (b) is
+  the measurement that actually supports the flip claim. **Author decision needed.**
+- Note the rate knob was tuned before the e5-base-v2 retriever upgrade, so 0.6x-saturation
+  may no longer hold — re-pilot the rate if we keep the serving config.
+
 ## E5 — Collocation (radt-orchestrated)
 - **Thesis.** engine-specific contention; H2 phase-split control; per-engine attribution.
 - **Done.** staged apparatus (configs, `analyze_staged.py`, `generate_stage_configs.py`, AMC sampler+

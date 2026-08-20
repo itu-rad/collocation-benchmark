@@ -171,6 +171,43 @@ def flip_table(per_device):
           "is what moves the optimal decomposition and can flip which arm wins.")
 
 
+
+
+def role_table(per_device):
+    """Per-ROLE prefill/decode. This is the mechanism behind the flip: the roles
+    have very different phase shapes (a grader reads long documents and emits one
+    token -> almost pure prefill; a generator emits a long answer -> decode-heavy),
+    so decomposing changes the MIX of compute-bound vs memory-bound work, not just
+    the amount. Pooling roles together hides exactly that."""
+    for dev, runs in per_device.items():
+        if not runs:
+            continue
+        agg = defaultdict(lambda: {"prefill": [], "decode": [], "tok": []})
+        for meta, stages in runs:
+            for stage, rows in stages.items():
+                for r in rows:
+                    k = (meta["arm"], stage)
+                    agg[k]["prefill"].append(r["prefill_ms"])
+                    agg[k]["decode"].append(r["decode_ms"])
+                    if r["tokens"] and r["decode_ms"] > 0:
+                        agg[k]["tok"].append(1000.0 * r["tokens"] / r["decode_ms"])
+        if not agg:
+            continue
+        print(f"\n### {DEV_LABEL.get(dev, dev)} — per-role phase shape\n")
+        print("| arm | LLM role | calls | prefill median (ms) | decode median (ms) "
+              "| prefill share | decode tok/s |")
+        print("|---|---|--:|--:|--:|--:|--:|")
+        for k in sorted(agg):
+            a = agg[k]
+            if not a["prefill"]:
+                continue
+            pf, dc = st.median(a["prefill"]), st.median(a["decode"])
+            share = 100.0 * pf / (pf + dc) if (pf + dc) else float("nan")
+            ts = f"{st.median(a['tok']):.1f}" if a["tok"] else "—"
+            print(f"| {k[0]} | {k[1]} | {len(a['prefill'])} | {pf:.0f} | {dc:.0f} | "
+                  f"{share:.1f}% | {ts} |")
+
+
 def make_figure(per_device, fig_dir):
     import matplotlib
     matplotlib.use("Agg")
@@ -210,12 +247,14 @@ def main():
     print("prefill = first_token(start->end) (TTFT, compute-bound); "
           "decode = run_end - first_token_end (memory-bandwidth-bound). "
           "Pooled over LLM stages and repetitions; medians.\n")
-    per_device = {}
+    per_device, raw = {}, {}
     for dev in args.devices:
         runs = load(args.results_dir, dev)
         print(f"- {DEV_LABEL.get(dev, dev)}: {len(runs)} run-file(s)")
+        raw[dev] = runs
         per_device[dev] = agg_by_arm(runs) if runs else {}
     table(per_device)
+    role_table(raw)
     flip_table(per_device)
     f = make_figure(per_device, fig_dir)
     if f:
