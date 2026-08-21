@@ -294,9 +294,27 @@ inference.py:131`). But **bitsandbytes NF4 is known to pay a per-token dequantis
 that hurts decode**, while MLX's 4-bit path is natively optimised. So "decode is
 device-invariant" may partly be "bitsandbytes decode is slow", i.e. kernel quality rather
 than memory bandwidth. A reviewer will raise this.
-**Cheap test:** re-run one cuda arm with `quantize: false` (bf16 weights, more bandwidth per
-token but no dequant) and see which way decode moves. If decode improves, the current
-decode gap is implementation, not hardware.
+**RESOLVED 2026-08-20 — the confound is dead, and the test CONFIRMS the mechanism.**
+Re-ran `factoid_monolith_4b_cuda` with `quantize: false` (bf16 weights, 4x the weight
+traffic per token, no dequant), everything else identical:
+
+| stage | metric | NF4 (4-bit) | bf16 | change |
+|---|---|--:|--:|--:|
+| Monolith LLM | prefill | 458 ms | 397 ms | **-13.3%** |
+| Monolith LLM | decode | 1196 ms | 2029 ms | **+69.6%** |
+| Monolith LLM | decode tok/s | 22.4 | 13.3 | -40.9% |
+| Query rewrite | prefill | 317 ms | 279 ms | -12.3% |
+| Query rewrite | decode | 619 ms | 878 ms | +41.8% |
+
+Removing NF4 made decode **70% SLOWER**, not faster. Had the decode gap been a
+bitsandbytes dequantisation artifact, dropping NF4 would have sped decode up. Instead the
+two phases move in OPPOSITE directions under the same manipulation:
+  * **decode slows with wider weights** -> weight-bandwidth-bound, as claimed;
+  * **prefill speeds up without dequant** -> compute-bound, as claimed.
+This is an independent manipulation confirming the prefill(compute)/decode(memory)
+characterisation the flip claim rests on, and it answers the obvious reviewer objection
+head-on. Artifact: `evaluation/self_rag/results/quantest/e4_quantest_bf16_cuda.csv`,
+config `configs/quantest_factoid_monolith_4b_bf16_cuda.yml`.
 
 ### E4 — OPEN CONCERN found during collection (2026-08-20)
 - **The serving config is SATURATED, so the phase split includes contention.** First
