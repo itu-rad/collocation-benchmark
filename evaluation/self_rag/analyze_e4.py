@@ -160,6 +160,46 @@ def table(per_device):
                   f"{rs:.0f} | {share:.1f}% | {ts} |")
 
 
+def flip_table_ci(raw):
+    """Cross-device table WITH hierarchical bootstrap CIs on every ratio.
+
+    The panel's standing objection to the previous version was that it reported
+    point ratios with no uncertainty while replicates were sitting on disk. A
+    ratio whose CI spans 1.0 is not evidence of a difference."""
+    devs = [d for d in ("mlx", "cuda") if raw.get(d)]
+    if len(devs) < 2:
+        print(f"\n_(cross-device CIs need both devices; have {devs})_\n")
+        return
+    a_runs, b_runs = raw[devs[0]], raw[devs[1]]
+    arms = sorted({(m["task"], m["arm"]) for m, _ in a_runs}
+                  & {(m["task"], m["arm"]) for m, _ in b_runs})
+    if not arms:
+        return
+    print(f"\n## Cross-device with 95% CIs — {DEV_LABEL[devs[0]]} vs "
+          f"{DEV_LABEL[devs[1]]} (run 1 dropped as warm-up)\n")
+    print("| task | arm | prefill speedup [95% CI] | decode speedup [95% CI] | runs |")
+    print("|---|---|--:|--:|--:|")
+    for task, arm in arms:
+        pa = by_run(a_runs, task, arm, "prefill_ms")
+        pb = by_run(b_runs, task, arm, "prefill_ms")
+        da = by_run(a_runs, task, arm, "decode_ms")
+        db = by_run(b_runs, task, arm, "decode_ms")
+        if not (pa and pb and da and db):
+            continue
+        pr = st.median([x for v in pa.values() for x in v]) / \
+             st.median([x for v in pb.values() for x in v])
+        dr = st.median([x for v in da.values() for x in v]) / \
+             st.median([x for v in db.values() for x in v])
+        plo, phi = ci_ratio(pa, pb)
+        dlo, dhi = ci_ratio(da, db)
+        print(f"| {task} | {arm.replace('_serial','')} | "
+              f"**{pr:.2f}x** [{plo:.2f}, {phi:.2f}] | "
+              f"{dr:.2f}x [{dlo:.2f}, {dhi:.2f}] | "
+              f"{min(len(pa), len(pb))} |")
+    print("\nDecode here is a per-CALL duration ratio; see the tok/s columns for "
+          "the per-token rate, which is the speed measure.")
+
+
 def flip_table(per_device):
     """The cross-device comparison: is the phase balance (and hence which arm
     wins) different on the two devices?"""
@@ -238,6 +278,79 @@ def role_table(per_device):
                   f"{share:.1f}% | {ts} |")
 
 
+
+
+# ---------------------------------------------------------------------------
+# Uncertainty
+# ---------------------------------------------------------------------------
+DROP_RUNS = 1          # first repetition discarded as system warm-up (see
+                       # first-run-system-warmup: the first run of a cell is
+                       # slower for its entire duration, and dropping it flipped
+                       # the sign of E2's core overhead).
+
+
+def by_run(runs, task, arm, key="prefill_ms"):
+    """{run_id: [per-call values]} for one cell — the cluster structure the
+    hierarchical bootstrap needs (the RUN is the unit of replication, not the
+    call: calls within a run share a process, a cache and a thermal state)."""
+    out = {}
+    for meta, stages in runs:
+        if meta["task"] != task or meta["arm"] != arm:
+            continue
+        vals = [r[key] for rows in stages.values() for r in rows
+                if r.get(key) is not None]
+        if vals:
+            out[meta["run"]] = vals
+    if DROP_RUNS:
+        for r in sorted(out)[:DROP_RUNS]:
+            out.pop(r, None)
+    return out
+
+
+def _boot_median(by_run_map, n_boot=4000, seed=0):
+    """Bootstrap replicates of the pooled median: resample RUNS with
+    replacement, then calls within each resampled run."""
+    import random
+    vecs = [v for _, v in sorted(by_run_map.items()) if v]
+    if len(vecs) < 2:
+        return []
+    rng = random.Random(seed)
+    R = len(vecs)
+    out = []
+    for _ in range(n_boot):
+        pooled = []
+        for _ in range(R):
+            v = vecs[rng.randrange(R)]
+            pooled.extend(rng.choices(v, k=len(v)))
+        pooled.sort()
+        n = len(pooled)
+        out.append(pooled[n // 2] if n % 2 else 0.5 * (pooled[n // 2 - 1] + pooled[n // 2]))
+    out.sort()
+    return out
+
+
+def ci_median(by_run_map, alpha=0.05):
+    b = _boot_median(by_run_map)
+    if not b:
+        return (float("nan"), float("nan"))
+    lo = b[int(alpha / 2 * (len(b) - 1))]
+    hi = b[int((1 - alpha / 2) * (len(b) - 1))]
+    return (lo, hi)
+
+
+def ci_ratio(num_map, den_map, alpha=0.05):
+    """CI on median(num)/median(den) with the two arms resampled independently
+    (they are separate runs, so there is no pairing to preserve)."""
+    a, b = _boot_median(num_map, seed=1), _boot_median(den_map, seed=2)
+    if not a or not b:
+        return (float("nan"), float("nan"))
+    m = min(len(a), len(b))
+    r = sorted(x / y for x, y in zip(a[:m], b[:m]) if y)
+    if not r:
+        return (float("nan"), float("nan"))
+    return (r[int(alpha / 2 * (len(r) - 1))], r[int((1 - alpha / 2) * (len(r) - 1))])
+
+
 def make_figure(per_device, fig_dir):
     import matplotlib
     matplotlib.use("Agg")
@@ -288,6 +401,7 @@ def main():
     table(per_device)
     role_table(raw)
     flip_table(per_device)
+    flip_table_ci(raw)
     f = make_figure(per_device, fig_dir)
     if f:
         print(f"\n**Figure:** `{f}`")
