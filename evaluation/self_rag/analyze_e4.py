@@ -112,16 +112,31 @@ def load(results_dir, device):
 def agg_by_arm(runs):
     """{(task, arm): {prefill:[ms], decode:[ms], tok_s:[t/s], queries:n}} pooled
     over LLM stages and repetitions."""
-    out = defaultdict(lambda: {"prefill": [], "decode": [], "tok_s": [], "n": 0})
+    out = defaultdict(lambda: {"prefill": [], "decode": [], "tok_s": [],
+                               "resid": [], "n": 0})
     for meta, stages in runs:
         key = (meta["task"], meta["arm"])
         for _stage, rows in stages.items():
             for r in rows:
                 out[key]["prefill"].append(r["prefill_ms"])
                 out[key]["decode"].append(r["decode_ms"])
+                # Stage time in NEITHER phase: run_start -> first_token start.
+                # Both backends stamp the start marker AFTER acquiring the model
+                # mutex, so lock wait lands here and is invisible to a
+                # prefill/decode split. It reaches ~55% of stage time on
+                # contended mlx arms, so "prefill share" is a share of
+                # (prefill+decode), NOT of the stage.
+                out[key]["resid"].append(
+                    r["total_ms"] - r["prefill_ms"] - r["decode_ms"])
                 out[key]["n"] += 1
-                if r["tokens"] and r["decode_ms"] > 0:
-                    out[key]["tok_s"].append(1000.0 * r["tokens"] / r["decode_ms"])
+                # The decode window starts AT the first token, so it spans N-1
+                # inter-token intervals, not N. Dividing by N overstates the rate
+                # by N/(N-1) — 2.0x for a 2-token call — and the arms emit
+                # different token counts per device, so the bias does NOT cancel
+                # in the cross-device comparison.
+                if r["tokens"] and r["tokens"] > 1 and r["decode_ms"] > 0:
+                    out[key]["tok_s"].append(
+                        1000.0 * (r["tokens"] - 1) / r["decode_ms"])
     return out
 
 
@@ -131,8 +146,8 @@ def table(per_device):
             continue
         print(f"\n## {DEV_LABEL.get(dev, dev)} — prefill vs decode per arm\n")
         print("| task | arm | LLM calls | prefill median (ms) | decode median (ms) "
-              "| prefill share | decode tok/s |")
-        print("|---|---|--:|--:|--:|--:|--:|")
+              "| unaccounted (ms) | prefill share of p+d | decode tok/s |")
+        print("|---|---|--:|--:|--:|--:|--:|--:|")
         for (task, arm) in sorted(agg, key=lambda k: (k[0], k[1])):
             a = agg[(task, arm)]
             if not a["prefill"]:
@@ -140,8 +155,9 @@ def table(per_device):
             pf, dc = st.median(a["prefill"]), st.median(a["decode"])
             share = 100.0 * pf / (pf + dc) if (pf + dc) else float("nan")
             ts = f"{st.median(a['tok_s']):.1f}" if a["tok_s"] else "—"
+            rs = st.median(a["resid"]) if a["resid"] else float("nan")
             print(f"| {task} | {arm} | {a['n']} | {pf:.0f} | {dc:.0f} | "
-                  f"{share:.1f}% | {ts} |")
+                  f"{rs:.0f} | {share:.1f}% | {ts} |")
 
 
 def flip_table(per_device):
@@ -202,8 +218,9 @@ def role_table(per_device):
                     k = (meta["arm"], stage)
                     agg[k]["prefill"].append(r["prefill_ms"])
                     agg[k]["decode"].append(r["decode_ms"])
-                    if r["tokens"] and r["decode_ms"] > 0:
-                        agg[k]["tok"].append(1000.0 * r["tokens"] / r["decode_ms"])
+                    if r["tokens"] and r["tokens"] > 1 and r["decode_ms"] > 0:
+                        agg[k]["tok"].append(
+                            1000.0 * (r["tokens"] - 1) / r["decode_ms"])
         if not agg:
             continue
         print(f"\n### {DEV_LABEL.get(dev, dev)} — per-role phase shape\n")
