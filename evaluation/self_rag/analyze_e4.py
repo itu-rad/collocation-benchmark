@@ -159,16 +159,29 @@ def flip_table(per_device):
     print(f"\n## Cross-device: prefill/decode balance ({DEV_LABEL[devs[0]]} vs "
           f"{DEV_LABEL[devs[1]]})\n")
     print(f"| task | arm | prefill {devs[0]} | prefill {devs[1]} | prefill speedup "
-          f"| decode {devs[0]} | decode {devs[1]} | decode speedup |")
-    print("|---|---|--:|--:|--:|--:|--:|--:|")
+          f"| tok/s {devs[0]} | tok/s {devs[1]} | decode speedup (per token) "
+          f"| decode ratio (per call) |")
+    print("|---|---|--:|--:|--:|--:|--:|--:|--:|")
     for k in keys:
         pa, pb = st.median(a[k]["prefill"]), st.median(b[k]["prefill"])
         da, db = st.median(a[k]["decode"]), st.median(b[k]["decode"])
+        ta = st.median(a[k]["tok_s"]) if a[k]["tok_s"] else float("nan")
+        tb = st.median(b[k]["tok_s"]) if b[k]["tok_s"] else float("nan")
         print(f"| {k[0]} | {k[1]} | {pa:.0f} | {pb:.0f} | **{pa/pb:.2f}x** | "
-              f"{da:.0f} | {db:.0f} | **{da/db:.2f}x** |")
-    print("\nIf the compute-bound prefill speeds up much more than the "
-          "memory-bound decode across devices, the phase balance shifts — which "
-          "is what moves the optimal decomposition and can flip which arm wins.")
+              f"{ta:.1f} | {tb:.1f} | **{tb/ta:.2f}x** | {da/db:.2f}x |")
+    print("""
+**Read the per-TOKEN column, not the per-call one.** Decode duration is
+(tokens x time-per-token), and the two backends do NOT emit the same number of
+tokens for the same prompt under greedy decoding — MLX 4-bit and BitsAndBytes NF4
+produce different outputs, e.g. decomposed_shared emits ~2.0 tokens/call on mlx
+against ~4.0 on cuda. A per-call decode ratio therefore mixes decode SPEED with
+how long the model chose to talk, and understates cuda by up to 2x. tok/s is the
+speed measure; the per-call column is retained only to show the size of that
+distortion.
+
+If the compute-bound prefill speeds up much more than the memory-bound decode
+across devices, the phase balance shifts — which is what moves the optimal
+decomposition and can flip which arm wins.""")
 
 
 

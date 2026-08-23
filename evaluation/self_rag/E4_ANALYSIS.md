@@ -67,18 +67,29 @@ prefill = first_token(start->end) (TTFT, compute-bound); decode = run_end - firs
 
 ## Cross-device: prefill/decode balance (M2 Pro (mlx) vs GB10 (cuda))
 
-| task | arm | prefill mlx | prefill cuda | prefill speedup | decode mlx | decode cuda | decode speedup |
-|---|---|--:|--:|--:|--:|--:|--:|
-| factoid | decomposed | 7303 | 487 | **15.00x** | 230 | 247 | **0.93x** |
-| factoid | decomposed_shared | 2146 | 350 | **6.13x** | 42 | 154 | **0.27x** |
-| factoid | monolith | 4454 | 554 | **8.04x** | 1177 | 1906 | **0.62x** |
-| factoid | monolith_4b | 2601 | 422 | **6.16x** | 502 | 1181 | **0.43x** |
-| multihop | decomposed | 5184 | 468 | **11.07x** | 162 | 249 | **0.65x** |
-| multihop | decomposed_shared | 2212 | 382 | **5.79x** | 41 | 162 | **0.25x** |
-| multihop | monolith | 4749 | 596 | **7.97x** | 1095 | 1699 | **0.64x** |
-| multihop | monolith_4b | 2712 | 438 | **6.19x** | 459 | 1064 | **0.43x** |
+| task | arm | prefill mlx | prefill cuda | prefill speedup | tok/s mlx | tok/s cuda | decode speedup (per token) | decode ratio (per call) |
+|---|---|--:|--:|--:|--:|--:|--:|--:|
+| factoid | decomposed | 7303 | 487 | **15.00x** | 11.5 | 21.8 | **1.89x** | 0.93x |
+| factoid | decomposed_shared | 2146 | 350 | **6.13x** | 48.3 | 26.1 | **0.54x** | 0.27x |
+| factoid | monolith | 4454 | 554 | **8.04x** | 28.1 | 17.6 | **0.62x** | 0.62x |
+| factoid | monolith_4b | 2601 | 422 | **6.16x** | 48.1 | 22.3 | **0.47x** | 0.43x |
+| multihop | decomposed | 5184 | 468 | **11.07x** | 24.3 | 23.7 | **0.98x** | 0.65x |
+| multihop | decomposed_shared | 2212 | 382 | **5.79x** | 49.0 | 25.3 | **0.52x** | 0.25x |
+| multihop | monolith | 4749 | 596 | **7.97x** | 28.3 | 17.8 | **0.63x** | 0.64x |
+| multihop | monolith_4b | 2712 | 438 | **6.19x** | 48.1 | 22.7 | **0.47x** | 0.43x |
 
-If the compute-bound prefill speeds up much more than the memory-bound decode across devices, the phase balance shifts — which is what moves the optimal decomposition and can flip which arm wins.
+**Read the per-TOKEN column, not the per-call one.** Decode duration is
+(tokens x time-per-token), and the two backends do NOT emit the same number of
+tokens for the same prompt under greedy decoding — MLX 4-bit and BitsAndBytes NF4
+produce different outputs, e.g. decomposed_shared emits ~2.0 tokens/call on mlx
+against ~4.0 on cuda. A per-call decode ratio therefore mixes decode SPEED with
+how long the model chose to talk, and understates cuda by up to 2x. tok/s is the
+speed measure; the per-call column is retained only to show the size of that
+distortion.
+
+If the compute-bound prefill speeds up much more than the memory-bound decode
+across devices, the phase balance shifts — which is what moves the optimal
+decomposition and can flip which arm wins.
 
 **Figure:** `/Users/roba/Documents/work/research/collocation-benchmark/evaluation/overheads/paper_assets/e4_prefill_decode.png`
 
