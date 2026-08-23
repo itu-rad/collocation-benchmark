@@ -272,6 +272,57 @@ done
 - **Lesson:** before launching on GB10, check for *orphaned* `run.py`/`main.py` (ppid=1),
   not just the wrapper scripts — see [[gb10-collection-gotchas]].
 
+### E4 — REVIEW FINDINGS (2026-08-22): the bf16 test REFUTES the stated mechanism
+Independent ASPLOS-style review caught errors I made. Verified independently — all confirmed.
+
+**1. The bf16 manipulation does NOT confirm "decode is bandwidth-bound". It refutes it.**
+NF4 -> bf16 raises weight bytes ~3.8x (2.1 -> 8.0 GB) but decode time only **1.68x**
+(44.6 -> 75.2 ms/token). A bandwidth-bound phase given 3.8x the traffic returns ~3.8x the
+time. Fitting `t = F + w*bytes`: **w = 5.18 ms/GB, F = 33.8 ms/token fixed**. So on GB10
+decode is only **~24% weight streaming and ~76% fixed per-token framework cost** (HF eager
+`generate` loop, no CUDA graphs, bnb dequant launches). I reported this test as
+"independent confirmation of the mechanism"; it is the opposite.
+
+**2. The genuinely good result hidden underneath.** The *marginal* bandwidth term is
+device-invariant: **193 GB/s implied on GB10 vs ~191 GB/s on the M2** (~9% apart, two
+independent instruments). That is a real mechanism-level finding and it is STRONGER than
+the claim we made. Measured decode is 2.1x slower on GB10 not because of memory, but
+because of a ~34 ms/token software constant vs ~9 ms/token on MLX.
+
+**3. Instrumentation bug — the prefill/decode boundary is NOT comparable across backends.**
+`stages/llm_huggingface/inference.py` stamps `first_token end` inside
+`_FirstTokenCriteria.__call__` and the file contains **zero** `torch.cuda.synchronize()`
+calls (verified). On an async CUDA queue that timestamp records when the CPU *enqueued*
+work, not when the GPU finished it. MLX stamps at the first `stream_generate` yield, i.e.
+after materialisation. **Prefill is under-counted and decode over-counted on CUDA** — the
+exact direction of both headline asymmetries. The `run` total is safe (`batch_decode`
+forces a sync); the SPLIT is not, and the split is the paper's whole claim.
+
+**4. Decode compared per call, not per token (already fixed).** Backends emit different
+token counts under greedy decoding, so per-call decode mixed speed with output length.
+Per token the range is 0.47-1.89x, not 0.25-0.93x, and "never faster on GB10" was FALSE.
+
+**5. The M2 leg is R=1 — which our OWN warm-up rule says to discard.** See
+[[first-run-system-warmup]]: the first repetition of a cell is slower for its whole
+duration, and dropping it flipped E2's sign. The entire mlx E4 dataset is run-1 data.
+Also: arm order is collinear with a 7.5 h thermal soak, and the two devices ran at
+different offered load (M2 rho ~0.17-0.20 vs GB10 ~0.42-0.61), so it is not a clean
+device comparison.
+
+**6. A cleaner flip already exists in the data and we did not claim it.** On GB10 alone,
+factoid favours monolith_4b (3/3 runs) and multihop favours decomposed_shared (3/3 runs) —
+a TASK flip with 3 replicates on both sides, far better supported than the device flip
+(1 task, R=1, 1.17x margin). With 2 tasks x 2 devices, a device main effect cannot be
+separated from a task x device interaction.
+
+**7. Two of eight cross-device cells are truncated runs** (28/110 and 51/110 queries
+completed, rho > 2) — and they produce the table's largest prefill speedups (15.00x,
+11.07x) and its only decode ratios >= 1. Excluding them collapses prefill to 5.8-8.0x.
+
+**8. `analyze_e4.py` mislabelled its count column** — it counts LLM calls, not queries
+(fixed). No confidence intervals anywhere despite 3 cuda replicates. `n_prompt_tokens` is
+never logged, so prefill cannot be normalised or roofline-checked at all.
+
 ### E4 — FIRST CROSS-DEVICE RESULT + the confound it raises (2026-08-20, r=1)
 **The predicted asymmetry is there, and it is large.** mlx -> cuda speedup, per arm:
 

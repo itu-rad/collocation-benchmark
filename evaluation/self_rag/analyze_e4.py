@@ -130,7 +130,7 @@ def table(per_device):
         if not agg:
             continue
         print(f"\n## {DEV_LABEL.get(dev, dev)} — prefill vs decode per arm\n")
-        print("| task | arm | queries | prefill median (ms) | decode median (ms) "
+        print("| task | arm | LLM calls | prefill median (ms) | decode median (ms) "
               "| prefill share | decode tok/s |")
         print("|---|---|--:|--:|--:|--:|--:|")
         for (task, arm) in sorted(agg, key=lambda k: (k[0], k[1])):
