@@ -32,6 +32,84 @@ done
 
 ---
 
+## REVIEWER PANEL (2026-08-22) — four independent ASPLOS reviews. Verdict: REJECT (2/5 x4)
+
+Four fresh reviewers, no shared context, each given a different lens and the repo. Every
+technical claim below was re-verified locally before being recorded. Scores: novelty 2/5,
+rigour 2/5, methodology 2/5, contribution/venue 2/5. All four: reject, resubmit.
+
+### VERIFIED errors in OUR analysis (all flattered the result)
+1. **E2's headline understates framework cost ~8x.** `stages/stage.py:301-332` brackets
+   `run,start -> run,end` around `self.run(query)` only; `_get_input_from_queues()` is called
+   at line 343 in `run_wrapper`, **outside** the timed region. So the queue pop + thread wake
+   — the 25-39 us/stage hand-off E1 exists to measure — is excluded from E2 **by construction**.
+   End-to-end from the same CSVs (b8, 10 runs/arm): cuda baseline **15.13 steps/s** vs choreo
+   t0 **14.68** = **-2.9% (~2.0 ms/step)** against the +257 us we report. mps is ~0 (7.707 vs
+   7.719). **Report end-to-end throughput alongside per-step — it is in our CSVs already.**
+2. **The bf16 test refutes the mechanism it was cited to confirm** (see E4 section below).
+3. **Prefill 11-15x cells are M2 GPU oversubscription, not device compute.** The `decomposed`
+   arm holds 4 separate 4B models, each with its own lock, so nothing serialises them: median
+   **3.00 co-runners** during prefill on those cells vs 1.00 everywhere else, and 7303/3.00 =
+   2435 ms ~ the uncontended M2 4B prefill. Uncontended cells only: **6.13/6.16/6.19x (4B),
+   8.04/7.97x (9B)**. The honest range is ~6x/~8x, not 5.8-15x.
+4. **tok/s was biased N/(N-1)** — 2.00x for 2-token mlx arms vs 1.33x for 4-token cuda ones,
+   so it did not cancel cross-device. Fixed.
+5. **Up to 55% of stage time was in neither phase** (mutex wait precedes the first_token start
+   marker). Fixed: surfaced as an "unaccounted" column.
+6. **Decode compared per call, not per token.** Fixed.
+
+### VERIFIED code defects
+- `stages/stage.py:231` compares the polling policy against `"stages.queues.polling.
+  SingleQueuePolicy"` but the schema default (`utils/schemas/stage.py:14`) is
+  `"utils.queues.polling..."` — **the fan-in guard can never fire**; a misconfigured
+  multi-input stage silently starves upstreams instead of raising.
+- `stages/llm_server/inference.py` has **zero** prefill/decode markers — E4's instrument does
+  not exist on the vLLM/Ollama backend, i.e. exactly the backend a serving reviewer demands.
+- Every NoOp config sets `disable_logs: false`, so E1's "core dispatch" **includes our own CSV
+  trace logging**. There is no `disable_logs: true` arm. One flag, missing.
+- **vLLM configs exist and were never run** (`factoid_{monolith_4b,decomposed_shared}_vllm_cuda.yml`,
+  0 collected runs). The better backend was available the whole time.
+
+### Design-level objections
+- **Novelty:** the prefill/decode asymmetry is textbook (Shazeer'19; Pope MLSys'23; Orca; vLLM;
+  FlexGen; Sarathi-Serve; DistServe) and **Splitwise (ISCA'24) already published the
+  cross-hardware form and built a system on it**. The bf16 result restates the founding premise
+  of GPTQ/AWQ/QLoRA. "Throughput-only benchmarks can't see this" is a strawman: MLPerf's LLM
+  server scenario imposes TTFT/TPOT constraints and vLLM's `benchmark_serving.py` reports
+  TTFT/TPOT/ITL by default.
+- **The zero-copy arm is tautological** — the `ref` stages never touch the payload
+  (`stages/stage.py` `run()` just forwards the reference), so O(1) is true by construction.
+  `copy.deepcopy` per hop is also not what any in-process framework does.
+- **No comparison to ANY existing framework** (Ray Serve / Triton / raw `queue.Queue`). "Our
+  overhead is low" is an assertion, not a comparison. ~40 lines would fix it.
+- **E2 statistics:** 14/18 cells have CIs containing zero; 6/18 negative; the analyzer prints
+  `TOO NOISY to call fixed` four times against a thesis asserting the opposite; the t2-t0
+  tracing contrast is computed and never printed (mps b64 = -1648.6 us, CI entirely negative —
+  a second apparatus signature).
+- **E4 flip:** rests on 1 task at R=1 — data our own warm-up rule says to discard — at 2-3x
+  different offered load, with 2 of 8 cells truncated (28/110 and 51/110 completed). Mean-
+  while a **cleaner task-flip with 3 replicates per side already exists in the GB10 data** and
+  we do not claim it.
+
+### What survives review
+E1 core dispatch (46 cells x R=10, R^2=0.99996, slope robust to dropping low depths);
+decomposition is prefill-amplifying (79-84% -> 97-98%, within one device+engine); ~6x/~8x
+prefill speedup on uncontended cells; **the marginal bandwidth term is device-invariant
+(193 vs ~191 GB/s implied) while a ~34 ms/token CUDA software constant explains the decode
+gap** — a better result than the one we claimed; E3's parity-before-critique; and the
+measurement discipline itself (artifacts caught and root-caused rather than reported).
+Reviewer 2 independently verified: sampling matched, token budgets matched, 0 unpaired
+markers across all 32 traces, cuda replicates <1%, and **no thermal drift**.
+
+### Recommended reframe (panel consensus)
+Lead with what is actually novel and currently buried: **cross-role prefill redundancy that
+deployed prefix caches miss by construction**, the **token-count vs joules inversion**, and
+**topology as a phase-mix knob** (0.27 -> 0.65 prefill share from a YAML edit). Venue: MLSys
+or ISPASS now; ASPLOS only if E5's engine-specific contention is collected on calibrated
+counters and made the centerpiece.
+
+---
+
 ## P0 — prerequisites (GATE ALL COLLECTION)
 
 **A. Deploy the new tracing.**
