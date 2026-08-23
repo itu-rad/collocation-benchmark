@@ -104,6 +104,27 @@ def log_generated_tokens(stage: "Stage", n_tokens: int) -> None:
         )
 
 
+def log_prompt_tokens(stage: "Stage", n_tokens: int) -> None:
+    """Log the per-query PROMPT (prefill) token count as a companion trace row:
+
+        wall, <pipeline>, <stage>, n_prompt_tokens, <int>, perf
+
+    Field 5 is the count, not start/end, so parsers that filter on start|end
+    skip the row — backward compatible, exactly like log_generated_tokens.
+
+    Without this, prefill is an unnormalised duration: it cannot be converted to
+    a rate, roofline-checked, or compared across devices whose prompts differ.
+    It is also the direct measurement of "decomposition re-reads the retrieved
+    context in every sub-call", which was previously only inferred. Gated by
+    disable_logs like all per-query stage rows.
+    """
+    if not stage.disable_logs:
+        logging.getLogger("benchmark").info(
+            "%s, %s, n_prompt_tokens, %d", stage.parent_name, stage.name,
+            n_tokens,
+        )
+
+
 class Stage:
     """This is the building block of the pipelines. A stage can perform tasks such as data
     loading, data preprocessing or model execution. The stages are separated in order to
@@ -226,11 +247,22 @@ class Stage:
         """
         Prepare the stage for execution.
         """
+        # Match on the class name, not a hard-coded dotted path: the schema
+        # default (utils/schemas/stage.py) is "utils.queues.polling.
+        # SingleQueuePolicy" and every config uses that path, while this guard
+        # previously compared against "stages.queues.polling..." — so the
+        # strings never matched and the guard could NEVER fire. A misconfigured
+        # multi-input stage then silently starved all but one upstream instead
+        # of raising.
         if (
             len(self._input_queues) > 1
-            and self._polling_policy == "stages.queues.polling.SingleQueuePolicy"
+            and self._polling_policy.rsplit(".", 1)[-1] == "SingleQueuePolicy"
         ):
-            raise ValueError("SingleQueuePolicy only works with one input queue")
+            raise ValueError(
+                f"SingleQueuePolicy only works with one input queue "
+                f"(stage {self.name!r} has {len(self._input_queues)}); "
+                f"use a multi-queue polling policy"
+            )
         self._polling_policy_obj: PollingPolicy = get_component(self._polling_policy)(
             self._input_queues, self._input_cond
         )

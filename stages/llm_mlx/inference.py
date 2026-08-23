@@ -3,7 +3,8 @@ import mlx.core as mx
 from mlx_lm import load, stream_generate
 from transformers import AutoTokenizer
 
-from stages.stage import Stage, log_phase, log_first_token, log_generated_tokens
+from stages.stage import (Stage, log_phase, log_first_token,
+                          log_generated_tokens, log_prompt_tokens)
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
 
@@ -101,6 +102,15 @@ class Inference(Stage):
             # the stage's run start/end pairs (staged_lib pairs by index).
             model_out = []
             n_generated = 0
+            # Prompt length drives prefill cost — log it so prefill can be
+            # normalised per 1k prompt tokens and compared across backends
+            # whose prompts are not identical. Counted with the same tokenizer
+            # the model consumes.
+            if not self.disable_logs:
+                log_prompt_tokens(
+                    self,
+                    sum(len(self._tokenizer.encode(pr)) for pr in batch),
+                )
             log_first_token(self, "start")
             for i, prompt in enumerate(batch):
                 awaiting_first = i == 0

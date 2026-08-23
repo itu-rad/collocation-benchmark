@@ -16,9 +16,22 @@ import outlines
 
 from threading import Lock
 
-from stages.stage import Stage, log_phase, log_first_token, log_generated_tokens
+from stages.stage import (Stage, log_phase, log_first_token,
+                          log_generated_tokens, log_prompt_tokens)
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
+
+
+def _sync_device(device) -> None:
+    """Block until queued work on `device` has actually completed.
+
+    Timestamps taken around asynchronous accelerator launches are CPU-enqueue
+    times unless the device is synchronised first. No-op on CPU."""
+    kind = getattr(device, "type", str(device))
+    if kind == "cuda":
+        torch.cuda.synchronize(device)
+    elif kind == "mps" and hasattr(torch, "mps"):
+        torch.mps.synchronize()
 
 
 class _FirstTokenCriteria(StoppingCriteria):
@@ -42,6 +55,18 @@ class _FirstTokenCriteria(StoppingCriteria):
 
     def __call__(self, input_ids, scores, **kwargs):
         if self._not_done is None:
+            # CRITICAL: the prefill forward is an ASYNCHRONOUS device launch.
+            # transformers evaluates the stopping criteria BEFORE any device
+            # synchronisation (the first sync is the `unfinished_sequences`
+            # __bool__ at the top of the NEXT iteration), so stamping here
+            # without synchronising records when the CPU *enqueued* the prefill,
+            # not when the accelerator finished it. The deferred GPU work does
+            # not vanish — it lands in `decode = run_end - first_token_end`,
+            # undercounting prefill and overcounting decode. MLX stamps its
+            # first token behind a real materialisation, so leaving this
+            # unsynchronised also made the two backends non-comparable, which is
+            # exactly what E4's cross-device phase split claims to measure.
+            _sync_device(input_ids.device)
             self._on_first_token()
             self._not_done = torch.zeros(
                 input_ids.shape[0], dtype=torch.bool, device=input_ids.device
@@ -232,6 +257,12 @@ class Inference(Stage):
             # rows — when logs are disabled the generate() call is untouched.
             extra_kwargs = {}
             if not self.disable_logs:
+                # Prompt length drives prefill cost; log it so prefill can be
+                # normalised (per 1k prompt tokens) instead of being an
+                # unnormalised duration.
+                log_prompt_tokens(
+                    self, int(model_inputs.input_ids.numel())
+                )
                 log_first_token(self, "start")
                 extra_kwargs["stopping_criteria"] = StoppingCriteriaList(
                     [_FirstTokenCriteria(lambda: log_first_token(self, "end"))]

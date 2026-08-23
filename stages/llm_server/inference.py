@@ -6,7 +6,8 @@ import mlflow
 from utils.trace_span import trace_span
 from transformers import AutoTokenizer
 
-from stages.stage import Stage, log_phase
+from stages.stage import (Stage, log_phase, log_first_token,
+                          log_generated_tokens, log_prompt_tokens)
 from utils.component import get_component
 from utils.schemas import StageModel, PipelineModel, Query
 from utils.schemas.server import ServerModel
@@ -172,18 +173,52 @@ class Inference(Stage):
         if isinstance(batch, str):
             batch = [batch]
 
+        # Phase instrumentation (prefill/decode), matching llm_mlx and
+        # llm_huggingface. This backend previously issued a NON-STREAMING
+        # completion, which makes the first-token instant unobservable in
+        # principle — so the prefill/decode split simply did not exist here,
+        # on the one backend (vLLM/Ollama) a serving audience cares most about.
+        # Streaming is what makes TTFT measurable, and it is also what
+        # llm_mlx already does (stream_generate), so the backends now agree.
+        if not self.disable_logs:
+            log_prompt_tokens(
+                self,
+                sum(len(self.get_tokenizer().encode(p)) for p in batch),
+            )
+
         model_out = []
-        for prompt in batch:
+        n_generated = 0
+        log_first_token(self, "start")
+        for i, prompt in enumerate(batch):
+            awaiting_first = i == 0
+            text = ""
             # Prompts are already chat-templated upstream, so use the text
             # completion endpoint (NOT chat) to avoid re-applying a template.
-            response = litellm.text_completion(
+            for chunk in litellm.text_completion(
                 model=self._litellm_model,
                 prompt=prompt,
                 api_base=self._litellm_api_base,
                 api_key="EMPTY",  # local servers don't authenticate
+                stream=True,
                 **self._gen_kwargs,
-            )
-            model_out.append(response.choices[0].text)
+            ):
+                piece = chunk.choices[0].text or ""
+                if not piece:
+                    continue
+                if awaiting_first:
+                    # First token off the wire = end of prefill. Includes
+                    # server-side queueing and network hop, which is the honest
+                    # TTFT for a served endpoint.
+                    log_first_token(self, "end")
+                    awaiting_first = False
+                text += piece
+                # One streamed chunk == one decode step for OpenAI-compatible
+                # servers; counting chunks measures decode STEPS, which is the
+                # quantity the decode window divides, rather than re-tokenising
+                # the final string.
+                n_generated += 1
+            model_out.append(text)
+        log_generated_tokens(self, n_generated)
 
         if self._data_model:
             model_out = [self._data_model.model_validate_json(x) for x in model_out]
