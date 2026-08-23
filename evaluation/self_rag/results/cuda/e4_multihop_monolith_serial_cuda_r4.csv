@@ -1,0 +1,974 @@
+1787485330.932950, Self-RAG Monolith (multi-hop), pipeline, prepare, start, 9604396771280618
+1787485330.933670, Self-RAG Monolith (multi-hop), Question dataloader, prepare, start, 9604396771737689
+1787485332.257137, Self-RAG Monolith (multi-hop), Question dataloader, prepare, end, 9604398095208427
+1787485332.257190, Self-RAG Monolith (multi-hop), Document retriever, prepare, start, 9604398095251419
+1787485349.228613, Self-RAG Monolith (multi-hop), Document retriever, prepare, end, 9604415066706896
+1787485349.228718, Self-RAG Monolith (multi-hop), Monolith formatter, prepare, start, 9604415066780000
+1787485349.229183, Self-RAG Monolith (multi-hop), Monolith formatter, prepare, end, 9604415067246576
+1787485349.229202, Self-RAG Monolith (multi-hop), Monolith LLM, prepare, start, 9604415067261936
+1787485424.048348, Self-RAG Monolith (multi-hop), Monolith LLM, prepare, end, 9604489886428480
+1787485424.050436, Self-RAG Monolith (multi-hop), Query rewrite formatter, prepare, start, 9604489888526062
+1787485424.051654, Self-RAG Monolith (multi-hop), Query rewrite formatter, prepare, end, 9604489889760189
+1787485424.051794, Self-RAG Monolith (multi-hop), Query rewrite LLM, prepare, start, 9604489889854909
+1787485424.052684, Self-RAG Monolith (multi-hop), Query rewrite LLM, prepare, end, 9604489890771164
+1787485424.052769, Self-RAG Monolith (multi-hop), pipeline, prepare, end, 9604489891110860
+1787485424.055050, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 136584842797387886913549896040449518818, 1787485424.054926, 1, 1, 9604489893134810
+1787485424.055355, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604489893437754
+1787485424.056066, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604489894142057
+1787485424.056460, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604489894536409
+1787485424.117738, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604489955823671
+1787485424.118213, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604489956305799
+1787485424.134541, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604489972609513
+1787485424.135157, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604489973229433
+1787485424.138379, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 878, 9604489976457222
+1787485424.138441, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604489976502022
+1787485425.020474, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604490858569059
+1787485426.730137, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604492568228518
+1787485426.730539, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604492568604646
+1787485426.730860, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604492568941558
+1787485426.731206, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604492569268117
+1787485426.731385, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604492569458645
+1787485426.731808, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604492569872037
+1787485426.731855, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604492569920197
+1787485426.734352, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 634, 9604492572425987
+1787485426.734398, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604492572459459
+1787485427.193786, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604493031910128
+1787485427.524997, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 7, 9604493363085510
+1787485427.525671, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604493363748325
+1787485427.526524, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604493364627333
+1787485427.537409, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604493375488172
+1787485427.537723, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604493375809996
+1787485427.538283, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604493376359179
+1787485427.538471, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604493376552219
+1787485427.541930, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1237, 9604493379996104
+1787485427.541971, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604493380031944
+1787485428.307068, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604494145167124
+1787485430.031097, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604495869185097
+1787485430.031420, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604495869485960
+1787485430.031548, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604495869621032
+1787485430.031676, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604495869737784
+1787485430.031803, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604495869877672
+1787485430.032254, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604495870317112
+1787485430.032507, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604495870572328
+1787485430.035001, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 928, 9604495873065478
+1787485430.035031, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604495873091270
+1787485430.615708, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604496453802653
+1787485430.976297, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 7, 9604496814383328
+1787485430.976614, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604496814679648
+1787485430.977362, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604496815447616
+1787485430.987902, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604496825982391
+1787485430.988344, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604496826433719
+1787485430.988742, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604496826804247
+1787485430.988812, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604496826885383
+1787485430.991293, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1237, 9604496829367189
+1787485430.991350, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604496829410485
+1787485431.746819, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604497584914325
+1787485433.328755, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604499166847527
+1787485433.329383, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604499167459479
+1787485433.329687, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604499167767927
+1787485433.330076, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604499168151142
+1787485433.330396, Self-RAG Monolith (multi-hop), End stage, run, start, 9604499168475478
+1787485433.330685, Self-RAG Monolith (multi-hop), End stage, run, end, 9604499168748406
+1787485433.330827, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 136584842797387886913549896040449518818, 1787485424.054926, 1, 1, 9604499168907686
+1787485433.331456, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 262240902465418006954148935757618271003, 1787485433.331315, 1, 2, 9604499169532597
+1787485433.331708, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604499169791605
+1787485433.332639, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604499170720900
+1787485433.333235, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604499171344324
+1787485433.348406, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604499186487016
+1787485433.348559, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604499186647704
+1787485433.348956, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604499187019080
+1787485433.349040, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604499187113928
+1787485433.351147, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 874, 9604499189215510
+1787485433.351197, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604499189258438
+1787485433.907167, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604499745265513
+1787485435.527736, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604501365822625
+1787485435.528055, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604501366120705
+1787485435.528298, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604501366371857
+1787485435.539710, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604501377792344
+1787485435.539869, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604501377956760
+1787485435.540293, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604501378356520
+1787485435.541347, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604501379429079
+1787485435.543461, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 666, 9604501381528309
+1787485435.543495, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604501381556165
+1787485436.041120, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604501879235338
+1787485436.539905, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 9, 9604502377995488
+1787485436.540209, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604502378272896
+1787485436.540487, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604502378565344
+1787485436.549668, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604502387735625
+1787485436.549761, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604502387845993
+1787485436.550341, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604502388404249
+1787485436.550404, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604502388474441
+1787485436.553747, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1495, 9604502391815254
+1787485436.553784, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604502391844598
+1787485437.498251, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604503336340957
+1787485439.229911, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604505067998240
+1787485439.230395, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604505068460639
+1787485439.230689, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604505068771839
+1787485439.231031, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604505069107439
+1787485439.231322, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604505069403935
+1787485439.231893, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604505069956654
+1787485439.232381, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604505070486862
+1787485439.235267, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 1053, 9604505073351692
+1787485439.235345, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604505073405436
+1787485439.889921, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604505728030503
+1787485440.442859, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 11, 9604506280946352
+1787485440.444068, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604506282153247
+1787485440.444438, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604506282523743
+1787485440.456040, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604506294121574
+1787485440.456185, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604506294274550
+1787485440.456598, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604506294660854
+1787485440.456713, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604506294786518
+1787485440.460118, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1673, 9604506298186403
+1787485440.460162, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604506298223443
+1787485441.506812, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604507344910164
+1787485443.282143, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 33, 9604509120231099
+1787485443.283139, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604509121218810
+1787485443.283467, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604509121545626
+1787485443.283615, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604509121676858
+1787485443.283850, Self-RAG Monolith (multi-hop), End stage, run, start, 9604509121927386
+1787485443.284131, Self-RAG Monolith (multi-hop), End stage, run, end, 9604509122194298
+1787485443.286316, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 262240902465418006954148935757618271003, 1787485433.331315, 1, 2, 9604509124407720
+1787485443.287032, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 209646073129534613046463891900835500823, 1787485443.286777, 1, 3, 9604509125122296
+1787485443.287342, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604509125422151
+1787485443.287930, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604509126011703
+1787485443.288512, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604509126616150
+1787485443.301435, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604509139517165
+1787485443.301589, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604509139679517
+1787485443.302010, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604509140073549
+1787485443.302152, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604509140226685
+1787485443.305317, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1064, 9604509143384842
+1787485443.305352, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604509143413274
+1787485443.959701, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604509797794499
+1787485445.866316, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 34, 9604511704402965
+1787485445.866652, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604511704717397
+1787485445.867155, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604511705241012
+1787485445.867316, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604511705377860
+1787485445.867614, Self-RAG Monolith (multi-hop), End stage, run, start, 9604511705697572
+1787485445.867863, Self-RAG Monolith (multi-hop), End stage, run, end, 9604511705925972
+1787485445.868368, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 209646073129534613046463891900835500823, 1787485443.286777, 1, 3, 9604511706450563
+1787485445.869507, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 179228659878574254583383478176030064160, 1787485445.869063, 1, 4, 9604511707608210
+1787485445.869895, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604511707977250
+1787485445.870506, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604511708579554
+1787485445.871074, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604511709162609
+1787485445.882942, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604511721024265
+1787485445.883064, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604511721144441
+1787485445.883424, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604511721487033
+1787485445.883494, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604511721565928
+1787485445.885596, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 696, 9604511723665543
+1787485445.885637, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604511723698103
+1787485446.362561, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604512200660934
+1787485448.196593, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 32, 9604514034681409
+1787485448.197869, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604514035954976
+1787485448.198653, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604514036739999
+1787485448.198839, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604514036901663
+1787485448.199143, Self-RAG Monolith (multi-hop), End stage, run, start, 9604514037228111
+1787485448.199376, Self-RAG Monolith (multi-hop), End stage, run, end, 9604514037438319
+1787485448.199920, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 179228659878574254583383478176030064160, 1787485445.869063, 1, 4, 9604514038017486
+1787485448.200654, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 42929072389622580886327761271530219864, 1787485448.200365, 1, 5, 9604514038776142
+1787485448.201374, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604514039455213
+1787485448.202004, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604514040082493
+1787485448.202191, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604514040270781
+1787485448.211951, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604514050024486
+1787485448.212052, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604514050134694
+1787485448.212410, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604514050473222
+1787485448.212481, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604514050555605
+1787485448.215324, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 906, 9604514053393572
+1787485448.215370, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604514053430852
+1787485448.792423, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604514630518931
+1787485450.396627, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604516234714450
+1787485450.397633, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604516235712177
+1787485450.397738, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604516235811713
+1787485450.398487, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604516236563824
+1787485450.398649, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604516236735616
+1787485450.399061, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604516237124624
+1787485450.399586, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604516237679472
+1787485450.402030, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 650, 9604516240119998
+1787485450.402120, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604516240180718
+1787485450.879481, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604516717576087
+1787485451.415563, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 10, 9604517253650650
+1787485451.415859, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604517253922874
+1787485451.416497, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604517254582010
+1787485451.428042, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604517266122930
+1787485451.428173, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604517266266066
+1787485451.428578, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604517266641025
+1787485451.428649, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604517266721921
+1787485451.432122, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1458, 9604517270190687
+1787485451.432165, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604517270226591
+1787485452.345080, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604518183178101
+1787485453.977448, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604519815533069
+1787485453.978216, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604519816283277
+1787485453.978522, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604519816603693
+1787485453.978869, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604519816945980
+1787485453.979010, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604519817096636
+1787485453.979468, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604519817531564
+1787485453.980046, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604519818160716
+1787485453.982900, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 1035, 9604519820989290
+1787485453.982996, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604519821056426
+1787485454.663516, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604520501606502
+1787485455.198622, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 10, 9604521036707587
+1787485455.198936, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604521037007923
+1787485455.199503, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604521037593907
+1787485455.210486, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604521048567148
+1787485455.210625, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604521048710491
+1787485455.211019, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604521049081707
+1787485455.211103, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604521049178651
+1787485455.214248, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1458, 9604521052322953
+1787485455.214308, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604521052368825
+1787485456.131360, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604521969455597
+1787485457.814337, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604523652424932
+1787485457.814672, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604523652737300
+1787485457.815269, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604523653353187
+1787485457.815423, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604523653484435
+1787485457.815835, Self-RAG Monolith (multi-hop), End stage, run, start, 9604523653919955
+1787485457.816107, Self-RAG Monolith (multi-hop), End stage, run, end, 9604523654169507
+1787485457.816247, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 42929072389622580886327761271530219864, 1787485448.200365, 1, 5, 9604523654331683
+1787485457.817002, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 62449504108442482594636432291605650280, 1787485457.816924, 1, 6, 9604523655090258
+1787485457.817512, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604523655591410
+1787485457.818177, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604523656256050
+1787485457.818796, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604523656903201
+1787485457.831584, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604523669665209
+1787485457.831711, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604523669790617
+1787485457.832083, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604523670146121
+1787485457.832221, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604523670293656
+1787485457.834553, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 950, 9604523672622839
+1787485457.834590, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604523672650983
+1787485458.418813, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604524256908766
+1787485460.302031, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 35, 9604526140119577
+1787485460.302363, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604526140427032
+1787485460.302930, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604526141022856
+1787485460.303358, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604526141435448
+1787485460.303922, Self-RAG Monolith (multi-hop), End stage, run, start, 9604526142014791
+1787485460.304376, Self-RAG Monolith (multi-hop), End stage, run, end, 9604526142451927
+1787485460.304627, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 62449504108442482594636432291605650280, 1787485457.816924, 1, 6, 9604526142702183
+1787485460.304993, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 215892702268850636311089028623794651020, 1787485460.304893, 1, 7, 9604526143074663
+1787485460.305276, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604526143357335
+1787485460.305918, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604526143994486
+1787485460.306538, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604526144658182
+1787485460.319571, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604526157652270
+1787485460.319710, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604526157798877
+1787485460.320101, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604526158163965
+1787485460.320217, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604526158292189
+1787485460.323560, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1241, 9604526161636987
+1787485460.323614, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604526161675323
+1787485461.088299, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604526926427639
+1787485463.162344, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 36, 9604529000430853
+1787485463.163007, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604529001086164
+1787485463.163112, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604529001185044
+1787485463.163289, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604529001350788
+1787485463.163478, Self-RAG Monolith (multi-hop), End stage, run, start, 9604529001560500
+1787485463.164140, Self-RAG Monolith (multi-hop), End stage, run, end, 9604529002221235
+1787485463.164395, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 215892702268850636311089028623794651020, 1787485460.304893, 1, 7, 9604529002484355
+1787485463.165068, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 189991048603723772831285726094174332859, 1787485463.164887, 1, 8, 9604529003156931
+1787485463.165390, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604529003470707
+1787485463.166092, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604529004168850
+1787485463.166361, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604529004433234
+1787485463.175973, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604529014046732
+1787485463.176078, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604529014159932
+1787485463.176674, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604529014736924
+1787485463.176752, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604529014827580
+1787485463.179204, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 973, 9604529017272714
+1787485463.179245, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604529017305978
+1787485463.789056, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604529627170945
+1787485465.418578, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604531256666809
+1787485465.419450, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604531257530472
+1787485465.419994, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604531258077656
+1787485465.429553, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604531267630786
+1787485465.429672, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604531267757570
+1787485465.430112, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604531268176466
+1787485465.430496, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604531268572258
+1787485465.432566, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 648, 9604531270643520
+1787485465.432624, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604531270684496
+1787485465.904653, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604531742749137
+1787485466.573075, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 13, 9604532411161420
+1787485466.573692, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604532411768396
+1787485466.574510, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604532412616715
+1787485466.586673, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604532424753332
+1787485466.586805, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604532424890996
+1787485466.587194, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604532425257492
+1787485466.587428, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604532425501203
+1787485466.590364, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1211, 9604532428431890
+1787485466.590400, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604532428461010
+1787485467.324092, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604533162191543
+1787485469.091074, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604534929160395
+1787485469.091859, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604534929925067
+1787485469.092046, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604534930132795
+1787485469.092219, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604534930280506
+1787485469.092492, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604534930574218
+1787485469.092965, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604534931030778
+1787485469.093034, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604534931106474
+1787485469.095431, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 808, 9604534933505801
+1787485469.095483, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604534933543993
+1787485469.639777, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604535477872744
+1787485470.351816, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 13, 9604536189901222
+1787485470.352138, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604536190204550
+1787485470.352839, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604536190939077
+1787485470.363688, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604536201769983
+1787485470.363826, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604536201913567
+1787485470.364219, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604536202282751
+1787485470.364348, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604536202424239
+1787485470.367136, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1211, 9604536205208573
+1787485470.367193, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604536205253437
+1787485471.097266, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604536935359875
+1787485472.735450, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604538573539232
+1787485472.735793, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604538573857712
+1787485472.736527, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604538574616751
+1787485472.736927, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604538575017823
+1787485472.737482, Self-RAG Monolith (multi-hop), End stage, run, start, 9604538575565503
+1787485472.737759, Self-RAG Monolith (multi-hop), End stage, run, end, 9604538575822207
+1787485472.737897, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 189991048603723772831285726094174332859, 1787485463.164887, 1, 8, 9604538575977135
+1787485472.738371, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 20927075832742144042111060037521181126, 1787485472.738233, 1, 9, 9604538576451854
+1787485472.738644, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604538576725134
+1787485472.739302, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604538577380974
+1787485472.739836, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604538577946126
+1787485472.750733, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604538588814199
+1787485472.750863, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604538588950727
+1787485472.751270, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604538589332743
+1787485472.751377, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604538589450711
+1787485472.754480, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1005, 9604538592554453
+1787485472.754538, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604538592598693
+1787485473.384907, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604539223051341
+1787485475.301610, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 34, 9604541139721712
+1787485475.303001, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604541141081615
+1787485475.303102, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604541141176175
+1787485475.303405, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604541141466799
+1787485475.303492, Self-RAG Monolith (multi-hop), End stage, run, start, 9604541141565487
+1787485475.303830, Self-RAG Monolith (multi-hop), End stage, run, end, 9604541141893310
+1787485475.303987, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 20927075832742144042111060037521181126, 1787485472.738233, 1, 9, 9604541142068702
+1787485475.304443, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 271429429938208355199494537615924783429, 1787485475.304294, 1, 10, 9604541142527918
+1787485475.304748, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604541142830542
+1787485475.305432, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604541143512685
+1787485475.306047, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604541144143005
+1787485475.316440, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604541154520439
+1787485475.316586, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604541154678167
+1787485475.316985, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604541155047991
+1787485475.317201, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604541155275911
+1787485475.320299, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1101, 9604541158376277
+1787485475.320356, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604541158417253
+1787485476.002781, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604541840880856
+1787485477.842990, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 33, 9604543681079150
+1787485477.843554, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604543681620509
+1787485477.843963, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604543682038605
+1787485477.844108, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604543682169021
+1787485477.844263, Self-RAG Monolith (multi-hop), End stage, run, start, 9604543682335085
+1787485477.844460, Self-RAG Monolith (multi-hop), End stage, run, end, 9604543682523005
+1787485477.844977, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 271429429938208355199494537615924783429, 1787485475.304294, 1, 10, 9604543683059356
+1787485477.845686, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 137495264918511612279003393017545249984, 1787485477.845416, 1, 11, 9604543683772828
+1787485477.845985, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604543684064732
+1787485477.846609, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604543684684252
+1787485477.847220, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604543685326395
+1787485477.861312, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604543699394403
+1787485477.861460, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604543699551379
+1787485477.861877, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604543699940515
+1787485477.861998, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604543700071971
+1787485477.865374, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1215, 9604543703450561
+1787485477.865427, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604543703487441
+1787485478.597166, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604544435261762
+1787485480.247336, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604546085425844
+1787485480.248296, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604546086373219
+1787485480.248797, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604546086880259
+1787485480.248963, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604546087024579
+1787485480.249365, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604546087448034
+1787485480.249787, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604546087849522
+1787485480.250382, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604546088462466
+1787485480.252604, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 612, 9604546090673057
+1787485480.252641, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604546090701825
+1787485480.706568, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604546544682350
+1787485481.426790, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 14, 9604547264874797
+1787485481.427157, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604547265222733
+1787485481.428011, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604547266120172
+1787485481.441703, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604547279784725
+1787485481.441852, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604547279942037
+1787485481.442343, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604547280406213
+1787485481.442569, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604547280644517
+1787485481.446926, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1814, 9604547285013250
+1787485481.447006, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604547285066258
+1787485482.565742, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604548403836867
+1787485484.361814, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 33, 9604550199923897
+1787485484.362782, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604550200860921
+1787485484.363204, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604550201285640
+1787485484.363360, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604550201421528
+1787485484.363541, Self-RAG Monolith (multi-hop), End stage, run, start, 9604550201626776
+1787485484.364233, Self-RAG Monolith (multi-hop), End stage, run, end, 9604550202310808
+1787485484.364586, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 137495264918511612279003393017545249984, 1787485477.845416, 1, 11, 9604550202672504
+1787485484.365253, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 228132540844339436067140352319812724327, 1787485484.365109, 1, 12, 9604550203337463
+1787485484.365551, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604550203630151
+1787485484.366194, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604550204269591
+1787485484.366812, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604550204916471
+1787485484.379560, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604550217638336
+1787485484.379682, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604550217761024
+1787485484.380051, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604550218113984
+1787485484.380184, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604550218258448
+1787485484.382685, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 859, 9604550220759902
+1787485484.382736, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604550220796446
+1787485484.944350, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604550782448476
+1787485486.867397, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 34, 9604552705508822
+1787485486.868522, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604552706602758
+1787485486.868988, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604552707070949
+1787485486.869380, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604552707457205
+1787485486.869595, Self-RAG Monolith (multi-hop), End stage, run, start, 9604552707679653
+1787485486.869930, Self-RAG Monolith (multi-hop), End stage, run, end, 9604552707992549
+1787485486.870121, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 228132540844339436067140352319812724327, 1787485484.365109, 1, 12, 9604552708203061
+1787485486.870560, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 135763441788700111725331165457369777453, 1787485486.870450, 1, 13, 9604552708641829
+1787485486.870840, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604552708921332
+1787485486.871471, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604552709547444
+1787485486.872125, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604552710242452
+1787485486.884872, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604552722958045
+1787485486.885035, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604552723129789
+1787485486.885521, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604552723584173
+1787485486.885690, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604552723764717
+1787485486.888589, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1182, 9604552726659851
+1787485486.888639, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604552726699515
+1787485487.611134, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604553449231887
+1787485489.616970, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 35, 9604555455055433
+1787485489.618014, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604555456080344
+1787485489.618166, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604555456249352
+1787485489.618322, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604555456383992
+1787485489.618714, Self-RAG Monolith (multi-hop), End stage, run, start, 9604555456795832
+1787485489.618956, Self-RAG Monolith (multi-hop), End stage, run, end, 9604555457018968
+1787485489.619147, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 135763441788700111725331165457369777453, 1787485486.870450, 1, 13, 9604555457226647
+1787485489.619522, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 98705446881248306254791325072981524175, 1787485489.619434, 1, 14, 9604555457602567
+1787485489.619796, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604555457875015
+1787485489.620735, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604555458816183
+1787485489.621338, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604555459451798
+1787485489.634268, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604555472351376
+1787485489.634503, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604555472595728
+1787485489.634999, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604555473061824
+1787485489.635154, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604555473229472
+1787485489.637477, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 845, 9604555475544831
+1787485489.637511, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604555475572094
+1787485490.195698, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604556033795340
+1787485492.039069, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 32, 9604557877158235
+1787485492.039879, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604557877944475
+1787485492.040802, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604557878908011
+1787485492.041390, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604557879466650
+1787485492.041666, Self-RAG Monolith (multi-hop), End stage, run, start, 9604557879750810
+1787485492.042147, Self-RAG Monolith (multi-hop), End stage, run, end, 9604557880209578
+1787485492.042281, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 98705446881248306254791325072981524175, 1787485489.619434, 1, 14, 9604557880363418
+1787485492.042743, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 303368364877929711957213413778337764454, 1787485492.042594, 1, 15, 9604557880827002
+1787485492.042997, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604557881070730
+1787485492.043566, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604557881639657
+1787485492.044200, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604557882298761
+1787485492.057027, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604557895109827
+1787485492.057186, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604557895287843
+1787485492.057673, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604557895735443
+1787485492.057794, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604557895870659
+1787485492.060298, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 883, 9604557898375665
+1787485492.060359, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604557898419409
+1787485492.635485, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604558473584653
+1787485494.847786, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 41, 9604560685877781
+1787485494.848215, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604560686280069
+1787485494.848515, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604560686596533
+1787485494.848844, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604560686918197
+1787485494.849006, Self-RAG Monolith (multi-hop), End stage, run, start, 9604560687084948
+1787485494.849636, Self-RAG Monolith (multi-hop), End stage, run, end, 9604560687698692
+1787485494.849982, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 303368364877929711957213413778337764454, 1787485492.042594, 1, 15, 9604560688063252
+1787485494.850331, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 324421844331621076221930620450200487735, 1787485494.850254, 1, 16, 9604560688410084
+1787485494.850576, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604560688647988
+1787485494.851181, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604560689254020
+1787485494.851698, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604560689783699
+1787485494.864856, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604560702934061
+1787485494.864977, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604560703058141
+1787485494.865342, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604560703404941
+1787485494.865453, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604560703525245
+1787485494.868095, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1014, 9604560706169756
+1787485494.868145, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604560706206236
+1787485495.495848, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604561333943751
+1787485497.140082, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604562978171647
+1787485497.141331, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604562979415023
+1787485497.141866, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604562979949871
+1787485497.142047, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604562980109967
+1787485497.142277, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604562980361390
+1787485497.142934, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604562981024558
+1787485497.143443, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604562981523182
+1787485497.146419, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 694, 9604562984507469
+1787485497.146518, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604562984579181
+1787485497.652720, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604563490829654
+1787485498.314259, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 12, 9604564152348378
+1787485498.315746, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604564153846969
+1787485498.316491, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604564154575816
+1787485498.329558, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604564167640307
+1787485498.329705, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604564167794243
+1787485498.330133, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604564168195858
+1787485498.330361, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604564168439042
+1787485498.335094, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1976, 9604564173168384
+1787485498.335142, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604564173203232
+1787485499.538765, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604565376861379
+1787485501.225465, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604567063552568
+1787485501.226434, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604567064515928
+1787485501.226960, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604567065044231
+1787485501.227118, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604567065179575
+1787485501.227395, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604567065479031
+1787485501.227920, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604567065985159
+1787485501.228612, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604567066697671
+1787485501.232111, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 1148, 9604567070218293
+1787485501.232252, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604567070313525
+1787485501.942844, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604567780938430
+1787485502.596294, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 12, 9604568434384419
+1787485502.596638, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604568434702659
+1787485502.597277, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604568435362306
+1787485502.607147, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604568445214334
+1787485502.607257, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604568445351950
+1787485502.607762, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604568445824414
+1787485502.607980, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604568446054958
+1787485502.612010, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1976, 9604568450081772
+1787485502.612054, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604568450114988
+1787485503.822195, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604569660318020
+1787485505.542675, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604571380763292
+1787485505.543043, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604571381108124
+1787485505.543504, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604571381579611
+1787485505.543630, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604571381691755
+1787485505.544148, Self-RAG Monolith (multi-hop), End stage, run, start, 9604571382226299
+1787485505.544399, Self-RAG Monolith (multi-hop), End stage, run, end, 9604571382461723
+1787485505.544626, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 324421844331621076221930620450200487735, 1787485494.850254, 1, 16, 9604571382701163
+1787485505.545362, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 335413126704225214035657854012103670921, 1787485505.545221, 1, 17, 9604571383448491
+1787485505.545828, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604571383913082
+1787485505.546727, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604571384804570
+1787485505.547295, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604571385404170
+1787485505.558573, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604571396649157
+1787485505.558673, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604571396750661
+1787485505.559015, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604571397077845
+1787485505.559138, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604571397211381
+1787485505.561915, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1014, 9604571399987508
+1787485505.561963, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604571400023332
+1787485506.184528, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604572022656431
+1787485507.783182, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604573621271067
+1787485507.783848, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604573621927611
+1787485507.784266, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604573622356011
+1787485507.784444, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604573622505739
+1787485507.784605, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604573622690251
+1787485507.785278, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604573623354090
+1787485507.785821, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604573623915530
+1787485507.788203, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 648, 9604573626309417
+1787485507.788341, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604573626402393
+1787485508.265822, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604574103916998
+1787485509.671338, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 25, 9604575509422734
+1787485509.672793, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604575510886062
+1787485509.673392, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604575511474846
+1787485509.685823, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604575523909001
+1787485509.685984, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604575524077417
+1787485509.686506, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604575524569144
+1787485509.686751, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604575524826680
+1787485509.690609, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1600, 9604575528684631
+1787485509.690661, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604575528721959
+1787485510.683457, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604576521551532
+1787485512.284885, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604578122999048
+1787485512.285990, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604578124070855
+1787485512.286354, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604578124440119
+1787485512.286518, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604578124579799
+1787485512.286779, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604578124865655
+1787485512.287259, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604578125324247
+1787485512.287557, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604578125641111
+1787485512.290193, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 1022, 9604578128276534
+1787485512.290267, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604578128328294
+1787485512.924109, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604578762225616
+1787485513.808322, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 17, 9604579646407213
+1787485513.808966, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604579647045197
+1787485513.809827, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604579647931917
+1787485513.820000, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604579658080729
+1787485513.820135, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604579658223480
+1787485513.820613, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604579658676792
+1787485513.820950, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604579659024040
+1787485513.824602, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1600, 9604579662676359
+1787485513.824651, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604579662712007
+1787485514.816846, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604580654965598
+1787485516.472347, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604582310436228
+1787485516.472704, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604582310768851
+1787485516.473040, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604582311128051
+1787485516.473207, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604582311269139
+1787485516.473403, Self-RAG Monolith (multi-hop), End stage, run, start, 9604582311485171
+1787485516.473664, Self-RAG Monolith (multi-hop), End stage, run, end, 9604582311726515
+1787485516.474081, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 335413126704225214035657854012103670921, 1787485505.545221, 1, 17, 9604582312166115
+1787485516.474434, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 292560101539585458346518552243145453250, 1787485516.474298, 1, 18, 9604582312518867
+1787485516.474868, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604582312945859
+1787485516.476154, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604582314244018
+1787485516.476515, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604582314594082
+1787485516.487113, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604582325190110
+1787485516.487219, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604582325298702
+1787485516.487670, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604582325733086
+1787485516.487890, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604582325962270
+1787485516.490792, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 920, 9604582328863245
+1787485516.490838, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604582328898733
+1787485517.071451, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604582909547463
+1787485518.840765, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 32, 9604584678851668
+1787485518.842303, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604584680398275
+1787485518.842478, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604584680562515
+1787485518.852272, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604584690353488
+1787485518.852410, Self-RAG Monolith (multi-hop), End stage, run, start, 9604584690494736
+1787485518.852659, Self-RAG Monolith (multi-hop), End stage, run, end, 9604584690721120
+1787485518.853296, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 292560101539585458346518552243145453250, 1787485516.474298, 1, 18, 9604584691406303
+1787485518.854205, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 23946068744509503861318849101734995831, 1787485518.854110, 1, 19, 9604584692290479
+1787485518.854484, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604584692560655
+1787485518.855057, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604584693127967
+1787485518.855589, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604584693670175
+1787485518.868079, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604584706157226
+1787485518.868182, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604584706258426
+1787485518.868526, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604584706588954
+1787485518.868642, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604584706712650
+1787485518.872378, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1170, 9604584710489784
+1787485518.872504, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604584710565272
+1787485519.593731, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604585431825991
+1787485521.751147, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 40, 9604587589233761
+1787485521.751932, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604587589998897
+1787485521.752266, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604587590350497
+1787485521.752425, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604587590486977
+1787485521.752883, Self-RAG Monolith (multi-hop), End stage, run, start, 9604587590965472
+1787485521.753140, Self-RAG Monolith (multi-hop), End stage, run, end, 9604587591202896
+1787485521.753591, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 23946068744509503861318849101734995831, 1787485518.854110, 1, 19, 9604587591675680
+1787485521.754626, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 321756173298643770128836532884416496882, 1787485521.754484, 1, 20, 9604587592717008
+1787485521.755353, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604587593463344
+1787485521.756195, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604587594272799
+1787485521.756389, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604587594472479
+1787485521.769015, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604587607095483
+1787485521.769161, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604587607252315
+1787485521.769651, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604587607714347
+1787485521.769805, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604587607881659
+1787485521.772516, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 905, 9604587610584170
+1787485521.772557, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604587610617498
+1787485522.355044, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604588193140752
+1787485524.373808, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 37, 9604590211895107
+1787485524.374199, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604590212265427
+1787485524.374471, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604590212554083
+1787485524.374836, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604590212913331
+1787485524.375239, Self-RAG Monolith (multi-hop), End stage, run, start, 9604590213321363
+1787485524.375744, Self-RAG Monolith (multi-hop), End stage, run, end, 9604590213821811
+1787485524.376511, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 321756173298643770128836532884416496882, 1787485521.754484, 1, 20, 9604590214628706
+1787485524.377121, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 100158766016493307771451174332942623528, 1787485524.376910, 1, 21, 9604590215209538
+1787485524.377434, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604590215512242
+1787485524.378003, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604590216076530
+1787485524.378614, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604590216721730
+1787485524.392956, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604590231038461
+1787485524.393177, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604590231266221
+1787485524.393626, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604590231689245
+1787485524.393757, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604590231831645
+1787485524.396589, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 946, 9604590234658588
+1787485524.396627, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604590234687804
+1787485524.984251, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604590822351671
+1787485526.638116, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604592476202425
+1787485526.638568, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604592476633353
+1787485526.638815, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604592476898265
+1787485526.638973, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604592477034793
+1787485526.639493, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604592477568520
+1787485526.639892, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604592477955816
+1787485526.639956, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604592478031576
+1787485526.642119, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 638, 9604592480185528
+1787485526.642154, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604592480215512
+1787485527.095971, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604592934064548
+1787485528.344400, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 23, 9604594182487093
+1787485528.344808, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604594182875173
+1787485528.345369, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604594183464756
+1787485528.358473, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604594196552832
+1787485528.358812, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604594196893456
+1787485528.359165, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604594197227888
+1787485528.359299, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604594197378224
+1787485528.362243, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 946, 9604594200319039
+1787485528.362288, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604594200348623
+1787485528.947655, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604594785750101
+1787485530.519308, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604596357394044
+1787485530.520030, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604596358108492
+1787485530.520133, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604596358209724
+1787485530.520941, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604596359028332
+1787485530.521471, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604596359554476
+1787485530.521982, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604596360046587
+1787485530.522102, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604596360177355
+1787485530.524397, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 638, 9604596362472907
+1787485530.524451, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604596362511579
+1787485530.980985, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604596819107311
+1787485532.228803, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 23, 9604598066890148
+1787485532.229117, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604598067183588
+1787485532.229870, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604598067979332
+1787485532.241160, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604598079239073
+1787485532.241449, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604598079531585
+1787485532.241931, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604598080009649
+1787485532.242235, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604598080313312
+1787485532.245163, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 946, 9604598083247503
+1787485532.245228, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604598083289151
+1787485532.832042, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604598670134704
+1787485534.431829, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604600269915641
+1787485534.432503, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604600270568793
+1787485534.432765, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604600270850200
+1787485534.432919, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604600270980168
+1787485534.433189, Self-RAG Monolith (multi-hop), End stage, run, start, 9604600271269016
+1787485534.433484, Self-RAG Monolith (multi-hop), End stage, run, end, 9604600271546648
+1787485534.433875, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 100158766016493307771451174332942623528, 1787485524.376910, 1, 21, 9604600271959112
+1787485534.434433, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 288015989528634460244943046896969226481, 1787485534.434183, 1, 22, 9604600272509576
+1787485534.434603, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604600272684856
+1787485534.435191, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604600273262936
+1787485534.435747, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604600273832168
+1787485534.450061, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604600288142163
+1787485534.450413, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604600288504739
+1787485534.450777, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604600288839619
+1787485534.451138, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604600289212755
+1787485534.454019, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 939, 9604600292094754
+1787485534.454075, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604600292135602
+1787485535.044923, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604600883026966
+1787485536.663200, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604602501287834
+1787485536.663997, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604602502063977
+1787485536.664283, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604602502365657
+1787485536.664495, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604602502556937
+1787485536.664607, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604602502681721
+1787485536.665106, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604602503170025
+1787485536.665368, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604602503442425
+1787485536.667642, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 645, 9604602505716152
+1787485536.667692, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604602505753304
+1787485537.141554, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604602979650068
+1787485537.377248, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 5, 9604603215329810
+1787485537.377548, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604603215613570
+1787485537.378368, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604603216459874
+1787485537.389601, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604603227684543
+1787485537.389753, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604603227848751
+1787485537.390471, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604603228548415
+1787485537.390740, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604603228826895
+1787485537.393866, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1444, 9604603231932222
+1787485537.393900, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604603231960862
+1787485538.321048, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604604159139437
+1787485539.948953, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604605787038244
+1787485539.949527, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604605787593076
+1787485539.949839, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604605787914244
+1787485539.950304, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604605788381300
+1787485539.950410, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604605788493300
+1787485539.951929, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604605790010307
+1787485539.952092, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604605790170339
+1787485539.954392, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 993, 9604605792460994
+1787485539.954429, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604605792490050
+1787485540.568882, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604606407031167
+1787485541.776184, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 22, 9604607614273298
+1787485541.777011, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604607615076754
+1787485541.777842, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604607615953938
+1787485541.796563, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604607634644141
+1787485541.796717, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604607634790205
+1787485541.797086, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604607635150381
+1787485541.797236, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604607635301021
+1787485541.801258, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1841, 9604607639329115
+1787485541.801300, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604607639360443
+1787485542.928741, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604608766835401
+1787485544.577938, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604610416041643
+1787485544.578514, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604610416579979
+1787485544.579544, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604610417632235
+1787485544.579730, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604610417791531
+1787485544.579921, Self-RAG Monolith (multi-hop), End stage, run, start, 9604610418019419
+1787485544.580215, Self-RAG Monolith (multi-hop), End stage, run, end, 9604610418277499
+1787485544.580385, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 288015989528634460244943046896969226481, 1787485534.434183, 1, 22, 9604610418476171
+1787485544.581967, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 299990627033063458304444412642243727366, 1787485544.581885, 1, 23, 9604610420059418
+1787485544.582405, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604610420481258
+1787485544.583000, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604610421071418
+1787485544.583226, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604610421297530
+1787485544.593584, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604610431657719
+1787485544.594135, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604610432207335
+1787485544.594586, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604610432656727
+1787485544.594959, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604610433034519
+1787485544.597914, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 919, 9604610435991030
+1787485544.597963, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604610436023814
+1787485545.179502, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604611017622006
+1787485547.126538, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 34, 9604612964622609
+1787485547.128030, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604612966125552
+1787485547.128573, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604612966657504
+1787485547.137509, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604612975588926
+1787485547.137691, Self-RAG Monolith (multi-hop), End stage, run, start, 9604612975773534
+1787485547.137920, Self-RAG Monolith (multi-hop), End stage, run, end, 9604612975982638
+1787485547.138319, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 299990627033063458304444412642243727366, 1787485544.581885, 1, 23, 9604612976406974
+1787485547.139055, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 119619562346172752196320560446907784249, 1787485547.138609, 1, 24, 9604612977135454
+1787485547.139643, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604612977721870
+1787485547.140257, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604612978331821
+1787485547.140511, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604612978582877
+1787485547.153118, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604612991197451
+1787485547.153615, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604612991691050
+1787485547.154089, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604612992161770
+1787485547.154320, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604612992400010
+1787485547.156932, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 901, 9604612995013338
+1787485547.156986, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604612995047514
+1787485547.735987, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604613574082097
+1787485549.518492, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604615356582038
+1787485549.520001, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604615358081205
+1787485549.520515, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604615358598725
+1787485549.520902, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604615358980693
+1787485549.521425, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604615359506901
+1787485549.521786, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604615359849461
+1787485549.521950, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604615360031973
+1787485549.524150, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 557, 9604615362238932
+1787485549.524236, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604615362297284
+1787485549.967336, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604615805459520
+1787485550.448397, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 9, 9604616286507765
+1787485550.448749, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604616286813620
+1787485550.448918, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604616286998644
+1787485550.462016, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604616300099010
+1787485550.462534, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604616300607457
+1787485550.462825, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604616300888673
+1787485550.462968, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604616301049489
+1787485550.467420, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1663, 9604616305503568
+1787485550.467499, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604616305559728
+1787485551.504821, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604617342915547
+1787485553.152218, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604618990308935
+1787485553.152953, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604618991017479
+1787485553.153247, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604618991325847
+1787485553.153611, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604618991684903
+1787485553.154156, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604618992228887
+1787485553.154580, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604618992643783
+1787485553.155149, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604618993223095
+1787485553.157720, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 1016, 9604618995792998
+1787485553.157766, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604618995826726
+1787485553.785894, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604619623995250
+1787485554.242082, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 9, 9604620080167795
+1787485554.242402, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604620080467475
+1787485554.242660, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604620080732259
+1787485554.254891, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604620092970016
+1787485554.255298, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604620093372608
+1787485554.255588, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604620093651968
+1787485554.255725, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604620093807520
+1787485554.260214, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1939, 9604620098291487
+1787485554.260272, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604620098333295
+1787485555.446750, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604621284866156
+1787485557.102368, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604622940454739
+1787485557.102987, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604622941068450
+1787485557.103321, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604622941408866
+1787485557.103491, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604622941553122
+1787485557.103655, Self-RAG Monolith (multi-hop), End stage, run, start, 9604622941740306
+1787485557.104151, Self-RAG Monolith (multi-hop), End stage, run, end, 9604622942228530
+1787485557.104273, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 119619562346172752196320560446907784249, 1787485547.138609, 1, 24, 9604622942355250
+1787485557.104781, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 33324854396237599109525753437168894420, 1787485557.104719, 1, 25, 9604622942844082
+1787485557.104984, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604622943064514
+1787485557.105792, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604622943875794
+1787485557.105919, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604622943998914
+1787485557.116735, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604622954810848
+1787485557.116828, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604622954904464
+1787485557.117153, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604622955217216
+1787485557.117307, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604622955386640
+1787485557.119758, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 810, 9604622957827727
+1787485557.119801, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604622957861983
+1787485557.704929, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604623543070750
+1787485559.727679, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 35, 9604625565793663
+1787485559.728121, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604625566184527
+1787485559.728552, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604625566643647
+1787485559.728755, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604625566817215
+1787485559.728903, Self-RAG Monolith (multi-hop), End stage, run, start, 9604625566984335
+1787485559.729135, Self-RAG Monolith (multi-hop), End stage, run, end, 9604625567197583
+1787485559.729369, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 33324854396237599109525753437168894420, 1787485557.104719, 1, 25, 9604625567457727
+1787485559.729750, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 101275039682124939748927156890239552649, 1787485559.729593, 1, 26, 9604625567822175
+1787485559.730190, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604625568266975
+1787485559.730755, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604625568825759
+1787485559.730892, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604625568965231
+1787485559.741855, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604625579932781
+1787485559.742033, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604625580106237
+1787485559.742304, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604625580367132
+1787485559.742423, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604625580509900
+1787485559.744498, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 724, 9604625582562876
+1787485559.744529, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604625582589292
+1787485560.258143, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604626096238285
+1787485562.292552, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 34, 9604628130662658
+1787485562.292983, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604628131047858
+1787485562.293718, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604628131803266
+1787485562.293880, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604628131942338
+1787485562.294059, Self-RAG Monolith (multi-hop), End stage, run, start, 9604628132148050
+1787485562.294868, Self-RAG Monolith (multi-hop), End stage, run, end, 9604628132946802
+1787485562.295112, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 101275039682124939748927156890239552649, 1787485559.729593, 1, 26, 9604628133200962
+1787485562.295578, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 129696607506981126682958990486870819765, 1787485562.295441, 1, 27, 9604628133650018
+1787485562.295834, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604628133912466
+1787485562.296567, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604628134640098
+1787485562.296697, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604628134766770
+1787485562.310148, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604628148224639
+1787485562.310918, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604628148991407
+1787485562.311203, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604628149265647
+1787485562.311276, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604628149353295
+1787485562.314296, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1217, 9604628152366414
+1787485562.314336, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604628152396862
+1787485563.074046, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604628912145579
+1787485564.726624, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604630564711414
+1787485564.727567, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604630565647958
+1787485564.728080, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604630566166630
+1787485564.738393, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604630576472212
+1787485564.738808, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604630576894932
+1787485564.739288, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604630577351524
+1787485564.739692, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604630577775284
+1787485564.742099, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 715, 9604630580179572
+1787485564.742166, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604630580226980
+1787485565.244643, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604631082743698
+1787485565.752223, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 10, 9604631590312160
+1787485565.752540, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604631590604688
+1787485565.752863, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604631590940416
+1787485565.765148, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604631603227102
+1787485565.765569, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604631603642430
+1787485565.765856, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604631603919806
+1787485565.766113, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604631604190286
+1787485565.769968, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1818, 9604631608039245
+1787485565.770011, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604631608073021
+1787485566.887430, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604632725523165
+1787485568.546033, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604634384118448
+1787485568.546777, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604634384858928
+1787485568.547211, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604634385293072
+1787485568.547370, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604634385431616
+1787485568.547880, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, start, 9604634385963840
+1787485568.548366, Self-RAG Monolith (multi-hop), Query rewrite formatter, run, end, 9604634386429520
+1787485568.548812, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, start, 9604634386897872
+1787485568.551548, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_prompt_tokens, 1026, 9604634389632223
+1787485568.551623, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, start, 9604634389683631
+1787485569.212704, Self-RAG Monolith (multi-hop), Query rewrite LLM, first_token, end, 9604635050800526
+1787485569.765468, Self-RAG Monolith (multi-hop), Query rewrite LLM, n_generated_tokens, 10, 9604635603555854
+1787485569.766684, Self-RAG Monolith (multi-hop), Query rewrite LLM, run, end, 9604635604766654
+1787485569.767251, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604635605339534
+1787485569.787458, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604635625540603
+1787485569.788210, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604635626283162
+1787485569.788502, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604635626565418
+1787485569.788566, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604635626641962
+1787485569.792706, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1818, 9604635630780474
+1787485569.792762, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604635630823290
+1787485570.910190, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604636748290732
+1787485572.532001, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 30, 9604638370088160
+1787485572.532534, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604638370600240
+1787485572.532783, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604638370868272
+1787485572.532939, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604638371009232
+1787485572.533092, Self-RAG Monolith (multi-hop), End stage, run, start, 9604638371171199
+1787485572.533574, Self-RAG Monolith (multi-hop), End stage, run, end, 9604638371648783
+1787485572.533853, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 129696607506981126682958990486870819765, 1787485562.295441, 1, 27, 9604638371938927
+1787485572.534486, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 315052703394183818781304864187872070598, 1787485572.534322, 1, 28, 9604638372562383
+1787485572.534916, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604638372999727
+1787485572.535550, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604638373627071
+1787485572.536041, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604638374114703
+1787485572.545969, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604638384042638
+1787485572.546237, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604638384310350
+1787485572.546510, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604638384573134
+1787485572.546569, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604638384643726
+1787485572.549767, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 1161, 9604638387838237
+1787485572.549810, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604638387870717
+1787485573.262753, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604639100848400
+1787485575.181850, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 34, 9604641019935725
+1787485575.182522, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604641020588253
+1787485575.183079, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604641021165741
+1787485575.183243, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604641021304541
+1787485575.183421, Self-RAG Monolith (multi-hop), End stage, run, start, 9604641021506653
+1787485575.183670, Self-RAG Monolith (multi-hop), End stage, run, end, 9604641021731325
+1787485575.183984, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 315052703394183818781304864187872070598, 1787485572.534322, 1, 28, 9604641022073805
+1787485575.184689, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 26107611203562703962138532398726957369, 1787485575.184541, 1, 29, 9604641022790381
+1787485575.185395, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604641023468669
+1787485575.185982, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604641024054925
+1787485575.186160, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604641024231421
+1787485575.196056, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604641034126700
+1787485575.196482, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604641034554940
+1787485575.196756, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604641034819244
+1787485575.196825, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604641034900988
+1787485575.199579, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 991, 9604641037650091
+1787485575.199624, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604641037685627
+1787485575.823173, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604641661267792
+1787485577.766726, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 35, 9604643604816287
+1787485577.767486, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604643605568447
+1787485577.768384, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604643606493359
+1787485577.768667, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604643606727903
+1787485577.768830, Self-RAG Monolith (multi-hop), End stage, run, start, 9604643606908767
+1787485577.769069, Self-RAG Monolith (multi-hop), End stage, run, end, 9604643607131551
+1787485577.769574, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 26107611203562703962138532398726957369, 1787485575.184541, 1, 29, 9604643607658399
+1787485577.770279, Self-RAG Monolith (multi-hop), pipeline - val, run, start, 317887733981559509720217288638007558049, 1787485577.769874, 1, 30, 9604643608388063
+1787485577.771283, Self-RAG Monolith (multi-hop), Question dataloader, run, start, 9604643609368751
+1787485577.771875, Self-RAG Monolith (multi-hop), Question dataloader, run, end, 9604643609946607
+1787485577.772073, Self-RAG Monolith (multi-hop), Document retriever, run, start, 9604643610144543
+1787485577.780821, Self-RAG Monolith (multi-hop), Document retriever, run, end, 9604643618890030
+1787485577.780991, Self-RAG Monolith (multi-hop), Monolith formatter, run, start, 9604643619062766
+1787485577.781274, Self-RAG Monolith (multi-hop), Monolith formatter, run, end, 9604643619337710
+1787485577.781346, Self-RAG Monolith (multi-hop), Monolith LLM, run, start, 9604643619421214
+1787485577.783552, Self-RAG Monolith (multi-hop), Monolith LLM, n_prompt_tokens, 834, 9604643621625389
+1787485577.783604, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, start, 9604643621664845
+1787485578.358662, Self-RAG Monolith (multi-hop), Monolith LLM, first_token, end, 9604644196754893
+1787485580.675693, Self-RAG Monolith (multi-hop), Monolith LLM, n_generated_tokens, 37, 9604646513793562
+1787485580.676176, Self-RAG Monolith (multi-hop), Monolith LLM, run, end, 9604646514239242
+1787485580.676510, Self-RAG Monolith (multi-hop), Monolith router, run, start, 9604646514600362
+1787485580.686799, Self-RAG Monolith (multi-hop), Monolith router, run, end, 9604646524878009
+1787485580.687699, Self-RAG Monolith (multi-hop), End stage, run, start, 9604646525781561
+1787485580.687916, Self-RAG Monolith (multi-hop), End stage, run, end, 9604646525978201
+1787485580.688215, Self-RAG Monolith (multi-hop), pipeline - val, run, end, 317887733981559509720217288638007558049, 1787485577.769874, 1, 30, 9604646526300793

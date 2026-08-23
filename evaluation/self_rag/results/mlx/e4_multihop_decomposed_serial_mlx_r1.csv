@@ -1,0 +1,1246 @@
+1787478291.208869, Self-RAG Decomposed (multi-hop), pipeline, prepare, start, 162637045193250
+1787478291.209150, Self-RAG Decomposed (multi-hop), Question dataloader, prepare, start, 162637045332291
+1787478293.762338, Self-RAG Decomposed (multi-hop), Question dataloader, prepare, end, 162639598528416
+1787478293.762429, Self-RAG Decomposed (multi-hop), Document retriever, prepare, start, 162639598605583
+1787478324.086012, Self-RAG Decomposed (multi-hop), Document retriever, prepare, end, 162669922144458
+1787478324.086312, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, prepare, start, 162669922407833
+1787478324.086548, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, prepare, end, 162669922641666
+1787478324.086653, Self-RAG Decomposed (multi-hop), Grader LLM, prepare, start, 162669922744500
+1787478326.795727, Self-RAG Decomposed (multi-hop), Grader LLM, prepare, end, 162672631823625
+1787478326.795957, Self-RAG Decomposed (multi-hop), Answer generator formatter, prepare, start, 162672632047500
+1787478326.796083, Self-RAG Decomposed (multi-hop), Answer generator formatter, prepare, end, 162672632169250
+1787478326.796131, Self-RAG Decomposed (multi-hop), Generator LLM, prepare, start, 162672632216708
+1787478329.635250, Self-RAG Decomposed (multi-hop), Generator LLM, prepare, end, 162675471341791
+1787478329.635377, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, prepare, start, 162675471456500
+1787478329.635500, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, prepare, end, 162675471578791
+1787478329.635546, Self-RAG Decomposed (multi-hop), Hallucination LLM, prepare, start, 162675471622750
+1787478332.509763, Self-RAG Decomposed (multi-hop), Hallucination LLM, prepare, end, 162678345854333
+1787478332.510066, Self-RAG Decomposed (multi-hop), Query rewrite formatter, prepare, start, 162678346138958
+1787478332.510179, Self-RAG Decomposed (multi-hop), Query rewrite formatter, prepare, end, 162678346248666
+1787478332.510211, Self-RAG Decomposed (multi-hop), Query rewrite LLM, prepare, start, 162678346279875
+1787478332.510271, Self-RAG Decomposed (multi-hop), Query rewrite LLM, prepare, end, 162678346339208
+1787478332.510357, Self-RAG Decomposed (multi-hop), pipeline, prepare, end, 162678346429875
+1787478332.511011, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 261282588301376627698869177653957585218, 1787478332.510951, 1, 1, 162678347084250
+1787478332.511435, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162678347505041
+1787478332.520694, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162678356763583
+1787478332.521002, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162678357071750
+1787478336.018702, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162681854778291
+1787478336.019096, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162681855157583
+1787478336.039164, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162681875234500
+1787478336.039290, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162681875351208
+1787478336.042688, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 689, 162681878749791
+1787478336.042720, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162681878779333
+1787478348.610458, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162694446644458
+1787478348.657901, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162694493939291
+1787478348.658156, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162694494188208
+1787478348.658876, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162694494904791
+1787478348.659602, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162694495630583
+1787478348.659722, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 162694495749625
+1787478348.661493, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 162694497523000
+1787478348.661562, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 162694497588875
+1787478348.678967, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 634, 162694514996166
+1787478348.678996, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 162694515020666
+1787478350.537897, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 162696374091000
+1787478350.651450, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 5, 162696487490125
+1787478350.651645, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 162696487667250
+1787478350.651838, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162696487869000
+1787478351.870920, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162697706952791
+1787478351.871053, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162697707080083
+1787478351.872180, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162697708200000
+1787478351.872254, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162697708271833
+1787478351.887672, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1038, 162697723701166
+1787478351.887738, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162697723754958
+1787478364.162335, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162709998465875
+1787478364.208794, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162710044792875
+1787478364.209198, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162710045184041
+1787478364.209645, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162710045630958
+1787478364.210516, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162710046501125
+1787478364.214881, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162710050869958
+1787478364.219462, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162710055447791
+1787478364.220108, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162710056323500
+1787478364.330121, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1049, 162710166112583
+1787478364.330172, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162710166155666
+1787478367.330710, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162713166824083
+1787478367.375214, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 2, 162713211200875
+1787478367.375882, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162713211859500
+1787478367.376330, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162713212310375
+1787478367.380215, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162713216193958
+1787478367.380329, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162713216308125
+1787478367.462226, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 1013, 162713298207458
+1787478367.462269, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162713298244166
+1787478370.343696, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162716179790791
+1787478370.391156, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162716227136333
+1787478370.392121, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162716228090541
+1787478370.392618, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162716228592000
+1787478370.392896, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162716228864583
+1787478370.393040, Self-RAG Decomposed (multi-hop), End stage, run, start, 162716229014500
+1787478370.399158, Self-RAG Decomposed (multi-hop), End stage, run, end, 162716235128333
+1787478370.399255, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 261282588301376627698869177653957585218, 1787478332.510951, 1, 1, 162716235231166
+1787478370.401084, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 299309899005775600293737536311159325746, 1787478370.400717, 1, 2, 162716237061541
+1787478370.403340, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162716239311750
+1787478370.444831, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162716280804250
+1787478370.444923, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162716280895916
+1787478371.411143, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162717247118958
+1787478371.411289, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162717247261875
+1787478371.412126, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162717248092375
+1787478371.412211, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162717248179875
+1787478371.439095, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 690, 162717275064250
+1787478371.439131, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162717275094291
+1787478383.609107, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162729445178791
+1787478383.656297, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162729492241208
+1787478383.656846, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162729492781375
+1787478383.657043, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162729492978625
+1787478383.657910, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162729493844416
+1787478383.658943, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 162729494881416
+1787478383.661424, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 162729497356750
+1787478383.661523, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 162729497708416
+1787478383.670312, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 666, 162729506245833
+1787478383.670337, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 162729506267416
+1787478385.603166, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 162731439240625
+1787478385.759754, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 7, 162731595716833
+1787478385.760100, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 162731596030125
+1787478385.760427, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162731596372625
+1787478386.250208, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162732086145541
+1787478386.250312, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162732086245958
+1787478386.251143, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162732087069583
+1787478386.251232, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162732087160208
+1787478386.272430, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1300, 162732108360791
+1787478386.272468, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162732108391583
+1787478389.872390, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162735708441000
+1787478389.921728, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162735757655666
+1787478389.921976, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162735757894458
+1787478389.922176, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162735758096708
+1787478389.922521, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162735758437375
+1787478389.922733, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 162735758656375
+1787478389.924035, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 162735759953583
+1787478389.924152, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 162735760073000
+1787478389.929371, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 1053, 162735765288375
+1787478389.929400, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 162735765314416
+1787478392.838241, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 162738674340166
+1787478392.993751, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 7, 162738829678541
+1787478392.994034, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 162738829944500
+1787478392.994228, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162738830151375
+1787478393.452292, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162739288210416
+1787478393.452415, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162739288325625
+1787478393.453610, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162739289516541
+1787478393.453708, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162739289617750
+1787478393.458068, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1300, 162739293976375
+1787478393.458096, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162739294001375
+1787478397.051744, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162742887816333
+1787478397.100146, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162742936057958
+1787478397.100362, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162742936259166
+1787478397.100486, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162742936389625
+1787478397.100885, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162742936783333
+1787478397.101670, Self-RAG Decomposed (multi-hop), End stage, run, start, 162742938165541
+1787478397.131693, Self-RAG Decomposed (multi-hop), End stage, run, end, 162742967591958
+1787478397.131794, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 299309899005775600293737536311159325746, 1787478370.400717, 1, 2, 162742967697583
+1787478397.132889, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 19571300407124182983947760724560259850, 1787478397.132811, 1, 3, 162742969238416
+1787478397.134171, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162742970072708
+1787478397.161673, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162742997571666
+1787478397.161757, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162742997656958
+1787478397.842719, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162743678629416
+1787478397.842888, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162743678787958
+1787478397.843853, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162743679747125
+1787478397.843947, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162743679843666
+1787478397.874675, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 875, 162743710573291
+1787478397.874710, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162743710603333
+1787478400.414949, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162746251001333
+1787478400.462934, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162746298833750
+1787478400.463154, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162746299042916
+1787478400.463376, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162746299272750
+1787478400.465891, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162746301780291
+1787478400.466368, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162746302256625
+1787478400.468294, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162746304182833
+1787478400.468394, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162746304292041
+1787478400.540886, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 886, 162746376775958
+1787478400.540923, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162746376808083
+1787478403.115522, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162748951605958
+1787478403.210343, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 4, 162749046240708
+1787478403.211283, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162749047167458
+1787478403.212110, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162749047992666
+1787478403.215053, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162749050936583
+1787478403.215532, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162749051420250
+1787478403.273511, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 835, 162749109397958
+1787478403.273585, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162749109463958
+1787478405.755699, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162751591753541
+1787478405.801058, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162751636941375
+1787478405.801709, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162751637583666
+1787478405.802128, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162751638001250
+1787478405.803880, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162751639757541
+1787478405.803985, Self-RAG Decomposed (multi-hop), End stage, run, start, 162751639858208
+1787478405.806563, Self-RAG Decomposed (multi-hop), End stage, run, end, 162751642437000
+1787478405.806654, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 19571300407124182983947760724560259850, 1787478397.132811, 1, 3, 162751642527750
+1787478405.807094, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 64980680899732137863256965691971464966, 1787478405.807049, 1, 4, 162751642970208
+1787478405.808057, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162751643933666
+1787478405.828886, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162751664760375
+1787478405.829239, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162751665117208
+1787478407.124718, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162752960605000
+1787478407.125169, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162752961048791
+1787478407.126180, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162752962052833
+1787478407.126247, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162752962116708
+1787478407.190071, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 504, 162753025954000
+1787478407.190139, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162753026007708
+1787478413.205185, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162759041180958
+1787478413.253634, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162759089504083
+1787478413.254246, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162759090100250
+1787478413.254406, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162759090265125
+1787478413.255010, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162759090863708
+1787478413.255154, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162759091006958
+1787478413.256853, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162759092706833
+1787478413.256987, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162759092854583
+1787478413.323027, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 515, 162759158884583
+1787478413.323068, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162759158919583
+1787478414.976093, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162760812083166
+1787478415.024454, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 2, 162760860318875
+1787478415.024712, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162760860562125
+1787478415.025319, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162760861177250
+1787478415.026494, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162760862343833
+1787478415.026597, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162760862448416
+1787478415.085999, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 474, 162760921854375
+1787478415.086058, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162760921905083
+1787478416.569832, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162762405826500
+1787478416.615978, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162762451837541
+1787478416.616239, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162762452087708
+1787478416.616382, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162762452231583
+1787478416.616666, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162762452513000
+1787478416.616894, Self-RAG Decomposed (multi-hop), End stage, run, start, 162762452742625
+1787478416.618181, Self-RAG Decomposed (multi-hop), End stage, run, end, 162762454027958
+1787478416.618261, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 64980680899732137863256965691971464966, 1787478405.807049, 1, 4, 162762454106541
+1787478416.618599, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 18081598911975769133825556116506636808, 1787478416.618504, 1, 5, 162762454450458
+1787478416.618972, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162762454818500
+1787478416.632048, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162762467893833
+1787478416.632335, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162762468196125
+1787478417.607141, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162763442998958
+1787478417.607264, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162763443123500
+1787478417.608835, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162763444680208
+1787478417.608955, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162763444796333
+1787478417.637683, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 714, 162763473541541
+1787478417.637766, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162763473607208
+1787478433.377583, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162779213582625
+1787478433.425556, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162779261369875
+1787478433.425841, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162779261642333
+1787478433.426008, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162779261810958
+1787478433.427822, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162779263624291
+1787478433.428115, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 162779263919208
+1787478433.429835, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 162779265634500
+1787478433.430998, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 162779266800166
+1787478433.451946, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 650, 162779287749125
+1787478433.451989, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 162779287785833
+1787478435.401718, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 162781237657083
+1787478435.774253, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 17, 162781610071583
+1787478435.774534, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 162781610327083
+1787478435.774856, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162781610671500
+1787478436.943560, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162782779362541
+1787478436.943671, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162782779465666
+1787478436.945007, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162782780796958
+1787478436.945135, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162782780927208
+1787478436.962435, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 972, 162782798227125
+1787478436.962468, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162782798255416
+1787478445.145269, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162790981192916
+1787478445.193042, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162791028821458
+1787478445.193734, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162791029505166
+1787478445.193929, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162791029698166
+1787478445.194757, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162791030523666
+1787478445.194927, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162791030695958
+1787478445.197002, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162791032770291
+1787478445.197080, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162791032856875
+1787478445.281975, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 983, 162791117748666
+1787478445.282026, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162791117791291
+1787478448.072791, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162793908601625
+1787478448.156868, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 4, 162793992638416
+1787478448.157482, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162793993242125
+1787478448.157983, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162793993746500
+1787478448.159366, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162793995127083
+1787478448.159467, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162793995227916
+1787478448.231536, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 942, 162794067300583
+1787478448.231584, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162794067342125
+1787478450.915807, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162796751894750
+1787478450.964458, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162796800227291
+1787478450.964748, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162796800500916
+1787478450.965011, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162796800770250
+1787478450.966398, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162796802152875
+1787478450.966576, Self-RAG Decomposed (multi-hop), End stage, run, start, 162796802716000
+1787478450.969352, Self-RAG Decomposed (multi-hop), End stage, run, end, 162796805104750
+1787478450.969424, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 18081598911975769133825556116506636808, 1787478416.618504, 1, 5, 162796805179291
+1787478450.969694, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 28785256341901817004175509607396728836, 1787478450.969591, 1, 6, 162796805452666
+1787478450.970300, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162796806055625
+1787478450.991721, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162796827473750
+1787478450.991830, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162796827585916
+1787478451.749725, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162797585486083
+1787478451.749833, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162797585587625
+1787478451.750933, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162797586685083
+1787478451.751066, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162797586816500
+1787478451.782678, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 768, 162797618430916
+1787478451.782716, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162797618464208
+1787478454.128461, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162799964401750
+1787478454.181150, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162800016907208
+1787478454.181405, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162800017149416
+1787478454.181541, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162800017284500
+1787478454.182527, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162800018274583
+1787478454.182634, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162800018376416
+1787478454.185919, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162800021663958
+1787478454.185995, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162800021747333
+1787478454.204537, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 779, 162800040281750
+1787478454.204565, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162800040305875
+1787478456.491642, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162802327543666
+1787478456.607494, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 5, 162802443265250
+1787478456.609000, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162802444741041
+1787478456.610056, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162802445938625
+1787478456.613529, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162802449270083
+1787478456.614233, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162802449975791
+1787478456.712649, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 735, 162802548392125
+1787478456.712701, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162802548435500
+1787478458.915080, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162804750970500
+1787478458.964438, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162804800182958
+1787478458.965028, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162804800764083
+1787478458.965481, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162804801218208
+1787478458.966753, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162804802487125
+1787478458.966863, Self-RAG Decomposed (multi-hop), End stage, run, start, 162804802594208
+1787478458.969056, Self-RAG Decomposed (multi-hop), End stage, run, end, 162804804787875
+1787478458.969116, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 28785256341901817004175509607396728836, 1787478450.969591, 1, 6, 162804804849333
+1787478458.970527, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 105125229214528715612347287707946913477, 1787478458.970445, 1, 7, 162804806267791
+1787478458.970980, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162804806715916
+1787478458.992349, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162804828083250
+1787478458.992449, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162804828183708
+1787478459.699951, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162805535694583
+1787478459.700089, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162805535825708
+1787478459.701645, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162805537374625
+1787478459.701758, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162805537489416
+1787478459.778302, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1054, 162805614044458
+1787478459.778373, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162805614099375
+1787478462.820887, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162808656796791
+1787478462.873045, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162808708780166
+1787478462.873625, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162808709345708
+1787478462.873984, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162808709704291
+1787478462.874737, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162808710457083
+1787478462.875838, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162808711557708
+1787478462.878292, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162808714012875
+1787478462.879017, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162808714747125
+1787478462.990049, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1065, 162808825775708
+1787478462.990094, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162808825812041
+1787478466.182855, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162812018761458
+1787478466.317795, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 6, 162812153528625
+1787478466.318834, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162812154549333
+1787478466.320131, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162812155850083
+1787478466.323902, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162812159613750
+1787478466.324043, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162812159761333
+1787478466.440534, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 1026, 162812276261250
+1787478466.440617, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162812276325750
+1787478469.446065, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162815281989916
+1787478469.492878, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162815328592250
+1787478469.493109, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162815328812708
+1787478469.493218, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162815328923125
+1787478469.493826, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162815329530083
+1787478469.494778, Self-RAG Decomposed (multi-hop), End stage, run, start, 162815330481125
+1787478469.525156, Self-RAG Decomposed (multi-hop), End stage, run, end, 162815360862375
+1787478469.525209, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 105125229214528715612347287707946913477, 1787478458.970445, 1, 7, 162815360914625
+1787478469.525916, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 232972991186870007439159521559095141859, 1787478469.525836, 1, 8, 162815361636208
+1787478469.526529, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162815362236750
+1787478469.550743, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162815386448166
+1787478469.551551, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162815387256875
+1787478472.815446, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162818651171333
+1787478472.816433, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162818652134666
+1787478472.823836, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162818659533750
+1787478472.824255, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162818659950458
+1787478473.039502, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 790, 162818875209541
+1787478473.039582, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162818875274625
+1787478483.468825, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162829304713166
+1787478483.521303, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162829356978500
+1787478483.521938, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162829357605833
+1787478483.522461, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162829358128458
+1787478483.523518, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162829359185708
+1787478483.523626, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162829359290291
+1787478483.526469, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162829362133208
+1787478483.527394, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162829363372291
+1787478483.630508, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 801, 162829466175875
+1787478483.630548, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162829466209791
+1787478485.973804, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162831809615791
+1787478486.111803, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 6, 162831947479541
+1787478486.112127, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162831947786541
+1787478486.112342, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162831948008000
+1787478486.115280, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162831950939958
+1787478486.115462, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162831951120875
+1787478486.191232, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 762, 162832026896833
+1787478486.191282, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162832026938083
+1787478488.432138, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162834267921541
+1787478488.481547, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162834317214541
+1787478488.481817, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162834317469250
+1787478488.482020, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162834317677541
+1787478488.482741, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162834318395916
+1787478488.482860, Self-RAG Decomposed (multi-hop), End stage, run, start, 162834318511333
+1787478488.484026, Self-RAG Decomposed (multi-hop), End stage, run, end, 162834319679583
+1787478488.484093, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 232972991186870007439159521559095141859, 1787478469.525836, 1, 8, 162834319749250
+1787478488.484367, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 151990224632939660933633822073141268631, 1787478488.484289, 1, 9, 162834320029458
+1787478488.484762, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162834320418458
+1787478488.498889, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162834334540416
+1787478488.499001, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162834334655750
+1787478492.286203, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162838121867000
+1787478492.287215, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162838122954916
+1787478492.291298, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162838126940541
+1787478492.292268, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162838127909916
+1787478492.434614, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 821, 162838270265750
+1787478492.434676, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162838270314583
+1787478511.967166, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162857802916041
+1787478512.015553, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162857851153000
+1787478512.016539, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162857852129333
+1787478512.016703, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162857852291541
+1787478512.017309, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162857852899125
+1787478512.017805, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162857853394458
+1787478512.019865, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162857855452458
+1787478512.019946, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162857855746458
+1787478512.141670, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 832, 162857977263166
+1787478512.141716, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162857977301625
+1787478514.580451, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162860416214625
+1787478514.676318, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 4, 162860511918916
+1787478514.676640, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162860512222916
+1787478514.676886, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162860512475625
+1787478514.678548, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162860514131875
+1787478514.678795, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162860514378708
+1787478514.769561, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 800, 162860605147708
+1787478514.769610, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162860605188875
+1787478517.073092, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162862908824041
+1787478517.122781, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162862958367541
+1787478517.123019, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162862958595166
+1787478517.123236, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162862958812958
+1787478517.123707, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162862959281125
+1787478517.123841, Self-RAG Decomposed (multi-hop), End stage, run, start, 162862959419333
+1787478517.126638, Self-RAG Decomposed (multi-hop), End stage, run, end, 162862962213750
+1787478517.126727, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 151990224632939660933633822073141268631, 1787478488.484289, 1, 9, 162862962304166
+1787478517.126932, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 57989650238491529670967203109269033372, 1787478517.126883, 1, 10, 162862962512291
+1787478517.127277, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162862962854083
+1787478517.139730, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162862975303958
+1787478517.139798, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162862975376041
+1787478521.081403, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162866916999166
+1787478521.081875, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162866917446500
+1787478521.083022, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162866918585208
+1787478521.083174, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162866918740750
+1787478521.278968, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 910, 162867114541875
+1787478521.279034, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162867114595916
+1787478534.663161, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162880498825166
+1787478534.711571, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162880547107333
+1787478534.712151, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162880547680541
+1787478534.712292, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162880547820750
+1787478534.713440, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162880548967291
+1787478534.714367, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 162880549895583
+1787478534.716172, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 162880551698625
+1787478534.717434, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 162880553190625
+1787478534.729754, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 605, 162880565280750
+1787478534.729780, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 162880565304583
+1787478536.515789, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 162882351371416
+1787478536.580219, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 3, 162882415753875
+1787478536.580403, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 162882415924958
+1787478536.580530, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162882416058458
+1787478537.209086, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162883044620083
+1787478537.209205, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162883044729250
+1787478537.209831, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162883045353125
+1787478537.209907, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162883045426625
+1787478537.256940, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1529, 162883092464666
+1787478537.256978, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162883092495958
+1787478541.498498, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162887334255166
+1787478541.560124, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162887395644083
+1787478541.560745, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162887396254125
+1787478541.561333, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162887396840958
+1787478541.562527, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162887398035041
+1787478541.563474, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162887398985875
+1787478541.569698, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162887405206583
+1787478541.570039, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162887406161958
+1787478541.735020, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1540, 162887570538000
+1787478541.735081, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162887570587208
+1787478546.087109, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162891922800333
+1787478546.134756, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 2, 162891970267833
+1787478546.135820, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162891971319125
+1787478546.136756, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162891972635875
+1787478546.141419, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162891976917166
+1787478546.142092, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162891977587583
+1787478546.248017, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 1504, 162892083522666
+1787478546.248074, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162892083568291
+1787478550.412033, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162896247790791
+1787478550.461655, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162896297154125
+1787478550.461939, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162896297424291
+1787478550.462104, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162896297591250
+1787478550.463742, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162896299225791
+1787478550.464560, Self-RAG Decomposed (multi-hop), End stage, run, start, 162896300047333
+1787478550.468104, Self-RAG Decomposed (multi-hop), End stage, run, end, 162896303588541
+1787478550.468211, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 57989650238491529670967203109269033372, 1787478517.126883, 1, 10, 162896303698250
+1787478550.468802, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 47599242824335656656263898274287607523, 1787478550.468369, 1, 11, 162896304293583
+1787478550.469919, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162896305402708
+1787478550.501256, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162896336742500
+1787478550.501358, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162896336848708
+1787478554.101211, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162899936702250
+1787478554.102712, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162899938201125
+1787478554.108011, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162899943491041
+1787478554.108133, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162899943608958
+1787478554.286788, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1024, 162900122276416
+1787478554.286863, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162900122336625
+1787478571.229192, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162917064950250
+1787478571.277710, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162917113148416
+1787478571.278728, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162917114156916
+1787478571.279481, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162917114914500
+1787478571.281151, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162917116578166
+1787478571.282458, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 162917117889708
+1787478571.286351, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 162917121778958
+1787478571.287127, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 162917122557875
+1787478571.307409, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 612, 162917142837833
+1787478571.307434, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 162917142860291
+1787478573.157613, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 162918993205000
+1787478573.298039, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 6, 162919133480916
+1787478573.298404, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 162919133835208
+1787478573.298698, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162919134131583
+1787478574.821033, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162920656462791
+1787478574.821169, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162920656592125
+1787478574.822440, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162920657860083
+1787478574.822540, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162920657961666
+1787478574.850409, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1721, 162920685832041
+1787478574.850451, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162920685867583
+1787478591.573781, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162937409362041
+1787478591.622751, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162937458139125
+1787478591.623344, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162937458719750
+1787478591.623798, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162937459177125
+1787478591.624583, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162937459956958
+1787478591.626157, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162937461533833
+1787478591.630102, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162937465477541
+1787478591.631385, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162937466981500
+1787478591.788909, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1732, 162937624288666
+1787478591.788962, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162937624333541
+1787478596.705930, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162942541479166
+1787478596.797214, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 4, 162942632593875
+1787478596.797869, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162942633232666
+1787478596.798404, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162942633769458
+1787478596.803080, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162942638443916
+1787478596.803625, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162942638987000
+1787478596.903253, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 1679, 162942738617416
+1787478596.903299, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162942738656416
+1787478601.530704, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162947366233083
+1787478601.579725, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162947415086666
+1787478601.580006, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162947415353458
+1787478601.580335, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162947415702208
+1787478601.582282, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162947417633375
+1787478601.583242, Self-RAG Decomposed (multi-hop), End stage, run, start, 162947418590000
+1787478601.585493, Self-RAG Decomposed (multi-hop), End stage, run, end, 162947420841875
+1787478601.585611, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 47599242824335656656263898274287607523, 1787478550.468369, 1, 11, 162947420961125
+1787478601.586648, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 165921435535575830834343585333067979356, 1787478601.586574, 1, 12, 162947422013625
+1787478601.587303, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162947422655250
+1787478601.608036, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162947443385166
+1787478601.608165, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162947443515750
+1787478603.763757, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162949599114500
+1787478603.763896, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162949599248125
+1787478603.764978, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162949600318791
+1787478603.765100, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162949600443250
+1787478603.800836, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 668, 162949636190541
+1787478603.800899, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162949636238125
+1787478618.821016, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 162964656497208
+1787478618.869292, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 162964704605666
+1787478618.870593, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 162964705894625
+1787478618.870975, Self-RAG Decomposed (multi-hop), Grade router, run, start, 162964706280125
+1787478618.871611, Self-RAG Decomposed (multi-hop), Grade router, run, end, 162964706910583
+1787478618.872210, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 162964707513333
+1787478618.874389, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 162964709689416
+1787478618.874845, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 162964710151250
+1787478618.974971, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 679, 162964810282750
+1787478618.975035, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 162964810333291
+1787478621.080397, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 162966915732458
+1787478621.165957, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 4, 162967001264708
+1787478621.166537, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 162967001837625
+1787478621.166784, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 162967002083791
+1787478621.168882, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 162967004179750
+1787478621.169019, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 162967004321208
+1787478621.238137, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 633, 162967073435791
+1787478621.238183, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 162967073475083
+1787478623.096329, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 162968931679625
+1787478623.140021, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 162968975319541
+1787478623.140201, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 162968975489041
+1787478623.140313, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 162968975604458
+1787478623.140565, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 162968975855708
+1787478623.140673, Self-RAG Decomposed (multi-hop), End stage, run, start, 162968975967458
+1787478623.142242, Self-RAG Decomposed (multi-hop), End stage, run, end, 162968977531750
+1787478623.142321, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 165921435535575830834343585333067979356, 1787478601.586574, 1, 12, 162968977613208
+1787478623.142612, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 278786916723788516651158844650436078346, 1787478623.142533, 1, 13, 162968977909875
+1787478623.142983, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 162968978276250
+1787478623.155834, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 162968991125250
+1787478623.155912, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 162968991204958
+1787478624.635945, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 162970471243708
+1787478624.636086, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 162970471377166
+1787478624.636766, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 162970472052958
+1787478624.636840, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 162970472124625
+1787478624.697146, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 999, 162970532454208
+1787478624.697235, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 162970532518791
+1787478657.221079, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163003056502958
+1787478657.295647, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163003130859750
+1787478657.296874, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163003132072666
+1787478657.297099, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163003132306833
+1787478657.297663, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163003132859125
+1787478657.298309, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163003133507416
+1787478657.301134, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163003136331500
+1787478657.301201, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163003136699666
+1787478657.443850, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1010, 163003279050750
+1787478657.443895, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163003279089250
+1787478660.408762, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163006245525208
+1787478660.522162, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 5, 163006357375500
+1787478660.522812, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163006358001041
+1787478660.523484, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163006358902416
+1787478660.527854, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163006363044500
+1787478660.527995, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163006363193875
+1787478660.647132, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 964, 163006482327791
+1787478660.647182, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163006482368541
+1787478663.450105, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163009285524125
+1787478663.500827, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163009336018666
+1787478663.501125, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163009336308333
+1787478663.501329, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163009336514000
+1787478663.501659, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163009336839875
+1787478663.502159, Self-RAG Decomposed (multi-hop), End stage, run, start, 163009337344875
+1787478663.503603, Self-RAG Decomposed (multi-hop), End stage, run, end, 163009338783375
+1787478663.503687, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 278786916723788516651158844650436078346, 1787478623.142533, 1, 13, 163009338871208
+1787478663.503907, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 286077861641142135485837814964430509675, 1787478663.503855, 1, 14, 163009339092458
+1787478663.504235, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163009339417250
+1787478663.516928, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163009352109500
+1787478663.517040, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163009352225875
+1787478667.149911, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163012985094833
+1787478667.151269, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163012986443166
+1787478667.157590, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163012992760875
+1787478667.158713, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163012993882291
+1787478667.329603, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 654, 163013164787916
+1787478667.329678, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163013164873000
+1787478686.583631, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163032419175416
+1787478686.636147, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163032471281916
+1787478686.636964, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163032472083250
+1787478686.637114, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163032472237208
+1787478686.638357, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163032473473958
+1787478686.639005, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163032474121958
+1787478686.648821, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163032483939875
+1787478686.649450, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163032485096541
+1787478686.756378, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 665, 163032591503583
+1787478686.756426, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163032591542541
+1787478688.882553, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163034717811375
+1787478688.928197, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 2, 163034763320666
+1787478688.928439, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163034763550916
+1787478688.929329, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163034764713041
+1787478688.931202, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163034766315291
+1787478688.931487, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163034766604041
+1787478689.005141, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 622, 163034840264833
+1787478689.005207, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163034840317458
+1787478690.886235, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163036721409875
+1787478690.933196, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163036768317541
+1787478690.933422, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163036768529541
+1787478690.933658, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163036768773375
+1787478690.933932, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163036769039583
+1787478690.934188, Self-RAG Decomposed (multi-hop), End stage, run, start, 163036769296291
+1787478690.935837, Self-RAG Decomposed (multi-hop), End stage, run, end, 163036770944458
+1787478690.935915, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 286077861641142135485837814964430509675, 1787478663.503855, 1, 14, 163036771023791
+1787478690.936259, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 324936994117694731379996604282012633542, 1787478690.936175, 1, 15, 163036771375458
+1787478690.936709, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163036771816666
+1787478690.951771, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163036786878583
+1787478690.951918, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163036787031791
+1787478692.115286, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163037950406958
+1787478692.115419, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163037950529666
+1787478692.116465, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163037951568833
+1787478692.116591, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163037951696958
+1787478692.231128, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 691, 163038066245791
+1787478692.231253, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163038066356000
+1787478715.677635, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163061512897916
+1787478715.728589, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163061563642500
+1787478715.729550, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163061564591708
+1787478715.729787, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163061564836375
+1787478715.734008, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163061569049250
+1787478715.734123, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163061569162833
+1787478715.737887, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163061572927291
+1787478715.738387, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163061573795958
+1787478715.876239, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 702, 163061711289125
+1787478715.876301, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163061711339458
+1787478718.017776, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163063853007791
+1787478718.261884, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 11, 163064096943958
+1787478718.262230, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163064097264166
+1787478718.262497, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163064097540291
+1787478718.266048, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163064101083625
+1787478718.266239, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163064101276250
+1787478718.370594, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 673, 163064205640791
+1787478718.370660, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163064205691083
+1787478720.370667, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163066205853625
+1787478720.421104, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163066256145000
+1787478720.421326, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163066256354125
+1787478720.421561, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163066256591333
+1787478720.422145, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163066257176875
+1787478720.422334, Self-RAG Decomposed (multi-hop), End stage, run, start, 163066257362750
+1787478720.424093, Self-RAG Decomposed (multi-hop), End stage, run, end, 163066259121000
+1787478720.424161, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 324936994117694731379996604282012633542, 1787478690.936175, 1, 15, 163066259193166
+1787478720.424459, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 308945571605250364035799963489317961897, 1787478720.424387, 1, 16, 163066259497958
+1787478720.424850, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163066259876708
+1787478720.438936, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163066273962541
+1787478720.439042, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163066274076208
+1787478725.182668, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163071017696500
+1787478725.183496, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163071018515541
+1787478725.188863, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163071023877791
+1787478725.188938, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163071023951666
+1787478725.450341, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 834, 163071285368916
+1787478725.450405, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163071285417833
+1787478767.761110, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163113596538083
+1787478767.840028, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163113674944208
+1787478767.840554, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163113675456416
+1787478767.842094, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163113677001166
+1787478767.843992, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163113678894791
+1787478767.844075, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163113678977458
+1787478767.856567, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163113691467041
+1787478767.857288, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163113692193375
+1787478768.047005, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 845, 163113881917166
+1787478768.047080, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163113881976958
+1787478770.722136, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163116557198375
+1787478770.884087, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 6, 163116718997166
+1787478770.884388, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163116719282083
+1787478770.884976, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163116719871708
+1787478770.888252, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163116723145333
+1787478770.888747, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163116723642458
+1787478771.019720, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 808, 163116854623041
+1787478771.019791, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163116854679958
+1787478773.457779, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163119292865750
+1787478773.505082, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163119339981375
+1787478773.505315, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163119340199791
+1787478773.505464, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163119340351791
+1787478773.506001, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163119340884208
+1787478773.506119, Self-RAG Decomposed (multi-hop), End stage, run, start, 163119341007166
+1787478773.507047, Self-RAG Decomposed (multi-hop), End stage, run, end, 163119341934000
+1787478773.507140, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 308945571605250364035799963489317961897, 1787478720.424387, 1, 16, 163119342030750
+1787478773.507377, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 212120098945778952535470717346744242590, 1787478773.507320, 1, 17, 163119342268375
+1787478773.507538, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163119342421625
+1787478773.521118, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163119356003166
+1787478773.521235, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163119356123041
+1787478778.499826, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163124334715416
+1787478778.501746, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163124336997416
+1787478778.510141, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163124345014916
+1787478778.511097, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163124345968416
+1787478778.650663, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 826, 163124485549791
+1787478778.650756, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163124485624875
+1787478809.481018, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163155315980625
+1787478809.530594, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163155365394750
+1787478809.531840, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163155366629291
+1787478809.532224, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163155367016458
+1787478809.534241, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163155369030000
+1787478809.536360, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 163155371156916
+1787478809.540630, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 163155375420708
+1787478809.542766, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 163155377802875
+1787478809.584331, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 648, 163155419120208
+1787478809.584365, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 163155419150750
+1787478811.579031, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 163157413997416
+1787478811.926640, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 16, 163157761442875
+1787478811.926921, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 163157761706208
+1787478811.927203, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163157761997916
+1787478814.967315, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163160802101166
+1787478814.967448, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163160802225625
+1787478814.969808, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163160804583000
+1787478814.969922, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163160804695708
+1787478815.056959, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1397, 163160891745458
+1787478815.057047, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163160891817708
+1787478831.585642, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163177420589958
+1787478831.633992, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163177468732500
+1787478831.634742, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163177469474083
+1787478831.635066, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163177469798750
+1787478831.636056, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163177470784250
+1787478831.636992, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163177471722583
+1787478831.641355, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163177476084958
+1787478831.642516, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163177477898583
+1787478831.825040, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1408, 163177659779958
+1787478831.825118, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163177659844000
+1787478835.869418, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163181704341666
+1787478835.962290, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 4, 163181797036541
+1787478835.963130, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163181797849416
+1787478835.963411, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163181798134500
+1787478835.969627, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163181804346333
+1787478835.969721, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163181804445875
+1787478836.099644, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 1352, 163181934365166
+1787478836.099698, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163181934412083
+1787478839.908337, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163185743157875
+1787478839.956900, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163185791618375
+1787478839.957163, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163185791869708
+1787478839.957397, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163185792106666
+1787478839.957757, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163185792466125
+1787478839.960089, Self-RAG Decomposed (multi-hop), End stage, run, start, 163185794801250
+1787478839.962736, Self-RAG Decomposed (multi-hop), End stage, run, end, 163185797443708
+1787478839.962779, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 212120098945778952535470717346744242590, 1787478773.507320, 1, 17, 163185797486666
+1787478839.963438, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 220080129600293244342662239156349521615, 1787478839.963024, 1, 18, 163185798148375
+1787478839.963984, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163185798688666
+1787478839.985644, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163185820350000
+1787478839.985752, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163185820465916
+1787478843.147200, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163188981911833
+1787478843.148458, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163188983170875
+1787478843.153977, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163188988675500
+1787478843.154872, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163188989568708
+1787478843.338391, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 739, 163189173103500
+1787478843.338472, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163189173166875
+1787478870.319229, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163216154165708
+1787478870.370113, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163216204751083
+1787478870.371598, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163216206225166
+1787478870.372173, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163216206803166
+1787478870.374222, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163216208849916
+1787478870.374892, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163216209517041
+1787478870.377750, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163216212374625
+1787478870.378601, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163216213238750
+1787478870.542451, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 750, 163216377084333
+1787478870.542526, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163216377147333
+1787478872.948136, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163218782908625
+1787478872.996756, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 2, 163218831386291
+1787478872.997007, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163218831624875
+1787478872.997135, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163218831758666
+1787478872.999087, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163218833705083
+1787478872.999245, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163218833869708
+1787478873.089487, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 714, 163218924108875
+1787478873.089531, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163218924145083
+1787478875.188434, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163221023201250
+1787478875.239383, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163221074012583
+1787478875.239690, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163221074306791
+1787478875.239994, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163221074613791
+1787478875.240591, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163221075206958
+1787478875.240732, Self-RAG Decomposed (multi-hop), End stage, run, start, 163221075352208
+1787478875.242400, Self-RAG Decomposed (multi-hop), End stage, run, end, 163221077013875
+1787478875.242488, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 220080129600293244342662239156349521615, 1787478839.963024, 1, 18, 163221077105166
+1787478875.242740, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 320966802459483593628698193216624956737, 1787478875.242677, 1, 19, 163221077357541
+1787478875.243194, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163221077817583
+1787478875.260944, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163221095560083
+1787478875.261069, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163221095687833
+1787478879.602022, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163225436650750
+1787478879.602522, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163225437132083
+1787478879.609795, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163225444395833
+1787478879.610231, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163225444830916
+1787478879.768107, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 983, 163225602720791
+1787478879.768183, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163225602779875
+1787478910.957851, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163256804492333
+1787478911.016218, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163256862702958
+1787478911.016729, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163256863199750
+1787478911.017998, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163256864474250
+1787478911.019589, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163256866059666
+1787478911.020691, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163256867162458
+1787478911.024923, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163256871396041
+1787478911.025033, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163256871515083
+1787478911.174076, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 994, 163257020595666
+1787478911.174138, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163257020646958
+1787478914.168631, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163260015985083
+1787478914.390329, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 10, 163260237585541
+1787478914.391103, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163260238342416
+1787478914.391795, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163260239036541
+1787478914.393493, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163260240728916
+1787478914.393622, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163260240863208
+1787478914.487821, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 952, 163260335079333
+1787478914.487870, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163260335121166
+1787478917.185542, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163263033558375
+1787478917.238307, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163263086088541
+1787478917.239071, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163263086835291
+1787478917.239436, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163263087203958
+1787478917.239845, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163263087606291
+1787478917.240459, Self-RAG Decomposed (multi-hop), End stage, run, start, 163263088222375
+1787478917.241729, Self-RAG Decomposed (multi-hop), End stage, run, end, 163263089491083
+1787478917.241796, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 320966802459483593628698193216624956737, 1787478875.242677, 1, 19, 163263089559916
+1787478917.242135, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 194378758801908975938332056016031569032, 1787478917.242005, 1, 20, 163263089905583
+1787478917.242564, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163263090325666
+1787478917.260916, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163263108682708
+1787478917.261040, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163263108810208
+1787478922.233800, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163268082293541
+1787478922.235425, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163268083912416
+1787478922.246064, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163268094550375
+1787478922.246772, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163268095255833
+1787478922.384961, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 714, 163268233479750
+1787478922.385057, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163268233554625
+1787478944.887874, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163290738036541
+1787478944.937825, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163290787797291
+1787478944.938539, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163290788497041
+1787478944.939189, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163290789147166
+1787478944.940429, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163290790386666
+1787478944.941807, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163290791765791
+1787478944.945498, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163290795457708
+1787478944.945880, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163290795844750
+1787478945.082451, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 725, 163290932418583
+1787478945.082512, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163290932471375
+1787478947.403121, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163293253302625
+1787478947.560377, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 7, 163293410423708
+1787478947.560668, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163293410695625
+1787478947.560988, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163293411018375
+1787478947.563437, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163293413465583
+1787478947.563557, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163293413591958
+1787478947.639642, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 690, 163293489677166
+1787478947.639685, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163293489712583
+1787478949.702471, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163295552705750
+1787478949.750782, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163295600876625
+1787478949.751029, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163295601108250
+1787478949.751240, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163295601327041
+1787478949.751811, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163295601890541
+1787478949.751897, Self-RAG Decomposed (multi-hop), End stage, run, start, 163295601976666
+1787478949.752981, Self-RAG Decomposed (multi-hop), End stage, run, end, 163295603059416
+1787478949.753039, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 194378758801908975938332056016031569032, 1787478917.242005, 1, 20, 163295603118666
+1787478949.753309, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 83889704643967082773558741091783506470, 1787478949.753236, 1, 21, 163295603401000
+1787478949.753710, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163295603791083
+1787478949.770088, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163295620167458
+1787478949.770199, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163295620281166
+1787478952.633432, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163298483587250
+1787478952.634316, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163298484458958
+1787478952.636324, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163298486460666
+1787478952.636464, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163298486603833
+1787478952.861660, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 755, 163298711809416
+1787478952.861719, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163298711858000
+1787478976.785649, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163322636212166
+1787478976.836338, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163322686726791
+1787478976.837437, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163322687815083
+1787478976.837567, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163322687951750
+1787478976.838960, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163322689340291
+1787478976.839348, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163322689725250
+1787478976.841562, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163322691939083
+1787478976.841621, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163322692003666
+1787478976.995208, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 766, 163322845594000
+1787478976.995264, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163322845640125
+1787478979.310735, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163325161290125
+1787478979.468677, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 7, 163325319086250
+1787478979.468981, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163325319373708
+1787478979.469249, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163325319650833
+1787478979.471152, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163325321544250
+1787478979.471399, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163325321793583
+1787478979.565456, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 722, 163325415851750
+1787478979.565505, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163325415894000
+1787478981.672538, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163327523100458
+1787478981.722935, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163327573346708
+1787478981.723221, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163327573623625
+1787478981.723403, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163327573841125
+1787478981.724091, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163327574491583
+1787478981.724212, Self-RAG Decomposed (multi-hop), End stage, run, start, 163327574617375
+1787478981.725841, Self-RAG Decomposed (multi-hop), End stage, run, end, 163327576240541
+1787478981.725947, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 83889704643967082773558741091783506470, 1787478949.753236, 1, 21, 163327576350708
+1787478981.726204, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 172782675911025469186386015497990512397, 1787478981.726139, 1, 22, 163327576612750
+1787478981.726624, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163327577022833
+1787478981.742207, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163327592608000
+1787478981.742334, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163327592739541
+1787478986.640971, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163332491400958
+1787478986.642099, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163332492521291
+1787478986.647834, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163332498251750
+1787478986.648523, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163332498940000
+1787478986.785470, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 754, 163332635901916
+1787478986.785547, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163332635962750
+1787479015.658992, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163361510415125
+1787479015.720418, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163361570920583
+1787479015.722602, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163361573085375
+1787479015.723700, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163361574187625
+1787479015.726348, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163361576832916
+1787479015.726778, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163361577259833
+1787479015.732119, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163361582601166
+1787479015.733937, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163361584429583
+1787479015.881480, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 765, 163361731968041
+1787479015.881529, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163361732009750
+1787479018.248991, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163364099663166
+1787479018.323314, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 3, 163364173818333
+1787479018.324758, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163364175247041
+1787479018.324919, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163364175410500
+1787479018.331803, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163364182293625
+1787479018.331972, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163364182470500
+1787479018.438132, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 727, 163364288624416
+1787479018.438181, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163364288666083
+1787479020.608307, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163366458946708
+1787479020.659840, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163366510352500
+1787479020.660127, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163366510618541
+1787479020.660300, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163366510796291
+1787479020.660926, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163366511416416
+1787479020.661038, Self-RAG Decomposed (multi-hop), End stage, run, start, 163366511531625
+1787479020.663092, Self-RAG Decomposed (multi-hop), End stage, run, end, 163366513582708
+1787479020.663140, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 172782675911025469186386015497990512397, 1787478981.726139, 1, 22, 163366513634375
+1787479020.663837, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 123277481769569613718368749054341897798, 1787479020.663765, 1, 23, 163366514334833
+1787479020.664561, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163366515061166
+1787479020.685416, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163366535908458
+1787479020.685539, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163366536033541
+1787479025.854017, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163371704535250
+1787479025.855069, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163371705577291
+1787479025.860271, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163371710770958
+1787479025.860738, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163371711236458
+1787479026.007967, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 728, 163371858482375
+1787479026.008050, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163371858547000
+1787479052.644131, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163398494863250
+1787479052.692860, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163398543410125
+1787479052.694523, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163398545063916
+1787479052.694684, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163398545224291
+1787479052.695623, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163398546159625
+1787479052.696060, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163398546598791
+1787479052.704157, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163398554698291
+1787479052.704868, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163398555767625
+1787479052.865389, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 739, 163398715932083
+1787479052.865433, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163398715969291
+1787479055.222757, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163401073505708
+1787479055.297349, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 3, 163401147910666
+1787479055.298062, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163401148609541
+1787479055.298397, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163401148949958
+1787479055.300252, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163401150796458
+1787479055.300404, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163401150958041
+1787479055.385591, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 694, 163401236136083
+1787479055.385632, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163401236171458
+1787479057.433557, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163403284242250
+1787479057.486348, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163403336906416
+1787479057.486568, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163403337112708
+1787479057.486699, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163403337246083
+1787479057.487239, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163403337786458
+1787479057.487378, Self-RAG Decomposed (multi-hop), End stage, run, start, 163403337927166
+1787479057.488549, Self-RAG Decomposed (multi-hop), End stage, run, end, 163403339093291
+1787479057.488630, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 123277481769569613718368749054341897798, 1787479020.663765, 1, 23, 163403339178541
+1787479057.489245, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 157319364294436994109315274670193635350, 1787479057.489189, 1, 24, 163403339799541
+1787479057.489639, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163403340182541
+1787479057.504886, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163403355430000
+1787479057.504992, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163403355542875
+1787479061.610338, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163407460901250
+1787479061.611152, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163407461711500
+1787479061.618998, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163407469549791
+1787479061.619443, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163407469993291
+1787479061.765417, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 714, 163407615981458
+1787479061.765488, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163407616037791
+1787479085.347506, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163431198350791
+1787479085.401480, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163431252079416
+1787479085.402400, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163431252984958
+1787479085.402778, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163431253367375
+1787479085.404152, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163431254735000
+1787479085.406465, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 163431257358750
+1787479085.411025, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 163431261610250
+1787479085.414026, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 163431264920791
+1787479085.447398, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 557, 163431297984166
+1787479085.447430, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 163431298010833
+1787479087.241150, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 163433091993625
+1787479087.399818, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 7, 163433250427750
+1787479087.400165, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 163433250753708
+1787479087.400554, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163433251154458
+1787479089.370726, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163435221326750
+1787479089.370895, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163435221491000
+1787479089.371951, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163435222540916
+1787479089.372072, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163435222661125
+1787479089.453486, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1459, 163435304090041
+1787479089.453568, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163435304155125
+1787479106.914001, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163452764835500
+1787479106.970277, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163452820901833
+1787479106.970901, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163452821517166
+1787479106.971054, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163452821670625
+1787479106.971979, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163452822593541
+1787479106.972994, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, start, 163452823616791
+1787479106.975995, Self-RAG Decomposed (multi-hop), Query rewrite formatter, run, end, 163452826608958
+1787479106.976338, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, start, 163452826955500
+1787479106.998136, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_prompt_tokens, 1016, 163452848751083
+1787479106.998171, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, start, 163452848781791
+1787479109.851672, Self-RAG Decomposed (multi-hop), Query rewrite LLM, first_token, end, 163455702448916
+1787479110.006597, Self-RAG Decomposed (multi-hop), Query rewrite LLM, n_generated_tokens, 7, 163455857227666
+1787479110.006857, Self-RAG Decomposed (multi-hop), Query rewrite LLM, run, end, 163455857480375
+1787479110.007041, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163455857683833
+1787479111.494950, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163457345582125
+1787479111.495074, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163457345699208
+1787479111.496429, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163457347048916
+1787479111.496554, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163457347176000
+1787479111.520022, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1662, 163457370643333
+1787479111.520061, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163457370679208
+1787479129.352344, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163475203260375
+1787479129.401519, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163475252180750
+1787479129.402948, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163475253596833
+1787479129.403100, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163475253749250
+1787479129.405058, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163475255703458
+1787479129.407509, Self-RAG Decomposed (multi-hop), End stage, run, start, 163475258615541
+1787479129.461224, Self-RAG Decomposed (multi-hop), End stage, run, end, 163475311873333
+1787479129.461387, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 157319364294436994109315274670193635350, 1787479057.489189, 1, 24, 163475312037166
+1787479129.462557, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 27281341474000808551297061068233599569, 1787479129.462292, 1, 25, 163475313536625
+1787479129.464755, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163475315401916
+1787479129.494923, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163475345573833
+1787479129.495097, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163475345748583
+1787479132.907672, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163478758355833
+1787479132.908592, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163478759250625
+1787479132.915250, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163478765900041
+1787479132.915331, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163478765983333
+1787479133.068884, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 617, 163478919548625
+1787479133.068970, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163478919617416
+1787479153.527146, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163499378031333
+1787479153.575765, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163499426457083
+1787479153.575997, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163499426675166
+1787479153.576234, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163499426917500
+1787479153.576870, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163499427549416
+1787479153.578438, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163499429116416
+1787479153.581358, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163499432035708
+1787479153.582899, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163499434167041
+1787479153.746106, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 628, 163499596793833
+1787479153.746167, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163499596842833
+1787479155.816674, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163501667625750
+1787479155.951338, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 6, 163501802035666
+1787479155.951594, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163501802275125
+1787479155.952081, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163501802775833
+1787479155.956816, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163501807503958
+1787479155.957391, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163501808083541
+1787479156.084332, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 583, 163501935028083
+1787479156.084399, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163501935078791
+1787479158.075494, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163503926320041
+1787479158.122837, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163503973533375
+1787479158.123352, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163503974038041
+1787479158.123803, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163503974490125
+1787479158.124148, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163503974832083
+1787479158.124263, Self-RAG Decomposed (multi-hop), End stage, run, start, 163503974949083
+1787479158.125503, Self-RAG Decomposed (multi-hop), End stage, run, end, 163503976186125
+1787479158.125590, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 27281341474000808551297061068233599569, 1787479129.462292, 1, 25, 163503976276833
+1787479158.125799, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 101368853477777685062901576318714321255, 1787479158.125743, 1, 26, 163503976486958
+1787479158.126135, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163503976822958
+1787479158.141782, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163503992467333
+1787479158.141874, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163503992561541
+1787479163.887884, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163509738588125
+1787479163.888935, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163509739634208
+1787479163.894707, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163509745399458
+1787479163.895557, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163509746248291
+1787479164.116309, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 538, 163509967014666
+1787479164.116380, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163509967071000
+1787479188.678600, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163534529495833
+1787479188.765018, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163534615757541
+1787479188.765908, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163534616636875
+1787479188.767609, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163534618341208
+1787479188.767976, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163534618701916
+1787479188.768354, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163534619080208
+1787479188.770770, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163534621495875
+1787479188.771603, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163534622656458
+1787479188.886135, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 549, 163534736866500
+1787479188.886180, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163534736904541
+1787479190.680639, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163536531517375
+1787479190.792493, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 5, 163536643242041
+1787479190.792739, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163536643471625
+1787479190.793505, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163536644245666
+1787479190.796161, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163536646892833
+1787479190.796264, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163536646997625
+1787479190.899582, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 505, 163536750317750
+1787479190.899632, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163536750358916
+1787479192.498638, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163538349508416
+1787479192.545016, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163538395759916
+1787479192.545261, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163538395993583
+1787479192.545524, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163538396260250
+1787479192.545856, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163538396588375
+1787479192.546376, Self-RAG Decomposed (multi-hop), End stage, run, start, 163538397111708
+1787479192.547860, Self-RAG Decomposed (multi-hop), End stage, run, end, 163538398591583
+1787479192.547948, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 101368853477777685062901576318714321255, 1787479158.125743, 1, 26, 163538398681708
+1787479192.548179, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 212144592434629534606430974402532919035, 1787479192.548124, 1, 27, 163538398916541
+1787479192.548529, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163538399262458
+1787479192.561542, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163538412272666
+1787479192.561635, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163538412373625
+1787479196.474981, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163542325750166
+1787479196.476128, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163542326874416
+1787479196.478743, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163542329480625
+1787479196.480072, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163542330809416
+1787479196.628578, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 1020, 163542479324750
+1787479196.628641, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163542479375916
+1787479215.119832, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163560970818125
+1787479215.169874, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163561020654041
+1787479215.170753, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163561021519833
+1787479215.171362, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163561022132875
+1787479215.171994, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163561022756458
+1787479215.172739, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163561023502500
+1787479215.175808, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163561026572375
+1787479215.175896, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163561026670291
+1787479215.319311, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 1031, 163561170086166
+1787479215.319384, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163561170144958
+1787479218.361350, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163564212275750
+1787479218.475539, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 5, 163564326325458
+1787479218.475851, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163564326620625
+1787479218.476311, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163564327087541
+1787479218.481077, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163564331846333
+1787479218.481204, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163564331977666
+1787479218.597664, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 972, 163564448437541
+1787479218.597716, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163564448481875
+1787479221.392723, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163567243646125
+1787479221.441334, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163567292120166
+1787479221.441581, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163567292353208
+1787479221.441780, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163567292557625
+1787479221.442382, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163567293155416
+1787479221.442486, Self-RAG Decomposed (multi-hop), End stage, run, start, 163567293260583
+1787479221.443932, Self-RAG Decomposed (multi-hop), End stage, run, end, 163567294703250
+1787479221.443973, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 212144592434629534606430974402532919035, 1787479192.548124, 1, 27, 163567294746166
+1787479221.444239, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 266408683360814672804745582114424914167, 1787479221.444183, 1, 28, 163567295019916
+1787479221.444573, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163567295351500
+1787479221.458073, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163567308844833
+1787479221.458187, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163567308966541
+1787479225.335165, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163571185956375
+1787479225.335956, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163571186738250
+1787479225.336818, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163571187596416
+1787479225.336932, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163571187710875
+1787479225.564514, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 970, 163571415311500
+1787479225.564618, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163571415393458
+1787479232.168905, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163578019892916
+1787479232.218159, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163578068959500
+1787479232.218830, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163578069620250
+1787479232.219925, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163578070716166
+1787479232.221216, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163578072002791
+1787479232.221590, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163578072376750
+1787479232.224477, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163578075265416
+1787479232.224592, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163578075389333
+1787479232.397352, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 981, 163578248146458
+1787479232.397403, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163578248187375
+1787479235.233795, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163581084774791
+1787479235.283631, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 2, 163581134431916
+1787479235.283907, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163581134700250
+1787479235.284094, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163581134893583
+1787479235.292198, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163581142990041
+1787479235.292331, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163581143125000
+1787479235.420513, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 940, 163581271316041
+1787479235.420581, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163581271370125
+1787479238.127900, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163583978869666
+1787479238.179548, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163584030357458
+1787479238.179844, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163584030638791
+1787479238.180144, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163584030947333
+1787479238.180768, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163584031565166
+1787479238.180973, Self-RAG Decomposed (multi-hop), End stage, run, start, 163584031775250
+1787479238.182408, Self-RAG Decomposed (multi-hop), End stage, run, end, 163584033202666
+1787479238.182502, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 266408683360814672804745582114424914167, 1787479221.444183, 1, 28, 163584033301833
+1787479238.182788, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 317177890230568067276730187822152356201, 1787479238.182716, 1, 29, 163584033590750
+1787479238.183219, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163584034013958
+1787479238.198709, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163584049507375
+1787479238.198843, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163584049644791
+1787479241.637761, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163587488575041
+1787479241.638553, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163587489359500
+1787479241.642058, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163587492858583
+1787479241.643908, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163587494708750
+1787479241.810966, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 802, 163587661794791
+1787479241.811110, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163587661909125
+1787479272.565004, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163618416350208
+1787479272.625676, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163618476534208
+1787479272.626365, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163618477209625
+1787479272.628611, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163618479457083
+1787479272.630706, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163618481548833
+1787479272.631072, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163618481913708
+1787479272.641135, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163618491976791
+1787479272.641480, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163618493019458
+1787479272.830219, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 813, 163618681076291
+1787479272.830292, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163618681133000
+1787479275.359760, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163621210756875
+1787479275.476664, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 5, 163621327527916
+1787479275.476983, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163621327831666
+1787479275.477786, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163621328645708
+1787479275.480481, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163621331330500
+1787479275.481080, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163621331933916
+1787479275.605158, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 770, 163621456018875
+1787479275.605240, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163621456084708
+1787479277.941513, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163623792511833
+1787479277.990155, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163623841016583
+1787479277.990399, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163623841248916
+1787479277.990627, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163623841483291
+1787479277.991254, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163623842104083
+1787479277.991377, Self-RAG Decomposed (multi-hop), End stage, run, start, 163623842229791
+1787479277.992983, Self-RAG Decomposed (multi-hop), End stage, run, end, 163623843833416
+1787479277.993084, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 317177890230568067276730187822152356201, 1787479238.182716, 1, 29, 163623843936250
+1787479277.993344, Self-RAG Decomposed (multi-hop), pipeline - val, run, start, 61804141918535285641930315914175708296, 1787479277.993279, 1, 30, 163623844201625
+1787479277.995222, Self-RAG Decomposed (multi-hop), Question dataloader, run, start, 163623846072125
+1787479278.013967, Self-RAG Decomposed (multi-hop), Question dataloader, run, end, 163623864817041
+1787479278.014055, Self-RAG Decomposed (multi-hop), Document retriever, run, start, 163623864916208
+1787479282.146327, Self-RAG Decomposed (multi-hop), Document retriever, run, end, 163627997196041
+1787479282.147581, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, start, 163627998446208
+1787479282.160853, Self-RAG Decomposed (multi-hop), Retrieval grader formatter, run, end, 163628011713750
+1787479282.163331, Self-RAG Decomposed (multi-hop), Grader LLM, run, start, 163628014241083
+1787479282.347502, Self-RAG Decomposed (multi-hop), Grader LLM, n_prompt_tokens, 645, 163628198372625
+1787479282.347576, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, start, 163628198430708
+1787479302.241322, Self-RAG Decomposed (multi-hop), Grader LLM, first_token, end, 163648092400583
+1787479302.290603, Self-RAG Decomposed (multi-hop), Grader LLM, n_generated_tokens, 2, 163648141497500
+1787479302.290845, Self-RAG Decomposed (multi-hop), Grader LLM, run, end, 163648141729541
+1787479302.291387, Self-RAG Decomposed (multi-hop), Grade router, run, start, 163648142277208
+1787479302.291684, Self-RAG Decomposed (multi-hop), Grade router, run, end, 163648142568291
+1787479302.291840, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, start, 163648142724041
+1787479302.293761, Self-RAG Decomposed (multi-hop), Answer generator formatter, run, end, 163648144645708
+1787479302.294815, Self-RAG Decomposed (multi-hop), Generator LLM, run, start, 163648146146541
+1787479302.415861, Self-RAG Decomposed (multi-hop), Generator LLM, n_prompt_tokens, 656, 163648266748666
+1787479302.415906, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, start, 163648266787833
+1787479304.494266, Self-RAG Decomposed (multi-hop), Generator LLM, first_token, end, 163650345342833
+1787479304.655568, Self-RAG Decomposed (multi-hop), Generator LLM, n_generated_tokens, 7, 163650506481166
+1787479304.655894, Self-RAG Decomposed (multi-hop), Generator LLM, run, end, 163650506783500
+1787479304.656180, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, start, 163650507079541
+1787479304.658490, Self-RAG Decomposed (multi-hop), Hallucination grader formatter, run, end, 163650509378708
+1787479304.658648, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, start, 163650509547000
+1787479304.743600, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_prompt_tokens, 612, 163650594491666
+1787479304.743649, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, start, 163650594533166
+1787479306.629226, Self-RAG Decomposed (multi-hop), Hallucination LLM, first_token, end, 163652480281000
+1787479306.680456, Self-RAG Decomposed (multi-hop), Hallucination LLM, n_generated_tokens, 2, 163652531362250
+1787479306.681223, Self-RAG Decomposed (multi-hop), Hallucination LLM, run, end, 163652532114083
+1787479306.681752, Self-RAG Decomposed (multi-hop), Hallucination router, run, start, 163652532645041
+1787479306.682128, Self-RAG Decomposed (multi-hop), Hallucination router, run, end, 163652533019375
+1787479306.683360, Self-RAG Decomposed (multi-hop), End stage, run, start, 163652534631375
+1787479306.694088, Self-RAG Decomposed (multi-hop), End stage, run, end, 163652544977791
+1787479306.694188, Self-RAG Decomposed (multi-hop), pipeline - val, run, end, 61804141918535285641930315914175708296, 1787479277.993279, 1, 30, 163652545081541

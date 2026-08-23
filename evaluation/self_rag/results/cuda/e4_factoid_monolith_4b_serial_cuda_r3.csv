@@ -1,0 +1,594 @@
+1787481441.561539, Self-RAG Monolith 4B, pipeline, prepare, start, 9600507399868977
+1787481441.562067, Self-RAG Monolith 4B, Question dataloader, prepare, start, 9600507400133618
+1787481443.000097, Self-RAG Monolith 4B, Question dataloader, prepare, end, 9600508838170196
+1787481443.000151, Self-RAG Monolith 4B, Document retriever, prepare, start, 9600508838212148
+1787481457.125855, Self-RAG Monolith 4B, Document retriever, prepare, end, 9600522963949816
+1787481457.125965, Self-RAG Monolith 4B, Monolith formatter, prepare, start, 9600522964026216
+1787481457.126334, Self-RAG Monolith 4B, Monolith formatter, prepare, end, 9600522964397176
+1787481457.126353, Self-RAG Monolith 4B, Monolith LLM, prepare, start, 9600522964412456
+1787481501.764496, Self-RAG Monolith 4B, Monolith LLM, prepare, end, 9600567602577839
+1787481501.767093, Self-RAG Monolith 4B, Query rewrite formatter, prepare, start, 9600567605179394
+1787481501.768121, Self-RAG Monolith 4B, Query rewrite formatter, prepare, end, 9600567606208531
+1787481501.768208, Self-RAG Monolith 4B, Query rewrite LLM, prepare, start, 9600567606268515
+1787481501.769303, Self-RAG Monolith 4B, Query rewrite LLM, prepare, end, 9600567607389061
+1787481501.769383, Self-RAG Monolith 4B, pipeline, prepare, end, 9600567607708037
+1787481501.771876, Self-RAG Monolith 4B, pipeline - val, run, start, 225823482392456831186041605670282049302, 1787481501.771758, 1, 1, 9600567609961480
+1787481501.772195, Self-RAG Monolith 4B, Question dataloader, run, start, 9600567610276248
+1787481501.772725, Self-RAG Monolith 4B, Question dataloader, run, end, 9600567610801289
+1787481501.772848, Self-RAG Monolith 4B, Document retriever, run, start, 9600567610913513
+1787481501.789274, Self-RAG Monolith 4B, Document retriever, run, end, 9600567627357052
+1787481501.789400, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600567627473933
+1787481501.805804, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600567643877920
+1787481501.806406, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600567644480689
+1787481501.809792, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1093, 9600567647865845
+1787481501.809845, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600567647906293
+1787481502.647937, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600568486035830
+1787481503.898032, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600569736141369
+1787481503.899144, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600569737219114
+1787481503.899682, Self-RAG Monolith 4B, Monolith router, run, start, 9600569737764091
+1787481503.899838, Self-RAG Monolith 4B, Monolith router, run, end, 9600569737899755
+1787481503.900253, Self-RAG Monolith 4B, End stage, run, start, 9600569738329644
+1787481503.900488, Self-RAG Monolith 4B, End stage, run, end, 9600569738550956
+1787481503.901037, Self-RAG Monolith 4B, pipeline - val, run, end, 225823482392456831186041605670282049302, 1787481501.771758, 1, 1, 9600569739126205
+1787481503.902149, Self-RAG Monolith 4B, pipeline - val, run, start, 16833799355249753148200846400432908680, 1787481503.901518, 1, 2, 9600569740228510
+1787481503.903051, Self-RAG Monolith 4B, Question dataloader, run, start, 9600569741139855
+1787481503.903559, Self-RAG Monolith 4B, Question dataloader, run, end, 9600569741630160
+1787481503.903704, Self-RAG Monolith 4B, Document retriever, run, start, 9600569741776720
+1787481503.916303, Self-RAG Monolith 4B, Document retriever, run, end, 9600569754375775
+1787481503.916387, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600569754460959
+1787481503.916825, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600569754888384
+1787481503.916993, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600569755067136
+1787481503.920982, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1606, 9600569759057973
+1787481503.921038, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600569759099189
+1787481504.663376, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600570501487254
+1787481505.802112, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600571640196375
+1787481505.802818, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600571640893832
+1787481505.803145, Self-RAG Monolith 4B, Monolith router, run, start, 9600571641228888
+1787481505.803308, Self-RAG Monolith 4B, Monolith router, run, end, 9600571641369656
+1787481505.803661, Self-RAG Monolith 4B, End stage, run, start, 9600571641740921
+1787481505.804154, Self-RAG Monolith 4B, End stage, run, end, 9600571642233721
+1787481505.804660, Self-RAG Monolith 4B, pipeline - val, run, end, 16833799355249753148200846400432908680, 1787481503.901518, 1, 2, 9600571642750106
+1787481505.805392, Self-RAG Monolith 4B, pipeline - val, run, start, 67310668535815042105608323370836672179, 1787481505.805265, 1, 3, 9600571643467035
+1787481505.805919, Self-RAG Monolith 4B, Question dataloader, run, start, 9600571644019147
+1787481505.806403, Self-RAG Monolith 4B, Question dataloader, run, end, 9600571644476188
+1787481505.806563, Self-RAG Monolith 4B, Document retriever, run, start, 9600571644635900
+1787481505.815488, Self-RAG Monolith 4B, Document retriever, run, end, 9600571653558311
+1787481505.815563, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600571653635143
+1787481505.815969, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600571654031640
+1787481505.816065, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600571654136056
+1787481505.818678, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 882, 9600571656748619
+1787481505.818719, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600571656780699
+1787481506.243898, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600572081989406
+1787481507.205816, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 24, 9600573043902444
+1787481507.206706, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600573044783117
+1787481507.207319, Self-RAG Monolith 4B, Monolith router, run, start, 9600573045403534
+1787481507.207483, Self-RAG Monolith 4B, Monolith router, run, end, 9600573045544734
+1787481507.207846, Self-RAG Monolith 4B, Query rewrite formatter, run, start, 9600573045931855
+1787481507.208289, Self-RAG Monolith 4B, Query rewrite formatter, run, end, 9600573046352623
+1787481507.208433, Self-RAG Monolith 4B, Query rewrite LLM, run, start, 9600573046518719
+1787481507.211087, Self-RAG Monolith 4B, Query rewrite LLM, n_prompt_tokens, 587, 9600573049162771
+1787481507.211146, Self-RAG Monolith 4B, Query rewrite LLM, first_token, start, 9600573049207187
+1787481507.534724, Self-RAG Monolith 4B, Query rewrite LLM, first_token, end, 9600573372839948
+1787481508.027677, Self-RAG Monolith 4B, Query rewrite LLM, n_generated_tokens, 12, 9600573865757714
+1787481508.028466, Self-RAG Monolith 4B, Query rewrite LLM, run, end, 9600573866529875
+1787481508.028854, Self-RAG Monolith 4B, Document retriever, run, start, 9600573866942243
+1787481508.040046, Self-RAG Monolith 4B, Document retriever, run, end, 9600573878124097
+1787481508.040141, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600573878215681
+1787481508.040448, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600573878511521
+1787481508.040525, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600573878600993
+1787481508.043424, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1209, 9600573881492709
+1787481508.043463, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600573881523749
+1787481508.601105, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600574439198139
+1787481509.646806, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600575484911652
+1787481509.647712, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600575485790245
+1787481509.648046, Self-RAG Monolith 4B, Monolith router, run, start, 9600575486132598
+1787481509.658085, Self-RAG Monolith 4B, Monolith router, run, end, 9600575496160402
+1787481509.658363, Self-RAG Monolith 4B, End stage, run, start, 9600575496445394
+1787481509.658609, Self-RAG Monolith 4B, End stage, run, end, 9600575496672450
+1787481509.658915, Self-RAG Monolith 4B, pipeline - val, run, end, 67310668535815042105608323370836672179, 1787481505.805265, 1, 3, 9600575497018403
+1787481509.659536, Self-RAG Monolith 4B, pipeline - val, run, start, 87590828202281533083295752445371579750, 1787481509.659250, 1, 4, 9600575497618643
+1787481509.659843, Self-RAG Monolith 4B, Question dataloader, run, start, 9600575497928948
+1787481509.660329, Self-RAG Monolith 4B, Question dataloader, run, end, 9600575498404068
+1787481509.660482, Self-RAG Monolith 4B, Document retriever, run, start, 9600575498556324
+1787481509.672288, Self-RAG Monolith 4B, Document retriever, run, end, 9600575510366771
+1787481509.672378, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600575510452675
+1787481509.672847, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600575510911108
+1787481509.673054, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600575511128596
+1787481509.676422, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1264, 9600575514490120
+1787481509.676458, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600575514518760
+1787481510.252709, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600576090799078
+1787481511.597266, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 28, 9600577435371951
+1787481511.597924, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600577435989935
+1787481511.598111, Self-RAG Monolith 4B, Monolith router, run, start, 9600577436193568
+1787481511.598325, Self-RAG Monolith 4B, Monolith router, run, end, 9600577436387312
+1787481511.598500, Self-RAG Monolith 4B, End stage, run, start, 9600577436574096
+1787481511.598746, Self-RAG Monolith 4B, End stage, run, end, 9600577436809328
+1787481511.599322, Self-RAG Monolith 4B, pipeline - val, run, end, 87590828202281533083295752445371579750, 1787481509.659250, 1, 4, 9600577437441089
+1787481511.600279, Self-RAG Monolith 4B, pipeline - val, run, start, 241724215527531106243841819977125697070, 1787481511.600219, 1, 5, 9600577438360642
+1787481511.600487, Self-RAG Monolith 4B, Question dataloader, run, start, 9600577438568675
+1787481511.600883, Self-RAG Monolith 4B, Question dataloader, run, end, 9600577438958483
+1787481511.601109, Self-RAG Monolith 4B, Document retriever, run, start, 9600577439183395
+1787481511.611544, Self-RAG Monolith 4B, Document retriever, run, end, 9600577449618368
+1787481511.611626, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600577449701984
+1787481511.611940, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600577450007057
+1787481511.612086, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600577450159665
+1787481511.614901, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1072, 9600577452977236
+1787481511.614963, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600577453024180
+1787481512.114579, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600577952673703
+1787481513.628541, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600579466626709
+1787481513.629798, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600579467877910
+1787481513.630329, Self-RAG Monolith 4B, Monolith router, run, start, 9600579468411975
+1787481513.630720, Self-RAG Monolith 4B, Monolith router, run, end, 9600579468798711
+1787481513.631247, Self-RAG Monolith 4B, End stage, run, start, 9600579469326968
+1787481513.631914, Self-RAG Monolith 4B, End stage, run, end, 9600579469992841
+1787481513.632099, Self-RAG Monolith 4B, pipeline - val, run, end, 241724215527531106243841819977125697070, 1787481511.600219, 1, 5, 9600579470176969
+1787481513.632545, Self-RAG Monolith 4B, pipeline - val, run, start, 201522529022258734009016591330373034300, 1787481513.632395, 1, 6, 9600579470628793
+1787481513.632895, Self-RAG Monolith 4B, Question dataloader, run, start, 9600579470977770
+1787481513.633362, Self-RAG Monolith 4B, Question dataloader, run, end, 9600579471441146
+1787481513.633812, Self-RAG Monolith 4B, Document retriever, run, start, 9600579471888827
+1787481513.646922, Self-RAG Monolith 4B, Document retriever, run, end, 9600579485005099
+1787481513.647024, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600579485096891
+1787481513.647359, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600579485423467
+1787481513.647395, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600579485460091
+1787481513.649971, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1058, 9600579488045263
+1787481513.650021, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600579488081375
+1787481514.147374, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600579985467633
+1787481515.338601, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600581176685655
+1787481515.340146, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600581178229177
+1787481515.340883, Self-RAG Monolith 4B, Monolith router, run, start, 9600581178971674
+1787481515.341063, Self-RAG Monolith 4B, Monolith router, run, end, 9600581179124906
+1787481515.341244, Self-RAG Monolith 4B, End stage, run, start, 9600581179328058
+1787481515.341489, Self-RAG Monolith 4B, End stage, run, end, 9600581179551803
+1787481515.342260, Self-RAG Monolith 4B, pipeline - val, run, end, 201522529022258734009016591330373034300, 1787481513.632395, 1, 6, 9600581180345724
+1787481515.342853, Self-RAG Monolith 4B, pipeline - val, run, start, 273621812475945516103121103085246827679, 1787481515.342749, 1, 7, 9600581180941212
+1787481515.343150, Self-RAG Monolith 4B, Question dataloader, run, start, 9600581181227805
+1787481515.343578, Self-RAG Monolith 4B, Question dataloader, run, end, 9600581181650413
+1787481515.343714, Self-RAG Monolith 4B, Document retriever, run, start, 9600581181782557
+1787481515.354035, Self-RAG Monolith 4B, Document retriever, run, end, 9600581192109674
+1787481515.354304, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600581192377146
+1787481515.354578, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600581192641371
+1787481515.354653, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600581192728971
+1787481515.357445, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 979, 9600581195514030
+1787481515.357484, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600581195544670
+1787481515.827559, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600581665647968
+1787481517.011064, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 28, 9600582849149969
+1787481517.011402, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600582849466545
+1787481517.011914, Self-RAG Monolith 4B, Monolith router, run, start, 9600582850017730
+1787481517.012105, Self-RAG Monolith 4B, Monolith router, run, end, 9600582850167250
+1787481517.012563, Self-RAG Monolith 4B, End stage, run, start, 9600582850650226
+1787481517.012811, Self-RAG Monolith 4B, End stage, run, end, 9600582850874243
+1787481517.013585, Self-RAG Monolith 4B, pipeline - val, run, end, 273621812475945516103121103085246827679, 1787481515.342749, 1, 7, 9600582851670660
+1787481517.014807, Self-RAG Monolith 4B, pipeline - val, run, start, 264670694118774947912107611242203821227, 1787481517.014705, 1, 8, 9600582852897093
+1787481517.015138, Self-RAG Monolith 4B, Question dataloader, run, start, 9600582853215846
+1787481517.015570, Self-RAG Monolith 4B, Question dataloader, run, end, 9600582853642678
+1787481517.015713, Self-RAG Monolith 4B, Document retriever, run, start, 9600582853782694
+1787481517.024867, Self-RAG Monolith 4B, Document retriever, run, end, 9600582862933953
+1787481517.024937, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600582863030818
+1787481517.025400, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600582863463538
+1787481517.025450, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600582863514434
+1787481517.028523, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1149, 9600582866592550
+1787481517.028561, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600582866622166
+1787481517.569247, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600583407340801
+1787481518.839261, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600584677346880
+1787481518.839999, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600584678075937
+1787481518.840142, Self-RAG Monolith 4B, Monolith router, run, start, 9600584678228529
+1787481518.840394, Self-RAG Monolith 4B, Monolith router, run, end, 9600584678455361
+1787481518.840576, Self-RAG Monolith 4B, End stage, run, start, 9600584678650673
+1787481518.840844, Self-RAG Monolith 4B, End stage, run, end, 9600584678907810
+1787481518.840990, Self-RAG Monolith 4B, pipeline - val, run, end, 264670694118774947912107611242203821227, 1787481517.014705, 1, 8, 9600584679079042
+1787481518.841752, Self-RAG Monolith 4B, pipeline - val, run, start, 146300040401447795349225337088233951877, 1787481518.841557, 1, 9, 9600584679836915
+1787481518.841979, Self-RAG Monolith 4B, Question dataloader, run, start, 9600584680061939
+1787481518.842387, Self-RAG Monolith 4B, Question dataloader, run, end, 9600584680462020
+1787481518.842632, Self-RAG Monolith 4B, Document retriever, run, start, 9600584680708932
+1787481518.852708, Self-RAG Monolith 4B, Document retriever, run, end, 9600584690788208
+1787481518.853000, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600584691075649
+1787481518.853278, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600584691341025
+1787481518.853352, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600584691429873
+1787481518.857007, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1463, 9600584695080934
+1787481518.857064, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600584695124822
+1787481519.523718, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600585361815102
+1787481520.820968, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600586659056131
+1787481520.821583, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600586659646820
+1787481520.821995, Self-RAG Monolith 4B, Monolith router, run, start, 9600586660079045
+1787481520.832186, Self-RAG Monolith 4B, Monolith router, run, end, 9600586670267089
+1787481520.832492, Self-RAG Monolith 4B, End stage, run, start, 9600586670590658
+1787481520.832926, Self-RAG Monolith 4B, End stage, run, end, 9600586670993618
+1787481520.833188, Self-RAG Monolith 4B, pipeline - val, run, end, 146300040401447795349225337088233951877, 1787481518.841557, 1, 9, 9600586671256147
+1787481520.833897, Self-RAG Monolith 4B, pipeline - val, run, start, 110796878649678196617721418161031436697, 1787481520.833738, 1, 10, 9600586671983811
+1787481520.834205, Self-RAG Monolith 4B, Question dataloader, run, start, 9600586672280324
+1787481520.834653, Self-RAG Monolith 4B, Question dataloader, run, end, 9600586672725604
+1787481520.834790, Self-RAG Monolith 4B, Document retriever, run, start, 9600586672858852
+1787481520.844997, Self-RAG Monolith 4B, Document retriever, run, end, 9600586683070305
+1787481520.845269, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600586683341697
+1787481520.845535, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600586683597602
+1787481520.845610, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600586683686146
+1787481520.848091, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 902, 9600586686159333
+1787481520.848127, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600586686188197
+1787481521.281869, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600587119957982
+1787481522.427852, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600588265939964
+1787481522.428550, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600588266616621
+1787481522.428798, Self-RAG Monolith 4B, Monolith router, run, start, 9600588266874413
+1787481522.428941, Self-RAG Monolith 4B, Monolith router, run, end, 9600588267008541
+1787481522.429562, Self-RAG Monolith 4B, End stage, run, start, 9600588267674590
+1787481522.430021, Self-RAG Monolith 4B, End stage, run, end, 9600588268088879
+1787481522.430228, Self-RAG Monolith 4B, pipeline - val, run, end, 110796878649678196617721418161031436697, 1787481520.833738, 1, 10, 9600588268298623
+1787481522.430880, Self-RAG Monolith 4B, pipeline - val, run, start, 108421670973942124489091921461476978168, 1787481522.430743, 1, 11, 9600588268964320
+1787481522.431203, Self-RAG Monolith 4B, Question dataloader, run, start, 9600588269281392
+1787481522.431651, Self-RAG Monolith 4B, Question dataloader, run, end, 9600588269726369
+1787481522.431782, Self-RAG Monolith 4B, Document retriever, run, start, 9600588269856049
+1787481522.440894, Self-RAG Monolith 4B, Document retriever, run, end, 9600588278972236
+1787481522.440992, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600588279069148
+1787481522.441405, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600588279468397
+1787481522.441453, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600588279519469
+1787481522.443839, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 923, 9600588281908352
+1787481522.443876, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600588281936816
+1787481522.879411, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600588717527789
+1787481523.963081, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600589801166880
+1787481523.963498, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600589801564241
+1787481523.963780, Self-RAG Monolith 4B, Monolith router, run, start, 9600589801862865
+1787481523.963929, Self-RAG Monolith 4B, Monolith router, run, end, 9600589801990881
+1787481523.964581, Self-RAG Monolith 4B, End stage, run, start, 9600589802671682
+1787481523.964961, Self-RAG Monolith 4B, End stage, run, end, 9600589803033315
+1787481523.965065, Self-RAG Monolith 4B, pipeline - val, run, end, 108421670973942124489091921461476978168, 1787481522.430743, 1, 11, 9600589803137475
+1787481523.966538, Self-RAG Monolith 4B, pipeline - val, run, start, 339067315065640946677821273400135197410, 1787481523.966454, 1, 12, 9600589804626501
+1787481523.966898, Self-RAG Monolith 4B, Question dataloader, run, start, 9600589804978629
+1787481523.967394, Self-RAG Monolith 4B, Question dataloader, run, end, 9600589805470598
+1787481523.967647, Self-RAG Monolith 4B, Document retriever, run, start, 9600589805720326
+1787481523.978555, Self-RAG Monolith 4B, Document retriever, run, end, 9600589816626180
+1787481523.978697, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600589816770436
+1787481523.979004, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600589817067140
+1787481523.979054, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600589817119796
+1787481523.982232, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1314, 9600589820304904
+1787481523.982284, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600589820344792
+1787481524.595289, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600590433382293
+1787481525.881129, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600591719214823
+1787481525.882504, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600591720586089
+1787481525.882772, Self-RAG Monolith 4B, Monolith router, run, start, 9600591720858489
+1787481525.891860, Self-RAG Monolith 4B, Monolith router, run, end, 9600591729937749
+1787481525.892274, Self-RAG Monolith 4B, End stage, run, start, 9600591730365253
+1787481525.892644, Self-RAG Monolith 4B, End stage, run, end, 9600591730711878
+1787481525.892801, Self-RAG Monolith 4B, pipeline - val, run, end, 339067315065640946677821273400135197410, 1787481523.966454, 1, 12, 9600591730875382
+1787481525.893144, Self-RAG Monolith 4B, pipeline - val, run, start, 136100173637433040597969753406218097682, 1787481525.893070, 1, 13, 9600591731226806
+1787481525.893428, Self-RAG Monolith 4B, Question dataloader, run, start, 9600591731504423
+1787481525.893890, Self-RAG Monolith 4B, Question dataloader, run, end, 9600591731963815
+1787481525.894137, Self-RAG Monolith 4B, Document retriever, run, start, 9600591732207784
+1787481525.905082, Self-RAG Monolith 4B, Document retriever, run, end, 9600591743153525
+1787481525.905246, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600591743318422
+1787481525.905519, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600591743582406
+1787481525.905563, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600591743628070
+1787481525.908658, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1153, 9600591746726362
+1787481525.908693, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600591746753834
+1787481526.455087, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600592293178805
+1787481527.627449, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 28, 9600593465534111
+1787481527.628882, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600593466964689
+1787481527.629583, Self-RAG Monolith 4B, Monolith router, run, start, 9600593467668434
+1787481527.629745, Self-RAG Monolith 4B, Monolith router, run, end, 9600593467807298
+1787481527.630573, Self-RAG Monolith 4B, End stage, run, start, 9600593468666547
+1787481527.630967, Self-RAG Monolith 4B, End stage, run, end, 9600593469035107
+1787481527.631074, Self-RAG Monolith 4B, pipeline - val, run, end, 136100173637433040597969753406218097682, 1787481525.893070, 1, 13, 9600593469153571
+1787481527.631881, Self-RAG Monolith 4B, pipeline - val, run, start, 94730194066087287913938948060398834999, 1787481527.631693, 1, 14, 9600593469978773
+1787481527.632266, Self-RAG Monolith 4B, Question dataloader, run, start, 9600593470345093
+1787481527.632732, Self-RAG Monolith 4B, Question dataloader, run, end, 9600593470806918
+1787481527.632982, Self-RAG Monolith 4B, Document retriever, run, start, 9600593471052950
+1787481527.642614, Self-RAG Monolith 4B, Document retriever, run, end, 9600593480682210
+1787481527.642769, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600593480842994
+1787481527.643043, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600593481105730
+1787481527.643209, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600593481296083
+1787481527.646080, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1214, 9600593484151158
+1787481527.646124, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600593484184790
+1787481528.209142, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600594047234759
+1787481529.601966, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 34, 9600595440047673
+1787481529.603019, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600595441082587
+1787481529.603680, Self-RAG Monolith 4B, Monolith router, run, start, 9600595441765787
+1787481529.603836, Self-RAG Monolith 4B, Monolith router, run, end, 9600595441898107
+1787481529.604696, Self-RAG Monolith 4B, End stage, run, start, 9600595442811405
+1787481529.605299, Self-RAG Monolith 4B, End stage, run, end, 9600595443368333
+1787481529.605557, Self-RAG Monolith 4B, pipeline - val, run, end, 94730194066087287913938948060398834999, 1787481527.631693, 1, 14, 9600595443632318
+1787481529.606191, Self-RAG Monolith 4B, pipeline - val, run, start, 258786503039737797337066674930118971936, 1787481529.605991, 1, 15, 9600595444281566
+1787481529.606523, Self-RAG Monolith 4B, Question dataloader, run, start, 9600595444601135
+1787481529.606987, Self-RAG Monolith 4B, Question dataloader, run, end, 9600595445063440
+1787481529.607125, Self-RAG Monolith 4B, Document retriever, run, start, 9600595445196256
+1787481529.617371, Self-RAG Monolith 4B, Document retriever, run, end, 9600595455444189
+1787481529.617533, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600595455603693
+1787481529.617807, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600595455870445
+1787481529.617983, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600595456070301
+1787481529.620472, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 739, 9600595458535824
+1787481529.620495, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600595458556080
+1787481530.003803, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600595841896481
+1787481531.109403, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600596947489647
+1787481531.110483, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600596948563808
+1787481531.110793, Self-RAG Monolith 4B, Monolith router, run, start, 9600596948879408
+1787481531.120730, Self-RAG Monolith 4B, Monolith router, run, end, 9600596958822797
+1787481531.120970, Self-RAG Monolith 4B, End stage, run, start, 9600596959060877
+1787481531.121672, Self-RAG Monolith 4B, End stage, run, end, 9600596959747134
+1787481531.122360, Self-RAG Monolith 4B, pipeline - val, run, end, 258786503039737797337066674930118971936, 1787481529.605991, 1, 15, 9600596960429647
+1787481531.122957, Self-RAG Monolith 4B, pipeline - val, run, start, 311696581892680333662030704698559646048, 1787481531.122803, 1, 16, 9600596961043872
+1787481531.123259, Self-RAG Monolith 4B, Question dataloader, run, start, 9600596961335568
+1787481531.123699, Self-RAG Monolith 4B, Question dataloader, run, end, 9600596961773073
+1787481531.123935, Self-RAG Monolith 4B, Document retriever, run, start, 9600596962015137
+1787481531.134394, Self-RAG Monolith 4B, Document retriever, run, end, 9600596972461486
+1787481531.134627, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600596972699310
+1787481531.134897, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600596972959711
+1787481531.135027, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600596973101071
+1787481531.137867, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1351, 9600596975931218
+1787481531.137890, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600596975950851
+1787481531.794486, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600597632578509
+1787481532.932498, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600598770584935
+1787481532.932837, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600598770901800
+1787481532.933094, Self-RAG Monolith 4B, Monolith router, run, start, 9600598771174664
+1787481532.933237, Self-RAG Monolith 4B, Monolith router, run, end, 9600598771298360
+1787481532.933704, Self-RAG Monolith 4B, End stage, run, start, 9600598771791513
+1787481532.934926, Self-RAG Monolith 4B, End stage, run, end, 9600598773043531
+1787481532.935204, Self-RAG Monolith 4B, pipeline - val, run, end, 311696581892680333662030704698559646048, 1787481531.122803, 1, 16, 9600598773282571
+1787481532.935827, Self-RAG Monolith 4B, pipeline - val, run, start, 104819568652731139060771596294389858852, 1787481532.935693, 1, 17, 9600598773911228
+1787481532.936126, Self-RAG Monolith 4B, Question dataloader, run, start, 9600598774204572
+1787481532.936572, Self-RAG Monolith 4B, Question dataloader, run, end, 9600598774645357
+1787481532.936726, Self-RAG Monolith 4B, Document retriever, run, start, 9600598774797181
+1787481532.947273, Self-RAG Monolith 4B, Document retriever, run, end, 9600598785341706
+1787481532.947522, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600598785596730
+1787481532.947788, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600598785851179
+1787481532.947830, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600598785893355
+1787481532.951245, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1250, 9600598789310383
+1787481532.951273, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600598789333695
+1787481533.535355, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600599373450768
+1787481534.596889, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 24, 9600600434976797
+1787481534.598024, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600600436107071
+1787481534.598141, Self-RAG Monolith 4B, Monolith router, run, start, 9600600436227935
+1787481534.598550, Self-RAG Monolith 4B, Monolith router, run, end, 9600600436629456
+1787481534.598674, Self-RAG Monolith 4B, Query rewrite formatter, run, start, 9600600436760544
+1787481534.599216, Self-RAG Monolith 4B, Query rewrite formatter, run, end, 9600600437280784
+1787481534.599753, Self-RAG Monolith 4B, Query rewrite LLM, run, start, 9600600437837777
+1787481534.602437, Self-RAG Monolith 4B, Query rewrite LLM, n_prompt_tokens, 598, 9600600440526308
+1787481534.602530, Self-RAG Monolith 4B, Query rewrite LLM, first_token, start, 9600600440590309
+1787481534.928662, Self-RAG Monolith 4B, Query rewrite LLM, first_token, end, 9600600766773873
+1787481535.713909, Self-RAG Monolith 4B, Query rewrite LLM, n_generated_tokens, 16, 9600601551994787
+1787481535.714217, Self-RAG Monolith 4B, Query rewrite LLM, run, end, 9600601552281379
+1787481535.714789, Self-RAG Monolith 4B, Document retriever, run, start, 9600601552876372
+1787481535.727048, Self-RAG Monolith 4B, Document retriever, run, end, 9600601565128756
+1787481535.727147, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600601565222852
+1787481535.727622, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600601565695284
+1787481535.727739, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600601565814788
+1787481535.730752, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1408, 9600601568820232
+1787481535.730787, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600601568847512
+1787481536.374048, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600602212139671
+1787481537.677198, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600603515304764
+1787481537.678188, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600603516265693
+1787481537.678372, Self-RAG Monolith 4B, Monolith router, run, start, 9600603516454125
+1787481537.678525, Self-RAG Monolith 4B, Monolith router, run, end, 9600603516587053
+1787481537.679178, Self-RAG Monolith 4B, End stage, run, start, 9600603517289038
+1787481537.679816, Self-RAG Monolith 4B, End stage, run, end, 9600603517891535
+1787481537.680622, Self-RAG Monolith 4B, pipeline - val, run, end, 104819568652731139060771596294389858852, 1787481532.935693, 1, 17, 9600603518715328
+1787481537.681535, Self-RAG Monolith 4B, pipeline - val, run, start, 25025501446118853908533532242460794633, 1787481537.681358, 1, 18, 9600603519604913
+1787481537.682027, Self-RAG Monolith 4B, Question dataloader, run, start, 9600603520109714
+1787481537.682433, Self-RAG Monolith 4B, Question dataloader, run, end, 9600603520502946
+1787481537.682545, Self-RAG Monolith 4B, Document retriever, run, start, 9600603520616370
+1787481537.691632, Self-RAG Monolith 4B, Document retriever, run, end, 9600603529701838
+1787481537.691907, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600603529979806
+1787481537.692189, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600603530251983
+1787481537.692234, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600603530297727
+1787481537.694452, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 840, 9600603532517009
+1787481537.694479, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600603532539714
+1787481538.105370, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600603943459707
+1787481539.677253, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 38, 9600605515339738
+1787481539.678087, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600605516166635
+1787481539.678462, Self-RAG Monolith 4B, Monolith router, run, start, 9600605516543052
+1787481539.688403, Self-RAG Monolith 4B, Monolith router, run, end, 9600605526477880
+1787481539.688898, Self-RAG Monolith 4B, End stage, run, start, 9600605526985289
+1787481539.689445, Self-RAG Monolith 4B, End stage, run, end, 9600605527519482
+1787481539.690351, Self-RAG Monolith 4B, pipeline - val, run, end, 25025501446118853908533532242460794633, 1787481537.681358, 1, 18, 9600605528438395
+1787481539.691430, Self-RAG Monolith 4B, pipeline - val, run, start, 251976473445657017399402636863829254233, 1787481539.691309, 1, 19, 9600605529503324
+1787481539.691957, Self-RAG Monolith 4B, Question dataloader, run, start, 9600605530044285
+1787481539.692409, Self-RAG Monolith 4B, Question dataloader, run, end, 9600605530481390
+1787481539.692671, Self-RAG Monolith 4B, Document retriever, run, start, 9600605530742366
+1787481539.704668, Self-RAG Monolith 4B, Document retriever, run, end, 9600605542744909
+1787481539.705137, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600605543211550
+1787481539.705647, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600605543718990
+1787481539.705809, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600605543874111
+1787481539.708559, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1188, 9600605546625874
+1787481539.708592, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600605546652850
+1787481540.263519, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600606101612053
+1787481541.358697, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600607196783018
+1787481541.359295, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600607197375419
+1787481541.359632, Self-RAG Monolith 4B, Monolith router, run, start, 9600607197716507
+1787481541.359789, Self-RAG Monolith 4B, Monolith router, run, end, 9600607197850379
+1787481541.360591, Self-RAG Monolith 4B, End stage, run, start, 9600607198679500
+1787481541.361102, Self-RAG Monolith 4B, End stage, run, end, 9600607199173917
+1787481541.361357, Self-RAG Monolith 4B, pipeline - val, run, end, 251976473445657017399402636863829254233, 1787481539.691309, 1, 19, 9600607199431421
+1787481541.361704, Self-RAG Monolith 4B, pipeline - val, run, start, 92657861041769579384207079236714235723, 1787481541.361540, 1, 20, 9600607199774654
+1787481541.361885, Self-RAG Monolith 4B, Question dataloader, run, start, 9600607199974510
+1787481541.362395, Self-RAG Monolith 4B, Question dataloader, run, end, 9600607200467103
+1787481541.362514, Self-RAG Monolith 4B, Document retriever, run, start, 9600607200586207
+1787481541.372864, Self-RAG Monolith 4B, Document retriever, run, end, 9600607210942508
+1787481541.373001, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600607211078364
+1787481541.373434, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600607211497277
+1787481541.373610, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600607211685037
+1787481541.376330, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1227, 9600607214397312
+1787481541.376363, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600607214423552
+1787481541.944646, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600607782737926
+1787481543.150785, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 27, 9600608988872636
+1787481543.151119, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600608989182332
+1787481543.151460, Self-RAG Monolith 4B, Monolith router, run, start, 9600608989532765
+1787481543.151576, Self-RAG Monolith 4B, Monolith router, run, end, 9600608989637853
+1787481543.151984, Self-RAG Monolith 4B, End stage, run, start, 9600608990072541
+1787481543.152519, Self-RAG Monolith 4B, End stage, run, end, 9600608990592830
+1787481543.152780, Self-RAG Monolith 4B, pipeline - val, run, end, 92657861041769579384207079236714235723, 1787481541.361540, 1, 20, 9600608990857647
+1787481543.153153, Self-RAG Monolith 4B, pipeline - val, run, start, 80532896036120303162278800949068855975, 1787481543.153068, 1, 21, 9600608991222447
+1787481543.153654, Self-RAG Monolith 4B, Question dataloader, run, start, 9600608991738240
+1787481543.154101, Self-RAG Monolith 4B, Question dataloader, run, end, 9600608992172528
+1787481543.154784, Self-RAG Monolith 4B, Document retriever, run, start, 9600608992854337
+1787481543.165169, Self-RAG Monolith 4B, Document retriever, run, end, 9600609003239022
+1787481543.165304, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600609003378847
+1787481543.165587, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600609003649887
+1787481543.165749, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600609003824191
+1787481543.168577, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1353, 9600609006645635
+1787481543.168616, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600609006676755
+1787481543.804030, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600609642122063
+1787481544.958503, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600610796589703
+1787481544.958851, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600610796915351
+1787481544.959171, Self-RAG Monolith 4B, Monolith router, run, start, 9600610797250200
+1787481544.959321, Self-RAG Monolith 4B, Monolith router, run, end, 9600610797382920
+1787481544.959876, Self-RAG Monolith 4B, End stage, run, start, 9600610797961432
+1787481544.960428, Self-RAG Monolith 4B, End stage, run, end, 9600610798501705
+1787481544.960706, Self-RAG Monolith 4B, pipeline - val, run, end, 80532896036120303162278800949068855975, 1787481543.153068, 1, 21, 9600610798780714
+1787481544.961514, Self-RAG Monolith 4B, pipeline - val, run, start, 27201563113787154197947558426154194004, 1787481544.961027, 1, 22, 9600610799584555
+1787481544.962035, Self-RAG Monolith 4B, Question dataloader, run, start, 9600610800117547
+1787481544.962473, Self-RAG Monolith 4B, Question dataloader, run, end, 9600610800544252
+1787481544.962594, Self-RAG Monolith 4B, Document retriever, run, start, 9600610800664764
+1787481544.974614, Self-RAG Monolith 4B, Document retriever, run, end, 9600610812695259
+1787481544.974717, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600610812790747
+1787481544.975290, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600610813361980
+1787481544.975589, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600610813668173
+1787481544.978812, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1418, 9600610816888817
+1787481544.978867, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600610816927985
+1787481545.651369, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600611489461520
+1787481546.890517, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600612728626952
+1787481546.891826, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600612729901242
+1787481546.892128, Self-RAG Monolith 4B, Monolith router, run, start, 9600612730212410
+1787481546.892291, Self-RAG Monolith 4B, Monolith router, run, end, 9600612730352890
+1787481546.892772, Self-RAG Monolith 4B, End stage, run, start, 9600612730863147
+1787481546.893274, Self-RAG Monolith 4B, End stage, run, end, 9600612731345627
+1787481546.893573, Self-RAG Monolith 4B, pipeline - val, run, end, 27201563113787154197947558426154194004, 1787481544.961027, 1, 22, 9600612731648156
+1787481546.893999, Self-RAG Monolith 4B, pipeline - val, run, start, 297324024865674500920735818736189280575, 1787481546.893875, 1, 23, 9600612732069292
+1787481546.894501, Self-RAG Monolith 4B, Question dataloader, run, start, 9600612732583997
+1787481546.894922, Self-RAG Monolith 4B, Question dataloader, run, end, 9600612732995310
+1787481546.895068, Self-RAG Monolith 4B, Document retriever, run, start, 9600612733140222
+1787481546.904419, Self-RAG Monolith 4B, Document retriever, run, end, 9600612742501658
+1787481546.904552, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600612742626250
+1787481546.904824, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600612742887818
+1787481546.904958, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600612743038298
+1787481546.906581, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 461, 9600612744656093
+1787481546.906633, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600612744694301
+1787481547.186307, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600613024395493
+1787481548.439902, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600614277986931
+1787481548.440863, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600614278943445
+1787481548.441178, Self-RAG Monolith 4B, Monolith router, run, start, 9600614279261589
+1787481548.441340, Self-RAG Monolith 4B, Monolith router, run, end, 9600614279400933
+1787481548.441840, Self-RAG Monolith 4B, End stage, run, start, 9600614279931206
+1787481548.442837, Self-RAG Monolith 4B, End stage, run, end, 9600614280925687
+1787481548.443326, Self-RAG Monolith 4B, pipeline - val, run, end, 297324024865674500920735818736189280575, 1787481546.893875, 1, 23, 9600614281420280
+1787481548.444168, Self-RAG Monolith 4B, pipeline - val, run, start, 95943652922677312789358707948951208629, 1787481548.444022, 1, 24, 9600614282238537
+1787481548.444789, Self-RAG Monolith 4B, Question dataloader, run, start, 9600614282896138
+1787481548.445512, Self-RAG Monolith 4B, Question dataloader, run, end, 9600614283583099
+1787481548.445767, Self-RAG Monolith 4B, Document retriever, run, start, 9600614283838059
+1787481548.455179, Self-RAG Monolith 4B, Document retriever, run, end, 9600614293249287
+1787481548.455487, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600614293560679
+1787481548.455772, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600614293834616
+1787481548.455942, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600614294024824
+1787481548.458531, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1062, 9600614296599451
+1787481548.458578, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600614296639211
+1787481548.955445, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600614793538635
+1787481550.118002, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 27, 9600615956088824
+1787481550.118726, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600615956802633
+1787481550.118869, Self-RAG Monolith 4B, Monolith router, run, start, 9600615956956937
+1787481550.119047, Self-RAG Monolith 4B, Monolith router, run, end, 9600615957108377
+1787481550.119536, Self-RAG Monolith 4B, End stage, run, start, 9600615957645066
+1787481550.129157, Self-RAG Monolith 4B, End stage, run, end, 9600615967240614
+1787481550.129530, Self-RAG Monolith 4B, pipeline - val, run, end, 95943652922677312789358707948951208629, 1787481548.444022, 1, 24, 9600615967609207
+1787481550.130142, Self-RAG Monolith 4B, pipeline - val, run, start, 161097364422945395335760755605625003933, 1787481550.129997, 1, 25, 9600615968213303
+1787481550.130719, Self-RAG Monolith 4B, Question dataloader, run, start, 9600615968805176
+1787481550.131158, Self-RAG Monolith 4B, Question dataloader, run, end, 9600615969232553
+1787481550.131783, Self-RAG Monolith 4B, Document retriever, run, start, 9600615969853546
+1787481550.143235, Self-RAG Monolith 4B, Document retriever, run, end, 9600615981317592
+1787481550.143342, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600615981418744
+1787481550.143920, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600615981991673
+1787481550.144063, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600615982130265
+1787481550.147320, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1305, 9600615985386286
+1787481550.147351, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600615985411166
+1787481550.758080, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600616596169987
+1787481551.881018, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 28, 9600617719105055
+1787481551.881714, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600617719792384
+1787481551.882037, Self-RAG Monolith 4B, Monolith router, run, start, 9600617720121376
+1787481551.882427, Self-RAG Monolith 4B, Monolith router, run, end, 9600617720504513
+1787481551.882618, Self-RAG Monolith 4B, End stage, run, start, 9600617720708273
+1787481551.883178, Self-RAG Monolith 4B, End stage, run, end, 9600617721251426
+1787481551.883539, Self-RAG Monolith 4B, pipeline - val, run, end, 161097364422945395335760755605625003933, 1787481550.129997, 1, 25, 9600617721614722
+1787481551.883996, Self-RAG Monolith 4B, pipeline - val, run, start, 55875384169703701062502137781087223481, 1787481551.883848, 1, 26, 9600617722065507
+1787481551.884236, Self-RAG Monolith 4B, Question dataloader, run, start, 9600617722321795
+1787481551.884657, Self-RAG Monolith 4B, Question dataloader, run, end, 9600617722728196
+1787481551.884785, Self-RAG Monolith 4B, Document retriever, run, start, 9600617722856564
+1787481551.894119, Self-RAG Monolith 4B, Document retriever, run, end, 9600617732197600
+1787481551.894416, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600617732489809
+1787481551.894694, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600617732756849
+1787481551.894924, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600617733006817
+1787481551.897910, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1349, 9600617735979141
+1787481551.897950, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600617736010805
+1787481552.539573, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600618377667605
+1787481553.814010, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600619652099290
+1787481553.814353, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600619652417003
+1787481553.814672, Self-RAG Monolith 4B, Monolith router, run, start, 9600619652752475
+1787481553.814818, Self-RAG Monolith 4B, Monolith router, run, end, 9600619652879579
+1787481553.815403, Self-RAG Monolith 4B, End stage, run, start, 9600619653497036
+1787481553.816246, Self-RAG Monolith 4B, End stage, run, end, 9600619654318957
+1787481553.816375, Self-RAG Monolith 4B, pipeline - val, run, end, 55875384169703701062502137781087223481, 1787481551.883848, 1, 26, 9600619654448781
+1787481553.816983, Self-RAG Monolith 4B, pipeline - val, run, start, 143936905371591518852322887879351783750, 1787481553.816841, 1, 27, 9600619655052686
+1787481553.817673, Self-RAG Monolith 4B, Question dataloader, run, start, 9600619655759727
+1787481553.818134, Self-RAG Monolith 4B, Question dataloader, run, end, 9600619656205599
+1787481553.819345, Self-RAG Monolith 4B, Document retriever, run, start, 9600619657449601
+1787481553.829202, Self-RAG Monolith 4B, Document retriever, run, end, 9600619667271262
+1787481553.829504, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600619667576734
+1787481553.829775, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600619667838014
+1787481553.829939, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600619668018431
+1787481553.833253, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 1241, 9600619671324867
+1787481553.833302, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600619671362851
+1787481554.413578, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600620251670837
+1787481555.645420, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600621483505990
+1787481555.647063, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600621485146264
+1787481555.647416, Self-RAG Monolith 4B, Monolith router, run, start, 9600621485502361
+1787481555.657061, Self-RAG Monolith 4B, Monolith router, run, end, 9600621495138901
+1787481555.657775, Self-RAG Monolith 4B, End stage, run, start, 9600621495864326
+1787481555.658215, Self-RAG Monolith 4B, End stage, run, end, 9600621496283767
+1787481555.658527, Self-RAG Monolith 4B, pipeline - val, run, end, 143936905371591518852322887879351783750, 1787481553.816841, 1, 27, 9600621496602391
+1787481555.659223, Self-RAG Monolith 4B, pipeline - val, run, start, 327579346789264254688139557747096789888, 1787481555.659082, 1, 28, 9600621497293912
+1787481555.659550, Self-RAG Monolith 4B, Question dataloader, run, start, 9600621497632552
+1787481555.659974, Self-RAG Monolith 4B, Question dataloader, run, end, 9600621498044217
+1787481555.660117, Self-RAG Monolith 4B, Document retriever, run, start, 9600621498186553
+1787481555.669987, Self-RAG Monolith 4B, Document retriever, run, end, 9600621508055718
+1787481555.670311, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600621508385847
+1787481555.670579, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600621508641351
+1787481555.670623, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600621508686743
+1787481555.673279, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 868, 9600621511344090
+1787481555.673305, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600621511366074
+1787481556.084640, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600621922761858
+1787481557.954841, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 45, 9600623792932008
+1787481557.955249, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600623793312697
+1787481557.955423, Self-RAG Monolith 4B, Monolith router, run, start, 9600623793504777
+1787481557.955571, Self-RAG Monolith 4B, Monolith router, run, end, 9600623793632409
+1787481557.956347, Self-RAG Monolith 4B, End stage, run, start, 9600623794439082
+1787481557.956904, Self-RAG Monolith 4B, End stage, run, end, 9600623794980395
+1787481557.957016, Self-RAG Monolith 4B, pipeline - val, run, end, 327579346789264254688139557747096789888, 1787481555.659082, 1, 28, 9600623795092763
+1787481557.957647, Self-RAG Monolith 4B, pipeline - val, run, start, 174295691270210695015141520067984049276, 1787481557.957520, 1, 29, 9600623795718172
+1787481557.957812, Self-RAG Monolith 4B, Question dataloader, run, start, 9600623795891964
+1787481557.958209, Self-RAG Monolith 4B, Question dataloader, run, end, 9600623796279900
+1787481557.958435, Self-RAG Monolith 4B, Document retriever, run, start, 9600623796504173
+1787481557.968304, Self-RAG Monolith 4B, Document retriever, run, end, 9600623806384458
+1787481557.968614, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600623806688346
+1787481557.968907, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600623806970458
+1787481557.969166, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600623807247259
+1787481557.971259, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 680, 9600623809327293
+1787481557.971292, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600623809353197
+1787481558.326066, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600624164161853
+1787481559.542138, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 26, 9600625380246179
+1787481559.543358, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600625381443380
+1787481559.543988, Self-RAG Monolith 4B, Monolith router, run, start, 9600625382074709
+1787481559.544154, Self-RAG Monolith 4B, Monolith router, run, end, 9600625382215269
+1787481559.544873, Self-RAG Monolith 4B, End stage, run, start, 9600625382962182
+1787481559.545218, Self-RAG Monolith 4B, End stage, run, end, 9600625383285670
+1787481559.545744, Self-RAG Monolith 4B, pipeline - val, run, end, 174295691270210695015141520067984049276, 1787481557.957520, 1, 29, 9600625383819047
+1787481559.546487, Self-RAG Monolith 4B, pipeline - val, run, start, 244961171047285076502527009969309401671, 1787481559.546361, 1, 30, 9600625384555976
+1787481559.547314, Self-RAG Monolith 4B, Question dataloader, run, start, 9600625385385241
+1787481559.547713, Self-RAG Monolith 4B, Question dataloader, run, end, 9600625385781930
+1787481559.547884, Self-RAG Monolith 4B, Document retriever, run, start, 9600625385971994
+1787481559.556274, Self-RAG Monolith 4B, Document retriever, run, end, 9600625394342213
+1787481559.556518, Self-RAG Monolith 4B, Monolith formatter, run, start, 9600625394590229
+1787481559.556787, Self-RAG Monolith 4B, Monolith formatter, run, end, 9600625394850086
+1787481559.556923, Self-RAG Monolith 4B, Monolith LLM, run, start, 9600625394997622
+1787481559.560100, Self-RAG Monolith 4B, Monolith LLM, n_prompt_tokens, 968, 9600625398167274
+1787481559.560133, Self-RAG Monolith 4B, Monolith LLM, first_token, start, 9600625398193418
+1787481560.032586, Self-RAG Monolith 4B, Monolith LLM, first_token, end, 9600625870678628
+1787481561.249964, Self-RAG Monolith 4B, Monolith LLM, n_generated_tokens, 29, 9600627088050799
+1787481561.250886, Self-RAG Monolith 4B, Monolith LLM, run, end, 9600627088963664
+1787481561.251356, Self-RAG Monolith 4B, Monolith router, run, start, 9600627089435921
+1787481561.261532, Self-RAG Monolith 4B, Monolith router, run, end, 9600627099612414
+1787481561.262272, Self-RAG Monolith 4B, End stage, run, start, 9600627100384575
+1787481561.262873, Self-RAG Monolith 4B, End stage, run, end, 9600627100948224
+1787481561.263004, Self-RAG Monolith 4B, pipeline - val, run, end, 244961171047285076502527009969309401671, 1787481559.546361, 1, 30, 9600627101079408
