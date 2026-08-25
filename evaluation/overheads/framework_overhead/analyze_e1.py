@@ -268,6 +268,44 @@ def ols_slope(xs, ys):
     return slope, my - slope * mx
 
 
+def ols_r2(xs, ys, slope, intercept):
+    """Coefficient of determination for the same fit."""
+    n = len(xs)
+    if n < 2 or slope != slope:
+        return float("nan")
+    my = sum(ys) / n
+    ss_tot = sum((y - my) ** 2 for y in ys)
+    ss_res = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(xs, ys))
+    return 1.0 - ss_res / ss_tot if ss_tot else float("nan")
+
+
+def fit_verdict(intercept_ns, r2):
+    """Say plainly whether a linear fit is admissible.
+
+    The intercept is L_q extrapolated to depth 0 -- the fixed per-query cost of
+    a pipeline with no stages. It cannot be negative: that would be a pipeline
+    that finishes before it starts. A negative intercept is therefore not a
+    small number to report with a sign, it is proof that L_q is NOT linear in
+    depth for that arm, so the slope is not a marginal per-stage cost and must
+    not be quoted as one.
+
+    We hit this for real: the tracing arms fit intercepts of -119.7 us (proc)
+    and -45.4 us (spans) on the GB10, because the span instrument's own cost
+    grows at depth >= 32 (six span events per stage per query, against two CSV
+    rows) and bends the curve upward.
+    """
+    bad = []
+    if intercept_ns == intercept_ns and intercept_ns < 0:
+        bad.append(f"intercept {intercept_ns / NS_PER_US:.1f} us is NEGATIVE — a "
+                   f"zero-stage pipeline cannot take negative time, so L_q is "
+                   f"not linear in depth here and the slope is NOT a marginal "
+                   f"per-stage cost")
+    if r2 == r2 and r2 < 0.99:
+        bad.append(f"R^2 = {r2:.4f} < 0.99 — the linear model does not describe "
+                   f"this arm well")
+    return bad
+
+
 _BOOT_WORK_BUDGET = 5e7
 
 
@@ -363,10 +401,14 @@ def depth_table(runs, arm_label):
               f"[{od['ci_lo']:.1f}, {od['ci_hi']:.1f}] | {tr_s} | {p95_s} | {rm} |")
 
     slope_ns, intercept_ns = ols_slope(xs, lq_ns)
+    r2 = ols_r2(xs, lq_ns, slope_ns, intercept_ns)
     print(f"\n**Marginal per-stage cost** (slope of L_q vs depth): "
           f"{slope_ns / NS_PER_US:.2f} us/stage  \n"
           f"**Fixed per-query overhead** (intercept): "
-          f"{intercept_ns / NS_PER_US:.2f} us")
+          f"{intercept_ns / NS_PER_US:.2f} us  \n"
+          f"**Fit quality**: R^2 = {r2:.5f} over {len(xs)} depths")
+    for problem in fit_verdict(intercept_ns, r2):
+        print(f"\n> **FIT REJECTED** — {problem}")
     return od_by_depth
 
 
