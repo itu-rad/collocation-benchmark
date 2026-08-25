@@ -95,17 +95,22 @@ def _rows(path):
             yield parts[2], parts[3], parts[4], perf
 
 
-def _pair(evs):
-    """Pair alternating (perf, start/end) events into durations."""
+def _pair_spans(evs):
+    """Pair alternating (perf, start/end) events into (start_ns, end_ns) spans."""
     evs.sort()
-    durs, i = [], 0
+    spans, i = [], 0
     while i < len(evs) - 1:
         if evs[i][1] == "start" and evs[i + 1][1] == "end":
-            durs.append(evs[i + 1][0] - evs[i][0])
+            spans.append((evs[i][0], evs[i + 1][0]))
             i += 2
         else:
             i += 1                      # skip a stray/unpaired event
-    return durs
+    return spans
+
+
+def _pair(evs):
+    """Pair alternating (perf, start/end) events into durations."""
+    return [e - s for s, e in _pair_spans(evs)]
 
 
 def parse_baseline_steps(path):
@@ -127,8 +132,48 @@ def parse_baseline_steps(path):
 
 def parse_choreo_steps(path):
     """Per-step durations of the Choreo training stage."""
-    return _pair([(perf, ev) for (mod, ph, ev, perf) in _rows(path)
-                  if mod == TRAIN_STAGE and ph == "run" and ev in ("start", "end")])
+    return _pair(_choreo_events(path))
+
+
+def _choreo_events(path):
+    return [(perf, ev) for (mod, ph, ev, perf) in _rows(path)
+            if mod == TRAIN_STAGE and ph == "run" and ev in ("start", "end")]
+
+
+def _baseline_events(path):
+    """The LAST session's step events (see parse_baseline_steps for why)."""
+    evs = []
+    for (mod, phase, event, perf) in _rows(path):
+        if mod == BASELINE_LOOP and phase == "run" and event == "start":
+            evs = []
+        elif mod == BASELINE_STEP and phase == "run" and event in ("start", "end"):
+            evs.append((perf, event))
+    return evs
+
+
+def parse_step_periods(path, impl):
+    """Per-step PERIODS: the start-to-start interval between consecutive steps.
+
+    The step *duration* (parse_*_steps) is only the time inside the training
+    marker. The period additionally contains everything BETWEEN steps — the
+    dataloader, the queue hand-offs, and, in the Choreo arms, the framework's
+    own per-query scaffolding. It is the reciprocal of end-to-end throughput,
+    so a paired difference of periods is the framework's cost as a user
+    experiences it, not as the step marker sees it.
+
+    Returned as a per-step series (n-1 values) so it drops straight into
+    paired_overhead, which bootstraps within a run and across run pairs.
+    """
+    evs = _baseline_events(path) if impl == "baseline" else _choreo_events(path)
+    spans = _pair_spans(evs)
+    starts = np.asarray([s for s, _ in spans], dtype=np.float64)
+    return np.diff(starts) if starts.size > 1 else np.asarray([])
+
+
+def parse_step_spans(path, impl):
+    """(start_ns, end_ns) per step — used for the in-step vs period coverage."""
+    return _pair_spans(_baseline_events(path) if impl == "baseline"
+                       else _choreo_events(path))
 
 
 # Repetitions discarded as SYSTEM warm-up (whole runs, not steps). The first
@@ -154,6 +199,44 @@ def steps_by_run(metas, warmup=WARMUP, drop_runs=None):
         d = fn(m["path"])[warmup:]
         if d:
             out[m["run"]] = d
+    return out
+
+
+def periods_by_run(metas, warmup=WARMUP, drop_runs=None, keep_runs=None):
+    """{run_id: [period_ns, ...]} — same warm-up / run-dropping policy as
+    steps_by_run, plus an explicit `keep_runs` so the regime filter's verdict
+    (computed on step durations) is applied identically here."""
+    drop = DROP_RUNS if drop_runs is None else drop_runs
+    keep = sorted({m["run"] for m in metas})[drop:] if drop else None
+    out = {}
+    for m in metas:
+        if keep is not None and m["run"] not in keep:
+            continue
+        if keep_runs is not None and m["run"] not in keep_runs:
+            continue
+        d = parse_step_periods(m["path"], m["impl"])[warmup:]
+        if len(d):
+            out[m["run"]] = d
+    return out
+
+
+def coverage_by_run(metas, warmup=WARMUP, drop_runs=None, keep_runs=None):
+    """{run_id: (median_in_step_ns, median_period_ns)} — how much of the wall
+    clock the step marker actually covers."""
+    drop = DROP_RUNS if drop_runs is None else drop_runs
+    keep = sorted({m["run"] for m in metas})[drop:] if drop else None
+    out = {}
+    for m in metas:
+        if keep is not None and m["run"] not in keep:
+            continue
+        if keep_runs is not None and m["run"] not in keep_runs:
+            continue
+        spans = parse_step_spans(m["path"], m["impl"])[warmup:]
+        if len(spans) < 2:
+            continue
+        durs = np.asarray([e - s for s, e in spans], dtype=np.float64)
+        per = np.diff(np.asarray([s for s, _ in spans], dtype=np.float64))
+        out[m["run"]] = (float(np.median(durs)), float(np.median(per)))
     return out
 
 
@@ -333,6 +416,26 @@ def cell_result(metas, model, batch, warmup):
     out["total"] = paired_overhead(base, t2) if t2 else None
     # tracing layer alone = traced arm vs core arm (both wrapped)
     out["tracing"] = paired_overhead(t0, t2) if t2 else None
+
+    # --- end-to-end: the same paired statistic on step PERIODS ---------------
+    # The step marker is not the whole story: it excludes the dataloader and the
+    # framework's per-query scaffolding between steps. The period (start-to-start)
+    # is 1/throughput, so this is the cost the user actually pays. Runs the regime
+    # filter removed above are removed here too, by run id.
+    keep_runs = set(base) if MAX_REGIME_RATIO else None
+    kw = dict(warmup=warmup, keep_runs=keep_runs)
+    pb = periods_by_run(select(metas, impl="baseline", model=model, batch=batch), **kw)
+    p0 = periods_by_run(select(metas, impl="choreo", trace=ARM_CORE, model=model, batch=batch), **kw)
+    p2 = periods_by_run(select(metas, impl="choreo", trace=ARM_TRACED, model=model, batch=batch), **kw)
+    out["period_base"] = summarize(pb) if pb else None
+    out["e2e_core"] = paired_overhead(pb, p0) if (pb and p0) else None
+    out["e2e_total"] = paired_overhead(pb, p2) if (pb and p2) else None
+    cov = coverage_by_run(select(metas, impl="baseline", model=model, batch=batch), **kw)
+    if cov:
+        import numpy as _np
+        out["coverage"] = float(_np.median([d / p for d, p in cov.values() if p]))
+    else:
+        out["coverage"] = float("nan")
     return out
 
 
@@ -384,6 +487,52 @@ def print_cells(cells, device):
             pp = " / ".join(f"{v:+.1f}" for v in c["core"]["per_pair_us"])
             print(f"- per-run paired core diffs (µs), "
                   f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}: {pp}")
+
+
+def print_e2e(cells, device):
+    """End-to-end cost: the same paired statistic applied to the step PERIOD.
+
+    E2's headline (`core`) is measured on the training-step marker alone. That
+    marker does not cover the dataloader or the framework's per-query
+    scaffolding, so it can only ever see part of what the wrapper costs. The
+    period (step start -> next step start) covers all of it and is exactly
+    1/throughput. Reporting only the first number would understate the
+    framework's cost by whatever fraction of the wall clock the marker misses —
+    the `step covers` column below.
+    """
+    print(f"\n## {device} — end-to-end cost (step PERIOD = 1/throughput)\n")
+    print("| cell | R | period (ms) | step covers | core e2e (µs/step) | core e2e % "
+          "| +tracing e2e (µs/step) | total e2e % |")
+    print("|---|--:|--:|--:|---|--:|---|--:|")
+    for c in cells:
+        if not c.get("e2e_core"):
+            continue
+        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
+        ca, cp = _ov(c["e2e_core"])
+        ta, tp = _ov(c["e2e_total"])
+        R = c["e2e_core"]["pairs"]
+        print(f"| {name} | {R} | {c['period_base']['median']:.2f} | "
+              f"{100 * c['coverage']:.1f}% | {ca} | {cp.split(' ')[0]} | "
+              f"{ta} | {tp.split(' ')[0]} |")
+    print("\n(period = training-step start to the next step's start, on the same "
+          "monotonic clock; `step covers` = median step duration / median period "
+          "in the BASELINE arm, i.e. how much of the wall clock E2's headline "
+          "metric can see at all. Brackets: 95% CI, bootstrap over run pairs.)")
+    # The comparison that matters: headline vs end-to-end, same cells.
+    print(f"\n### {device} — headline (in-step) vs end-to-end, side by side\n")
+    print("| cell | core in-step µs | core in-step % | core e2e µs | core e2e % | "
+          "understated by |")
+    print("|---|--:|--:|--:|--:|--:|")
+    for c in cells:
+        if not (c.get("core") and c.get("e2e_core")):
+            continue
+        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
+        a, b = c["core"]["abs_us"], c["e2e_core"]["abs_us"]
+        ratio = f"{b / a:.1f}x" if a > 0 and b > 0 else "n/a"
+        print(f"| {name} | {a:+.1f} | {c['core']['pct']:+.3f}% | {b:+.1f} | "
+              f"{c['e2e_core']['pct']:+.3f}% | {ratio} |")
+    print("\n(`understated by` is only meaningful where BOTH estimates are "
+          "positive; a negative estimate is apparatus noise, not a speed-up.)")
 
 
 def print_sweeps(cells, device):
@@ -581,6 +730,7 @@ def main():
         per_device[dev] = cells
         print(f"\n# ===== {dev} ({len(metas)} CSVs, {len(cells)} cells) =====")
         print_cells(cells, dev)
+        print_e2e(cells, dev)
         print_sweeps(cells, dev)
     if per_device:
         print(f"\n**Figure:** `{make_figure(per_device, fig_dir)}`")
