@@ -34,13 +34,16 @@
 #                  as system warm-up -- the first repetition of a cell is
 #                  slower for its WHOLE duration, not just its first steps)
 #     exp        : res17 experiment id (default 138 = real; 142 = throwaway)
-#     depth-list : space-separated depths (default: the full sweep)
+#     depth-list : space-separated depths (default: powers of two, 1..128)
 set -uo pipefail
 
 usage() { sed -n '2,40p' "$0" >&2; exit 2; }
 DEVICE=${1:-}; RUNS=${2:-11}; EXP=${3:-138}
 [ -n "$DEVICE" ] || usage
-[ $# -gt 3 ] && { shift 3; DEPTHS="$*"; } || DEPTHS="1 2 3 4 5 6 7 8 9 10 16 32 50 64 100 128"
+# Powers of two only. O(d) is a smooth curve, so 2^0..2^7 already spans the full
+# 128x range that shows it flattening; the intermediate depths cost collection
+# time and crowded the figures without adding shape.
+[ $# -gt 3 ] && { shift 3; DEPTHS="$*"; } || DEPTHS="1 2 4 8 16 32 64 128"
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/../../.." && pwd)

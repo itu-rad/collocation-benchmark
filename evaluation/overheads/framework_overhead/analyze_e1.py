@@ -38,6 +38,15 @@ from bisect import bisect_right
 NS_PER_MS = 1e6
 NS_PER_US = 1e3
 SIZES = [0, 1024, 1048576, 10485760]
+
+# The depth sweep is POWERS OF TWO ONLY. The earlier sweep also carried
+# 3/5/6/7/9/10/50/100, which cost collection time and crowded the figures
+# without adding shape: O(d) is a smooth curve and 2^0..2^7 already spans the
+# full 128x range that shows it flattening.
+#
+# Depth 10 stays COLLECTED but out of this list, because the payload sweep is
+# defined at depth 10 and its size-0 / mode-ref cell is the same data.
+DEPTHS = [1, 2, 4, 8, 16, 32, 64, 128]
 SIZE_LABEL = {0: "0", 1024: "1 KiB", 1048576: "1 MiB", 10485760: "10 MiB"}
 WARMUP_K = 1                      # warm-up epochs dropped per run
 DEVICES = ("mlx", "cuda")
@@ -397,7 +406,7 @@ def summarize(run_vecs, unit_ns=NS_PER_US):
 def depth_table(runs, arm_label):
     """Print the depth sweep (size 0, mode ref) and return {depth: O(d) summary}."""
     sel_arm = select(runs, size=0, mode="ref")
-    depths = sorted({r.meta["depth"] for r in sel_arm})
+    depths = sorted({r.meta["depth"] for r in sel_arm} & set(DEPTHS))
     print(f"\n## Depth sweep -- {arm_label} (size 0, mode ref)\n")
     print("| depth | N | L_q median (ms) | O(d)=L_q/d (us) | 95% CI (us, hier.) | "
           "transition (us) | p95 O(d) (us) | O(d) per-run medians (us) |")
@@ -620,7 +629,8 @@ def _od_curve(runs, arm):
     """[(depth, O(d) median us)] for one arm, sorted by depth."""
     out = []
     for d in sorted({r.meta["depth"] for r in runs
-                     if r.meta["size"] == 0 and r.meta["mode"] == "ref"}):
+                     if r.meta["size"] == 0 and r.meta["mode"] == "ref"}
+                    & set(DEPTHS)):
         sel = select(runs, depth=d, size=0, mode="ref", arm=arm)
         lat = pool_latency_by_run(sel)
         if lat:
@@ -703,7 +713,8 @@ def make_figures(per_device, fig_dir):
         for i, (arm, color) in enumerate(ARM_STYLE.items()):
             depths, meds = [], []
             for d in sorted({r.meta["depth"] for r in runs
-                             if r.meta["size"] == 0 and r.meta["mode"] == "ref"}):
+                             if r.meta["size"] == 0 and r.meta["mode"] == "ref"}
+                            & set(DEPTHS)):
                 s = summarize(pool_latency_by_run(
                     select(runs, depth=d, size=0, mode="ref", arm=arm)), NS_PER_MS)
                 if s["n"]:
