@@ -97,15 +97,29 @@ log(){ echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
 # performance + 10x A725 efficiency) and an unpinned workload migrates between
 # them; E1 measures us-scale transitions, so that noise is fatal and the cuda
 # collection MUST pin to a single performance core:
-#   PIN=19 collect_e1.sh cuda ...
-# WARNING: a SINGLE core is wrong for the span-tracing arms. taskset affinity is
-# inherited by children, so the stage threads, the span queue's feeder thread and
-# the radt exporter PROCESS all land on that one core. Measured on the GB10, the
-# span instrument's per-stage cost is flat at ~11 us up to depth 20 and then
-# roughly doubles to ~22 us -- pure CPU saturation, not a property of tracing:
-# with two cores (PIN=18,19) it stays flat at ~11 us all the way to depth 64.
-# The CSV-logging arms are unaffected (in-process file handler, no extra
-# process), which is why as-reported and uninstrumented stay flat on one core.
+#   PIN=18,19 collect_e1.sh cuda ...     <- the GB10 standard, TWO cores
+#
+# Two cores, not one, and not more. Measured R=5 at depth 128 (us/stage):
+#
+#   cores   uninstrumented   spans-only
+#     1         10.04          33.42   <- exporter starved
+#     2         16.05          32.01   <- neither starved
+#     3         16.37          48.14
+#
+# One core is cheapest for uninstrumented, because every stage-to-stage hand-off
+# stays on that core with no inter-core wakeup and a warm cache. But taskset
+# affinity is INHERITED BY CHILDREN, so the radt exporter process and the span
+# queue's feeder thread land on that same core and starve: the span cost is flat
+# to depth ~20 and then roughly doubles, which is our apparatus, not tracing.
+# Three or more cores is worse again -- hand-offs start crossing cores faster
+# than the extra capacity helps.
+#
+# Both arms therefore get the SAME two cores, so the difference between them is
+# attributable to the instrument and not to the CPU they were given.
+#
+# The M2 Pro has no taskset, so mlx is collected unpinned. That asymmetry is
+# real and is why the two devices' absolute per-stage costs are not directly
+# comparable.
 # NOTE: expanded as ${PINCMD[@]+"${PINCMD[@]}"} — macOS bash 3.2 treats a plain
 # "${PINCMD[@]}" on an EMPTY array as unbound under `set -u`.
 PINCMD=()
