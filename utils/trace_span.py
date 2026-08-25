@@ -45,6 +45,8 @@ and cancels in any interval computed from two ``PERF_ATTR`` values, which is how
 the analyzers use it.
 """
 import contextlib
+import itertools
+import logging
 import os
 import time
 
@@ -52,6 +54,79 @@ _TRUTHY = ("1", "true", "yes")
 
 #: Span-attribute key carrying ``time.perf_counter_ns()`` at span start.
 PERF_ATTR = "perf_start_ns"
+
+#: Tag / CSV marker under which the emitted-span count is reported.
+COUNT_KEY = "choreo.spans_emitted"
+
+# The backend drops span events on queue overflow (put_nowait) and only WARNS
+# at shutdown. We do not change that -- radt stays as it is -- so completeness
+# has to be checkable from our side instead: count what we handed over, publish
+# it, and let the reader compare it against the manifest's event_count. A
+# mismatch means events were dropped between us and the artifact.
+#
+# itertools.count().__next__ is a single C call, so it is atomic under the GIL
+# (a plain `n += 1` is not -- load/add/store can interleave between the stage
+# threads). Measured at ~50 ns, against ~1.3 us for the span emit it counts.
+_span_seq = itertools.count()
+_next_seq = _span_seq.__next__
+
+
+_final_count = None
+
+
+def emitted_count():
+    """How many spans this process handed to the backend.
+
+    `itertools.count` has no peek, so reading it means consuming an index: the
+    value returned is exactly the number of indices issued before it. That
+    makes the read single-use, so it is cached -- calling this twice must not
+    report two different totals, and the second call would otherwise be one
+    too high.
+
+    Call it at shutdown, after the stage threads have joined. Spans emitted
+    after the first call are not counted (they would shift the answer under the
+    reader's feet), which is why this is a shutdown-time report and not a live
+    gauge.
+    """
+    global _final_count
+    if _final_count is None:
+        _final_count = _next_seq()
+    return _final_count
+
+
+_reported = False
+
+
+def report_span_count():
+    """Publish the emitted-span count so a reader can verify completeness.
+
+    Written two ways because they fail differently: an mlflow tag travels with
+    the run and its artifacts (but needs a live run), and a `benchmark` CSV row
+    survives even when the tracking server does not. Neither is gated by
+    `disable_logs` -- it is one row per run, and it is the row that says whether
+    the rest of the data is complete.
+
+    MUST be called while the mlflow run is still active and the benchmark
+    logger's file handler is still open -- i.e. right after the pipeline
+    finishes, not at interpreter teardown, where both are already gone and only
+    the stdout line survives. The shutdown sites call it again as a backstop;
+    reporting happens once and later calls are silent.
+    """
+    global _reported
+    if MODE != "proc" or _reported:
+        return _final_count
+    _reported = True
+    n = emitted_count()
+    logging.getLogger("benchmark").info("choreo, spans, emitted, %d", n)
+    try:
+        import mlflow
+
+        if mlflow.active_run() is not None:
+            mlflow.set_tag(COUNT_KEY, str(n))
+    except Exception:
+        pass          # tagging is the redundant path; the CSV row is the record
+    print(f"[choreo] spans emitted: {n}", flush=True)
+    return n
 
 
 def _resolve_mode():
@@ -78,6 +153,7 @@ if MODE == "proc":
     import radt
 
     def trace_span(name, attributes=None):
+        _next_seq()
         return radt.trace.span(name, _with_perf(attributes))
 
 elif MODE == "off":

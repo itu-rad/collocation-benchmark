@@ -21,6 +21,7 @@ from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
 from utils.server_manager import kill_all as kill_all_servers
 from utils.tracing import configure_async_export, flush_traces
+from utils.trace_span import report_span_count
 
 
 def parse_args():
@@ -105,6 +106,11 @@ def radt_entrypoint(args):
         # skips stage post_run(), so it must happen here.
         kill_all_servers()
         flush_traces()
+        # Publish our own emitted-span count BEFORE the exporter tears down, so a
+        # reader can check it against the artifact manifest. radt drops events on
+        # queue overflow and only warns; we do not change that, so completeness is
+        # verified from this side instead.
+        report_span_count()
         radt.trace.shutdown()  # flush + join the proc-trace exporter (no-op if unused)
         # Tear down the radt listener/logger children and close the mlflow
         # run; without this a timeout-killed run stays status=RUNNING forever
@@ -232,6 +238,13 @@ def radt_entrypoint(args):
                        f"{label} | {pipe_name}" if label else pipe_name)
         run_loadgen(benchmark_config.pipelines[args.pipeline_id])
 
+        # Publish our emitted-span count HERE, not at teardown: below, the CSV
+        # file handler is closed and RADTBenchmark.__exit__ has already
+        # end_run()'d, so a tag has no run to attach to and a log row has no
+        # handler to reach. The pipeline is finished and its threads joined, so
+        # no further spans are emitted after this point.
+        report_span_count()
+
     # Force-exit after the pipeline completes. Interpreter shutdown can
     # otherwise hang for many minutes on mlflow telemetry sockets in
     # CLOSE_WAIT, joblib/loky semaphores held by ChromaDB/embedders, and
@@ -257,6 +270,7 @@ def radt_entrypoint(args):
     # the GPU is freed even if a stage's post_run() didn't run.
     kill_all_servers()
     flush_traces()
+    report_span_count()   # see the note at the other shutdown site
     radt.trace.shutdown()  # flush + join the proc-trace exporter (no-op if unused)
     radt.shutdown()
     os._exit(0)
