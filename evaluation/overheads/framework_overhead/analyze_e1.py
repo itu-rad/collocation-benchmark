@@ -44,20 +44,29 @@ DEVICES = ("mlx", "cuda")
 
 _FNAME_RE = re.compile(
     r"^noop_depth_(?P<depth>\d+)_size_(?P<size>\d+)_mode_(?P<mode>ref|copy)"
-    r"_(?P<arm>proc|off)_(?P<device>mlx|cuda)_r(?P<run>\d+)\.csv$"
+    r"_(?P<arm>proc|off|nolog|spans)_(?P<device>mlx|cuda)_r(?P<run>\d+)\.csv$"
 )
+
+# Four arms, two independent switches: is tracing on, and are the per-stage CSV
+# rows on. `off` is E1's historical headline arm; `nolog` is the same thing with
+# our own logger removed, so (off - nolog) is what the instrument costs rather
+# than what the framework costs. See collect_e1.sh.
+ARM_LOGS = {"off": True, "proc": True, "nolog": False, "spans": False}
+ARM_TRACE = {"off": 0, "nolog": 0, "proc": 1, "spans": 1}
 
 
 def parse_filename(path):
-    """Return dict(depth,size,mode,trace,device,run,path) or None.
+    """Return dict(depth,size,mode,arm,trace,logs,device,run,path) or None.
 
-    ``trace`` = 1 for the proc (tracing-ON) arm, 0 for the off arm — so the same
-    selectors work as in the historical two-arm scheme."""
+    ``trace`` is kept as 0/1 so every historical selector still works; ``arm``
+    and ``logs`` carry the extra dimension the two-arm scheme could not express.
+    """
     m = _FNAME_RE.match(os.path.basename(path))
     if not m:
         return None
+    arm = m["arm"]
     return {"depth": int(m["depth"]), "size": int(m["size"]), "mode": m["mode"],
-            "trace": 1 if m["arm"] == "proc" else 0,
+            "arm": arm, "trace": ARM_TRACE[arm], "logs": ARM_LOGS[arm],
             "device": m["device"], "run": int(m["run"]), "path": path}
 
 
