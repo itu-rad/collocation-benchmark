@@ -111,6 +111,13 @@ def report_span_count():
     finishes, not at interpreter teardown, where both are already gone and only
     the stdout line survives. The shutdown sites call it again as a backstop;
     reporting happens once and later calls are silent.
+
+    This is a LOWER BOUND, not the final total: once the pipeline finishes, the
+    stage threads park in a blocking get_input wait -- inside a span -- until
+    os._exit reaps them, so a few more spans start after this runs. Those are
+    exactly the spans that never close. utils.span_reader treats a surplus of
+    starts as expected and only flags a SHORTFALL, which is what dropped events
+    would look like.
     """
     global _reported
     if MODE != "proc" or _reported:

@@ -32,14 +32,26 @@ around start-to-start and there is no perf end time to ask for.
 Completeness
 ------------
 radt drops events on queue overflow and only warns; that is left as it is, so
-this module verifies from our side instead:
+this module verifies from our side instead, against the count
+:func:`utils.trace_span.report_span_count` publishes as an mlflow tag, a
+``choreo, spans, emitted, N`` CSV row, and a stdout line.
 
-    manifest.event_count == 2 * choreo.spans_emitted
+The tempting invariant ``event_count == 2 * emitted`` is WRONG, and a real
+self-RAG run is what showed it. Two things break it, both benign:
 
-with the emitted count published by :func:`utils.trace_span.report_span_count`
-as an mlflow tag, a ``choreo, spans, emitted, N`` CSV row, and a stdout line.
-:func:`read_dir` / :func:`read_run` raise on a mismatch by default -- analysing
-a run that silently lost spans is the failure this is here to prevent.
+* **Spans that start after the count.** The count is taken when the pipeline
+  finishes, but stage threads then park in a blocking ``get_input`` wait --
+  inside a span -- until ``os._exit`` reaps them. Those spans start after the
+  count, so ``starts >= emitted``, with the surplus being parked threads.
+* **Spans that never close.** Exactly those parked waits: a span open when the
+  process exits was never going to get an end record. The self-RAG run above
+  had 8 (7 stages in ``get_input``, plus the pipeline's ``retrieve_results``).
+
+So loss is checked where loss actually shows: ``starts < emitted`` means the
+backend dropped start events, and an end record with no start means the
+artifact is corrupt. Those raise. A surplus of starts and unclosed parked
+spans are reported as notes, not failures -- rejecting them would reject every
+LLM pipeline we run.
 """
 from __future__ import annotations
 
@@ -91,7 +103,12 @@ class Span:
 
 @dataclass
 class Completeness:
-    """What the verification found. Truthy when the trace is whole."""
+    """What the verification found. Truthy when nothing was lost.
+
+    `problems` is loss or corruption and makes this falsy; `notes` is the
+    benign structure described in the module docstring (parked threads), kept
+    visible rather than hidden so an unexpected count still gets looked at.
+    """
     event_count_manifest: int
     events_read: int
     starts: int
@@ -99,7 +116,9 @@ class Completeness:
     emitted_expected: int | None
     unmatched_ends: int
     unclosed_spans: int
+    unclosed_names: dict = field(default_factory=dict)
     problems: list = field(default_factory=list)
+    notes: list = field(default_factory=list)
 
     def __bool__(self):
         return not self.problems
@@ -109,9 +128,12 @@ class Completeness:
                 f"manifest says {self.event_count_manifest}")
         if self.emitted_expected is not None:
             head += f"; workload emitted {self.emitted_expected}"
-        if not self.problems:
-            return head + " — complete"
-        return head + " — PROBLEMS: " + "; ".join(self.problems)
+        if self.problems:
+            return head + " — PROBLEMS: " + "; ".join(self.problems)
+        tail = " — complete"
+        if self.notes:
+            tail += " (" + "; ".join(self.notes) + ")"
+        return head + tail
 
 
 @dataclass
@@ -193,7 +215,7 @@ def emitted_from_csv(csv_path):
 
 
 def _verify(manifest, spans, events_read, starts, ends, unmatched_ends, emitted):
-    problems = []
+    problems, notes = [], []
     if manifest.get("schema_version") != SCHEMA_VERSION:
         problems.append(
             f"schema_version {manifest.get('schema_version')} != {SCHEMA_VERSION} "
@@ -202,21 +224,37 @@ def _verify(manifest, spans, events_read, starts, ends, unmatched_ends, emitted)
         problems.append(
             f"read {events_read} events but manifest claims "
             f"{manifest.get('event_count')} (a batch file is missing or truncated)")
-    unclosed = sum(1 for s in spans if s.wall_end_ns is None)
-    if unclosed:
-        problems.append(f"{unclosed} span(s) never closed")
     if unmatched_ends:
         problems.append(f"{unmatched_ends} end record(s) with no matching start")
-    if emitted is not None and manifest.get("event_count") != 2 * emitted:
-        problems.append(
-            f"manifest event_count {manifest.get('event_count')} != 2 x "
-            f"{emitted} emitted — the backend dropped events on queue overflow "
-            f"(raise RADT_TRACE_PROC_QUEUE_SIZE)")
+
+    # Loss shows on the START side: we counted what we handed over, so fewer
+    # starts in the artifact than we emitted means events were dropped. More
+    # starts is the parked-thread surplus (see the module docstring), not loss.
+    if emitted is not None:
+        if starts < emitted:
+            problems.append(
+                f"only {starts} start records for {emitted} spans emitted — the "
+                f"backend dropped {emitted - starts} on queue overflow "
+                f"(raise RADT_TRACE_PROC_QUEUE_SIZE)")
+        elif starts > emitted:
+            notes.append(
+                f"{starts - emitted} span(s) started after the count was taken "
+                f"(threads parked at teardown)")
+
+    unclosed = [s for s in spans if s.wall_end_ns is None]
+    by_name = {}
+    for s in unclosed:
+        by_name[s.name] = by_name.get(s.name, 0) + 1
+    if unclosed:
+        notes.append(
+            f"{len(unclosed)} span(s) still open at exit: "
+            + ", ".join(f"{n} x{k}" if k > 1 else n for n, k in sorted(by_name.items())))
     return Completeness(
         event_count_manifest=manifest.get("event_count", -1),
         events_read=events_read, starts=starts, ends=ends,
         emitted_expected=emitted, unmatched_ends=unmatched_ends,
-        unclosed_spans=unclosed, problems=problems)
+        unclosed_spans=len(unclosed), unclosed_names=by_name,
+        problems=problems, notes=notes)
 
 
 def read_dir(trace_dir, emitted=None, strict=True):
