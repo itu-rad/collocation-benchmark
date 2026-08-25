@@ -1,0 +1,811 @@
+1787663510.193982, NoOp Chain Depth 3 Size 0 Mode ref, pipeline, prepare, start, 211687095481333
+1787663510.194798, NoOp Chain Depth 3 Size 0 Mode ref, pipeline, prepare, end, 211687096007875
+1787663510.195346, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 68336006702673542731407403264161520204, 1787663510.195272, 1, 1, 211687096554875
+1787663510.195494, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687096701833
+1787663510.195580, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687096785208
+1787663510.195659, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687096862000
+1787663510.195753, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687096956166
+1787663510.195838, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687097041333
+1787663510.195993, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687097202166
+1787663510.196081, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 68336006702673542731407403264161520204, 1787663510.195272, 1, 1, 211687097290458
+1787663510.196316, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 60795406875724442382518281624903545275, 1787663510.196269, 2, 1, 211687097525083
+1787663510.196429, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687097638583
+1787663510.196504, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687097707708
+1787663510.196600, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687097803666
+1787663510.196707, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687097912041
+1787663510.196757, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687097964583
+1787663510.196889, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687098096875
+1787663510.196985, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 60795406875724442382518281624903545275, 1787663510.196269, 2, 1, 211687098190041
+1787663510.197145, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 49643813192334425102908568051599238990, 1787663510.197110, 3, 1, 211687098348958
+1787663510.197212, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687098415250
+1787663510.197258, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687098461041
+1787663510.197306, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687098508250
+1787663510.197390, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687098592833
+1787663510.197454, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687098659041
+1787663510.197555, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687098760583
+1787663510.197643, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 49643813192334425102908568051599238990, 1787663510.197110, 3, 1, 211687098850666
+1787663510.197832, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 197705367239501698055757602793027288675, 1787663510.197800, 4, 1, 211687099037125
+1787663510.197915, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687099117916
+1787663510.197969, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687099172666
+1787663510.198014, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687099216708
+1787663510.198090, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687099293208
+1787663510.198140, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687099342666
+1787663510.198220, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687099423791
+1787663510.198279, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 197705367239501698055757602793027288675, 1787663510.197800, 4, 1, 211687099481875
+1787663510.198411, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 203888085848048769830938441952749896764, 1787663510.198376, 5, 1, 211687099614833
+1787663510.198472, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687099674583
+1787663510.198518, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687099719916
+1787663510.198602, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687099811208
+1787663510.198716, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687099922166
+1787663510.198775, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687099977958
+1787663510.198897, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687100103250
+1787663510.198990, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 203888085848048769830938441952749896764, 1787663510.198376, 5, 1, 211687100198250
+1787663510.199199, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 67349268996079008561508424719619408381, 1787663510.199148, 6, 1, 211687100404166
+1787663510.199297, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687100500833
+1787663510.199362, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687100564750
+1787663510.199456, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687100661291
+1787663510.199509, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687100712083
+1787663510.199602, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687100808291
+1787663510.199734, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687100940958
+1787663510.199813, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 67349268996079008561508424719619408381, 1787663510.199148, 6, 1, 211687101018750
+1787663510.200018, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 139547713515020732652499923109854716989, 1787663510.199976, 7, 1, 211687101226208
+1787663510.200146, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687101349708
+1787663510.200200, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687101404916
+1787663510.200263, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687101465958
+1787663510.200340, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687101543833
+1787663510.200385, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687101590916
+1787663510.200527, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687101732916
+1787663510.200597, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 139547713515020732652499923109854716989, 1787663510.199976, 7, 1, 211687101799375
+1787663510.200774, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 321504117923920336462242173490766879250, 1787663510.200712, 8, 1, 211687101978458
+1787663510.200870, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687102073250
+1787663510.200922, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687102124083
+1787663510.200969, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687102171583
+1787663510.201041, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687102244541
+1787663510.201091, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687102294041
+1787663510.201155, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687102357250
+1787663510.201199, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 321504117923920336462242173490766879250, 1787663510.200712, 8, 1, 211687102401166
+1787663510.201323, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 157362991889370082335155050091025106735, 1787663510.201290, 9, 1, 211687102524833
+1787663510.201401, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687102603875
+1787663510.201445, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687102646666
+1787663510.201522, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687102728375
+1787663510.201632, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687102838958
+1787663510.201675, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687102879166
+1787663510.201778, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687102983458
+1787663510.201853, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 157362991889370082335155050091025106735, 1787663510.201290, 9, 1, 211687103059875
+1787663510.202080, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 202834476599494101377798484609831404290, 1787663510.202031, 10, 1, 211687103287041
+1787663510.202194, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687103397291
+1787663510.202256, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687103458333
+1787663510.202304, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687103512583
+1787663510.202451, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687103655750
+1787663510.202533, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687103735291
+1787663510.202641, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687103848708
+1787663510.202726, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 202834476599494101377798484609831404290, 1787663510.202031, 10, 1, 211687103931708
+1787663510.202902, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 280789261644149905394857745977502744489, 1787663510.202863, 11, 1, 211687104105666
+1787663510.202976, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687104182250
+1787663510.203053, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687104260583
+1787663510.203117, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687104322750
+1787663510.203230, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687104437333
+1787663510.203313, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687104518916
+1787663510.203422, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687104628708
+1787663510.203464, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 280789261644149905394857745977502744489, 1787663510.202863, 11, 1, 211687104666916
+1787663510.203679, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 43662021327883774741843302748166031011, 1787663510.203621, 12, 1, 211687104883708
+1787663510.203786, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687104989916
+1787663510.203847, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687105049833
+1787663510.203896, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687105098625
+1787663510.203971, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687105174291
+1787663510.204021, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687105223750
+1787663510.204093, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687105296125
+1787663510.204132, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 43662021327883774741843302748166031011, 1787663510.203621, 12, 1, 211687105339125
+1787663510.204327, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 6436759538990016187953132456563290312, 1787663510.204287, 13, 1, 211687105533625
+1787663510.204460, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687105664041
+1787663510.204519, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687105721416
+1787663510.204596, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687105799416
+1787663510.204693, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687105897000
+1787663510.204785, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687105992541
+1787663510.204879, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687106085875
+1787663510.204958, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 6436759538990016187953132456563290312, 1787663510.204287, 13, 1, 211687106164125
+1787663510.205155, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 97689162159266690301543192303036055971, 1787663510.205103, 14, 1, 211687106364833
+1787663510.205263, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687106469416
+1787663510.205333, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687106535333
+1787663510.205410, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687106618000
+1787663510.205530, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687106735208
+1787663510.205602, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687106808750
+1787663510.205700, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687106904875
+1787663510.205774, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 97689162159266690301543192303036055971, 1787663510.205103, 14, 1, 211687106977416
+1787663510.205974, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 228226155675354345567630620641023206675, 1787663510.205931, 15, 1, 211687107181083
+1787663510.206056, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687107259208
+1787663510.206110, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687107312291
+1787663510.206161, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687107363583
+1787663510.206255, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687107460625
+1787663510.206302, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687107508708
+1787663510.206416, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687107618666
+1787663510.206484, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 228226155675354345567630620641023206675, 1787663510.205931, 15, 1, 211687107690958
+1787663510.206689, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 107303202187335169520900108917197572950, 1787663510.206623, 16, 1, 211687107896208
+1787663510.206769, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687107971541
+1787663510.206814, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687108016125
+1787663510.206861, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687108063416
+1787663510.206946, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687108150416
+1787663510.207018, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687108224500
+1787663510.207117, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687108324000
+1787663510.207168, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 107303202187335169520900108917197572950, 1787663510.206623, 16, 1, 211687108371083
+1787663510.207312, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 266345462034154736498228187552770556222, 1787663510.207263, 17, 1, 211687108514791
+1787663510.207407, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687108609375
+1787663510.207462, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687108665166
+1787663510.207491, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687108697791
+1787663510.207631, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687108837000
+1787663510.207686, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687108890958
+1787663510.207757, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687108959833
+1787663510.207811, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 266345462034154736498228187552770556222, 1787663510.207263, 17, 1, 211687109014333
+1787663510.207944, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 105744967417047460384101815804126787419, 1787663510.207908, 18, 1, 211687109147708
+1787663510.208004, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687109207125
+1787663510.208048, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687109250416
+1787663510.208077, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687109279208
+1787663510.208147, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687109349041
+1787663510.208189, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687109391500
+1787663510.208255, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687109457416
+1787663510.208291, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 105744967417047460384101815804126787419, 1787663510.207908, 18, 1, 211687109494375
+1787663510.208433, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 36953062543665151813862680544968355280, 1787663510.208414, 19, 1, 211687109636625
+1787663510.208520, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687109723916
+1787663510.208578, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687109781375
+1787663510.208610, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687109811916
+1787663510.208661, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687109864125
+1787663510.208700, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687109903791
+1787663510.208754, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687109959333
+1787663510.208795, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 36953062543665151813862680544968355280, 1787663510.208414, 19, 1, 211687109998375
+1787663510.208967, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 210216468580177233969995398600932360865, 1787663510.208932, 20, 1, 211687110170833
+1787663510.209040, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687110242875
+1787663510.209075, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687110277666
+1787663510.209101, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687110302750
+1787663510.209132, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687110333875
+1787663510.209157, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687110358375
+1787663510.209186, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687110388791
+1787663510.209212, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 210216468580177233969995398600932360865, 1787663510.208932, 20, 1, 211687110414375
+1787663510.209341, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 175194727628519133471097936172039420226, 1787663510.209315, 21, 1, 211687110544416
+1787663510.209400, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687110608791
+1787663510.209457, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687110659916
+1787663510.209488, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687110689916
+1787663510.209523, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687110724666
+1787663510.209552, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687110753416
+1787663510.209581, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687110782666
+1787663510.209612, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 175194727628519133471097936172039420226, 1787663510.209315, 21, 1, 211687110815083
+1787663510.209692, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 74755788144987676358586691660889281237, 1787663510.209668, 22, 1, 211687110899125
+1787663510.209752, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687110956291
+1787663510.209795, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687110998000
+1787663510.209823, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687111025666
+1787663510.209858, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687111059833
+1787663510.209886, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687111088875
+1787663510.209921, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687111122500
+1787663510.209945, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 74755788144987676358586691660889281237, 1787663510.209668, 22, 1, 211687111147208
+1787663510.210002, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 49712139415289035577964473947890233386, 1787663510.209985, 23, 1, 211687111205625
+1787663510.210048, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687111250875
+1787663510.210083, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687111284708
+1787663510.210124, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687111330750
+1787663510.210193, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687111395708
+1787663510.210229, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687111430833
+1787663510.210262, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687111464083
+1787663510.210304, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 49712139415289035577964473947890233386, 1787663510.209985, 23, 1, 211687111511875
+1787663510.210383, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 270757209339101428545958073880255579409, 1787663510.210363, 24, 1, 211687111588041
+1787663510.210441, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687111647666
+1787663510.210494, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687111696416
+1787663510.210524, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687111725791
+1787663510.210555, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687111756166
+1787663510.210582, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687111784000
+1787663510.210612, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687111813208
+1787663510.210642, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 270757209339101428545958073880255579409, 1787663510.210363, 24, 1, 211687111844625
+1787663510.210723, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 296974230662226016829047215216630984221, 1787663510.210698, 25, 1, 211687111926500
+1787663510.210794, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687112002333
+1787663510.210855, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687112058000
+1787663510.210890, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687112092250
+1787663510.210924, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687112125625
+1787663510.210948, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687112150291
+1787663510.210978, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687112180083
+1787663510.211006, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 296974230662226016829047215216630984221, 1787663510.210698, 25, 1, 211687112210083
+1787663510.211091, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 48531601204128519267812000210980928102, 1787663510.211063, 26, 1, 211687112297375
+1787663510.211164, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687112366791
+1787663510.211201, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687112402791
+1787663510.211223, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687112426458
+1787663510.211273, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687112475583
+1787663510.211294, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687112498125
+1787663510.211353, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687112556166
+1787663510.211384, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 48531601204128519267812000210980928102, 1787663510.211063, 26, 1, 211687112587250
+1787663510.211450, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 48805813999358272610009951249864723335, 1787663510.211425, 27, 1, 211687112656791
+1787663510.211525, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687112732208
+1787663510.211583, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687112786083
+1787663510.211626, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687112832125
+1787663510.211676, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687112878083
+1787663510.211720, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687112927083
+1787663510.211774, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687112976708
+1787663510.211806, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 48805813999358272610009951249864723335, 1787663510.211425, 27, 1, 211687113008625
+1787663510.211884, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 246085161405130182278472547804239378483, 1787663510.211858, 28, 1, 211687113087625
+1787663510.211951, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687113157333
+1787663510.212002, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687113204166
+1787663510.212033, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687113235000
+1787663510.212064, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687113265916
+1787663510.212108, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687113315583
+1787663510.212168, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687113371291
+1787663510.212205, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 246085161405130182278472547804239378483, 1787663510.211858, 28, 1, 211687113410458
+1787663510.212284, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 328568285685327371560951407820215406820, 1787663510.212262, 29, 1, 211687113487958
+1787663510.212333, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687113537875
+1787663510.212377, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687113580000
+1787663510.212400, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687113603125
+1787663510.212457, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687113659750
+1787663510.212488, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687113691166
+1787663510.212524, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687113725833
+1787663510.212551, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 328568285685327371560951407820215406820, 1787663510.212262, 29, 1, 211687113752833
+1787663510.212622, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 295833860796239229619421229570196265030, 1787663510.212601, 30, 1, 211687113827916
+1787663510.212686, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687113892625
+1787663510.212738, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687113939375
+1787663510.212764, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687113969291
+1787663510.212832, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687114033791
+1787663510.212860, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687114061458
+1787663510.212889, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687114090708
+1787663510.212920, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 295833860796239229619421229570196265030, 1787663510.212601, 30, 1, 211687114122458
+1787663510.212978, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 164067801121403998597049724727038233515, 1787663510.212963, 31, 1, 211687114180166
+1787663510.213010, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687114211208
+1787663510.213038, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687114239916
+1787663510.213073, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687114276000
+1787663510.213136, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687114337541
+1787663510.213187, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687114388958
+1787663510.213220, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687114421500
+1787663510.213247, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 164067801121403998597049724727038233515, 1787663510.212963, 31, 1, 211687114456041
+1787663510.213364, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 315828906977061957873649754803732516555, 1787663510.213340, 32, 1, 211687114568375
+1787663510.213422, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687114626458
+1787663510.213469, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687114671500
+1787663510.213501, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687114703500
+1787663510.213533, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687114735166
+1787663510.213552, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687114754916
+1787663510.213599, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687114801791
+1787663510.213629, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 315828906977061957873649754803732516555, 1787663510.213340, 32, 1, 211687114830958
+1787663510.213696, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 220292005839127101268980560715781318675, 1787663510.213675, 33, 1, 211687114900750
+1787663510.213744, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687114946291
+1787663510.213776, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687114978416
+1787663510.213805, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687115006458
+1787663510.213833, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687115035125
+1787663510.213851, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687115054291
+1787663510.213900, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687115102791
+1787663510.213940, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 220292005839127101268980560715781318675, 1787663510.213675, 33, 1, 211687115147916
+1787663510.214022, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 118635461023630221279184700883599344554, 1787663510.214001, 34, 1, 211687115228916
+1787663510.214075, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687115278666
+1787663510.214114, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687115316458
+1787663510.214145, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687115346916
+1787663510.214180, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687115381375
+1787663510.214209, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687115410291
+1787663510.214241, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687115442791
+1787663510.214276, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 118635461023630221279184700883599344554, 1787663510.214001, 34, 1, 211687115482000
+1787663510.214356, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 305852798095009264013060184069234680561, 1787663510.214335, 35, 1, 211687115562875
+1787663510.214424, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687115630416
+1787663510.214474, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687115676125
+1787663510.214504, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687115705791
+1787663510.214534, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687115735958
+1787663510.214562, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687115763458
+1787663510.214588, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687115789791
+1787663510.214618, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 305852798095009264013060184069234680561, 1787663510.214335, 35, 1, 211687115820541
+1787663510.214695, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 72635944372646367260712331862964857015, 1787663510.214670, 36, 1, 211687115898500
+1787663510.214752, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687115958166
+1787663510.214807, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687116009291
+1787663510.214842, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687116044125
+1787663510.214874, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687116075500
+1787663510.214910, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687116115791
+1787663510.214956, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687116157500
+1787663510.214982, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 72635944372646367260712331862964857015, 1787663510.214670, 36, 1, 211687116184333
+1787663510.215058, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 311096068332990050248335522518159967364, 1787663510.215028, 37, 1, 211687116266666
+1787663510.215146, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687116352291
+1787663510.215196, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687116397750
+1787663510.215227, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687116428291
+1787663510.215257, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687116458625
+1787663510.215288, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687116490666
+1787663510.215322, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687116523750
+1787663510.215351, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 311096068332990050248335522518159967364, 1787663510.215028, 37, 1, 211687116552291
+1787663510.215425, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 308318833832681080072579906479999841105, 1787663510.215387, 38, 1, 211687116634583
+1787663510.215504, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687116708750
+1787663510.215553, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687116755541
+1787663510.215582, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687116784250
+1787663510.215650, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687116852125
+1787663510.215678, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687116880166
+1787663510.215709, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687116910416
+1787663510.215735, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 308318833832681080072579906479999841105, 1787663510.215387, 38, 1, 211687116936916
+1787663510.215793, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 324592100510017622886511822978091171381, 1787663510.215775, 39, 1, 211687116996875
+1787663510.215845, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687117048583
+1787663510.215887, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687117090041
+1787663510.215915, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687117116666
+1787663510.215946, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687117148208
+1787663510.215976, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687117178208
+1787663510.216006, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687117207208
+1787663510.216030, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 324592100510017622886511822978091171381, 1787663510.215775, 39, 1, 211687117231916
+1787663510.216094, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 303832175451200802663164466281087713602, 1787663510.216072, 40, 1, 211687117297583
+1787663510.216149, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687117355958
+1787663510.216204, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687117405625
+1787663510.216235, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687117436666
+1787663510.216267, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687117469125
+1787663510.216300, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687117507125
+1787663510.216376, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687117578750
+1787663510.216396, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 303832175451200802663164466281087713602, 1787663510.216072, 40, 1, 211687117600041
+1787663510.216470, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 234639429538312449827095701195933479799, 1787663510.216453, 41, 1, 211687117672708
+1787663510.216512, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687117714791
+1787663510.216546, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687117747833
+1787663510.216570, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687117772166
+1787663510.216602, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687117803208
+1787663510.216630, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687117834958
+1787663510.216683, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687117886000
+1787663510.216712, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 234639429538312449827095701195933479799, 1787663510.216453, 41, 1, 211687117914125
+1787663510.216780, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 188161060549542943441014776846077589317, 1787663510.216762, 42, 1, 211687117983875
+1787663510.216834, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687118039583
+1787663510.216885, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687118086875
+1787663510.216914, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687118115625
+1787663510.216942, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687118143083
+1787663510.216979, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687118185083
+1787663510.217028, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687118230375
+1787663510.217053, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 188161060549542943441014776846077589317, 1787663510.216762, 42, 1, 211687118255375
+1787663510.217112, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 76216409015536145035891708523634897587, 1787663510.217095, 43, 1, 211687118314375
+1787663510.217152, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687118356750
+1787663510.217197, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687118400125
+1787663510.217226, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687118428000
+1787663510.217260, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687118461708
+1787663510.217284, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687118485291
+1787663510.217311, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687118513000
+1787663510.217334, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 76216409015536145035891708523634897587, 1787663510.217095, 43, 1, 211687118536458
+1787663510.217398, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 252069337667560046613513882565202355923, 1787663510.217380, 44, 1, 211687118601541
+1787663510.217447, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687118651625
+1787663510.217489, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687118692000
+1787663510.217522, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687118723875
+1787663510.217553, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687118754750
+1787663510.217571, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687118774000
+1787663510.217616, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687118817916
+1787663510.217639, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 252069337667560046613513882565202355923, 1787663510.217380, 44, 1, 211687118841208
+1787663510.217700, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 246084628123939504481408438085844015050, 1787663510.217675, 45, 1, 211687118905666
+1787663510.217768, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687118974750
+1787663510.217820, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687119022916
+1787663510.217848, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687119050333
+1787663510.217878, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687119079416
+1787663510.217906, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687119107125
+1787663510.217933, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687119134416
+1787663510.217959, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 246084628123939504481408438085844015050, 1787663510.217675, 45, 1, 211687119161000
+1787663510.218020, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 359388274249754900919012665730354328, 1787663510.218003, 46, 1, 211687119222708
+1787663510.218062, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687119265625
+1787663510.218100, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687119302083
+1787663510.218125, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687119327208
+1787663510.218155, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687119356458
+1787663510.218177, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687119378500
+1787663510.218203, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687119404458
+1787663510.218227, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 359388274249754900919012665730354328, 1787663510.218003, 46, 1, 211687119429375
+1787663510.218276, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 22208006639826393467270292321079021225, 1787663510.218261, 47, 1, 211687119478333
+1787663510.218316, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687119519291
+1787663510.218353, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687119555375
+1787663510.218377, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687119579041
+1787663510.218406, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687119608458
+1787663510.218431, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687119632541
+1787663510.218458, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687119659583
+1787663510.218479, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 22208006639826393467270292321079021225, 1787663510.218261, 47, 1, 211687119681208
+1787663510.218529, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 23193056869017697286183483836151287519, 1787663510.218515, 48, 1, 211687119731833
+1787663510.218566, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687119768125
+1787663510.218597, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687119798750
+1787663510.218619, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687119820416
+1787663510.218646, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687119847375
+1787663510.218667, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687119868416
+1787663510.218695, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687119897166
+1787663510.218717, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 23193056869017697286183483836151287519, 1787663510.218515, 48, 1, 211687119918333
+1787663510.218763, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 136599360999493576206809372964605872794, 1787663510.218748, 49, 1, 211687119964791
+1787663510.218798, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687120000500
+1787663510.218830, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687120031958
+1787663510.218854, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687120055958
+1787663510.218888, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687120089541
+1787663510.218913, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687120115458
+1787663510.218943, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687120144333
+1787663510.218964, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 136599360999493576206809372964605872794, 1787663510.218748, 49, 1, 211687120165583
+1787663510.219021, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 306756096659084514901181114926069269781, 1787663510.219003, 50, 1, 211687120222916
+1787663510.219058, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687120261541
+1787663510.219098, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687120301041
+1787663510.219129, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687120331583
+1787663510.219160, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687120362041
+1787663510.219182, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687120384000
+1787663510.219216, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687120417416
+1787663510.219240, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 306756096659084514901181114926069269781, 1787663510.219003, 50, 1, 211687120442083
+1787663510.219294, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 95356001235964404545382189092670176993, 1787663510.219275, 51, 1, 211687120499041
+1787663510.219347, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687120549833
+1787663510.219380, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687120581541
+1787663510.219403, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687120605000
+1787663510.219431, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687120632416
+1787663510.219453, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687120654333
+1787663510.219482, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687120683625
+1787663510.219504, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 95356001235964404545382189092670176993, 1787663510.219275, 51, 1, 211687120705750
+1787663510.219591, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 289181295005504836873185505031226125865, 1787663510.219554, 52, 1, 211687120795416
+1787663510.219646, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687120849083
+1787663510.219682, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687120884375
+1787663510.219712, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687120913500
+1787663510.219748, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687120949416
+1787663510.219777, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687120979083
+1787663510.219806, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687121007333
+1787663510.219833, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 289181295005504836873185505031226125865, 1787663510.219554, 52, 1, 211687121034541
+1787663510.219910, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 150266660373169687210255208406399222324, 1787663510.219888, 53, 1, 211687121113750
+1787663510.219968, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687121174833
+1787663510.220024, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687121226583
+1787663510.220070, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687121276833
+1787663510.220120, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687121321958
+1787663510.220149, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687121350625
+1787663510.220177, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687121378708
+1787663510.220202, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 150266660373169687210255208406399222324, 1787663510.219888, 53, 1, 211687121403666
+1787663510.220267, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 117043379803393013279775039193469554918, 1787663510.220242, 54, 1, 211687121474333
+1787663510.220336, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687121543291
+1787663510.220394, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687121596666
+1787663510.220426, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687121627875
+1787663510.220456, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687121657833
+1787663510.220484, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687121686250
+1787663510.220512, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687121714208
+1787663510.220540, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 117043379803393013279775039193469554918, 1787663510.220242, 54, 1, 211687121742583
+1787663510.220608, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 55267678371595706567751640049069076349, 1787663510.220587, 55, 1, 211687121811375
+1787663510.220664, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687121870166
+1787663510.220723, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687121924875
+1787663510.220752, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687121953333
+1787663510.220780, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687121981833
+1787663510.220817, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687122022958
+1787663510.220865, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687122067250
+1787663510.220893, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 55267678371595706567751640049069076349, 1787663510.220587, 55, 1, 211687122094666
+1787663510.220985, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 218013743251959372911707496161038102617, 1787663510.220962, 56, 1, 211687122190666
+1787663510.221047, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687122253791
+1787663510.221097, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687122299208
+1787663510.221122, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687122324041
+1787663510.221154, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687122355333
+1787663510.221181, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687122382708
+1787663510.221208, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687122409625
+1787663510.221235, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 218013743251959372911707496161038102617, 1787663510.220962, 56, 1, 211687122436833
+1787663510.221300, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 145596375908645545984050607315177427083, 1787663510.221279, 57, 1, 211687122503250
+1787663510.221353, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687122559208
+1787663510.221401, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687122602916
+1787663510.221443, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687122648750
+1787663510.221491, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687122692375
+1787663510.221519, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687122721083
+1787663510.221547, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687122748333
+1787663510.221574, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 145596375908645545984050607315177427083, 1787663510.221279, 57, 1, 211687122778708
+1787663510.221654, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 105797187424097322664473648905183053804, 1787663510.221631, 58, 1, 211687122858208
+1787663510.221713, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687122918333
+1787663510.221767, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687122968708
+1787663510.221795, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687122996583
+1787663510.221824, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687123025125
+1787663510.221852, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687123053250
+1787663510.221882, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687123083333
+1787663510.221908, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 105797187424097322664473648905183053804, 1787663510.221631, 58, 1, 211687123110333
+1787663510.221984, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 252946837077652221823384263035817472368, 1787663510.221958, 59, 1, 211687123187333
+1787663510.222044, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687123250708
+1787663510.222101, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687123303750
+1787663510.222133, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687123334583
+1787663510.222164, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687123365541
+1787663510.222191, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687123393208
+1787663510.222221, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687123422583
+1787663510.222249, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 252946837077652221823384263035817472368, 1787663510.221958, 59, 1, 211687123454250
+1787663510.222348, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 44033469288826313609756961243032309028, 1787663510.222325, 60, 1, 211687123553250
+1787663510.222409, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687123615583
+1787663510.222462, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687123663791
+1787663510.222509, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687123716250
+1787663510.222564, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687123766916
+1787663510.222591, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687123793125
+1787663510.222624, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687123826666
+1787663510.222652, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 44033469288826313609756961243032309028, 1787663510.222325, 60, 1, 211687123854958
+1787663510.222722, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 233016265029677481980603218439079211652, 1787663510.222700, 61, 1, 211687123926875
+1787663510.222772, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687123974125
+1787663510.222803, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687124004875
+1787663510.222827, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687124028375
+1787663510.222855, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687124056250
+1787663510.222876, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687124077541
+1787663510.222902, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687124103416
+1787663510.222940, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 233016265029677481980603218439079211652, 1787663510.222700, 61, 1, 211687124146375
+1787663510.223032, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 115254140538943836302591116661042081811, 1787663510.223005, 62, 1, 211687124239208
+1787663510.223086, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687124288666
+1787663510.223116, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687124318083
+1787663510.223139, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687124341500
+1787663510.223170, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687124371958
+1787663510.223192, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687124396208
+1787663510.223248, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687124450291
+1787663510.223275, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 115254140538943836302591116661042081811, 1787663510.223005, 62, 1, 211687124477750
+1787663510.223325, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 322552796728704828841688404517093577719, 1787663510.223310, 63, 1, 211687124527333
+1787663510.223361, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687124563750
+1787663510.223395, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687124596791
+1787663510.223418, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687124619333
+1787663510.223448, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687124649375
+1787663510.223469, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687124670833
+1787663510.223496, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687124697708
+1787663510.223517, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 322552796728704828841688404517093577719, 1787663510.223310, 63, 1, 211687124718625
+1787663510.223564, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 24184436840354329482414675936251339069, 1787663510.223549, 64, 1, 211687124766791
+1787663510.223600, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687124802083
+1787663510.223632, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687124833875
+1787663510.223650, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687124851916
+1787663510.223691, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687124892916
+1787663510.223714, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687124915625
+1787663510.223743, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687124944416
+1787663510.223766, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 24184436840354329482414675936251339069, 1787663510.223549, 64, 1, 211687124967750
+1787663510.223816, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 256252479343556692641611362814502729452, 1787663510.223803, 65, 1, 211687125018125
+1787663510.223862, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687125068583
+1787663510.223913, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687125114791
+1787663510.223942, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687125143125
+1787663510.223972, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687125173416
+1787663510.223999, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687125200833
+1787663510.224027, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687125228458
+1787663510.224055, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 256252479343556692641611362814502729452, 1787663510.223803, 65, 1, 211687125257791
+1787663510.224132, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 169735850146025478427066907866719671391, 1787663510.224109, 66, 1, 211687125335000
+1787663510.224192, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687125399208
+1787663510.224251, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687125453458
+1787663510.224274, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687125477750
+1787663510.224326, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687125527833
+1787663510.224356, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687125557750
+1787663510.224391, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687125593041
+1787663510.224422, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 169735850146025478427066907866719671391, 1787663510.224109, 66, 1, 211687125625708
+1787663510.224491, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 190642475066910460236299470676275068068, 1787663510.224468, 67, 1, 211687125697083
+1787663510.224548, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687125750083
+1787663510.224581, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687125782083
+1787663510.224607, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687125808916
+1787663510.224635, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687125837041
+1787663510.224665, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687125866375
+1787663510.224692, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687125893750
+1787663510.224719, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 190642475066910460236299470676275068068, 1787663510.224468, 67, 1, 211687125920875
+1787663510.224785, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 201544449850104338656733047874446210413, 1787663510.224763, 68, 1, 211687125988166
+1787663510.224841, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687126047541
+1787663510.224896, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687126098708
+1787663510.224928, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687126129583
+1787663510.224964, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687126165541
+1787663510.225000, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687126206041
+1787663510.225044, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687126245708
+1787663510.225068, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 201544449850104338656733047874446210413, 1787663510.224763, 68, 1, 211687126273583
+1787663510.225175, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 148991846010639629511597449046887743871, 1787663510.225152, 69, 1, 211687126378000
+1787663510.225236, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687126441583
+1787663510.225283, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687126484708
+1787663510.225311, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687126512000
+1787663510.225339, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687126540166
+1787663510.225371, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687126573083
+1787663510.225399, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687126600708
+1787663510.225434, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 148991846010639629511597449046887743871, 1787663510.225152, 69, 1, 211687126639416
+1787663510.225512, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 145868716770530217916587060876657565962, 1787663510.225491, 70, 1, 211687126715541
+1787663510.225566, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687126768041
+1787663510.225597, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687126798416
+1787663510.225624, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687126825750
+1787663510.225658, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687126859166
+1787663510.225695, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687126901333
+1787663510.225741, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687126942583
+1787663510.225774, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 145868716770530217916587060876657565962, 1787663510.225491, 70, 1, 211687126979875
+1787663510.225860, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 31253117974333562154908827300964261302, 1787663510.225832, 71, 1, 211687127066250
+1787663510.225945, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687127152875
+1787663510.226009, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687127211916
+1787663510.226046, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687127248458
+1787663510.226081, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687127283250
+1787663510.226112, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687127313333
+1787663510.226142, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687127344125
+1787663510.226173, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 31253117974333562154908827300964261302, 1787663510.225832, 71, 1, 211687127375041
+1787663510.226255, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 338828204858777425329154941881516949616, 1787663510.226230, 72, 1, 211687127457791
+1787663510.226312, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687127519541
+1787663510.226383, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687127585625
+1787663510.226419, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687127621583
+1787663510.226453, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687127654541
+1787663510.226473, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687127677750
+1787663510.226554, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687127758791
+1787663510.226587, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 338828204858777425329154941881516949616, 1787663510.226230, 72, 1, 211687127788291
+1787663510.226658, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 205118411959209634668872271571970930829, 1787663510.226636, 73, 1, 211687127861000
+1787663510.227257, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687128464583
+1787663510.227322, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687128524708
+1787663510.227358, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687128564458
+1787663510.227431, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687128633291
+1787663510.227464, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687128672000
+1787663510.227544, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687128746833
+1787663510.227578, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 205118411959209634668872271571970930829, 1787663510.226636, 73, 1, 211687128780625
+1787663510.227649, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 31626601530710060332101493636077711509, 1787663510.227626, 74, 1, 211687128852541
+1787663510.227706, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687128911541
+1787663510.227755, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687128957833
+1787663510.227789, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687128990291
+1787663510.227819, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687129020125
+1787663510.227846, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687129047833
+1787663510.227875, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687129076250
+1787663510.227902, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 31626601530710060332101493636077711509, 1787663510.227626, 74, 1, 211687129103875
+1787663510.227975, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 242951408331635819354947025483949827250, 1787663510.227951, 75, 1, 211687129177833
+1787663510.228033, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687129240041
+1787663510.228092, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687129294750
+1787663510.228125, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687129326416
+1787663510.228157, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687129358166
+1787663510.228184, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687129385625
+1787663510.228215, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687129416708
+1787663510.228244, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 242951408331635819354947025483949827250, 1787663510.227951, 75, 1, 211687129446000
+1787663510.228319, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 310689703949883318074993015690622878001, 1787663510.228297, 76, 1, 211687129522541
+1787663510.228374, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687129580416
+1787663510.228427, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687129629625
+1787663510.228479, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687129686458
+1787663510.228536, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687129738541
+1787663510.228564, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687129766291
+1787663510.228599, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687129800375
+1787663510.228629, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 310689703949883318074993015690622878001, 1787663510.228297, 76, 1, 211687129830541
+1787663510.228701, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 40043534919207075041132844811663696056, 1787663510.228672, 77, 1, 211687129904000
+1787663510.228752, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687129958458
+1787663510.228802, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687130003250
+1787663510.228830, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687130031208
+1787663510.228860, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687130061791
+1787663510.228889, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687130090166
+1787663510.228917, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687130118791
+1787663510.228946, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 40043534919207075041132844811663696056, 1787663510.228672, 77, 1, 211687130154750
+1787663510.229060, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 155278538935638108196222059397913521647, 1787663510.229042, 78, 1, 211687130263500
+1787663510.229116, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687130318333
+1787663510.229154, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687130356333
+1787663510.229185, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687130386875
+1787663510.229215, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687130416666
+1787663510.229238, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687130439916
+1787663510.229266, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687130468000
+1787663510.229300, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 155278538935638108196222059397913521647, 1787663510.229042, 78, 1, 211687130506375
+1787663510.229381, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 56834711281610812378915523093652829298, 1787663510.229360, 79, 1, 211687130583958
+1787663510.229436, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687130642166
+1787663510.229490, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687130692000
+1787663510.229517, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687130719125
+1787663510.229549, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687130750833
+1787663510.229573, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687130774916
+1787663510.229601, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687130803000
+1787663510.229633, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 56834711281610812378915523093652829298, 1787663510.229360, 79, 1, 211687130838875
+1787663510.229711, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 81327240388206874849022486496430060189, 1787663510.229690, 80, 1, 211687130914041
+1787663510.229767, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687130973000
+1787663510.229822, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687131023916
+1787663510.229848, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687131049916
+1787663510.229877, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687131078500
+1787663510.229904, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687131109125
+1787663510.229971, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687131172375
+1787663510.229996, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 81327240388206874849022486496430060189, 1787663510.229690, 80, 1, 211687131197500
+1787663510.230073, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 95243727362462477788715543633217277898, 1787663510.230047, 81, 1, 211687131280000
+1787663510.230136, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687131341833
+1787663510.230183, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687131384291
+1787663510.230227, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687131433000
+1787663510.230280, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687131482083
+1787663510.230309, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687131511166
+1787663510.230341, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687131542166
+1787663510.230364, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 95243727362462477788715543633217277898, 1787663510.230047, 81, 1, 211687131566041
+1787663510.230418, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 81410780775653458024146819058125577935, 1787663510.230401, 82, 1, 211687131623500
+1787663510.230467, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687131669291
+1787663510.230498, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687131699625
+1787663510.230525, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687131727000
+1787663510.230553, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687131755250
+1787663510.230592, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687131797750
+1787663510.230640, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687131841958
+1787663510.230667, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 81410780775653458024146819058125577935, 1787663510.230401, 82, 1, 211687131869041
+1787663510.230739, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 189271056621454194294507587085195792114, 1787663510.230713, 83, 1, 211687131942375
+1787663510.230796, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687132002541
+1787663510.230845, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687132046916
+1787663510.230864, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687132068875
+1787663510.230930, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687132133333
+1787663510.230961, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687132163041
+1787663510.230990, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687132192125
+1787663510.231018, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 189271056621454194294507587085195792114, 1787663510.230713, 83, 1, 211687132220458
+1787663510.231096, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 172384485515581575870656632181140495249, 1787663510.231072, 84, 1, 211687132299458
+1787663510.231158, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687132364250
+1787663510.231208, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687132410041
+1787663510.231236, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687132437125
+1787663510.231263, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687132464333
+1787663510.231298, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687132504625
+1787663510.231347, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687132548250
+1787663510.231375, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 172384485515581575870656632181140495249, 1787663510.231072, 84, 1, 211687132576500
+1787663510.231446, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 152694290941669358075619168722435841527, 1787663510.231422, 85, 1, 211687132649000
+1787663510.231504, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687132708541
+1787663510.231554, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687132757291
+1787663510.231588, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687132789791
+1787663510.231625, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687132827250
+1787663510.231656, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687132857291
+1787663510.231687, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687132888333
+1787663510.231711, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 152694290941669358075619168722435841527, 1787663510.231422, 85, 1, 211687132912708
+1787663510.231772, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 1808083015491896275599833138761518829, 1787663510.231752, 86, 1, 211687132976500
+1787663510.231830, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687133035583
+1787663510.231880, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687133082041
+1787663510.231910, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687133111541
+1787663510.231941, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687133142458
+1787663510.231968, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687133169916
+1787663510.232000, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687133200958
+1787663510.232036, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 1808083015491896275599833138761518829, 1787663510.231752, 86, 1, 211687133243166
+1787663510.232128, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 85550738165067604918407016797750306206, 1787663510.232103, 87, 1, 211687133331791
+1787663510.232187, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687133392750
+1787663510.232235, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687133436666
+1787663510.232284, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687133491791
+1787663510.232343, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687133545500
+1787663510.232371, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687133572625
+1787663510.232400, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687133602125
+1787663510.232424, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 85550738165067604918407016797750306206, 1787663510.232103, 87, 1, 211687133625833
+1787663510.232479, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 24359791643253136001209790538066991849, 1787663510.232462, 88, 1, 211687133681500
+1787663510.232518, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687133722208
+1787663510.232558, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687133760666
+1787663510.232583, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687133785208
+1787663510.232617, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687133819083
+1787663510.232641, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687133842875
+1787663510.232669, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687133871041
+1787663510.232692, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 24359791643253136001209790538066991849, 1787663510.232462, 88, 1, 211687133893666
+1787663510.232745, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 52155969111215822697714386802641463765, 1787663510.232729, 89, 1, 211687133947333
+1787663510.232784, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687133987375
+1787663510.232820, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687134022541
+1787663510.232844, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687134045791
+1787663510.232872, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687134073791
+1787663510.232895, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687134096250
+1787663510.232922, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687134123583
+1787663510.232944, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 52155969111215822697714386802641463765, 1787663510.232729, 89, 1, 211687134145916
+1787663510.232995, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 84870304480386717441336046564906027113, 1787663510.232980, 90, 1, 211687134197083
+1787663510.233031, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687134233750
+1787663510.233063, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687134264791
+1787663510.233085, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687134286250
+1787663510.233146, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687134348375
+1787663510.233171, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687134373000
+1787663510.233200, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687134402041
+1787663510.233222, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 84870304480386717441336046564906027113, 1787663510.232980, 90, 1, 211687134424083
+1787663510.233270, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 189876016169900950990004250792244940560, 1787663510.233255, 91, 1, 211687134471833
+1787663510.233307, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687134509583
+1787663510.233341, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687134542708
+1787663510.233367, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687134569291
+1787663510.233398, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687134599875
+1787663510.233422, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687134623791
+1787663510.233449, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687134650208
+1787663510.233471, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 189876016169900950990004250792244940560, 1787663510.233255, 91, 1, 211687134673000
+1787663510.233521, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 256022620226085119708322363753264483126, 1787663510.233504, 92, 1, 211687134724916
+1787663510.233570, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687134772791
+1787663510.233605, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687134807416
+1787663510.233629, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687134830750
+1787663510.233658, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687134859208
+1787663510.233681, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687134882333
+1787663510.233708, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687134910000
+1787663510.233735, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 256022620226085119708322363753264483126, 1787663510.233504, 92, 1, 211687134937416
+1787663510.233798, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 112555099959457470532180513592951093758, 1787663510.233772, 93, 1, 211687135005375
+1787663510.233871, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687135077875
+1787663510.233922, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687135123458
+1787663510.233948, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687135151791
+1787663510.233984, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687135186291
+1787663510.234010, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687135211708
+1787663510.234039, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687135240958
+1787663510.234068, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 112555099959457470532180513592951093758, 1787663510.233772, 93, 1, 211687135272125
+1787663510.234129, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 194754742183358283068112333672172310218, 1787663510.234111, 94, 1, 211687135332666
+1787663510.234183, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687135390666
+1787663510.234238, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687135440583
+1787663510.234274, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687135475916
+1787663510.234312, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687135513750
+1787663510.234345, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687135547250
+1787663510.234377, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687135578166
+1787663510.234404, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 194754742183358283068112333672172310218, 1787663510.234111, 94, 1, 211687135605708
+1787663510.234476, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 175651738450853618205976992850128828019, 1787663510.234453, 95, 1, 211687135684708
+1787663510.234548, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687135753333
+1787663510.234593, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687135794791
+1787663510.234622, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687135823083
+1787663510.234651, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687135852333
+1787663510.234676, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687135882583
+1787663510.234752, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687135954375
+1787663510.234780, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 175651738450853618205976992850128828019, 1787663510.234453, 95, 1, 211687135982916
+1787663510.234849, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 248226257799647644103347134080331781064, 1787663510.234823, 96, 1, 211687136055458
+1787663510.234916, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687136123291
+1787663510.234968, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687136170875
+1787663510.234988, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687136191291
+1787663510.235045, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687136247833
+1787663510.235078, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687136279958
+1787663510.235113, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687136315208
+1787663510.235143, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 248226257799647644103347134080331781064, 1787663510.234823, 96, 1, 211687136345375
+1787663510.235199, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 145071816165174547071507700916670190257, 1787663510.235182, 97, 1, 211687136401458
+1787663510.235240, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687136443458
+1787663510.235277, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687136478875
+1787663510.235311, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687136512875
+1787663510.235346, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687136547375
+1787663510.235375, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687136580583
+1787663510.235451, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687136657041
+1787663510.235481, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 145071816165174547071507700916670190257, 1787663510.235182, 97, 1, 211687136683041
+1787663510.235532, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 156966477654386163358357375726148278166, 1787663510.235517, 98, 1, 211687136734500
+1787663510.235582, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687136788250
+1787663510.235633, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687136835000
+1787663510.235663, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687136864208
+1787663510.235693, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687136894166
+1787663510.235722, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687136923875
+1787663510.235751, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687136952958
+1787663510.235780, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 156966477654386163358357375726148278166, 1787663510.235517, 98, 1, 211687136982375
+1787663510.235857, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 238105349774108883002026430269183267220, 1787663510.235833, 99, 1, 211687137063833
+1787663510.235920, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687137125750
+1787663510.235968, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687137169250
+1787663510.235997, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687137198291
+1787663510.236026, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687137226916
+1787663510.236053, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687137254833
+1787663510.236083, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687137284791
+1787663510.236118, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 238105349774108883002026430269183267220, 1787663510.235833, 99, 1, 211687137320791
+1787663510.236188, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 65778960206774864743215945845363422578, 1787663510.236167, 100, 1, 211687137391416
+1787663510.236246, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687137453083
+1787663510.236300, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687137502083
+1787663510.236330, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687137531625
+1787663510.236364, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687137566166
+1787663510.236394, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687137596083
+1787663510.236428, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687137629625
+1787663510.236452, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 65778960206774864743215945845363422578, 1787663510.236167, 100, 1, 211687137653583
+1787663510.236564, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, start, 176734331321843539337668028306038966278, 1787663510.236496, 101, 1, 211687137773666
+1787663510.236653, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, start, 211687137856500
+1787663510.236700, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 0, run, end, 211687137902458
+1787663510.236739, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, start, 211687137940541
+1787663510.236774, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 1, run, end, 211687137976291
+1787663510.236811, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, start, 211687138018875
+1787663510.236895, NoOp Chain Depth 3 Size 0 Mode ref, Ref Stage 2, run, end, 211687138097833
+1787663510.236930, NoOp Chain Depth 3 Size 0 Mode ref, pipeline - train, run, end, 176734331321843539337668028306038966278, 1787663510.236496, 101, 1, 211687138132083
+1787663510.250159, choreo, spans, emitted, 1318, 211687151536416

@@ -8,12 +8,16 @@
 # on the logging handler lock. So `off` alone cannot say how much of the
 # reported dispatch cost is the framework and how much is our own logger.
 #
-#   arm    config              tracing                 CSV stage rows
-#   ----   -----------------   ---------------------   --------------
-#   off    ..._mode_ref        CHOREO_DISABLE_TRACING  on   <- historical headline
-#   nolog  ..._mode_ref_nolog  CHOREO_DISABLE_TRACING  off  <- off minus nolog = the CSV instrument
-#   proc   ..._mode_ref        CHOREO_PROC_TRACE       on
-#   spans  ..._mode_ref_nolog  CHOREO_PROC_TRACE       off  <- per-stage breakdown, cheap instrument
+# Arms are named for the ROLE each plays, not the switch that sets them:
+#
+#   arm             config              CSV logging  spans   what it is for
+#   as-reported     ..._mode_ref            on        off    how E1 has always measured
+#   uninstrumented  ..._mode_ref_nolog      off       off    the framework, no instrument
+#   spans-only      ..._mode_ref_nolog      off       on     spans replacing the logging
+#   both            ..._mode_ref            on        on     both instruments running
+#
+#   as-reported - uninstrumented = what the CSV instrument costs
+#   spans-only  - uninstrumented = what the span instrument costs
 #
 # L_q survives the nolog arms because it comes from the pipeline-level rows,
 # which pipeline.py emits unconditionally -- `disable_logs` is a Stage flag and
@@ -91,6 +95,14 @@ log(){ echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
 # them; E1 measures us-scale transitions, so that noise is fatal and the cuda
 # collection MUST pin to a single performance core:
 #   PIN=19 collect_e1.sh cuda ...
+# WARNING: a SINGLE core is wrong for the span-tracing arms. taskset affinity is
+# inherited by children, so the stage threads, the span queue's feeder thread and
+# the radt exporter PROCESS all land on that one core. Measured on the GB10, the
+# span instrument's per-stage cost is flat at ~11 us up to depth 20 and then
+# roughly doubles to ~22 us -- pure CPU saturation, not a property of tracing:
+# with two cores (PIN=18,19) it stays flat at ~11 us all the way to depth 64.
+# The CSV-logging arms are unaffected (in-process file handler, no extra
+# process), which is why as-reported and uninstrumented stay flat on one core.
 # NOTE: expanded as ${PINCMD[@]+"${PINCMD[@]}"} — macOS bash 3.2 treats a plain
 # "${PINCMD[@]}" on an EMPTY array as unbound under `set -u`.
 PINCMD=()
@@ -99,14 +111,14 @@ if [ -n "${PIN:-}" ] && command -v taskset >/dev/null 2>&1; then
   log "pinning workload to core(s) [$PIN]"
 fi
 
-ARMS=(off nolog proc spans)
+ARMS=(as-reported uninstrumented spans-only both)
 NARMS=${#ARMS[@]}
 
 # config + tracing env for one arm
 arm_config() {
   case $1 in
-    off|proc)    echo "$CFG/noop_depth_${2}_size_0_mode_ref.yml" ;;
-    nolog|spans) echo "$CFG/noop_depth_${2}_size_0_mode_ref_nolog.yml" ;;
+    as-reported|both)         echo "$CFG/noop_depth_${2}_size_0_mode_ref.yml" ;;
+    uninstrumented|spans-only) echo "$CFG/noop_depth_${2}_size_0_mode_ref_nolog.yml" ;;
   esac
 }
 
@@ -119,8 +131,8 @@ run_one() {
 
   unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
   case $arm in
-    off|nolog)   export CHOREO_DISABLE_TRACING=1 ;;
-    proc|spans)  export CHOREO_PROC_TRACE=1 ;;
+    as-reported|uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
+    spans-only|both)            export CHOREO_PROC_TRACE=1 ;;
   esac
 
   # Capture through a file, not a pipe: `rc=$?` after a pipeline reports the

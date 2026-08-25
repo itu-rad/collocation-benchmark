@@ -1,0 +1,1013 @@
+1787663512.954400, NoOp Chain Depth 4 Size 0 Mode ref, pipeline, prepare, start, 9782578792989013
+1787663512.955751, NoOp Chain Depth 4 Size 0 Mode ref, pipeline, prepare, end, 9782578793816196
+1787663512.956299, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 188136133946866215967549396466546054587, 1787663512.956207, 1, 1, 9782578794362419
+1787663512.956545, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578794607523
+1787663512.956592, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578794652258
+1787663512.956610, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578794669938
+1787663512.956785, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578794845666
+1787663512.956928, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578794987986
+1787663512.956991, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578795050738
+1787663512.957005, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578795064594
+1787663512.957165, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578795224625
+1787663512.957305, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 188136133946866215967549396466546054587, 1787663512.956207, 1, 1, 9782578795365201
+1787663512.957464, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 194411078222432465366675976699496736211, 1787663512.957414, 2, 1, 9782578795524433
+1787663512.957542, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578795601697
+1787663512.957593, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578795653041
+1787663512.957688, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578795747905
+1787663512.957744, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578795803984
+1787663512.957877, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578795936736
+1787663512.957904, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578795963584
+1787663512.957917, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578795976416
+1787663512.958072, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578796131856
+1787663512.958304, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 194411078222432465366675976699496736211, 1787663512.957414, 2, 1, 9782578796364335
+1787663512.958453, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 240542485096569938261351561267718776603, 1787663512.958406, 3, 1, 9782578796513391
+1787663512.958525, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578796585055
+1787663512.958573, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578796632223
+1787663512.958666, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578796726159
+1787663512.958747, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578796806383
+1787663512.958842, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578796902063
+1787663512.958899, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578796959070
+1787663512.958912, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578796971806
+1787663512.959065, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578797124942
+1787663512.959082, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 240542485096569938261351561267718776603, 1787663512.958406, 3, 1, 9782578797141230
+1787663512.959270, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 319805807622820395115474675809396123915, 1787663512.959259, 4, 1, 9782578797330158
+1787663512.959346, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578797406078
+1787663512.959371, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578797430382
+1787663512.959436, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578797495854
+1787663512.959462, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578797521470
+1787663512.959537, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578797596893
+1787663512.959566, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578797625421
+1787663512.959636, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578797696141
+1787663512.959660, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578797718973
+1787663512.959708, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 319805807622820395115474675809396123915, 1787663512.959259, 4, 1, 9782578797767645
+1787663512.959807, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 47262697954206546059450046520927200498, 1787663512.959774, 5, 1, 9782578797867053
+1787663512.959878, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578797938173
+1787663512.959902, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578797961709
+1787663512.960000, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578798059181
+1787663512.960025, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578798084093
+1787663512.960177, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578798237100
+1787663512.960202, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578798261868
+1787663512.960301, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578798360700
+1787663512.960324, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578798383612
+1787663512.960397, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 47262697954206546059450046520927200498, 1787663512.959774, 5, 1, 9782578798456572
+1787663512.960892, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 141158431184995866965127714184416115579, 1787663512.960872, 6, 1, 9782578798952251
+1787663512.960930, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578798989083
+1787663512.960955, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578799014027
+1787663512.960996, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578799055547
+1787663512.961019, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578799078075
+1787663512.961057, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578799117019
+1787663512.961080, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578799139403
+1787663512.961119, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578799178235
+1787663512.961140, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578799199835
+1787663512.961179, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 141158431184995866965127714184416115579, 1787663512.960872, 6, 1, 9782578799237963
+1787663512.961611, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 109676736341135354680845097060512729733, 1787663512.961599, 7, 1, 9782578799670954
+1787663512.961669, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578799728746
+1787663512.961692, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578799751754
+1787663512.961732, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578799791690
+1787663512.961755, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578799813882
+1787663512.961793, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578799852554
+1787663512.961816, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578799874794
+1787663512.961854, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578799913226
+1787663512.961878, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578799937098
+1787663512.961890, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 109676736341135354680845097060512729733, 1787663512.961599, 7, 1, 9782578799949401
+1787663512.961968, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 59985171707446667849005122020726527319, 1787663512.961958, 8, 1, 9782578800027417
+1787663512.962022, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578800081929
+1787663512.962045, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578800104521
+1787663512.962087, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578800146217
+1787663512.962109, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578800168249
+1787663512.962149, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578800208665
+1787663512.962181, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578800240393
+1787663512.962229, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578800287865
+1787663512.962261, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578800320409
+1787663512.963013, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 59985171707446667849005122020726527319, 1787663512.961958, 8, 1, 9782578801073207
+1787663512.963077, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 88348735667722575110512891193087170704, 1787663512.963058, 9, 1, 9782578801136407
+1787663512.963112, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578801171271
+1787663512.963135, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578801194551
+1787663512.963174, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578801233799
+1787663512.963197, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578801255831
+1787663512.963235, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578801294231
+1787663512.963260, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578801319175
+1787663512.963272, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578801331543
+1787663512.963331, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578801390087
+1787663512.963369, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 88348735667722575110512891193087170704, 1787663512.963058, 9, 1, 9782578801428999
+1787663512.963427, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 238052288394475561106148022261189369099, 1787663512.963410, 10, 1, 9782578801486359
+1787663512.963461, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578801520103
+1787663512.963483, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578801542183
+1787663512.963521, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578801580519
+1787663512.963542, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578801601799
+1787663512.963582, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578801641223
+1787663512.963615, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578801674118
+1787663512.963646, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578801705062
+1787663512.963685, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578801744534
+1787663512.963723, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 238052288394475561106148022261189369099, 1787663512.963410, 10, 1, 9782578801782678
+1787663512.963780, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 114938872465325490280593464319323113152, 1787663512.963763, 11, 1, 9782578801839478
+1787663512.963813, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578801872838
+1787663512.963836, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578801894982
+1787663512.963876, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578801935670
+1787663512.963907, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578801966870
+1787663512.963957, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578802016022
+1787663512.963990, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578802049142
+1787663512.964037, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578802095974
+1787663512.964069, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578802128150
+1787663512.964099, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 114938872465325490280593464319323113152, 1787663512.963763, 11, 1, 9782578802158486
+1787663512.964168, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 183930910348808279833772427203863478300, 1787663512.964159, 12, 1, 9782578802227574
+1787663512.964206, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578802265750
+1787663512.964228, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578802288005
+1787663512.964244, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578802303285
+1787663512.964266, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578802324917
+1787663512.964324, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578802383541
+1787663512.964346, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578802405205
+1787663512.964384, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578802443413
+1787663512.964405, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578802464373
+1787663512.965929, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 183930910348808279833772427203863478300, 1787663512.964159, 12, 1, 9782578803990563
+1787663512.966009, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 266414299385716030991809817016982053831, 1787663512.965988, 13, 1, 9782578804069234
+1787663512.966049, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578804109442
+1787663512.966076, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578804135394
+1787663512.966115, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578804174994
+1787663512.966139, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578804197954
+1787663512.966177, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578804236722
+1787663512.966200, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578804259474
+1787663512.966239, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578804298402
+1787663512.966260, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578804319858
+1787663512.966299, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 266414299385716030991809817016982053831, 1787663512.965988, 13, 1, 9782578804358018
+1787663512.966357, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 121897831242278196827704115341356638972, 1787663512.966339, 14, 1, 9782578804415746
+1787663512.966390, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578804449538
+1787663512.966413, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578804471762
+1787663512.966451, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578804510178
+1787663512.966473, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578804531890
+1787663512.966511, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578804570146
+1787663512.966533, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578804592162
+1787663512.966571, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578804630626
+1787663512.966593, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578804651730
+1787663512.966630, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 121897831242278196827704115341356638972, 1787663512.966339, 14, 1, 9782578804689345
+1787663512.966686, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 195163828633049840369615978198977353338, 1787663512.966669, 15, 1, 9782578804745809
+1787663512.966719, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578804778961
+1787663512.966742, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578804800801
+1787663512.966779, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578804838529
+1787663512.966801, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578804860385
+1787663512.966839, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578804898337
+1787663512.966861, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578804920465
+1787663512.966899, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578804958769
+1787663512.966923, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578804982161
+1787663512.966962, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 195163828633049840369615978198977353338, 1787663512.966669, 15, 1, 9782578805021649
+1787663512.967019, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 113111593749202181592202538399635153945, 1787663512.967002, 16, 1, 9782578805078705
+1787663512.967053, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578805112225
+1787663512.967075, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578805134193
+1787663512.967113, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578805171969
+1787663512.967134, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578805193585
+1787663512.967172, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578805231425
+1787663512.967194, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578805253104
+1787663512.967232, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578805291216
+1787663512.967253, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578805312608
+1787663512.967291, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 113111593749202181592202538399635153945, 1787663512.967002, 16, 1, 9782578805350368
+1787663512.967347, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 328666021847443727253148950161997124046, 1787663512.967330, 17, 1, 9782578805406032
+1787663512.967380, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578805438832
+1787663512.967402, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578805461152
+1787663512.967440, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578805499424
+1787663512.967462, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578805521168
+1787663512.967500, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578805559648
+1787663512.967522, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578805581296
+1787663512.967559, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578805618800
+1787663512.967581, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578805639936
+1787663512.967618, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 328666021847443727253148950161997124046, 1787663512.967330, 17, 1, 9782578805677328
+1787663512.967667, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 117909615520055257007532376111973303688, 1787663512.967658, 18, 1, 9782578805726064
+1787663512.967705, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578805764032
+1787663512.967727, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578805785888
+1787663512.967765, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578805823983
+1787663512.967786, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578805845727
+1787663512.967825, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578805884063
+1787663512.967847, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578805905887
+1787663512.967885, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578805944095
+1787663512.967906, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578805965103
+1787663512.967945, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 117909615520055257007532376111973303688, 1787663512.967658, 18, 1, 9782578806004303
+1787663512.967994, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 291885089136178574080813428040135205493, 1787663512.967985, 19, 1, 9782578806053295
+1787663512.968016, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578806075087
+1787663512.968038, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578806097263
+1787663512.968090, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578806149551
+1787663512.968114, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578806172911
+1787663512.968153, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578806211871
+1787663512.968175, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578806233759
+1787663512.968213, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578806272095
+1787663512.968234, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578806293391
+1787663512.968272, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 291885089136178574080813428040135205493, 1787663512.967985, 19, 1, 9782578806331247
+1787663512.968320, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 190019610647311907981968839502917722905, 1787663512.968311, 20, 1, 9782578806379455
+1787663512.968342, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578806401166
+1787663512.968364, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578806423006
+1787663512.968415, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578806474686
+1787663512.968437, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578806496622
+1787663512.968475, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578806534734
+1787663512.968498, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578806556782
+1787663512.968536, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578806595486
+1787663512.968557, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578806616574
+1787663512.968595, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 190019610647311907981968839502917722905, 1787663512.968311, 20, 1, 9782578806653838
+1787663512.968642, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 143214831479372853197791122970509110161, 1787663512.968633, 21, 1, 9782578806701758
+1787663512.968664, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578806723406
+1787663512.968685, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578806744686
+1787663512.968701, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578806759966
+1787663512.968722, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578806781246
+1787663512.968793, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578806852286
+1787663512.968814, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578806873614
+1787663512.968853, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578806911966
+1787663512.968874, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578806933086
+1787663512.968912, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 143214831479372853197791122970509110161, 1787663512.968633, 21, 1, 9782578806971694
+1787663512.968963, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 286757617140180235503383849069813729, 1787663512.968954, 22, 1, 9782578807021933
+1787663512.968985, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578807044541
+1787663512.969007, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578807066317
+1787663512.969022, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578807081565
+1787663512.969044, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578807103005
+1787663512.969115, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578807174109
+1787663512.969137, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578807195965
+1787663512.969176, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578807234861
+1787663512.969197, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578807256061
+1787663512.969234, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 286757617140180235503383849069813729, 1787663512.968954, 22, 1, 9782578807293389
+1787663512.969287, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 323078817256728413174683132787772593763, 1787663512.969273, 23, 1, 9782578807346077
+1787663512.969311, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578807370125
+1787663512.969333, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578807391917
+1787663512.969348, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578807407085
+1787663512.969369, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578807428509
+1787663512.969384, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578807443549
+1787663512.969406, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578807465085
+1787663512.969496, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578807554989
+1787663512.969517, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578807576941
+1787663512.969556, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 323078817256728413174683132787772593763, 1787663512.969273, 23, 1, 9782578807615516
+1787663512.969592, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 105053882792181055920976603120364480969, 1787663512.969579, 24, 1, 9782578807650988
+1787663512.969616, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578807675772
+1787663512.969638, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578807697404
+1787663512.969653, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578807712492
+1787663512.969675, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578807733900
+1787663512.969690, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578807748956
+1787663512.969711, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578807770188
+1787663512.969727, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578807786668
+1787663512.969749, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578807808524
+1787663512.969873, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 105053882792181055920976603120364480969, 1787663512.969579, 24, 1, 9782578807931884
+1787663512.973002, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 203373368705619728351740032555761476019, 1787663512.972981, 25, 1, 9782578811062999
+1787663512.973045, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578811104887
+1787663512.973070, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578811129766
+1787663512.973109, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578811168326
+1787663512.973131, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578811190550
+1787663512.973169, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578811228182
+1787663512.973191, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578811250118
+1787663512.973229, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578811288358
+1787663512.973251, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578811309990
+1787663512.973289, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 203373368705619728351740032555761476019, 1787663512.972981, 25, 1, 9782578811348278
+1787663512.973346, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 241664614232272444647134206502950966292, 1787663512.973329, 26, 1, 9782578811405462
+1787663512.973379, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578811438470
+1787663512.973401, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578811460470
+1787663512.973439, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578811498166
+1787663512.973460, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578811519750
+1787663512.973498, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578811557302
+1787663512.973520, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578811579462
+1787663512.973558, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578811617078
+1787663512.973579, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578811638278
+1787663512.973619, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 241664614232272444647134206502950966292, 1787663512.973329, 26, 1, 9782578811678806
+1787663512.973675, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 291307979849088738584979867807823948424, 1787663512.973659, 27, 1, 9782578811734773
+1787663512.973709, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578811767957
+1787663512.973731, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578811789877
+1787663512.973768, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578811827429
+1787663512.973790, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578811849189
+1787663512.973827, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578811886165
+1787663512.973849, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578811907957
+1787663512.973887, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578811946149
+1787663512.973907, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578811966949
+1787663512.973948, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 291307979849088738584979867807823948424, 1787663512.973659, 27, 1, 9782578812007701
+1787663512.974006, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 259360504664399380646115650098370609450, 1787663512.973989, 28, 1, 9782578812065493
+1787663512.974040, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578812099429
+1787663512.974063, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578812121941
+1787663512.974101, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578812160453
+1787663512.974123, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578812182517
+1787663512.974161, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578812220645
+1787663512.974183, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578812242709
+1787663512.974222, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578812281173
+1787663512.974243, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578812302725
+1787663512.974282, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 259360504664399380646115650098370609450, 1787663512.973989, 28, 1, 9782578812340900
+1787663512.974338, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 187447357996971151467475133107608350991, 1787663512.974321, 29, 1, 9782578812397428
+1787663512.974372, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578812431284
+1787663512.974394, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578812452900
+1787663512.974431, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578812490580
+1787663512.974453, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578812512148
+1787663512.974490, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578812549620
+1787663512.974512, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578812571396
+1787663512.974550, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578812609268
+1787663512.974571, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578812630148
+1787663512.974608, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 187447357996971151467475133107608350991, 1787663512.974321, 29, 1, 9782578812667780
+1787663512.974664, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 233531020226012198133226498185221341565, 1787663512.974647, 30, 1, 9782578812723364
+1787663512.974697, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578812756228
+1787663512.974719, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578812778116
+1787663512.974756, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578812815300
+1787663512.974777, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578812836804
+1787663512.974815, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578812874420
+1787663512.974838, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578812897588
+1787663512.974876, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578812934931
+1787663512.974896, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578812955619
+1787663512.974933, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 233531020226012198133226498185221341565, 1787663512.974647, 30, 1, 9782578812992723
+1787663512.974990, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 203302779680346579062950723580891210917, 1787663512.974974, 31, 1, 9782578813049795
+1787663512.975024, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578813083539
+1787663512.975046, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578813105379
+1787663512.975084, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578813142819
+1787663512.975105, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578813164163
+1787663512.975143, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578813202243
+1787663512.975165, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578813224163
+1787663512.975202, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578813261699
+1787663512.975224, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578813282851
+1787663512.975260, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 203302779680346579062950723580891210917, 1787663512.974974, 31, 1, 9782578813319715
+1787663512.975316, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 338174826470068751595708447414961210477, 1787663512.975299, 32, 1, 9782578813374931
+1787663512.975349, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578813408019
+1787663512.975370, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578813429731
+1787663512.975408, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578813467187
+1787663512.975429, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578813488627
+1787663512.975467, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578813526034
+1787663512.975488, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578813547682
+1787663512.975526, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578813585410
+1787663512.975550, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578813609058
+1787663512.975589, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 338174826470068751595708447414961210477, 1787663512.975299, 32, 1, 9782578813648802
+1787663512.975645, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 76012423749222609785792861096368731040, 1787663512.975629, 33, 1, 9782578813704466
+1787663512.975678, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578813737634
+1787663512.975700, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578813759474
+1787663512.975738, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578813797762
+1787663512.975760, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578813819330
+1787663512.975797, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578813856354
+1787663512.975819, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578813878146
+1787663512.975856, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578813915282
+1787663512.975877, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578813936434
+1787663512.975914, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 76012423749222609785792861096368731040, 1787663512.975629, 33, 1, 9782578813973602
+1787663512.975970, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 144134108101039661594626954885000167350, 1787663512.975953, 34, 1, 9782578814029666
+1787663512.976004, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578814063586
+1787663512.976026, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578814085186
+1787663512.976042, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578814101618
+1787663512.976064, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578814123169
+1787663512.976120, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578814179937
+1787663512.976142, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578814201585
+1787663512.976180, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578814238961
+1787663512.976201, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578814259921
+1787663512.976238, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 144134108101039661594626954885000167350, 1787663512.975953, 34, 1, 9782578814297089
+1787663512.976292, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 316063718306009173116986514873520789824, 1787663512.976276, 35, 1, 9782578814351729
+1787663512.976325, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578814384545
+1787663512.976347, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578814406017
+1787663512.976362, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578814420993
+1787663512.976383, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578814442161
+1787663512.976398, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578814456897
+1787663512.976419, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578814478257
+1787663512.976443, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578814502145
+1787663512.976464, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578814523089
+1787663512.976479, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 316063718306009173116986514873520789824, 1787663512.976276, 35, 1, 9782578814537857
+1787663512.976513, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 172790372266373178674541427637041421483, 1787663512.976503, 36, 1, 9782578814572033
+1787663512.976534, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578814593185
+1787663512.976557, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578814616193
+1787663512.976569, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578814628513
+1787663512.976601, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578814660401
+1787663512.976618, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578814676736
+1787663512.976640, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578814699072
+1787663512.976655, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578814714080
+1787663512.976676, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578814735184
+1787663512.976690, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 172790372266373178674541427637041421483, 1787663512.976503, 36, 1, 9782578814749664
+1787663512.976722, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 226475492134013027350235308821883092419, 1787663512.976713, 37, 1, 9782578814781216
+1787663512.976743, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578814801920
+1787663512.976764, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578814823088
+1787663512.976779, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578814837904
+1787663512.976803, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578814862080
+1787663512.976818, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578814876880
+1787663512.976839, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578814897984
+1787663512.976854, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578814913408
+1787663512.976875, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578814934256
+1787663512.976889, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 226475492134013027350235308821883092419, 1787663512.976713, 37, 1, 9782578814948720
+1787663512.976922, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 139853724864546600169173299499971734868, 1787663512.976913, 38, 1, 9782578814981792
+1787663512.976945, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578815004672
+1787663512.976967, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578815026608
+1787663512.976982, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578815041424
+1787663512.977004, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578815063616
+1787663512.977019, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578815078400
+1787663512.977042, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578815100896
+1787663512.977057, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578815116000
+1787663512.977079, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578815138176
+1787663512.977091, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 139853724864546600169173299499971734868, 1787663512.976913, 38, 1, 9782578815149840
+1787663512.977133, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 93930506555846458339453701259230328766, 1787663512.977124, 39, 1, 9782578815191872
+1787663512.977154, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578815213296
+1787663512.977175, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578815234624
+1787663512.977190, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578815249503
+1787663512.977214, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578815273583
+1787663512.977230, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578815289327
+1787663512.977252, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578815311471
+1787663512.977267, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578815326591
+1787663512.977288, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578815347519
+1787663512.977311, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 93930506555846458339453701259230328766, 1787663512.977124, 39, 1, 9782578815370031
+1787663512.977344, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 294968965938509295527336042758545946028, 1787663512.977335, 40, 1, 9782578815403023
+1787663512.977365, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578815424735
+1787663512.977387, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578815446383
+1787663512.977402, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578815461359
+1787663512.977424, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578815483503
+1787663512.977439, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578815498031
+1787663512.977460, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578815519007
+1787663512.977474, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578815533679
+1787663512.977494, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578815553983
+1787663512.977509, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 294968965938509295527336042758545946028, 1787663512.977335, 40, 1, 9782578815568175
+1787663512.977545, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 107012082758493942643645091272616228809, 1787663512.977535, 41, 1, 9782578815604111
+1787663512.977566, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578815625359
+1787663512.977587, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578815646527
+1787663512.977603, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578815662527
+1787663512.977624, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578815683711
+1787663512.977639, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578815698399
+1787663512.977660, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578815719631
+1787663512.977677, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578815735791
+1787663512.977697, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578815756063
+1787663512.977711, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 107012082758493942643645091272616228809, 1787663512.977535, 41, 1, 9782578815770415
+1787663512.977745, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 100321432258340627455796705586005558037, 1787663512.977733, 42, 1, 9782578815804367
+1787663512.977767, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578815826799
+1787663512.977790, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578815849454
+1787663512.977805, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578815864350
+1787663512.977827, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578815886350
+1787663512.977842, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578815901150
+1787663512.977863, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578815922126
+1787663512.977879, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578815938014
+1787663512.977901, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578815959982
+1787663512.977915, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 100321432258340627455796705586005558037, 1787663512.977733, 42, 1, 9782578815974350
+1787663512.977951, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 329343532878189876296122385624396721712, 1787663512.977937, 43, 1, 9782578816010702
+1787663512.977973, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578816032974
+1787663512.977996, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578816055630
+1787663512.978011, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578816070638
+1787663512.978033, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578816092110
+1787663512.978048, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578816107038
+1787663512.978069, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578816128462
+1787663512.978088, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578816147838
+1787663512.978109, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578816168894
+1787663512.978124, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 329343532878189876296122385624396721712, 1787663512.977937, 43, 1, 9782578816183518
+1787663512.978156, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 240133803338741285825518546845721902466, 1787663512.978147, 44, 1, 9782578816215118
+1787663512.978178, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578816236942
+1787663512.978201, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578816259774
+1787663512.978215, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578816274750
+1787663512.978237, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578816295966
+1787663512.978252, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578816311006
+1787663512.978273, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578816332254
+1787663512.978288, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578816347470
+1787663512.978309, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578816368318
+1787663512.978323, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 240133803338741285825518546845721902466, 1787663512.978147, 44, 1, 9782578816382878
+1787663512.978356, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 132172346648642544688287485791518833119, 1787663512.978347, 45, 1, 9782578816415182
+1787663512.978377, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578816436573
+1787663512.978401, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578816460381
+1787663512.978413, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578816473565
+1787663512.978447, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578816506157
+1787663512.978462, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578816521181
+1787663512.978483, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578816542525
+1787663512.978498, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578816557693
+1787663512.978521, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578816580445
+1787663512.978537, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 132172346648642544688287485791518833119, 1787663512.978347, 45, 1, 9782578816596189
+1787663512.978569, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 24887949042298816683286421579415312960, 1787663512.978560, 46, 1, 9782578816628365
+1787663512.978592, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578816651389
+1787663512.978616, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578816675037
+1787663512.978702, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578816763037
+1787663512.978841, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578816901069
+1787663512.978854, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578816913805
+1787663512.978887, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578816946429
+1787663512.978902, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578816961661
+1787663512.978924, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578816982893
+1787663512.978938, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 24887949042298816683286421579415312960, 1787663512.978560, 46, 1, 9782578816997789
+1787663512.978979, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 281673663339741021473982802252982639613, 1787663512.978969, 47, 1, 9782578817038156
+1787663512.979002, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578817061164
+1787663512.979024, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578817083308
+1787663512.979039, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578817098940
+1787663512.979062, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578817121612
+1787663512.979078, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578817136940
+1787663512.979101, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578817160220
+1787663512.979113, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578817172476
+1787663512.979146, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578817204844
+1787663512.979161, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 281673663339741021473982802252982639613, 1787663512.978969, 47, 1, 9782578817219836
+1787663512.979195, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 258457777383926342520025803106667653752, 1787663512.979184, 48, 1, 9782578817254428
+1787663512.979217, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578817276700
+1787663512.979239, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578817298828
+1787663512.979254, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578817314028
+1787663512.979276, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578817334988
+1787663512.979291, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578817350044
+1787663512.979314, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578817373788
+1787663512.979330, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578817389132
+1787663512.979746, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578817806395
+1787663512.979894, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 258457777383926342520025803106667653752, 1787663512.979184, 48, 1, 9782578817954267
+1787663512.979931, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 133889624716843140475208656243818845378, 1787663512.979921, 49, 1, 9782578817990955
+1787663512.979959, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578818018651
+1787663512.979983, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578818042667
+1787663512.980000, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578818058827
+1787663512.980021, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578818080555
+1787663512.980036, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578818095627
+1787663512.980058, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578818117499
+1787663512.980073, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578818132763
+1787663512.980094, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578818153755
+1787663512.980111, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 133889624716843140475208656243818845378, 1787663512.979921, 49, 1, 9782578818170443
+1787663512.980145, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 285578639312837747726808105638238397891, 1787663512.980136, 50, 1, 9782578818204235
+1787663512.980167, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578818226043
+1787663512.980189, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578818248090
+1787663512.980204, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578818263322
+1787663512.980226, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578818284794
+1787663512.980241, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578818300042
+1787663512.980263, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578818322650
+1787663512.980279, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578818338986
+1787663512.980303, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578818362650
+1787663512.980315, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 285578639312837747726808105638238397891, 1787663512.980136, 50, 1, 9782578818374266
+1787663512.980357, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 337428314773401733502658510736900696509, 1787663512.980348, 51, 1, 9782578818416666
+1787663512.980379, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578818438346
+1787663512.980402, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578818460634
+1787663512.980416, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578818475450
+1787663512.980437, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578818496650
+1787663512.980452, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578818511402
+1787663512.980473, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578818532650
+1787663512.980489, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578818548682
+1787663512.980512, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578818571466
+1787663512.980527, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 337428314773401733502658510736900696509, 1787663512.980348, 51, 1, 9782578818586234
+1787663512.980990, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 265992228072709269348150593859345771027, 1787663512.980881, 52, 1, 9782578819050281
+1787663512.981017, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578819077017
+1787663512.981041, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578819100089
+1787663512.981056, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578819115705
+1787663512.981079, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578819137865
+1787663512.981094, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578819152921
+1787663512.981115, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578819174137
+1787663512.981130, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578819189017
+1787663512.981150, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578819209593
+1787663512.981166, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 265992228072709269348150593859345771027, 1787663512.980881, 52, 1, 9782578819225657
+1787663512.981202, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 279855304134424711976687225355394760549, 1787663512.981190, 53, 1, 9782578819261289
+1787663512.981225, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578819283993
+1787663512.981247, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578819306377
+1787663512.981262, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578819321689
+1787663512.981285, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578819344585
+1787663512.981300, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578819359705
+1787663512.981322, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578819381385
+1787663512.981339, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578819397929
+1787663512.981360, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578819418952
+1787663512.981374, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 279855304134424711976687225355394760549, 1787663512.981190, 53, 1, 9782578819433480
+1787663512.981408, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 336891473779077116786696044068045865395, 1787663512.981396, 54, 1, 9782578819467176
+1787663512.981431, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578819490072
+1787663512.981454, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578819513208
+1787663512.981469, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578819528072
+1787663512.981491, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578819550568
+1787663512.981506, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578819565368
+1787663512.981529, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578819587800
+1787663512.981544, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578819602872
+1787663512.981564, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578819623608
+1787663512.981579, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 336891473779077116786696044068045865395, 1787663512.981396, 54, 1, 9782578819638088
+1787663512.981612, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 96498135270702066389690847237936606932, 1787663512.981601, 55, 1, 9782578819671416
+1787663512.981634, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578819693016
+1787663512.981655, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578819714296
+1787663512.981670, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578819729496
+1787663512.981693, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578819752360
+1787663512.981710, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578819769256
+1787663512.981743, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578819802152
+1787663512.981758, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578819817240
+1787663512.981778, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578819837912
+1787663512.981793, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 96498135270702066389690847237936606932, 1787663512.981601, 55, 1, 9782578819852472
+1787663512.981829, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 201337970870088305655407387566568410204, 1787663512.981817, 56, 1, 9782578819888760
+1787663512.981851, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578819910552
+1787663512.981873, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578819932152
+1787663512.981888, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578819947656
+1787663512.981911, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578819970151
+1787663512.981923, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578819981767
+1787663512.981959, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578820018727
+1787663512.981975, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578820034503
+1787663512.981997, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578820056487
+1787663512.982012, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 201337970870088305655407387566568410204, 1787663512.981817, 56, 1, 9782578820070967
+1787663512.982044, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 56868098132488223457984377098264180884, 1787663512.982034, 57, 1, 9782578820102823
+1787663512.982065, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578820124247
+1787663512.982086, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578820145463
+1787663512.982101, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578820160503
+1787663512.982125, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578820184311
+1787663512.982532, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578820592358
+1787663512.982559, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578820618406
+1787663512.982671, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578820730886
+1787663512.982694, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578820753062
+1787663512.982709, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 56868098132488223457984377098264180884, 1787663512.982034, 57, 1, 9782578820768390
+1787663512.982743, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 63239249446827214363770158753923420569, 1787663512.982733, 58, 1, 9782578820801974
+1787663512.982765, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578820824198
+1787663512.982788, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578820847478
+1787663512.982800, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578820859686
+1787663512.982833, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578820891942
+1787663512.982847, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578820906854
+1787663512.982869, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578820928566
+1787663512.982885, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578820943942
+1787663512.982907, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578820966582
+1787663512.982922, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 63239249446827214363770158753923420569, 1787663512.982733, 58, 1, 9782578820981494
+1787663512.982959, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 25743859357604493476136499386675755107, 1787663512.982950, 59, 1, 9782578821018726
+1787663512.982982, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578821041030
+1787663512.983316, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578821375813
+1787663512.983437, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578821496613
+1787663512.983460, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578821519621
+1787663512.983475, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578821534677
+1787663512.983497, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578821556277
+1787663512.983512, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578821571253
+1787663512.983534, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578821593605
+1787663512.983546, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 25743859357604493476136499386675755107, 1787663512.982950, 59, 1, 9782578821605269
+1787663512.983589, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 280595436443225341993793236903328743099, 1787663512.983579, 60, 1, 9782578821648181
+1787663512.983611, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578821669893
+1787663512.983637, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578821696053
+1787663512.983649, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578821707893
+1787663512.983682, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578821741509
+1787663512.983697, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578821756645
+1787663512.983719, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578821779284
+1787663512.983735, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578821794292
+1787663512.983756, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578821815284
+1787663512.983771, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 280595436443225341993793236903328743099, 1787663512.983579, 60, 1, 9782578821829956
+1787663512.983803, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 272739761351981094615847161344189963923, 1787663512.983794, 61, 1, 9782578821861860
+1787663512.983824, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578821882900
+1787663512.985954, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578824014609
+1787663512.986536, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578824596112
+1787663512.986562, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578824621968
+1787663512.986579, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578824638560
+1787663512.986602, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578824660944
+1787663512.986617, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578824676496
+1787663512.986639, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578824698048
+1787663512.986654, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 272739761351981094615847161344189963923, 1787663512.983794, 61, 1, 9782578824713375
+1787663512.986687, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 3401107629188930160665481329306161234, 1787663512.986678, 62, 1, 9782578824746895
+1787663512.986713, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578824772127
+1787663512.986735, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578824793983
+1787663512.986750, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578824808959
+1787663512.986771, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578824830287
+1787663512.986786, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578824845327
+1787663512.986807, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578824866687
+1787663512.986822, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578824881695
+1787663512.986843, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578824902303
+1787663512.986857, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 3401107629188930160665481329306161234, 1787663512.986678, 62, 1, 9782578824916927
+1787663512.986888, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 146865336343423242078675740800942870139, 1787663512.986880, 63, 1, 9782578824947871
+1787663512.986913, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578824972047
+1787663512.986934, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578824993439
+1787663512.986952, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578825011599
+1787663512.986974, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578825033871
+1787663512.986989, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578825048703
+1787663512.987011, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578825070319
+1787663512.987026, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578825085615
+1787663512.987047, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578825106447
+1787663512.987062, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 146865336343423242078675740800942870139, 1787663512.986880, 63, 1, 9782578825121183
+1787663512.987095, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 251655285816094469037137784017340504784, 1787663512.987086, 64, 1, 9782578825154015
+1787663512.987119, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578825178239
+1787663512.987142, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578825201183
+1787663512.987154, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578825213183
+1787663512.987185, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578825244511
+1787663512.987200, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578825259455
+1787663512.987222, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578825281390
+1787663512.987237, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578825296622
+1787663512.987258, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578825317390
+1787663512.987273, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 251655285816094469037137784017340504784, 1787663512.987086, 64, 1, 9782578825332030
+1787663512.987304, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 300100887725415161085012581201092963154, 1787663512.987295, 65, 1, 9782578825363518
+1787663512.987329, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578825387886
+1787663512.987350, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578825409470
+1787663512.987365, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578825424558
+1787663512.987387, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578825445966
+1787663512.987402, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578825460926
+1787663512.987423, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578825482414
+1787663512.987438, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578825497390
+1787663512.987459, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578825518062
+1787663512.987473, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 300100887725415161085012581201092963154, 1787663512.987295, 65, 1, 9782578825532814
+1787663512.987505, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 66889348143198053213538407153538383787, 1787663512.987496, 66, 1, 9782578825563998
+1787663512.987904, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578825963933
+1787663512.987930, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578825989549
+1787663512.987949, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578826008285
+1787663512.987973, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578826032765
+1787663512.987985, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578826044829
+1787663512.988018, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578826077181
+1787663512.988033, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578826092445
+1787663512.988054, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578826113581
+1787663512.988069, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 66889348143198053213538407153538383787, 1787663512.987496, 66, 1, 9782578826128509
+1787663512.988103, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 211387566033174990919689278788997001280, 1787663512.988092, 67, 1, 9782578826162141
+1787663512.988124, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578826183837
+1787663512.988146, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578826205581
+1787663512.988161, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578826220861
+1787663512.988185, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578826243885
+1787663512.988196, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578826255741
+1787663512.988228, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578826287517
+1787663512.988245, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578826304605
+1787663512.988266, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578826325805
+1787663512.988281, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 211387566033174990919689278788997001280, 1787663512.988092, 67, 1, 9782578826340509
+1787663512.988315, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 207825314531347067444394525869757400010, 1787663512.988306, 68, 1, 9782578826374349
+1787663512.988337, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578826396109
+1787663512.988359, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578826418525
+1787663512.988374, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578826433693
+1787663512.988396, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578826454989
+1787663512.988411, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578826469981
+1787663512.988433, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578826492428
+1787663512.988445, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578826504364
+1787663512.988475, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578826534876
+1787663512.988491, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 207825314531347067444394525869757400010, 1787663512.988306, 68, 1, 9782578826550236
+1787663512.988524, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 30418252745273664225249792815282804779, 1787663512.988515, 69, 1, 9782578826583740
+1787663512.988546, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578826605452
+1787663512.988568, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578826626828
+1787663512.988582, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578826641724
+1787663512.988603, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578826662492
+1787663512.988618, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578826677596
+1787663512.988641, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578826700364
+1787663512.988653, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578826712332
+1787663512.988685, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578826744588
+1787663512.988701, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 30418252745273664225249792815282804779, 1787663512.988515, 69, 1, 9782578826760476
+1787663512.988733, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 326097636645183163979241589085749393469, 1787663512.988724, 70, 1, 9782578826792156
+1787663512.988756, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578826815116
+1787663512.988777, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578826836572
+1787663512.988793, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578826852572
+1787663512.988814, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578826873228
+1787663512.988829, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578826888156
+1787663512.988850, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578826909516
+1787663512.988865, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578826924572
+1787663512.988890, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578826949596
+1787663512.988905, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 326097636645183163979241589085749393469, 1787663512.988724, 70, 1, 9782578826964124
+1787663512.988939, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 129327536583000308768276133709903579150, 1787663512.988930, 71, 1, 9782578826998476
+1787663512.988963, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578827022108
+1787663512.988984, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578827043580
+1787663512.989000, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578827059660
+1787663512.989023, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578827082827
+1787663512.989039, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578827097803
+1787663512.989061, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578827120171
+1787663512.989077, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578827136091
+1787663512.989100, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578827159403
+1787663512.989114, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 129327536583000308768276133709903579150, 1787663512.988930, 71, 1, 9782578827173803
+1787663512.989149, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 211151178507074107633740167372853072122, 1787663512.989141, 72, 1, 9782578827208683
+1787663512.989172, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578827230699
+1787663512.989192, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578827251899
+1787663512.989207, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578827266459
+1787663512.989228, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578827288763
+1787663512.989244, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578827303547
+1787663512.989265, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578827324875
+1787663512.989280, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578827339675
+1787663512.989301, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578827360859
+1787663512.989316, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 211151178507074107633740167372853072122, 1787663512.989141, 72, 1, 9782578827375467
+1787663512.990459, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 324761429600510523700126295828169313750, 1787663512.990444, 73, 1, 9782578828521529
+1787663512.990495, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578828555513
+1787663512.990522, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578828581753
+1787663512.990539, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578828598649
+1787663512.990562, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578828621737
+1787663512.990578, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578828637385
+1787663512.990600, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578828658969
+1787663512.990615, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578828674089
+1787663512.990636, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578828695689
+1787663512.991075, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 324761429600510523700126295828169313750, 1787663512.990444, 73, 1, 9782578829135544
+1787663512.991116, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 67615258221214444845369487445458791489, 1787663512.991106, 74, 1, 9782578829176088
+1787663512.991140, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578829199560
+1787663512.991163, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578829222200
+1787663512.991178, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578829237736
+1787663512.991200, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578829259544
+1787663512.991215, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578829274552
+1787663512.991237, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578829295928
+1787663512.991252, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578829311528
+1787663512.991273, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578829332808
+1787663512.991289, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 67615258221214444845369487445458791489, 1787663512.991106, 74, 1, 9782578829347992
+1787663512.991322, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 216400248348622961842096650713331069167, 1787663512.991313, 75, 1, 9782578829381608
+1787663512.991348, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578829406776
+1787663512.991369, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578829428840
+1787663512.991385, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578829443959
+1787663512.991407, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578829466199
+1787663512.991422, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578829481223
+1787663512.991446, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578829505111
+1787663512.991461, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578829520391
+1787663512.991482, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578829541527
+1787663512.991498, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 216400248348622961842096650713331069167, 1787663512.991313, 75, 1, 9782578829557511
+1787663512.991532, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 303617319570960246701112991444320481293, 1787663512.991523, 76, 1, 9782578829591399
+1787663512.991554, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578829613255
+1787663512.991575, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578829634455
+1787663512.991590, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578829649335
+1787663512.991611, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578829670071
+1787663512.991626, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578829684743
+1787663512.991647, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578829706711
+1787663512.991662, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578829721431
+1787663512.991683, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578829742119
+1787663512.991697, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 303617319570960246701112991444320481293, 1787663512.991523, 76, 1, 9782578829756487
+1787663512.991731, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 120251574406364185147159046575123074718, 1787663512.991722, 77, 1, 9782578829790439
+1787663512.991752, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578829811719
+1787663512.991774, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578829833159
+1787663512.991789, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578829848119
+1787663512.991811, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578829870391
+1787663512.991827, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578829886423
+1787663512.991850, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578829909591
+1787663512.991863, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578829921815
+1787663512.991895, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578829954215
+1787663512.991909, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 120251574406364185147159046575123074718, 1787663512.991722, 77, 1, 9782578829968743
+1787663512.991941, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 172389194849347195494181810502239469018, 1787663512.991932, 78, 1, 9782578830002727
+1787663512.991966, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578830025254
+1787663512.991987, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578830046566
+1787663512.992003, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578830062230
+1787663512.992025, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578830084758
+1787663512.992040, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578830099590
+1787663512.992064, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578830122886
+1787663512.992075, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578830134662
+1787663512.992106, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578830165430
+1787663512.992122, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 172389194849347195494181810502239469018, 1787663512.991932, 78, 1, 9782578830181398
+1787663512.992153, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 231608475414445985047856188876728410309, 1787663512.992144, 79, 1, 9782578830212598
+1787663512.992175, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578830234118
+1787663512.992196, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578830255398
+1787663512.992211, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578830270294
+1787663512.992234, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578830293334
+1787663512.992249, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578830307942
+1787663512.992272, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578830331190
+1787663512.992285, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578830344342
+1787663512.992317, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578830376678
+1787663512.992329, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 231608475414445985047856188876728410309, 1787663512.992144, 79, 1, 9782578830388262
+1787663512.992373, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 11684889707000559179472390932354620887, 1787663512.992365, 80, 1, 9782578830432854
+1787663512.992395, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578830454102
+1787663512.992416, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578830475142
+1787663512.992431, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578830489958
+1787663512.992452, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578830511766
+1787663512.992468, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578830527318
+1787663512.992895, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578830955029
+1787663512.993021, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578831080645
+1787663512.993047, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578831106117
+1787663512.993063, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 11684889707000559179472390932354620887, 1787663512.992365, 80, 1, 9782578831122133
+1787663512.993096, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 106444771045267663229513612678473415401, 1787663512.993087, 81, 1, 9782578831155893
+1787663512.993119, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578831178133
+1787663512.993141, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578831200213
+1787663512.993156, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578831215492
+1787663512.993178, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578831236996
+1787663512.993193, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578831252244
+1787663512.993214, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578831273732
+1787663512.993230, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578831289044
+1787663512.993251, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578831309956
+1787663512.993265, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 106444771045267663229513612678473415401, 1787663512.993087, 81, 1, 9782578831324692
+1787663512.993299, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 21441260905567114223593882741853700944, 1787663512.993290, 82, 1, 9782578831357908
+1787663512.993320, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578831379572
+1787663512.993341, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578831400740
+1787663512.993361, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578831419908
+1787663512.993382, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578831441828
+1787663512.993399, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578831458628
+1787663512.993420, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578831479700
+1787663512.993435, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578831494756
+1787663512.993457, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578831515892
+1787663512.993471, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 21441260905567114223593882741853700944, 1787663512.993290, 82, 1, 9782578831530340
+1787663512.993502, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 172897392010577328344735946831146042715, 1787663512.993493, 83, 1, 9782578831561460
+1787663512.993527, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578831586036
+1787663512.993550, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578831609684
+1787663512.993565, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578831624564
+1787663512.993587, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578831646852
+1787663512.993602, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578831661588
+1787663512.993623, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578831682724
+1787663512.993638, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578831697476
+1787663512.993659, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578831718292
+1787663512.993675, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 172897392010577328344735946831146042715, 1787663512.993493, 83, 1, 9782578831733924
+1787663512.993707, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 127512299899489740166484635484245572649, 1787663512.993698, 84, 1, 9782578831766164
+1787663512.993728, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578831787812
+1787663512.993751, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578831810483
+1787663512.993766, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578831825315
+1787663512.993790, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578831849091
+1787663512.993801, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578831860883
+1787663512.993832, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578831891779
+1787663512.993848, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578831907667
+1787663512.993869, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578831928371
+1787663512.993884, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 127512299899489740166484635484245572649, 1787663512.993698, 84, 1, 9782578831942867
+1787663512.993916, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 22664528734816613147445165710236684172, 1787663512.993906, 85, 1, 9782578831975363
+1787663512.993940, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578831999427
+1787663512.993964, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578832023699
+1787663512.993980, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578832039331
+1787663512.994310, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578832370467
+1787663512.994429, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578832488674
+1787663512.994454, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578832513378
+1787663512.994470, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578832529122
+1787663512.994491, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578832550562
+1787663512.994506, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 22664528734816613147445165710236684172, 1787663512.993906, 85, 1, 9782578832565458
+1787663512.994539, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 227371824664145287166376016246071973651, 1787663512.994529, 86, 1, 9782578832598274
+1787663512.994561, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578832620178
+1787663512.995955, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578834015584
+1787663512.996262, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578834322399
+1787663512.996289, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578834348991
+1787663512.996305, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578834364863
+1787663512.996327, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578834386847
+1787663512.996342, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578834401951
+1787663512.996363, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578834422783
+1787663512.996378, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 227371824664145287166376016246071973651, 1787663512.994529, 86, 1, 9782578834437791
+1787663512.996413, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 291891188070552076328420818946239919610, 1787663512.996403, 87, 1, 9782578834472207
+1787663512.996438, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578834497567
+1787663512.996459, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578834518879
+1787663512.996474, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578834533455
+1787663512.996495, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578834554319
+1787663512.996510, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578834568975
+1787663512.996531, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578834589967
+1787663512.996545, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578834604655
+1787663512.996566, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578834625199
+1787663512.996580, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 291891188070552076328420818946239919610, 1787663512.996403, 87, 1, 9782578834639567
+1787663512.996611, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 214160044785633617601651018617678243963, 1787663512.996603, 88, 1, 9782578834670735
+1787663512.996636, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578834695087
+1787663512.996657, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578834716207
+1787663512.996671, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578834730943
+1787663512.996693, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578834752302
+1787663512.996707, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578834766798
+1787663512.996729, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578834787998
+1787663512.996743, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578834802606
+1787663512.996764, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578834822990
+1787663512.996778, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 214160044785633617601651018617678243963, 1787663512.996603, 88, 1, 9782578834837118
+1787663512.996809, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 15158819535724325381880655135682407000, 1787663512.996800, 89, 1, 9782578834868206
+1787663512.996933, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578834993422
+1787663512.997070, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578835129918
+1787663512.997083, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578835142910
+1787663512.997117, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578835176222
+1787663512.997132, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578835191614
+1787663512.997155, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578835214078
+1787663512.997170, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578835229454
+1787663512.997191, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578835250014
+1787663512.997205, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 15158819535724325381880655135682407000, 1787663512.996800, 89, 1, 9782578835264718
+1787663512.997245, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 308579488920517968598841104116279114309, 1787663512.997234, 90, 1, 9782578835304030
+1787663512.997269, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578835328973
+1787663512.997293, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578835352861
+1787663512.997306, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578835364989
+1787663512.997337, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578835396461
+1787663512.997352, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578835410989
+1787663512.997376, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578835435501
+1787663512.997391, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578835450333
+1787663512.997414, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578835473229
+1787663512.997428, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 308579488920517968598841104116279114309, 1787663512.997234, 90, 1, 9782578835487373
+1787663512.997460, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 296718189543914157714909196598708231194, 1787663512.997451, 91, 1, 9782578835519165
+1787663512.997480, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578835539757
+1787663512.997501, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578835560797
+1787663512.997516, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578835575309
+1787663512.997539, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578835598621
+1787663512.997551, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578835610461
+1787663512.997583, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578835642525
+1787663512.997598, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578835657277
+1787663512.997620, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578835679069
+1787663512.997635, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 296718189543914157714909196598708231194, 1787663512.997451, 91, 1, 9782578835694605
+1787663512.997666, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 119457024918549782946321243421169799209, 1787663512.997657, 92, 1, 9782578835725421
+1787663512.997688, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578835746973
+1787663512.997708, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578835767677
+1787663512.997723, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578835782221
+1787663512.997745, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578835804301
+1787663512.997757, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578835815933
+1787663512.997790, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578835849213
+1787663512.997802, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578835861165
+1787663512.997833, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578835892461
+1787663512.997847, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 119457024918549782946321243421169799209, 1787663512.997657, 92, 1, 9782578835906557
+1787663512.997878, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 196778752138377244212686544488568481313, 1787663512.997869, 93, 1, 9782578835937324
+1787663512.997900, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578835958812
+1787663512.997922, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578835981228
+1787663512.997936, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578835995436
+1787663512.998351, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578836411468
+1787663512.998471, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578836530171
+1787663512.998495, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578836554603
+1787663512.998514, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578836573115
+1787663512.998535, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578836594571
+1787663512.998550, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 196778752138377244212686544488568481313, 1787663512.997869, 93, 1, 9782578836609227
+1787663512.998582, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 178233437135433324787607715476691803115, 1787663512.998573, 94, 1, 9782578836641691
+1787663512.998604, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578836663179
+1787663512.998625, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578836684235
+1787663512.998639, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578836698779
+1787663512.998660, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578836719803
+1787663512.998675, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578836734379
+1787663512.998698, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578836757019
+1787663512.998713, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578836771803
+1787663512.998733, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578836792363
+1787663512.998748, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 178233437135433324787607715476691803115, 1787663512.998573, 94, 1, 9782578836806891
+1787663512.998823, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 185280611357897674273905568936354451828, 1787663512.998813, 95, 1, 9782578836882379
+1787663512.998845, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578836904683
+1787663512.998866, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578836925803
+1787663512.998881, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578836940139
+1787663512.998905, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578836964347
+1787663512.998920, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578836978907
+1787663512.998942, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578837002715
+1787663512.998960, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578837019275
+1787663512.998982, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578837041707
+1787663512.998997, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 185280611357897674273905568936354451828, 1787663512.998813, 95, 1, 9782578837056283
+1787663512.999031, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 221151025019450827681738813384769100389, 1787663512.999019, 96, 1, 9782578837090427
+1787663512.999052, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578837111339
+1787663512.999073, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578837132106
+1787663512.999087, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578837146458
+1787663512.999108, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578837167146
+1787663512.999123, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578837181898
+1787663512.999145, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578837203754
+1787663512.999160, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578837220282
+1787663512.999183, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578837241786
+1787663512.999197, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 221151025019450827681738813384769100389, 1787663512.999019, 96, 1, 9782578837255786
+1787663512.999233, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 164812877718659793533382598652276286774, 1787663512.999221, 97, 1, 9782578837292458
+1787663512.999254, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578837313338
+1787663512.999275, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578837334090
+1787663512.999289, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578837348282
+1787663512.999312, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578837371722
+1787663512.999327, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578837386186
+1787663512.999349, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578837408074
+1787663512.999363, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578837422586
+1787663512.999383, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578837442234
+1787663512.999399, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 164812877718659793533382598652276286774, 1787663512.999221, 97, 1, 9782578837458250
+1787663512.999840, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 82264114043403051941897396767761527283, 1787663512.999830, 98, 1, 9782578837900793
+1787663512.999865, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578837924953
+1787663512.999888, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578837947609
+1787663512.999903, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578837962617
+1787663512.999925, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578837984105
+1787663512.999939, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578837998713
+1787663512.999963, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578838022089
+1787663512.999978, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578838036745
+1787663513.000000, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578838058681
+1787663513.000011, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 82264114043403051941897396767761527283, 1787663512.999830, 98, 1, 9782578838070409
+1787663513.000053, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 19845195806612248672941533313295809778, 1787663513.000044, 99, 1, 9782578838112633
+1787663513.000076, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578838135737
+1787663513.000097, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578838156505
+1787663513.000112, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578838170921
+1787663513.000135, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578838194025
+1787663513.000149, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578838208313
+1787663513.000169, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578838228633
+1787663513.000184, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578838243305
+1787663513.000582, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578838642600
+1787663513.000704, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 19845195806612248672941533313295809778, 1787663513.000044, 99, 1, 9782578838763752
+1787663513.000739, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 71059794775608498807497469680724761527, 1787663513.000729, 100, 1, 9782578838798568
+1787663513.000763, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578838821912
+1787663513.000785, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578838844424
+1787663513.000800, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578838859223
+1787663513.000821, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578838880311
+1787663513.000836, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578838894807
+1787663513.000858, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578838917143
+1787663513.000870, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578838929319
+1787663513.000902, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578838961223
+1787663513.000914, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 71059794775608498807497469680724761527, 1787663513.000729, 100, 1, 9782578838973127
+1787663513.000983, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, start, 138430335432826186092960257015543023748, 1787663513.000948, 101, 1, 9782578839042167
+1787663513.001035, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, start, 9782578839094727
+1787663513.001061, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 0, run, end, 9782578839120807
+1787663513.001079, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, start, 9782578839137847
+1787663513.001100, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 1, run, end, 9782578839159287
+1787663513.001115, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, start, 9782578839173831
+1787663513.001137, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 2, run, end, 9782578839196391
+1787663513.001476, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, start, 9782578839536102
+1787663513.001500, NoOp Chain Depth 4 Size 0 Mode ref, Ref Stage 3, run, end, 9782578839559462
+1787663513.001614, NoOp Chain Depth 4 Size 0 Mode ref, pipeline - train, run, end, 138430335432826186092960257015543023748, 1787663513.000948, 101, 1, 9782578839673318
+1787663513.021315, choreo, spans, emitted, 1622, 9782578859545093
