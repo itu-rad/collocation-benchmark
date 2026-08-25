@@ -139,6 +139,10 @@ def _resolve_mode():
 
 MODE = _resolve_mode()
 
+#: False in the tracing-off arm, so callers can skip building attribute dicts
+#: for spans that would be thrown away.
+SPANS_ENABLED = MODE != "off"
+
 
 def _with_perf(attributes):
     """Copy `attributes` and stamp the monotonic clock. Copies rather than

@@ -9,7 +9,7 @@ from typing import Any
 import json
 
 import mlflow
-from utils.trace_span import trace_span
+from utils.trace_span import trace_span, SPANS_ENABLED
 
 from utils.queues.polling.polling_policy import PollingPolicy
 from utils.queues.peekable_queue import PeekableQueue
@@ -66,6 +66,34 @@ def log_phase_single(parent_name, name, phase, start):
     )
 
 
+def marker_span(stage: "Stage", name: str, attributes: dict | None = None) -> None:
+    """Emit a zero-duration span marking an INSTANT in `stage`'s current query.
+
+    Span attributes are fixed at span start, so a span's START is the only
+    instant it can report on the monotonic clock (utils/trace_span.PERF_ATTR).
+    An instant that is not bracketed by a span therefore cannot be recovered
+    from the span artifacts at all -- which is why first_token, and the token
+    counts that normalise it, were previously CSV-only and invisible to any
+    span-based analysis.
+
+    NOT gated by `disable_logs`: that flag turns off the CSV instrument, and
+    the whole point of these markers is that the timing survives without it.
+    Cheap when tracing is off (SPANS_ENABLED short-circuits before the dict is
+    built) and ~2 events when it is on -- once per query, not per stage.
+
+    Names must be unique per query, hence `first_token_start` / `first_token_end`
+    rather than one name with a start/end attribute: SpanTrace.by_query() treats
+    a repeated (name, query) as a shape error rather than silently keeping one.
+    """
+    if not SPANS_ENABLED:
+        return
+    attrs = {"stage": stage.name, "query_id": stage.current_query_id}
+    if attributes:
+        attrs.update(attributes)
+    with trace_span(name=f"{stage.name}.{name}", attributes=attrs):
+        pass
+
+
 def log_first_token(stage: "Stage", event: str) -> None:
     """Log one edge of a generator stage's "first_token" sub-phase.
 
@@ -82,6 +110,7 @@ def log_first_token(stage: "Stage", event: str) -> None:
     with the stage's run start/end pairs (staged_lib aligns them by index).
     Gated by disable_logs identically to the per-query run rows.
     """
+    marker_span(stage, f"first_token_{event}")
     if not stage.disable_logs:
         log_phase_single(stage.parent_name, stage.name, "first_token", event)
 
@@ -97,6 +126,7 @@ def log_generated_tokens(stage: "Stage", n_tokens: int) -> None:
     gen_kwargs.max_tokens when present (early EOS makes max_tokens an
     overestimate). Gated by disable_logs like all per-query stage rows.
     """
+    marker_span(stage, "generated_tokens", {"n_generated_tokens": n_tokens})
     if not stage.disable_logs:
         logging.getLogger("benchmark").info(
             "%s, %s, n_generated_tokens, %d", stage.parent_name, stage.name,
@@ -118,6 +148,7 @@ def log_prompt_tokens(stage: "Stage", n_tokens: int) -> None:
     context in every sub-call", which was previously only inferred. Gated by
     disable_logs like all per-query stage rows.
     """
+    marker_span(stage, "prompt_tokens", {"n_prompt_tokens": n_tokens})
     if not stage.disable_logs:
         logging.getLogger("benchmark").info(
             "%s, %s, n_prompt_tokens, %d", stage.parent_name, stage.name,
@@ -148,6 +179,17 @@ class Stage:
         self._input_cond = threading.Condition()
         self.output_queues: dict[int, Queue] = {}
         self._logger = logging.getLogger("benchmark")
+        # The query this stage is currently processing, per THREAD: most stages
+        # are one thread, but a stage that dispatches queries concurrently
+        # (stages.llm_server.Inference) runs _process_query on several workers
+        # at once, and a plain attribute would let one worker's marker spans be
+        # attributed to another's query. Read via `current_query_id`.
+        self._current = threading.local()
+
+    @property
+    def current_query_id(self):
+        """Query id this thread is processing, or None outside a query."""
+        return getattr(self._current, "query_id", None)
 
     def __str__(self) -> str:
         """
@@ -350,6 +392,10 @@ class Stage:
         if not self.disable_logs:
             log_phase_single(self.parent_name, self.name, "run", "start")
 
+        # Published before run() so marker spans emitted from deep inside a
+        # stage's inference code (first_token, token counts) can name the query
+        # they belong to without every call site having to thread it through.
+        self._current.query_id = query.query_id
         in_flow_id = str(query.out_flow_id) if query.out_flow_id else None
         out_flow_id = uuid.uuid4()
         with trace_span(
@@ -369,6 +415,7 @@ class Stage:
             outputs = self.run(query)
 
         self._push_to_outputs(outputs)
+        self._current.query_id = None
         if not self.disable_logs:
             log_phase_single(self.parent_name, self.name, "run", "end")
 
