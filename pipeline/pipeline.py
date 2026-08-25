@@ -1,7 +1,7 @@
 import logging
 import threading
 import uuid
-from queue import Queue, Empty
+from queue import Queue, Full, Empty
 from threading import Event, Thread
 
 import mlflow
@@ -113,6 +113,43 @@ class Pipeline:
             stage.prepare()
 
         self._logger.info("%s, pipeline, prepare, end", self.name)
+
+    def _broadcast_terminator(self) -> None:
+        """Put the None terminator on EVERY input queue of EVERY stage.
+
+        Propagating it from the pipeline inputs alone only terminates an
+        ACYCLIC graph. The self-RAG retry loop is cyclic -- the retriever takes
+        input from the dataloader and from the rewrite LLM, which sits
+        downstream of the retriever itself -- and FirstSubmittedPolicy exits
+        only once every upstream has sent its terminator (correctly: a
+        terminator on one input must not discard in-flight queries on another).
+        So the retriever drained its dataloader input and then waited forever
+        for a terminator that could only come from behind its own block. Every
+        stage past it stayed parked, the bounded joins all timed out, and
+        os._exit reaped the threads: measured at 80.04 s of dead time after the
+        last query on a 6-query self-RAG run, which is 7 stages x 10 s plus 10 s
+        for the result thread.
+
+        Delivering the terminator directly to every input sidesteps
+        reachability entirely, so shutdown does not depend on graph shape. Safe
+        because the caller has already waited for the pipeline to drain: no
+        real query can be sitting behind these terminators. A stage that has
+        already exited simply leaves its terminator unread, and a policy that
+        sees a second terminator from an upstream it has already marked drained
+        ignores it.
+        """
+        for stage in self.stages.values():
+            for queue_ in stage._input_queues.values():
+                try:
+                    queue_.put_nowait(None)
+                except Full:
+                    # Only reachable if a bounded input queue is still full,
+                    # i.e. the pipeline did not actually drain. Say so rather
+                    # than block shutdown forever on a stage that may be gone.
+                    self._logger.warning(
+                        "pipeline %s: input queue of stage %r was full at "
+                        "shutdown; its terminator was not delivered",
+                        self.name, stage.name)
 
     def join_threads(self, timeout: float | None = None) -> None:
         """
@@ -251,9 +288,11 @@ class Pipeline:
                 # policy or a stage exception) doesn't cause indefinite hang.
                 _wait_for_drain(queries_sent, DRAIN_TIMEOUT)
 
-                # send the termination element to the following stages and join the threads
-                for input_queue in self._input_queues:
-                    input_queue.put(None)
+                # Terminate every stage directly. The pipeline input queues
+                # are among these (an input stage's queue keyed -1), so this
+                # subsumes the old propagate-from-the-inputs behaviour and also
+                # terminates stages a cyclic graph could never reach.
+                self._broadcast_terminator()
                 # Bounded join — a stuck stage shouldn't hold the whole
                 # pipeline in shutdown. main.py force-exits afterwards,
                 # so leaked threads are reclaimed by process exit.
