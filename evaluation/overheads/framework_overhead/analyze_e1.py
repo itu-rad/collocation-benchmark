@@ -168,7 +168,16 @@ def load_device(device, root):
 # ---------------------------------------------------------------------------
 # Selection + run-structured pooling (run = unit of replication)
 # ---------------------------------------------------------------------------
-def select(runs, depth=None, size=None, mode=None, trace=None):
+def select(runs, depth=None, size=None, mode=None, trace=None, arm=None):
+    """Filter runs. Prefer `arm` over `trace` for anything four-arm.
+
+    `trace` is the old two-arm switch and is now AMBIGUOUS: trace=0 matches both
+    `off` and `nolog`, trace=1 both `proc` and `spans`. Selecting on it pools
+    arms that differ in whether the CSV instrument was running, which is exactly
+    the distinction the four-arm collection exists to measure. It is kept only
+    for the payload sweep, whose data predates the extra arms and contains
+    `off`/`proc` alone.
+    """
     out = []
     for r in runs:
         m = r.meta
@@ -179,6 +188,8 @@ def select(runs, depth=None, size=None, mode=None, trace=None):
         if mode is not None and m.get("mode") != mode:
             continue
         if trace is not None and m.get("trace") != trace:
+            continue
+        if arm is not None and m.get("arm") != arm:
             continue
         out.append(r)
     return out
@@ -357,6 +368,61 @@ def depth_table(runs, arm_label):
           f"**Fixed per-query overhead** (intercept): "
           f"{intercept_ns / NS_PER_US:.2f} us")
     return od_by_depth
+
+
+ARM_DESC = {
+    "off":   "tracing off, CSV stage rows ON  (E1's historical headline)",
+    "nolog": "tracing off, CSV stage rows OFF (framework without our logger)",
+    "proc":  "tracing on,  CSV stage rows ON",
+    "spans": "tracing on,  CSV stage rows OFF (cheap instrument, keeps the breakdown)",
+}
+
+
+def instrument_table(od_by_arm, device):
+    """Separate what the FRAMEWORK costs from what MEASURING it costs.
+
+    Every number E1 has ever reported for per-stage dispatch came from the
+    `off` arm, and that arm's timing is produced by CSV log rows emitted by the
+    stages themselves. A log row costs ~7.7 us single-threaded and far more
+    under stage-thread contention on the logging handler lock, and at depth 10
+    the stage-to-stage transitions -- where those rows sit -- are 78% of L_q.
+    So `off` measures the framework AND the instrument, inseparably.
+
+    `nolog` runs the identical pipeline with the per-stage rows switched off,
+    leaving only the pipeline-level rows that carry L_q. The difference is the
+    instrument, and what remains is the framework:
+
+        off  - nolog  = the CSV instrument's per-stage cost
+        spans - nolog = the span instrument's per-stage cost
+        proc - off    = the tracing layer on top of the CSV instrument
+
+    A negative difference is not a speed-up; it means the two arms differ by
+    less than the run-to-run noise at that depth, and is reported as measured
+    rather than clipped.
+    """
+    have = [a for a in ("off", "nolog", "proc", "spans") if od_by_arm.get(a)]
+    if "off" not in have or "nolog" not in have:
+        print(f"\n## {device} -- instrument decomposition: needs the off and "
+              f"nolog arms (have: {', '.join(have) or 'none'})\n")
+        return
+    depths = sorted(set(od_by_arm["off"]) & set(od_by_arm["nolog"]))
+    print(f"\n## {device} -- what is the framework, what is the instrument\n")
+    print("| depth | O(d) off | O(d) nolog | CSV instrument | instrument % of off "
+          "| O(d) spans | span instrument |")
+    print("|------:|---------:|-----------:|---------------:|--------------------:"
+          "|-----------:|----------------:|")
+    for d in depths:
+        off = od_by_arm["off"][d]["median"]
+        nol = od_by_arm["nolog"][d]["median"]
+        csv_cost = off - nol
+        pct = (100.0 * csv_cost / off) if off else float("nan")
+        sp = od_by_arm.get("spans", {}).get(d)
+        sp_s = f"{sp['median']:.2f}" if sp else "—"
+        sp_cost = f"{sp['median'] - nol:+.2f}" if sp else "—"
+        print(f"| {d} | {off:.2f} | {nol:.2f} | {csv_cost:+.2f} | {pct:+.1f}% "
+              f"| {sp_s} | {sp_cost} |")
+    print("\n(all per-stage, microseconds: O(d) = L_q / depth. "
+          "'CSV instrument' = off - nolog; 'span instrument' = spans - nolog.)")
 
 
 def tracing_add_table(od_off, od_on):
@@ -581,10 +647,19 @@ def main():
             continue
         per_device[dev] = runs
         print(f"\n# ===== {dev} ({len(runs)} run-files) =====")
-        od_off = depth_table(select(runs, trace=0), f"{dev} -- tracing OFF (core dispatch)")
-        od_on = depth_table(select(runs, trace=1), f"{dev} -- tracing ON (bulk+proc)")
-        if od_off and od_on:
-            tracing_add_table(od_off, od_on)
+        # One table per ARM. Selecting on `trace` here would pool off with
+        # nolog (and proc with spans), hiding the instrument's cost inside the
+        # framework's — see select().
+        od_by_arm = {}
+        for a in ("off", "nolog", "proc", "spans"):
+            sel = select(runs, arm=a)
+            if sel:
+                od_by_arm[a] = depth_table(sel, f"{dev} -- arm '{a}': {ARM_DESC[a]}")
+        instrument_table(od_by_arm, dev)
+        if od_by_arm.get("off") and od_by_arm.get("proc"):
+            tracing_add_table(od_by_arm["off"], od_by_arm["proc"])
+        # The payload sweep predates the four-arm split and holds off/proc only,
+        # so it still selects on `trace`.
         payload_table(payload_collect(runs))
 
     if per_device:
