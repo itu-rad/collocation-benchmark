@@ -293,9 +293,18 @@ class Stage:
             outputs (dict[int, any]): dictionary of outputs, where keys are the stage IDs
                 and values are the outputs to be pushed to the corresponding output queue.
         """
+        # query_id and stage are carried so this span can be CORRELATED, not just
+        # counted: the hand-off cost between stage k and k+1 is
+        #   start(stage k+1 ".run") - start(stage k ".push_to_outputs")
+        # for one query, which is unrecoverable if the push span cannot say
+        # which query it pushed. All outputs are the same query object, so any
+        # of them names it.
+        qid = next((getattr(o, "query_id", None) for o in outputs.values()
+                    if o is not None), None)
         with trace_span(
             name=f"{self.name}.push_to_outputs",
-            attributes={"thread_id": threading.get_ident()},
+            attributes={"thread_id": threading.get_ident(),
+                        "stage": self.name, "query_id": qid},
         ):
             for idx, output in outputs.items():
                 self.output_queues[idx].put(output)
@@ -368,9 +377,15 @@ class Stage:
         perform actions on them and push the results onto the output queues."""
         self.pre_run()
         while True:
+            # No query_id here: attributes are fixed at span START, and at that
+            # instant this stage has not received a query yet -- that is the
+            # whole point of the span. Its START is when the stage began
+            # waiting; the query it eventually got is named by the ".run" span
+            # that follows on the same thread.
             with trace_span(
                 name=f"{self.name}.get_input",
-                attributes={"thread_id": threading.get_ident()},
+                attributes={"thread_id": threading.get_ident(),
+                            "stage": self.name},
             ):
                 query = self._get_input_from_queues()
             if not query:

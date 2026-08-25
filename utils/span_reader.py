@@ -1,0 +1,281 @@
+"""Read the span artifacts radt writes, and verify they are complete.
+
+With ``RADT_TRACE_BACKEND=radt`` the tracing child does not push spans through
+the mlflow trace API; it spools them to gzipped JSONL and uploads them to the
+run's ``radt-trace/`` artifact directory:
+
+    radt-trace/manifest.json          schema, run id, event_count, batch list
+    radt-trace/spans-NNNNNN.jsonl.gz  one compact JSON array per event
+
+Records are positional, not keyed -- at millions of spans the field names would
+dominate the payload -- and the manifest's ``record_formats`` pins the layout.
+This module turns them back into :class:`Span` objects.
+
+Two clocks
+----------
+Every span carries the backend's ``time.time_ns()`` wall clock (start and end)
+and, from :mod:`utils.trace_span`, a ``perf_start_ns`` attribute holding
+``time.perf_counter_ns()`` at span start. Pick per question:
+
+  * **perf** -- monotonic and fine-grained (16 ns on Linux, 41 ns on macOS,
+    against 1000 ns for the macOS wall clock). PROCESS-LOCAL: only comparable
+    between spans of the same run. This is the clock for per-stage latency.
+  * **wall** -- comparable across processes, so it is the only option for
+    collocated pipelines, each of which is its own run and its own artifact.
+
+Because attributes can only be attached at span START, the perf clock gives
+instants, not durations. Every quantity we measure is an interval between two
+instants we already mark (``L_q`` = "pipeline query processed" start minus
+"pipeline query" start, and so on), so :meth:`SpanTrace.interval` is built
+around start-to-start and there is no perf end time to ask for.
+
+Completeness
+------------
+radt drops events on queue overflow and only warns; that is left as it is, so
+this module verifies from our side instead:
+
+    manifest.event_count == 2 * choreo.spans_emitted
+
+with the emitted count published by :func:`utils.trace_span.report_span_count`
+as an mlflow tag, a ``choreo, spans, emitted, N`` CSV row, and a stdout line.
+:func:`read_dir` / :func:`read_run` raise on a mismatch by default -- analysing
+a run that silently lost spans is the failure this is here to prevent.
+"""
+from __future__ import annotations
+
+import glob
+import gzip
+import json
+import os
+from dataclasses import dataclass, field
+
+SCHEMA_VERSION = 1
+PERF_ATTR = "perf_start_ns"
+COUNT_TAG = "choreo.spans_emitted"
+
+
+class IncompleteTrace(RuntimeError):
+    """The artifact does not hold every span the workload emitted."""
+
+
+@dataclass
+class Span:
+    span_id: int
+    parent_id: int | None
+    trace_id: int
+    name: str
+    attributes: dict
+    wall_start_ns: int
+    wall_end_ns: int | None = None
+
+    @property
+    def perf_start_ns(self) -> int | None:
+        """Monotonic start instant, or None for runs traced before it existed."""
+        v = self.attributes.get(PERF_ATTR)
+        return int(v) if v is not None else None
+
+    @property
+    def wall_duration_ns(self) -> int | None:
+        if self.wall_end_ns is None:
+            return None
+        return self.wall_end_ns - self.wall_start_ns
+
+    @property
+    def query_id(self):
+        return self.attributes.get("query_id")
+
+    @property
+    def stage(self):
+        return self.attributes.get("stage")
+
+
+@dataclass
+class Completeness:
+    """What the verification found. Truthy when the trace is whole."""
+    event_count_manifest: int
+    events_read: int
+    starts: int
+    ends: int
+    emitted_expected: int | None
+    unmatched_ends: int
+    unclosed_spans: int
+    problems: list = field(default_factory=list)
+
+    def __bool__(self):
+        return not self.problems
+
+    def __str__(self):
+        head = (f"{self.starts} spans ({self.events_read} events); "
+                f"manifest says {self.event_count_manifest}")
+        if self.emitted_expected is not None:
+            head += f"; workload emitted {self.emitted_expected}"
+        if not self.problems:
+            return head + " — complete"
+        return head + " — PROBLEMS: " + "; ".join(self.problems)
+
+
+@dataclass
+class SpanTrace:
+    spans: list
+    manifest: dict
+    completeness: Completeness
+
+    def __post_init__(self):
+        self._by_name = {}
+        for s in self.spans:
+            self._by_name.setdefault(s.name, []).append(s)
+
+    @property
+    def names(self):
+        """{span name: count} — what this run actually recorded."""
+        return {k: len(v) for k, v in sorted(self._by_name.items())}
+
+    def named(self, name):
+        return self._by_name.get(name, [])
+
+    def by_query(self, name):
+        """{query_id: Span} for one span name.
+
+        Raises on a duplicate query_id rather than silently keeping the last:
+        two spans of the same name for one query means the caller's assumption
+        about the pipeline's shape is wrong, and quietly dropping one would
+        turn that into a plausible-looking number.
+        """
+        out = {}
+        for s in self.named(name):
+            q = s.query_id
+            if q is None:
+                continue
+            if q in out:
+                raise ValueError(
+                    f"two {name!r} spans for query {q} — this span is not "
+                    f"once-per-query, so by_query() is the wrong accessor")
+            out[q] = s
+        return out
+
+    def interval(self, start_name, end_name, clock="perf"):
+        """{query_id: ns} between the STARTS of two once-per-query spans.
+
+        Start-to-start, because the perf clock is attached at span start only
+        (see the module docstring). Queries missing either end are omitted, and
+        the count is left to the caller to check against what it expected --
+        this deliberately does not fill gaps.
+        """
+        if clock not in ("perf", "wall"):
+            raise ValueError("clock must be 'perf' or 'wall'")
+        a, b = self.by_query(start_name), self.by_query(end_name)
+        pick = (lambda s: s.perf_start_ns) if clock == "perf" else (lambda s: s.wall_start_ns)
+        out = {}
+        for q in a.keys() & b.keys():
+            t0, t1 = pick(a[q]), pick(b[q])
+            if t0 is not None and t1 is not None:
+                out[q] = t1 - t0
+        return out
+
+    def has_perf_clock(self):
+        return any(s.perf_start_ns is not None for s in self.spans)
+
+
+# ---------------------------------------------------------------------------
+# Reading
+# ---------------------------------------------------------------------------
+def emitted_from_csv(csv_path):
+    """The `choreo, spans, emitted, N` row a run writes, or None."""
+    try:
+        with open(csv_path, "r", encoding="utf-8") as f:
+            for line in f:
+                parts = [p.strip() for p in line.split(",")]
+                if len(parts) >= 5 and parts[1:4] == ["choreo", "spans", "emitted"]:
+                    return int(parts[4])
+    except (OSError, ValueError):
+        return None
+    return None
+
+
+def _verify(manifest, spans, events_read, starts, ends, unmatched_ends, emitted):
+    problems = []
+    if manifest.get("schema_version") != SCHEMA_VERSION:
+        problems.append(
+            f"schema_version {manifest.get('schema_version')} != {SCHEMA_VERSION} "
+            f"(record layout may have moved)")
+    if events_read != manifest.get("event_count"):
+        problems.append(
+            f"read {events_read} events but manifest claims "
+            f"{manifest.get('event_count')} (a batch file is missing or truncated)")
+    unclosed = sum(1 for s in spans if s.wall_end_ns is None)
+    if unclosed:
+        problems.append(f"{unclosed} span(s) never closed")
+    if unmatched_ends:
+        problems.append(f"{unmatched_ends} end record(s) with no matching start")
+    if emitted is not None and manifest.get("event_count") != 2 * emitted:
+        problems.append(
+            f"manifest event_count {manifest.get('event_count')} != 2 x "
+            f"{emitted} emitted — the backend dropped events on queue overflow "
+            f"(raise RADT_TRACE_PROC_QUEUE_SIZE)")
+    return Completeness(
+        event_count_manifest=manifest.get("event_count", -1),
+        events_read=events_read, starts=starts, ends=ends,
+        emitted_expected=emitted, unmatched_ends=unmatched_ends,
+        unclosed_spans=unclosed, problems=problems)
+
+
+def read_dir(trace_dir, emitted=None, strict=True):
+    """Read a ``radt-trace/`` directory into a :class:`SpanTrace`.
+
+    `emitted` is the workload's own span count (mlflow tag, or
+    :func:`emitted_from_csv`); pass it whenever it is available, since without
+    it the drop check cannot run. `strict` raises :class:`IncompleteTrace` on
+    any problem; set it False only to inspect a trace you already know is
+    damaged.
+    """
+    with open(os.path.join(trace_dir, "manifest.json"), encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    batches = manifest.get("batches") or sorted(
+        os.path.basename(p) for p in glob.glob(os.path.join(trace_dir, "spans-*.jsonl.gz")))
+    missing = [b for b in batches if not os.path.exists(os.path.join(trace_dir, b))]
+    if missing:
+        raise IncompleteTrace(f"manifest names batch files that are absent: {missing}")
+
+    live, spans = {}, []
+    events = starts = ends = unmatched = 0
+    for b in batches:
+        with gzip.open(os.path.join(trace_dir, b), "rt", encoding="utf-8") as f:
+            for line in f:
+                rec = json.loads(line)
+                events += 1
+                if rec[0] == "s":
+                    _, sid, parent, trace, name, attrs, ts = rec
+                    sp = Span(sid, parent, trace, name, attrs or {}, ts)
+                    live[sid] = sp
+                    spans.append(sp)
+                    starts += 1
+                else:
+                    _, sid, ts = rec
+                    sp = live.pop(sid, None)
+                    if sp is None:
+                        unmatched += 1
+                    else:
+                        sp.wall_end_ns = ts
+                    ends += 1
+
+    completeness = _verify(manifest, spans, events, starts, ends, unmatched, emitted)
+    if strict and not completeness:
+        raise IncompleteTrace(str(completeness))
+    return SpanTrace(spans, manifest, completeness)
+
+
+def read_run(run_id, tracking_uri=None, dest_dir=None, strict=True):
+    """Download a run's ``radt-trace/`` artifacts and read them.
+
+    The emitted-span count is taken from the run's ``choreo.spans_emitted``
+    tag, so the drop check runs without the caller supplying anything.
+    """
+    import mlflow
+
+    if tracking_uri:
+        mlflow.set_tracking_uri(tracking_uri)
+    client = mlflow.MlflowClient()
+    local = client.download_artifacts(run_id, "radt-trace", dest_dir)
+    tag = client.get_run(run_id).data.tags.get(COUNT_TAG)
+    return read_dir(local, emitted=int(tag) if tag else None, strict=strict)
