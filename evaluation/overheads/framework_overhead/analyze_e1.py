@@ -589,6 +589,80 @@ def latex_payload_table(runs, device):
 # ---------------------------------------------------------------------------
 # Figures
 # ---------------------------------------------------------------------------
+ARM_STYLE = {"off": "tab:blue", "nolog": "tab:green",
+             "proc": "tab:red", "spans": "tab:orange"}
+
+
+def _od_curve(runs, arm):
+    """[(depth, O(d) median us)] for one arm, sorted by depth."""
+    out = []
+    for d in sorted({r.meta["depth"] for r in runs
+                     if r.meta["size"] == 0 and r.meta["mode"] == "ref"}):
+        sel = select(runs, depth=d, size=0, mode="ref", arm=arm)
+        lat = pool_latency_by_run(sel)
+        if lat:
+            out.append((d, summarize([[v / d for v in run] for run in lat],
+                                     NS_PER_US)["median"]))
+    return out
+
+
+def make_instrument_figure(per_device, fig_dir):
+    """The figure the four-arm collection exists to produce.
+
+    Left column: O(d) = L_q/depth per arm. The framework's marginal per-stage
+    cost is where this flattens, so `off` and `nolog` flattening to different
+    plateaus IS the result -- the gap between them is our own logger, not the
+    framework.
+
+    Right column: that gap plotted directly, against the independently measured
+    cost of the two CSV rows each stage writes (7.7 us/row, timed in isolation).
+    If the decomposition is real, the measured gap should sit on that line
+    without having been fitted to it.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    devs = list(per_device)
+    fig, axes = plt.subplots(len(devs), 2, figsize=(12, 4.4 * len(devs)),
+                             squeeze=False)
+    for row, dev in enumerate(devs):
+        runs = per_device[dev]
+        curves = {a: _od_curve(runs, a) for a in ARM_STYLE}
+
+        ax = axes[row][0]
+        for arm, color in ARM_STYLE.items():
+            if curves[arm]:
+                xs, ys = zip(*curves[arm])
+                ax.plot(xs, ys, "o-", color=color, ms=4, lw=1.4, label=arm)
+        ax.set_xscale("log", base=2)
+        ax.set_xlabel("pipeline depth (stages)")
+        ax.set_ylabel(f"{dev}: per-stage cost O(d) = L_q/depth (us)")
+        ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
+
+        ax = axes[row][1]
+        base = dict(curves["nolog"])
+        for arm, color, lbl in (("off", "tab:blue", "CSV instrument (off - nolog)"),
+                                ("spans", "tab:orange", "span instrument (spans - nolog)")):
+            pts = [(d, v - base[d]) for d, v in curves[arm] if d in base]
+            if pts:
+                xs, ys = zip(*pts)
+                ax.plot(xs, ys, "o-", color=color, ms=4, lw=1.4, label=lbl)
+        # 2 CSV rows per stage per query x 7.7 us/row, measured standalone.
+        ax.axhline(2 * 7.7, color="k", ls="--", lw=1.0, alpha=0.6,
+                   label="2 log rows x 7.7 us (measured separately)")
+        ax.axhline(0, color="k", lw=0.6, alpha=0.4)
+        ax.set_xscale("log", base=2)
+        ax.set_xlabel("pipeline depth (stages)")
+        ax.set_ylabel(f"{dev}: instrument cost per stage (us)")
+        ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
+
+    fig.tight_layout()
+    out = os.path.join(fig_dir, "e1_instrument_decomposition.png")
+    fig.savefig(out, dpi=140); plt.close(fig)
+    return out
+
+
 def make_figures(per_device, fig_dir):
     import matplotlib
     matplotlib.use("Agg")
@@ -598,25 +672,32 @@ def make_figures(per_device, fig_dir):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.6))
     for ax, dev in zip(axes, per_device):
         runs = per_device[dev]
-        for trace, color, lbl in [(0, "tab:blue", "off"), (1, "tab:red", "proc")]:
+        # Select on ARM, not `trace` — trace=0 now pools off with nolog, which
+        # would draw one line through two arms that differ by the instrument.
+        for i, (arm, color) in enumerate(ARM_STYLE.items()):
             depths, meds = [], []
             for d in sorted({r.meta["depth"] for r in runs
                              if r.meta["size"] == 0 and r.meta["mode"] == "ref"}):
                 s = summarize(pool_latency_by_run(
-                    select(runs, depth=d, size=0, mode="ref", trace=trace)), NS_PER_MS)
+                    select(runs, depth=d, size=0, mode="ref", arm=arm)), NS_PER_MS)
                 if s["n"]:
                     depths.append(d); meds.append(s["median"])
-            if depths:
-                ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3,
-                        label=f"{dev}: tracing {lbl}")
-                lq_ns = [m * NS_PER_MS for m in meds]
-                slope, icpt = ols_slope(depths, lq_ns)
-                xs = [min(depths), max(depths)]
-                ax.plot(xs, [(slope * x + icpt) / NS_PER_MS for x in xs],
-                        "--", color=color, lw=0.9, alpha=0.7)
-                ax.annotate(f"{dev} {lbl}: {slope / NS_PER_US:.1f} us/stage",
-                            xy=(0.05, 0.9 if trace else 0.8), xycoords="axes fraction",
-                            color=color, fontsize=9)
+            if not depths:
+                continue
+            ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3, label=arm)
+            lq_ns = [m * NS_PER_MS for m in meds]
+            slope, icpt = ols_slope(depths, lq_ns)
+            r2 = ols_r2(depths, lq_ns, slope, icpt)
+            xs = [min(depths), max(depths)]
+            # Dash the fit only where it is admissible; a rejected fit is drawn
+            # dotted so the eye does not read it as a marginal per-stage cost.
+            rejected = bool(fit_verdict(icpt, r2))
+            ax.plot(xs, [(slope * x + icpt) / NS_PER_MS for x in xs],
+                    ":" if rejected else "--", color=color, lw=0.9, alpha=0.7)
+            ax.annotate(f"{arm}: {slope / NS_PER_US:.1f} us/stage"
+                        + ("  (fit rejected)" if rejected else ""),
+                        xy=(0.04, 0.94 - 0.07 * i), xycoords="axes fraction",
+                        color=color, fontsize=8)
         # No titles: the caption carries that in the paper. Device identity is in
         # the legend and the fitted-slope annotation instead.
         ax.set_xlabel("pipeline depth (stages)")
@@ -706,7 +787,8 @@ def main():
 
     if per_device:
         f1, f2 = make_figures(per_device, args.fig_dir)
-        print(f"\n**Figures:** `{f1}`, `{f2}`")
+        f3 = make_instrument_figure(per_device, args.fig_dir)
+        print(f"\n**Figures:** `{f1}`, `{f2}`, `{f3}`")
 
 
 if __name__ == "__main__":
