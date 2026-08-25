@@ -42,17 +42,39 @@ SIZE_LABEL = {0: "0", 1024: "1 KiB", 1048576: "1 MiB", 10485760: "10 MiB"}
 WARMUP_K = 1                      # warm-up epochs dropped per run
 DEVICES = ("mlx", "cuda")
 
+# The four arms are the 2x2 of two INDEPENDENT instruments, and are named for
+# the role each one plays rather than for the switch that produces it:
+#
+#   arm              per-stage CSV logging   span tracing
+#   as-reported              on                  off      <- how E1 has always measured
+#   uninstrumented           off                 off      <- the framework, no instrument
+#   spans-only               off                 on       <- spans replacing the logging
+#   both                     on                  on
+#
+# Per-stage CSV logging writes two rows per stage per query; span tracing emits
+# six events per stage per query. L_q itself is measured identically in every
+# arm, from the PIPELINE-level rows, which pipeline.py emits unconditionally
+# (disable_logs is a Stage flag and Pipeline has none) -- so the arms differ
+# only in how much instrument runs inside the interval, never in how the
+# interval is timed. See collect_e1.sh.
+ARMS = ("as-reported", "uninstrumented", "spans-only", "both")
+
+# The first collection used switch-flavoured names, two of which named the
+# logging switch and two the tracing switch, so a reader could not tell what
+# any single label meant. Accepted here so data collected under them still
+# parses; nothing writes them any more.
+_LEGACY_ARM = {"off": "as-reported", "nolog": "uninstrumented",
+               "spans": "spans-only", "proc": "both"}
+
 _FNAME_RE = re.compile(
     r"^noop_depth_(?P<depth>\d+)_size_(?P<size>\d+)_mode_(?P<mode>ref|copy)"
-    r"_(?P<arm>proc|off|nolog|spans)_(?P<device>mlx|cuda)_r(?P<run>\d+)\.csv$"
+    r"_(?P<arm>as-reported|uninstrumented|spans-only|both|proc|off|nolog|spans)"
+    r"_(?P<device>mlx|cuda)_r(?P<run>\d+)\.csv$"
 )
 
-# Four arms, two independent switches: is tracing on, and are the per-stage CSV
-# rows on. `off` is E1's historical headline arm; `nolog` is the same thing with
-# our own logger removed, so (off - nolog) is what the instrument costs rather
-# than what the framework costs. See collect_e1.sh.
-ARM_LOGS = {"off": True, "proc": True, "nolog": False, "spans": False}
-ARM_TRACE = {"off": 0, "nolog": 0, "proc": 1, "spans": 1}
+ARM_LOGS = {"as-reported": True, "both": True,
+            "uninstrumented": False, "spans-only": False}
+ARM_TRACE = {"as-reported": 0, "uninstrumented": 0, "spans-only": 1, "both": 1}
 
 
 def parse_filename(path):
@@ -64,7 +86,7 @@ def parse_filename(path):
     m = _FNAME_RE.match(os.path.basename(path))
     if not m:
         return None
-    arm = m["arm"]
+    arm = _LEGACY_ARM.get(m["arm"], m["arm"])
     return {"depth": int(m["depth"]), "size": int(m["size"]), "mode": m["mode"],
             "arm": arm, "trace": ARM_TRACE[arm], "logs": ARM_LOGS[arm],
             "device": m["device"], "run": int(m["run"]), "path": path}
@@ -413,10 +435,10 @@ def depth_table(runs, arm_label):
 
 
 ARM_DESC = {
-    "off":   "tracing off, CSV stage rows ON  (E1's historical headline)",
-    "nolog": "tracing off, CSV stage rows OFF (framework without our logger)",
-    "proc":  "tracing on,  CSV stage rows ON",
-    "spans": "tracing on,  CSV stage rows OFF (cheap instrument, keeps the breakdown)",
+    "as-reported":    "CSV logging ON, spans off — how E1 has always measured",
+    "uninstrumented": "CSV logging off, spans off — the framework with no instrument",
+    "spans-only":     "CSV logging off, spans ON — spans replacing the logging",
+    "both":           "CSV logging ON, spans ON — both instruments running",
 }
 
 
@@ -442,34 +464,35 @@ def instrument_table(od_by_arm, device):
     less than the run-to-run noise at that depth, and is reported as measured
     rather than clipped.
     """
-    have = [a for a in ("off", "nolog", "proc", "spans") if od_by_arm.get(a)]
-    if "off" not in have or "nolog" not in have:
-        print(f"\n## {device} -- instrument decomposition: needs the off and "
-              f"nolog arms (have: {', '.join(have) or 'none'})\n")
+    have = [a for a in ARMS if od_by_arm.get(a)]
+    if "as-reported" not in have or "uninstrumented" not in have:
+        print(f"\n## {device} -- instrument decomposition: needs the as-reported "
+              f"and uninstrumented arms (have: {', '.join(have) or 'none'})\n")
         return
-    depths = sorted(set(od_by_arm["off"]) & set(od_by_arm["nolog"]))
+    depths = sorted(set(od_by_arm["as-reported"]) & set(od_by_arm["uninstrumented"]))
     print(f"\n## {device} -- what is the framework, what is the instrument\n")
-    print("| depth | O(d) off | O(d) nolog | CSV instrument | instrument % of off "
-          "| O(d) spans | span instrument |")
-    print("|------:|---------:|-----------:|---------------:|--------------------:"
-          "|-----------:|----------------:|")
+    print("| depth | O(d) as-reported | O(d) uninstrumented | CSV instrument "
+          "| instrument % of as-reported | O(d) spans-only | span instrument |")
+    print("|------:|-----------------:|--------------------:|---------------:"
+          "|----------------------------:|----------------:|----------------:|")
     for d in depths:
-        off = od_by_arm["off"][d]["median"]
-        nol = od_by_arm["nolog"][d]["median"]
+        off = od_by_arm["as-reported"][d]["median"]
+        nol = od_by_arm["uninstrumented"][d]["median"]
         csv_cost = off - nol
         pct = (100.0 * csv_cost / off) if off else float("nan")
-        sp = od_by_arm.get("spans", {}).get(d)
+        sp = od_by_arm.get("spans-only", {}).get(d)
         sp_s = f"{sp['median']:.2f}" if sp else "—"
         sp_cost = f"{sp['median'] - nol:+.2f}" if sp else "—"
         print(f"| {d} | {off:.2f} | {nol:.2f} | {csv_cost:+.2f} | {pct:+.1f}% "
               f"| {sp_s} | {sp_cost} |")
     print("\n(all per-stage, microseconds: O(d) = L_q / depth. "
-          "'CSV instrument' = off - nolog; 'span instrument' = spans - nolog.)")
+          "'CSV instrument' = as-reported - uninstrumented; "
+          "'span instrument' = spans-only - uninstrumented.)")
 
 
 def tracing_add_table(od_off, od_on):
-    print("\n### Tracing-layer per-stage cost (proc − off)\n")
-    print("| depth | O(d) off (us) | O(d) proc (us) | tracing add (us) |")
+    print("\n### Span-tracing cost on top of the CSV logging (both − as-reported)\n")
+    print("| depth | O(d) as-reported (us) | O(d) both (us) | span-tracing add (us) |")
     print("|------:|--------------:|---------------:|-----------------:|")
     for d in sorted(set(od_off) & set(od_on)):
         a, b = od_off[d]["median"], od_on[d]["median"]
@@ -589,8 +612,8 @@ def latex_payload_table(runs, device):
 # ---------------------------------------------------------------------------
 # Figures
 # ---------------------------------------------------------------------------
-ARM_STYLE = {"off": "tab:blue", "nolog": "tab:green",
-             "proc": "tab:red", "spans": "tab:orange"}
+ARM_STYLE = {"as-reported": "tab:blue", "uninstrumented": "tab:green",
+             "both": "tab:red", "spans-only": "tab:orange"}
 
 
 def _od_curve(runs, arm):
@@ -641,9 +664,12 @@ def make_instrument_figure(per_device, fig_dir):
         ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
 
         ax = axes[row][1]
-        base = dict(curves["nolog"])
-        for arm, color, lbl in (("off", "tab:blue", "CSV instrument (off - nolog)"),
-                                ("spans", "tab:orange", "span instrument (spans - nolog)")):
+        base = dict(curves["uninstrumented"])
+        for arm, color, lbl in (
+                ("as-reported", "tab:blue",
+                 "CSV instrument (as-reported - uninstrumented)"),
+                ("spans-only", "tab:orange",
+                 "span instrument (spans-only - uninstrumented)")):
             pts = [(d, v - base[d]) for d, v in curves[arm] if d in base]
             if pts:
                 xs, ys = zip(*pts)
@@ -774,13 +800,13 @@ def main():
         # nolog (and proc with spans), hiding the instrument's cost inside the
         # framework's — see select().
         od_by_arm = {}
-        for a in ("off", "nolog", "proc", "spans"):
+        for a in ARMS:
             sel = select(runs, arm=a)
             if sel:
                 od_by_arm[a] = depth_table(sel, f"{dev} -- arm '{a}': {ARM_DESC[a]}")
         instrument_table(od_by_arm, dev)
-        if od_by_arm.get("off") and od_by_arm.get("proc"):
-            tracing_add_table(od_by_arm["off"], od_by_arm["proc"])
+        if od_by_arm.get("as-reported") and od_by_arm.get("both"):
+            tracing_add_table(od_by_arm["as-reported"], od_by_arm["both"])
         # The payload sweep predates the four-arm split and holds off/proc only,
         # so it still selects on `trace`.
         payload_table(payload_collect(runs))
