@@ -97,6 +97,66 @@ def parse_run(path):
     return out
 
 
+def parse_inflight(path):
+    """How many queries were ACTUALLY in flight while this run was measured.
+
+    prefill is a per-query quantity, so it is only meaningful when one query is
+    in flight: two queries sharing the GPU inflate each other's TTFT and the
+    measured prefill then describes the contention, not the phase. An earlier
+    E4 round was invalidated for exactly that, and the re-collection asserts it
+    is fixed (loadgen queue_depth 1, serialize_queries true). This function
+    measures it instead of taking the config's word for it.
+
+    The pipeline-level rows bracket each query:
+        wall, <pipeline>, pipeline - <split>, run, start|end, <query_id>, ...
+    with the last field a monotonic perf_counter_ns stamp. Overlaying those
+    [start, end] windows and sweeping gives the count in flight at every
+    instant. A correctly serialized run must show max in flight == 1.
+
+    Returns {max, mean, queries, unclosed, span_s}; mean is time-weighted
+    (the in-flight count integrated over the measured span, divided by it), so
+    a brief burst cannot masquerade as sustained concurrency and vice versa."""
+    open_at, windows = {}, []
+    for line in open(path, "r", encoding="utf-8"):
+        p = [x.strip() for x in line.split(",")]
+        # the pipeline NAME contains spaces but no commas, so the field layout
+        # is stable and the perf stamp is always the last field
+        if len(p) < 6 or not p[2].startswith("pipeline -") or p[3] != "run":
+            continue
+        val, qid = p[4], p[5]
+        try:
+            perf = int(p[-1])
+        except ValueError:
+            continue
+        if val == "start":
+            open_at[qid] = perf
+        elif val == "end" and qid in open_at:
+            windows.append((open_at.pop(qid), perf))
+    if not windows:
+        return {"max": 0, "mean": float("nan"), "queries": 0,
+                "unclosed": len(open_at), "span_s": 0.0}
+
+    # ends before starts at an identical stamp: a query handed off to the next
+    # one at the same instant is serial, not two in flight (-1 sorts before +1)
+    ev = sorted([(s, 1) for s, _ in windows] + [(e, -1) for _, e in windows])
+    cur = mx = 0
+    area = 0.0
+    prev = ev[0][0]
+    for t, d in ev:
+        area += cur * (t - prev)
+        prev = t
+        cur += d
+        mx = max(mx, cur)
+    span = ev[-1][0] - ev[0][0]
+    # unclosed = queries the loadgen started but that never finished before the
+    # run was cut off. They are left OUT of the windows, so both figures are
+    # lower bounds on the true concurrency — a run flagged here was contended
+    # at least as badly as reported.
+    return {"max": mx, "mean": (area / span if span else float("nan")),
+            "queries": len(windows), "unclosed": len(open_at),
+            "span_s": span / 1e9}
+
+
 def load(results_dir, device):
     runs = []
     for p in sorted(glob.glob(os.path.join(results_dir, device, "e4_*.csv"))):
@@ -105,6 +165,7 @@ def load(results_dir, device):
             continue
         stages = parse_run(p)
         if stages:
+            meta["inflight"] = parse_inflight(p)
             runs.append((meta, stages))
     return runs
 
@@ -113,9 +174,15 @@ def agg_by_arm(runs):
     """{(task, arm): {prefill:[ms], decode:[ms], tok_s:[t/s], queries:n}} pooled
     over LLM stages and repetitions."""
     out = defaultdict(lambda: {"prefill": [], "decode": [], "tok_s": [],
-                               "resid": [], "n": 0})
+                               "resid": [], "n": 0, "if_max": [], "if_mean": []})
     for meta, stages in runs:
         key = (meta["task"], meta["arm"])
+        # concurrency is a property of the RUN, not of the call, so it is
+        # appended once per run rather than once per LLM call
+        infl = meta.get("inflight")
+        if infl and infl["queries"]:
+            out[key]["if_max"].append(infl["max"])
+            out[key]["if_mean"].append(infl["mean"])
         for _stage, rows in stages.items():
             for r in rows:
                 out[key]["prefill"].append(r["prefill_ms"])
@@ -146,8 +213,9 @@ def table(per_device):
             continue
         print(f"\n## {DEV_LABEL.get(dev, dev)} — prefill vs decode per arm\n")
         print("| task | arm | LLM calls | prefill median (ms) | decode median (ms) "
-              "| unaccounted (ms) | prefill share of p+d | decode tok/s |")
-        print("|---|---|--:|--:|--:|--:|--:|--:|")
+              "| unaccounted (ms) | prefill share of p+d | decode tok/s "
+              "| max in flight | mean in flight |")
+        print("|---|---|--:|--:|--:|--:|--:|--:|--:|--:|")
         for (task, arm) in sorted(agg, key=lambda k: (k[0], k[1])):
             a = agg[(task, arm)]
             if not a["prefill"]:
@@ -156,8 +224,12 @@ def table(per_device):
             share = 100.0 * pf / (pf + dc) if (pf + dc) else float("nan")
             ts = f"{st.median(a['tok_s']):.1f}" if a["tok_s"] else "—"
             rs = st.median(a["resid"]) if a["resid"] else float("nan")
+            # worst case over the cell's runs (one contended run is enough to
+            # taint the pooled prefill median), against the typical load
+            mx = f"{max(a['if_max'])}" if a["if_max"] else "—"
+            mn = f"{st.mean(a['if_mean']):.2f}" if a["if_mean"] else "—"
             print(f"| {task} | {arm} | {a['n']} | {pf:.0f} | {dc:.0f} | "
-                  f"{rs:.0f} | {share:.1f}% | {ts} |")
+                  f"{rs:.0f} | {share:.1f}% | {ts} | {mx} | {mn} |")
 
 
 def flip_table_ci(raw):
@@ -351,6 +423,35 @@ def ci_ratio(num_map, den_map, alpha=0.05):
     return (r[int(alpha / 2 * (len(r) - 1))], r[int((1 - alpha / 2) * (len(r) - 1))])
 
 
+def inflight_warnings(raw):
+    """Name every run that was NOT serialized.
+
+    Reported as its own block rather than only as a table column: a cell's
+    pooled prefill median is only trustworthy if every run behind it ran one
+    query at a time, and the table's max column collapses the runs, so the
+    offending file has to be named to be actionable."""
+    bad = []
+    for dev, runs in raw.items():
+        for meta, _stages in runs:
+            infl = meta.get("inflight")
+            if infl and infl["max"] > 1:
+                bad.append((dev, meta, infl))
+    print("\n## Measured concurrency check\n")
+    if not bad:
+        print("All runs show max in flight = 1: exactly one query was in "
+              "flight at every instant, so prefill is a per-query measurement "
+              "in every cell reported below.")
+        return
+    print(f"**WARNING — {len(bad)} run(s) were CONTENDED (max in flight > 1). "
+          "Prefill for these runs measures contention, not TTFT:**\n")
+    for dev, meta, infl in sorted(bad, key=lambda b: (b[0], -b[2]["max"])):
+        extra = (f", {infl['unclosed']} started-but-unfinished queries excluded"
+                 if infl["unclosed"] else "")
+        print(f"- `{os.path.basename(meta['path'])}` ({dev}): max in flight "
+              f"{infl['max']}, mean in flight {infl['mean']:.2f} over "
+              f"{infl['span_s']:.0f} s, {infl['queries']} queries{extra}")
+
+
 def make_figure(per_device, fig_dir):
     import matplotlib
     matplotlib.use("Agg")
@@ -398,6 +499,11 @@ def main():
         print(f"- {DEV_LABEL.get(dev, dev)}: {len(runs)} run-file(s)")
         raw[dev] = runs
         per_device[dev] = agg_by_arm(runs) if runs else {}
+    print("\nmax/mean in flight = queries simultaneously inside the pipeline, "
+          "from the pipeline start/end markers: the max is over the cell's "
+          "runs, the mean is time-weighted within a run then averaged over "
+          "them. Serialized collection must show max in flight = 1.")
+    inflight_warnings(raw)
     table(per_device)
     role_table(raw)
     flip_table(per_device)
