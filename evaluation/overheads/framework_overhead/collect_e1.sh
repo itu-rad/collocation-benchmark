@@ -68,14 +68,17 @@ export RADT_TRACE_BACKEND=radt       # force the BULK exporter rather than auto-
 # The local store also puts the span artifacts on this disk, so the spans arm
 # needs no download round-trip to analyse.
 #   E1_STORE=res17 collect_e1.sh ...   -> use the ambient server instead
+# SQLITE, not a file: URI -- mlflow 3.15 hard-refuses a filesystem tracking
+# backend ("in maintenance mode ... migrate to a database backend"), so every
+# run exits rc=1 and writes no CSV. Artifacts (the span batches) still land as
+# plain directories under <repo>/mlruns/, which utils/span_reader.py reads
+# directly.
 if [ "${E1_STORE:-local}" = "local" ]; then
-  STORE_DIR="$HERE/mlruns_e1_${DEVICE}"
-  mkdir -p "$STORE_DIR"
-  export MLFLOW_TRACKING_URI="file:${STORE_DIR}"
+  STORE_DB="$HERE/mlruns_e1_${DEVICE}.db"
+  export MLFLOW_TRACKING_URI="sqlite:///${STORE_DB}"
   unset MLFLOW_TRACKING_USERNAME MLFLOW_TRACKING_PASSWORD
-  EXP=0                              # the local file store's default experiment
-  log() { echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
-  echo "E1: local tracking store at $STORE_DIR (E1_STORE=res17 to override)"
+  EXP=0                              # the local store's default experiment
+  echo "E1: local tracking store at $STORE_DB (E1_STORE=res17 to override)"
 fi
 
 SUM="$HERE/collect_e1_summary_${DEVICE}.tsv"
