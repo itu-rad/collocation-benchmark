@@ -780,3 +780,256 @@ as-reported	p10485760_copy	8	0	4	2224
 as-reported	p10485760_copy	9	0	4	2224	
 as-reported	p10485760_copy	10	0	4	2224	
 as-reported	p10485760_copy	11	0	5	2224	
+spans-only	1	1	0	6	205	608
+spans-only	1	2	0	5	205	608
+spans-only	1	3	0	5	205	608
+spans-only	1	4	0	5	205	608
+spans-only	1	5	0	5	205	608
+spans-only	1	6	0	5	205	608
+spans-only	1	7	0	5	205	608
+spans-only	1	8	0	4	205	608
+spans-only	1	9	0	5	205	608
+spans-only	1	10	0	5	205	608
+spans-only	1	11	0	5	205	608
+spans-only	2	1	0	5	205	810
+spans-only	2	2	0	5	205	810
+spans-only	2	3	0	6	205	810
+spans-only	2	4	0	5	205	810
+spans-only	2	5	0	4	205	810
+spans-only	2	6	0	4	205	810
+spans-only	2	7	0	5	205	810
+spans-only	2	8	0	5	205	810
+spans-only	2	9	0	5	205	810
+spans-only	2	10	0	5	205	810
+spans-only	2	11	0	5	205	810
+spans-only	4	1	0	5	205	1214
+spans-only	4	2	0	5	205	1214
+spans-only	4	3	0	5	205	1214
+spans-only	4	4	0	5	205	1214
+spans-only	4	5	0	5	205	1214
+spans-only	4	6	0	5	205	1214
+spans-only	4	7	0	5	205	1214
+spans-only	4	8	0	5	205	1214
+spans-only	4	9	0	5	205	1214
+spans-only	4	10	0	5	205	1214
+spans-only	4	11	0	5	205	1214
+spans-only	8	1	0	5	205	2022
+spans-only	8	2	0	6	205	2022
+spans-only	8	3	0	5	205	2022
+spans-only	8	4	0	5	205	2022
+spans-only	8	5	0	4	205	2022
+spans-only	8	6	0	4	205	2022
+spans-only	8	7	0	4	205	2022
+spans-only	8	8	0	5	205	2022
+spans-only	8	9	0	4	205	2022
+spans-only	8	10	0	5	205	2022
+spans-only	8	11	0	5	205	2022
+spans-only	16	1	0	6	205	3638
+spans-only	16	2	0	5	205	3638
+spans-only	16	3	0	5	205	3638
+spans-only	16	4	0	5	205	3638
+spans-only	16	5	0	5	205	3638
+spans-only	16	6	0	5	205	3638
+spans-only	16	7	0	5	205	3638
+spans-only	16	8	0	5	205	3638
+spans-only	16	9	0	5	205	3638
+spans-only	16	10	0	5	205	3638
+spans-only	16	11	0	5	205	3638
+spans-only	32	1	0	5	205	6870
+spans-only	32	2	0	5	205	6870
+spans-only	32	3	0	5	205	6870
+spans-only	32	4	0	5	205	6870
+spans-only	32	5	0	5	205	6870
+spans-only	32	6	0	5	205	6870
+spans-only	32	7	0	5	205	6870
+spans-only	32	8	0	6	205	6870
+spans-only	32	9	0	5	205	6870
+spans-only	32	10	0	5	205	6870
+spans-only	32	11	0	5	205	6870
+spans-only	64	1	0	5	205	13334
+spans-only	64	2	0	5	205	13334
+spans-only	64	3	0	5	205	13334
+spans-only	64	4	0	5	205	13334
+spans-only	64	5	0	5	205	13334
+spans-only	64	6	0	5	205	13334
+spans-only	64	7	0	5	205	13334
+spans-only	64	8	0	5	205	13334
+spans-only	64	9	0	5	205	13334
+spans-only	64	10	0	5	205	13334
+spans-only	64	11	0	5	205	13334
+spans-only	128	1	0	5	205	26262
+spans-only	128	2	0	5	205	26262
+spans-only	128	3	0	6	205	26262
+spans-only	128	4	0	5	205	26262
+spans-only	128	5	0	6	205	26262
+spans-only	128	6	0	5	205	26262
+spans-only	128	7	0	5	205	26262
+spans-only	128	8	0	5	205	26262
+spans-only	128	9	0	5	205	26262
+spans-only	128	10	0	5	205	26262
+spans-only	128	11	0	5	205	26262
+spans-only	p0_ref	1	0	6	205	2426
+spans-only	p0_ref	2	0	5	205	2426
+spans-only	p0_ref	3	0	5	205	2426
+spans-only	p0_ref	4	0	5	205	2426
+spans-only	p0_ref	5	0	5	205	2426
+spans-only	p0_ref	6	0	5	205	2426
+spans-only	p0_ref	7	0	5	205	2426
+spans-only	p0_ref	8	0	5	205	2426
+spans-only	p0_ref	9	0	5	205	2426
+spans-only	p0_ref	10	0	5	205	2426
+spans-only	p0_ref	11	0	5	205	2426
+uninstrumented	p0_copy	1	0	4	204	
+spans-only	p0_copy	1	0	5	205	2426
+spans-only	p0_copy	2	0	5	205	2426
+uninstrumented	p0_copy	2	0	4	204	
+uninstrumented	p0_copy	3	0	4	204	
+spans-only	p0_copy	3	0	4	205	2426
+spans-only	p0_copy	4	0	5	205	2426
+uninstrumented	p0_copy	4	0	5	204	
+uninstrumented	p0_copy	5	0	4	204	
+spans-only	p0_copy	5	0	5	205	2426
+spans-only	p0_copy	6	0	4	205	2426
+uninstrumented	p0_copy	6	0	4	204	
+uninstrumented	p0_copy	7	0	4	204	
+spans-only	p0_copy	7	0	5	205	2426
+spans-only	p0_copy	8	0	5	205	2426
+uninstrumented	p0_copy	8	0	4	204	
+uninstrumented	p0_copy	9	0	4	204	
+spans-only	p0_copy	9	0	5	205	2426
+spans-only	p0_copy	10	0	5	205	2426
+uninstrumented	p0_copy	10	0	4	204	
+uninstrumented	p0_copy	11	0	3	204	
+spans-only	p0_copy	11	0	4	205	2426
+uninstrumented	p1024_ref	1	0	5	204	
+spans-only	p1024_ref	1	0	5	205	2426
+spans-only	p1024_ref	2	0	5	205	2426
+uninstrumented	p1024_ref	2	0	4	204	
+uninstrumented	p1024_ref	3	0	4	204	
+spans-only	p1024_ref	3	0	5	205	2426
+spans-only	p1024_ref	4	0	4	205	2426
+uninstrumented	p1024_ref	4	0	4	204	
+uninstrumented	p1024_ref	5	0	4	204	
+spans-only	p1024_ref	5	0	5	205	2426
+spans-only	p1024_ref	6	0	5	205	2426
+uninstrumented	p1024_ref	6	0	4	204	
+uninstrumented	p1024_ref	7	0	4	204	
+spans-only	p1024_ref	7	0	4	205	2426
+spans-only	p1024_ref	8	0	5	205	2426
+uninstrumented	p1024_ref	8	0	4	204	
+uninstrumented	p1024_ref	9	0	3	204	
+spans-only	p1024_ref	9	0	5	205	2426
+spans-only	p1024_ref	10	0	5	205	2426
+uninstrumented	p1024_ref	10	0	4	204	
+uninstrumented	p1024_ref	11	0	4	204	
+spans-only	p1024_ref	11	0	5	205	2426
+uninstrumented	p1024_copy	1	0	4	204	
+spans-only	p1024_copy	1	0	5	205	2426
+spans-only	p1024_copy	2	0	5	205	2426
+uninstrumented	p1024_copy	2	0	4	204	
+uninstrumented	p1024_copy	3	0	4	204	
+spans-only	p1024_copy	3	0	5	205	2426
+spans-only	p1024_copy	4	0	5	205	2426
+uninstrumented	p1024_copy	4	0	4	204	
+uninstrumented	p1024_copy	5	0	4	204	
+spans-only	p1024_copy	5	0	4	205	2426
+spans-only	p1024_copy	6	0	5	205	2426
+uninstrumented	p1024_copy	6	0	5	204	
+uninstrumented	p1024_copy	7	0	4	204	
+spans-only	p1024_copy	7	0	5	205	2426
+spans-only	p1024_copy	8	0	5	205	2426
+uninstrumented	p1024_copy	8	0	4	204	
+uninstrumented	p1024_copy	9	0	4	204	
+spans-only	p1024_copy	9	0	4	205	2426
+spans-only	p1024_copy	10	0	6	205	2426
+uninstrumented	p1024_copy	10	0	4	204	
+uninstrumented	p1024_copy	11	0	5	204	
+spans-only	p1024_copy	11	0	5	205	2426
+uninstrumented	p1048576_ref	1	0	4	204	
+spans-only	p1048576_ref	1	0	5	205	2426
+spans-only	p1048576_ref	2	0	5	205	2426
+uninstrumented	p1048576_ref	2	0	4	204	
+uninstrumented	p1048576_ref	3	0	4	204	
+spans-only	p1048576_ref	3	0	5	205	2426
+spans-only	p1048576_ref	4	0	5	205	2426
+uninstrumented	p1048576_ref	4	0	3	204	
+uninstrumented	p1048576_ref	5	0	3	204	
+spans-only	p1048576_ref	5	0	4	205	2426
+spans-only	p1048576_ref	6	0	5	205	2426
+uninstrumented	p1048576_ref	6	0	4	204	
+uninstrumented	p1048576_ref	7	0	4	204	
+spans-only	p1048576_ref	7	0	5	205	2426
+spans-only	p1048576_ref	8	0	5	205	2426
+uninstrumented	p1048576_ref	8	0	4	204	
+uninstrumented	p1048576_ref	9	0	4	204	
+spans-only	p1048576_ref	9	0	5	205	2426
+spans-only	p1048576_ref	10	0	5	205	2426
+uninstrumented	p1048576_ref	10	0	4	204	
+uninstrumented	p1048576_ref	11	0	4	204	
+spans-only	p1048576_ref	11	0	4	205	2426
+uninstrumented	p1048576_copy	1	0	5	204	
+spans-only	p1048576_copy	1	0	5	205	2426
+spans-only	p1048576_copy	2	0	5	205	2426
+uninstrumented	p1048576_copy	2	0	4	204	
+uninstrumented	p1048576_copy	3	0	4	204	
+spans-only	p1048576_copy	3	0	5	205	2426
+spans-only	p1048576_copy	4	0	5	205	2426
+uninstrumented	p1048576_copy	4	0	5	204	
+uninstrumented	p1048576_copy	5	0	4	204	
+spans-only	p1048576_copy	5	0	5	205	2426
+spans-only	p1048576_copy	6	0	5	205	2426
+uninstrumented	p1048576_copy	6	0	4	204	
+uninstrumented	p1048576_copy	7	0	4	204	
+spans-only	p1048576_copy	7	0	5	205	2426
+spans-only	p1048576_copy	8	0	5	205	2426
+uninstrumented	p1048576_copy	8	0	4	204	
+uninstrumented	p1048576_copy	9	0	4	204	
+spans-only	p1048576_copy	9	0	5	205	2426
+spans-only	p1048576_copy	10	0	5	205	2426
+uninstrumented	p1048576_copy	10	0	4	204	
+uninstrumented	p1048576_copy	11	0	4	204	
+spans-only	p1048576_copy	11	0	5	205	2426
+uninstrumented	p10485760_ref	1	0	4	204	
+spans-only	p10485760_ref	1	0	5	205	2426
+spans-only	p10485760_ref	2	0	5	205	2426
+uninstrumented	p10485760_ref	2	0	4	204	
+uninstrumented	p10485760_ref	3	0	4	204	
+spans-only	p10485760_ref	3	0	5	205	2426
+spans-only	p10485760_ref	4	0	5	205	2426
+uninstrumented	p10485760_ref	4	0	4	204	
+uninstrumented	p10485760_ref	5	0	4	204	
+spans-only	p10485760_ref	5	0	4	205	2426
+spans-only	p10485760_ref	6	0	5	205	2426
+uninstrumented	p10485760_ref	6	0	5	204	
+uninstrumented	p10485760_ref	7	0	4	204	
+spans-only	p10485760_ref	7	0	5	205	2426
+spans-only	p10485760_ref	8	0	6	205	2426
+uninstrumented	p10485760_ref	8	0	4	204	
+uninstrumented	p10485760_ref	9	0	4	204	
+spans-only	p10485760_ref	9	0	5	205	2426
+spans-only	p10485760_ref	10	0	5	205	2426
+uninstrumented	p10485760_ref	10	0	4	204	
+uninstrumented	p10485760_ref	11	0	4	204	
+spans-only	p10485760_ref	11	0	5	205	2426
+uninstrumented	p10485760_copy	1	0	4	204	
+spans-only	p10485760_copy	1	0	5	205	2426
+spans-only	p10485760_copy	2	0	5	205	2426
+uninstrumented	p10485760_copy	2	0	4	204	
+uninstrumented	p10485760_copy	3	0	4	204	
+spans-only	p10485760_copy	3	0	6	205	2426
+spans-only	p10485760_copy	4	0	5	205	2426
+uninstrumented	p10485760_copy	4	0	4	204	
+uninstrumented	p10485760_copy	5	0	4	204	
+spans-only	p10485760_copy	5	0	5	205	2426
+spans-only	p10485760_copy	6	0	6	205	2426
+uninstrumented	p10485760_copy	6	0	4	204	
+uninstrumented	p10485760_copy	7	0	4	204	
+spans-only	p10485760_copy	7	0	5	205	2426
+spans-only	p10485760_copy	8	0	5	205	2426
+uninstrumented	p10485760_copy	8	0	5	204	
+uninstrumented	p10485760_copy	9	0	4	204	
+spans-only	p10485760_copy	9	0	5	205	2426
+spans-only	p10485760_copy	10	0	5	205	2426
+uninstrumented	p10485760_copy	10	0	4	204	
+uninstrumented	p10485760_copy	11	0	4	204	
+spans-only	p10485760_copy	11	0	5	205	2426

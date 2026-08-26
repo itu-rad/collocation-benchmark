@@ -10,14 +10,15 @@
 #
 # Arms are named for the ROLE each plays, not the switch that sets them:
 #
-#   arm             config              CSV logging  spans   what it is for
-#   as-reported     ..._mode_ref            on        off    how E1 has always measured
-#   uninstrumented  ..._mode_ref_nolog      off       off    the framework, no instrument
-#   spans-only      ..._mode_ref_nolog      off       on     spans replacing the logging
-#   both            ..._mode_ref            on        on     both instruments running
+#   arm             config              CSV logging  spans   collected?
+#   uninstrumented  ..._mode_ref_nolog      off       off    YES - the framework bare
+#   spans-only      ..._mode_ref_nolog      off       on     YES - the framework traced
+#   as-reported     ..._mode_ref            on        off    no  - diagnostic, answered
+#   both            ..._mode_ref            on        on     no  - diagnostic, answered
 #
-#   as-reported - uninstrumented = what the CSV instrument costs
-#   spans-only  - uninstrumented = what the span instrument costs
+#   spans-only - uninstrumented = what it costs to run with tracing on, which
+#   is the only instrument question left, because those two are the only ways
+#   the framework is actually run.
 #
 # L_q survives the nolog arms because it comes from the pipeline-level rows,
 # which pipeline.py emits unconditionally -- `disable_logs` is a Stage flag and
@@ -132,20 +133,32 @@ if [ -n "${PIN:-}" ] && command -v taskset >/dev/null 2>&1; then
   log "pinning workload to core(s) [$PIN]"
 fi
 
-# The PAYLOAD sweep (E1_PAYLOAD=1) is a different cell set and a single arm.
-# Its metric is per-STAGE self-duration, which only exists where the per-stage
-# CSV rows are written -- so `as-reported`, not the two deployable modes. That
-# is sound because the instrument's cost is payload-INDEPENDENT: it is the same
-# two log rows whether the stage moved 0 bytes or 10 MiB, so it cancels in the
-# ref-vs-copy comparison the sweep exists to make.
+# The PAYLOAD sweep (E1_PAYLOAD=1) is a different cell set, run in the SAME two
+# arms as the depth sweep. It used to run in `as-reported` because its metric
+# was per-stage self-duration, which needs the per-stage CSV rows. It no longer
+# has to:
+#
+#   uninstrumented - the metric is L_q / depth. The pipeline-level rows are
+#                    always written, so this needs no instrument at all, and it
+#                    is the framework's true payload behaviour.
+#   spans-only     - the same, plus the per-stage breakdown recovered from the
+#                    spans themselves: "<stage>.run" start to
+#                    "<stage>.push_to_outputs" start IS the stage's
+#                    self-duration, which is where a deep copy happens.
 PAYLOAD_DEPTH=10
 PAYLOAD_SIZES="0 1024 1048576 10485760"
 PAYLOAD_MODES="ref copy"
 
+# The depth sweep collects the TWO ways the framework actually runs, and
+# nothing else. `as-reported` (CSV logging) and `both` were diagnostic: they
+# established that E1's historical number was 58-71% instrument. That question
+# is answered, their data is on disk, and neither is a configuration anyone
+# would ship. E1_ARMS overrides if one is ever needed again.
 if [ "${E1_PAYLOAD:-0}" = "1" ]; then
-  ARMS=(as-reported)
+  ARMS=(${E1_ARMS:-uninstrumented spans-only})
 else
-  ARMS=(as-reported uninstrumented spans-only both)
+  # shellcheck disable=SC2206
+  ARMS=(${E1_ARMS:-uninstrumented spans-only})
 fi
 NARMS=${#ARMS[@]}
 
@@ -191,22 +204,27 @@ run_one() {
 }
 
 run_payload_one() {
-  local size=$1 mode=$2 r=$3 cfg lab start rc secs rows
-  cfg="$CFG/noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}.yml"
+  local arm=$1 size=$2 mode=$3 r=$4 cfg lab start rc secs rows spans
+  cfg="$CFG/noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}_nolog.yml"
   [ -f "$cfg" ] || { log "  !! missing config $cfg"; return 1; }
-  lab="noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}_as-reported_${DEVICE}_r${r}"
+  lab="noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}_${arm}_${DEVICE}_r${r}"
   [ -f "$OUT/$lab.csv" ] && { log "  [skip] $lab (exists)"; return 0; }
-  export CHOREO_DISABLE_TRACING=1; unset CHOREO_PROC_TRACE
+  unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  case $arm in
+    uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
+    spans-only)     export CHOREO_PROC_TRACE=1 ;;
+  esac
   local outfile; outfile=$(mktemp)
   start=$(date +%s)
   ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
   rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
-  rm -f "$outfile"; unset CHOREO_DISABLE_TRACING
+  spans=$(sed -n 's/^\[choreo\] spans emitted: //p' "$outfile" | tail -1)
+  rm -f "$outfile"; unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
   for ext in csv jsonl; do
     [ -f "$SHARED/$lab.$ext" ] && mv "$SHARED/$lab.$ext" "$OUT/"
   done
   rows=$( [ -f "$OUT/$lab.csv" ] && wc -l < "$OUT/$lab.csv" | tr -d ' ' || echo 0 )
-  printf 'as-reported\tp%s_%s\t%s\t%s\t%s\t%s\t\n' "$size" "$mode" "$r" "$rc" "$secs" "$rows" >> "$SUM"
+  printf '%s\tp%s_%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$size" "$mode" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rows" -eq 0 ] && { log "  !! $lab produced NO CSV (rc=$rc)"; return 1; }
   log "  $lab rc=$rc ${secs}s rows=$rows"
 }
@@ -214,11 +232,17 @@ run_payload_one() {
 fail=0
 if [ "${E1_PAYLOAD:-0}" = "1" ]; then
   nc=$(( $(echo "$PAYLOAD_SIZES" | wc -w) * $(echo "$PAYLOAD_MODES" | wc -w) ))
-  log "E1 PAYLOAD sweep: $nc cell(s) x 1 arm x $RUNS runs on $DEVICE (exp $EXP)"
+  log "E1 PAYLOAD sweep: $nc cell(s) x $NARMS arm(s) x $RUNS runs on $DEVICE (exp $EXP)"
   for size in $PAYLOAD_SIZES; do
     for mode in $PAYLOAD_MODES; do
       for r in $(seq 1 "$RUNS"); do
-        run_payload_one "$size" "$mode" "$r" || fail=$((fail+1))
+        # Rotate arm order per repetition, as the depth sweep does, so neither
+        # arm always runs first.
+        off=$(( (r - 1) % NARMS ))
+        for i in $(seq 0 $(( NARMS - 1 ))); do
+          run_payload_one "${ARMS[$(( (off + i) % NARMS ))]}" "$size" "$mode" "$r" \
+            || fail=$((fail+1))
+        done
       done
     done
   done

@@ -34,8 +34,11 @@ def main():
     args = ap.parse_args()
 
     n = 0
+    # Every NoOp config, not just the depth sweep's size-0/ref ones: the
+    # payload sweep is now collected in the two instrument-free arms too, and
+    # they need a logs-off variant of each size x mode cell.
     for src in sorted(glob.glob(os.path.join(args.configs,
-                                             "noop_depth_*_size_0_mode_ref.yml"))):
+                                             "noop_depth_*_size_*_mode_*.yml"))):
         if src.endswith("_nolog.yml"):
             continue
         cfg = yaml.safe_load(open(src, "r", encoding="utf-8"))

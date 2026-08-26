@@ -68,6 +68,11 @@ DEVICES = ("mlx", "cuda")
 # interval is timed. See collect_e1.sh.
 ARMS = ("as-reported", "uninstrumented", "spans-only", "both")
 
+# What the harness actually collects now: the two ways the framework is run.
+# `as-reported` and `both` stay in ARMS so archived data still parses and still
+# tables, but nothing new is collected in them and no result depends on them.
+COLLECTED_ARMS = ("uninstrumented", "spans-only")
+
 # The first collection used switch-flavoured names, two of which named the
 # logging switch and two the tracing switch, so a reader could not tell what
 # any single label meant. Accepted here so data collected under them still
@@ -511,25 +516,32 @@ def tracing_add_table(od_off, od_on):
 # ---------------------------------------------------------------------------
 # Result 2: zero-copy vs deep-copy (depth 10, tracing OFF, stages >= 1)
 # ---------------------------------------------------------------------------
-def payload_collect(runs):
+PAYLOAD_DEPTH = 10
+
+
+def payload_collect(runs, arm="uninstrumented"):
+    """Per-stage cost vs payload, as L_q / depth.
+
+    This used to be the per-stage self-duration read from the CSV rows, which
+    tied the sweep to `as-reported` — the one arm nobody runs. L_q needs no
+    instrument at all: pipeline.py writes its rows unconditionally. Dividing by
+    depth puts it on the same per-stage footing as before, and at depth 10 a
+    deep copy is paid once per stage, so the effect is if anything clearer.
+    """
     out = {"ref": {}, "copy": {}}
     for mode in ("ref", "copy"):
         for size in SIZES:
-            # arm=, not trace=: trace=0 also matches `uninstrumented`, whose
-            # per-stage rows are switched off, so it would silently contribute
-            # nothing while looking like it had been included. The payload
-            # metric is a per-STAGE duration and only exists in the arms that
-            # keep those rows.
-            sel = select(runs, depth=10, size=size, mode=mode, arm="as-reported")
-            dur_runs = pool_stage_dur_by_run(sel, min_idx=1)
-            if dur_runs:
-                out[mode][size] = summarize(dur_runs, NS_PER_US)
+            sel = select(runs, depth=PAYLOAD_DEPTH, size=size, mode=mode, arm=arm)
+            lat = pool_latency_by_run(sel)
+            if lat:
+                out[mode][size] = summarize(
+                    [[v / PAYLOAD_DEPTH for v in run] for run in lat], NS_PER_US)
     return out
 
 
-def payload_table(data):
-    print("\n## Zero-copy: per-stage duration vs payload "
-          "(depth 10, as-reported arm)\n")
+def payload_table(data, arm="uninstrumented"):
+    print(f"\n## Zero-copy: per-stage cost vs payload "
+          f"(depth {PAYLOAD_DEPTH}, {arm} arm, L_q/depth)\n")
     print("| payload | ref (us) | ref 95% CI (hier.) | copy (us) | copy 95% CI (hier.) | copy/ref |")
     print("|--------:|---------:|:------------------:|----------:|:-------------------:|---------:|")
     for size in SIZES:
@@ -829,7 +841,13 @@ def main():
             tracing_add_table(od_by_arm["as-reported"], od_by_arm["both"])
         # The payload sweep predates the four-arm split and holds off/proc only,
         # so it still selects on `trace`.
-        payload_table(payload_collect(runs))
+        # Both arms: the framework bare, and the framework traced. The
+        # zero-copy claim is architectural, so it must hold in both — and
+        # showing it in `spans-only` too is what retires `as-reported`.
+        for arm in COLLECTED_ARMS:
+            data = payload_collect(runs, arm)
+            if any(data[m] for m in data):
+                payload_table(data, arm)
 
     if per_device:
         f1, f2 = make_figures(per_device, args.fig_dir)
