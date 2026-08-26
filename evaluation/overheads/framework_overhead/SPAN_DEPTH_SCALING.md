@@ -69,8 +69,56 @@ CPython, or stages in processes rather than threads. That is a framework
 change, out of scope here, and worth stating as a limit of a thread-per-stage
 design rather than a defect of the tracing.
 
+## Two further mechanisms, both ruled out
+
+**Not GIL preemption.** `sys.setswitchinterval` varied 500x, depths 8 and 128,
+R=5:
+
+| interval | span cost @8 | span cost @128 | amplification |
+|---|--:|--:|--:|
+| 0.0001 s | +5.25 | +16.01 | 3.05x |
+| 0.005 s (default) | +5.11 | +15.95 | 3.12x |
+| 0.05 s | +4.94 | +15.71 | 3.18x |
+
+No effect. In hindsight that is expected: the switch interval only preempts a
+CPU-BOUND thread, and these threads block on queues constantly, releasing the
+GIL voluntarily far more often than every 5 ms. The timer never fires.
+
+**Not run-queue delay in the hand-off.** The transition (stage k's end to stage
+k+1's start) is the wake latency, and it is flat across the whole depth range:
+19.8, 19.7, 19.2, 18.8, 18.6, 18.4, 18.4 µs for depths 2..128.
+
+## Where the cost actually lands
+
+`both` and `as-reported` differ only by spans and both carry per-stage rows, so
+the span cost can be split (µs/stage, GB10, 2 cores):
+
+| depth | total span cost | inside the stage | in the hand-off |
+|--:|--:|--:|--:|
+| 2 | +27.49 | +1.36 | +18.89 |
+| 8 | +22.28 | +1.58 | +18.96 |
+| 32 | +18.91 | +2.46 | −2.70 |
+| 128 | +19.20 | +2.82 | −2.94 |
+
+The instrument's DIRECT cost — the emit, inside the stage body — is small and
+grows only from +1.4 to +2.8 µs. Almost everything else is the hand-off, and
+the hand-off term is not even monotone: it flips sign between depth 8 and 16.
+
+So the per-stage latency of a thread chain is not additive in the work each
+stage does. Adding an instrument mostly perturbs the scheduling of the
+hand-offs, and the size of that perturbation depends on depth and on what else
+is already running — which is why the same spans cost +5 µs/stage added to a
+bare pipeline at depth 8 but +22 µs added to a CSV-instrumented one, converging
+to ~+16-19 at depth 128.
+
 ## Not established
 
-The precise mechanism of the amplification — GIL hand-off latency versus
-run-queue delay — is not pinned down. `sys.setswitchinterval` would separate
-them and has not been run.
+The mechanism of the hand-off perturbation. Ruled out: exporter, compression,
+attribute construction, queue, lock contention, payload, GC, span count, GIL
+preemption, and wake latency. What remains is some interaction between thread
+count and hand-off scheduling that none of these ablations isolates.
+
+Stopping here is deliberate. The practical conclusions do not depend on the
+answer: the span path is not worth optimising (six ablations), the arms remain
+comparable (any added work is perturbed identically), and a single slope must
+not be quoted for the tracing arms.
