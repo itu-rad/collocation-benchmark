@@ -515,7 +515,12 @@ def payload_collect(runs):
     out = {"ref": {}, "copy": {}}
     for mode in ("ref", "copy"):
         for size in SIZES:
-            sel = select(runs, depth=10, size=size, mode=mode, trace=0)
+            # arm=, not trace=: trace=0 also matches `uninstrumented`, whose
+            # per-stage rows are switched off, so it would silently contribute
+            # nothing while looking like it had been included. The payload
+            # metric is a per-STAGE duration and only exists in the arms that
+            # keep those rows.
+            sel = select(runs, depth=10, size=size, mode=mode, arm="as-reported")
             dur_runs = pool_stage_dur_by_run(sel, min_idx=1)
             if dur_runs:
                 out[mode][size] = summarize(dur_runs, NS_PER_US)
@@ -523,7 +528,8 @@ def payload_collect(runs):
 
 
 def payload_table(data):
-    print("\n## Zero-copy: per-stage duration vs payload (depth 10, tracing OFF)\n")
+    print("\n## Zero-copy: per-stage duration vs payload "
+          "(depth 10, as-reported arm)\n")
     print("| payload | ref (us) | ref 95% CI (hier.) | copy (us) | copy 95% CI (hier.) | copy/ref |")
     print("|--------:|---------:|:------------------:|----------:|:-------------------:|---------:|")
     for size in SIZES:
@@ -566,9 +572,12 @@ DEVICE_TEX = {"mlx": "Apple~M2~Pro", "cuda": "NVIDIA~GB10"}
 
 
 def latex_depth_table(runs, device):
-    sel = select(runs, trace=0, size=0, mode="ref")
-    depths = sorted({r.meta["depth"] for r in sel})
-    print("% --- Framework overhead: depth scaling (core dispatch, tracing off) ---")
+    # `uninstrumented` is the framework's own cost; `as-reported` mixes in the
+    # CSV instrument, which is 58-71% of it. trace=0 matches BOTH, so it must
+    # not be used here.
+    sel = select(runs, arm="uninstrumented", size=0, mode="ref")
+    depths = sorted({r.meta["depth"] for r in sel} & set(DEPTHS))
+    print("% --- Framework overhead: depth scaling (uninstrumented arm) ---")
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Per-stage framework overhead is flat in pipeline depth "
           f"(no-op chains, tracing disabled, {DEVICE_TEX.get(device, device)}). "
@@ -593,7 +602,7 @@ def latex_depth_table(runs, device):
 
 
 def latex_payload_table(runs, device):
-    print("% --- Framework overhead: zero-copy payload sweep (tracing off) ---")
+    print("% --- Framework overhead: zero-copy payload sweep (as-reported arm) ---")
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Reference passing is constant in payload size while deep-copy "
           f"is linear (no-op chains, depth~10, tracing disabled, "
@@ -605,9 +614,9 @@ def latex_payload_table(runs, device):
           "Deep-copy (\\si{\\micro\\second}) \\\\\n\\midrule")
     for size in SIZES:
         r = pool_stage_dur_by_run(
-            select(runs, trace=0, depth=10, size=size, mode="ref"), min_idx=1)
+            select(runs, arm="as-reported", depth=10, size=size, mode="ref"), min_idx=1)
         c = pool_stage_dur_by_run(
-            select(runs, trace=0, depth=10, size=size, mode="copy"), min_idx=1)
+            select(runs, arm="as-reported", depth=10, size=size, mode="copy"), min_idx=1)
         rs = summarize(r, NS_PER_US) if r else None
         cs = summarize(c, NS_PER_US) if c else None
         r_txt = (f"{rs['median']:.1f} [{rs['ci_lo']:.1f}, {rs['ci_hi']:.1f}]"

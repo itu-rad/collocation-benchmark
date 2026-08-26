@@ -35,6 +35,10 @@
 #                  slower for its WHOLE duration, not just its first steps)
 #     exp        : res17 experiment id (default 138 = real; 142 = throwaway)
 #     depth-list : space-separated depths (default: powers of two, 1..128)
+#
+#   E1_PAYLOAD=1 collect_e1.sh <device> [runs] [exp]
+#     collects the PAYLOAD sweep instead: depth 10, sizes {0, 1 KiB, 1 MiB,
+#     10 MiB} x modes {ref, copy}, `as-reported` arm only (see below).
 set -uo pipefail
 
 usage() { sed -n '2,40p' "$0" >&2; exit 2; }
@@ -128,7 +132,21 @@ if [ -n "${PIN:-}" ] && command -v taskset >/dev/null 2>&1; then
   log "pinning workload to core(s) [$PIN]"
 fi
 
-ARMS=(as-reported uninstrumented spans-only both)
+# The PAYLOAD sweep (E1_PAYLOAD=1) is a different cell set and a single arm.
+# Its metric is per-STAGE self-duration, which only exists where the per-stage
+# CSV rows are written -- so `as-reported`, not the two deployable modes. That
+# is sound because the instrument's cost is payload-INDEPENDENT: it is the same
+# two log rows whether the stage moved 0 bytes or 10 MiB, so it cancels in the
+# ref-vs-copy comparison the sweep exists to make.
+PAYLOAD_DEPTH=10
+PAYLOAD_SIZES="0 1024 1048576 10485760"
+PAYLOAD_MODES="ref copy"
+
+if [ "${E1_PAYLOAD:-0}" = "1" ]; then
+  ARMS=(as-reported)
+else
+  ARMS=(as-reported uninstrumented spans-only both)
+fi
 NARMS=${#ARMS[@]}
 
 # config + tracing env for one arm
@@ -172,9 +190,45 @@ run_one() {
   log "  $lab rc=$rc ${secs}s rows=$rows spans=${spans:-n/a}"
 }
 
+run_payload_one() {
+  local size=$1 mode=$2 r=$3 cfg lab start rc secs rows
+  cfg="$CFG/noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}.yml"
+  [ -f "$cfg" ] || { log "  !! missing config $cfg"; return 1; }
+  lab="noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}_as-reported_${DEVICE}_r${r}"
+  [ -f "$OUT/$lab.csv" ] && { log "  [skip] $lab (exists)"; return 0; }
+  export CHOREO_DISABLE_TRACING=1; unset CHOREO_PROC_TRACE
+  local outfile; outfile=$(mktemp)
+  start=$(date +%s)
+  ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
+  rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
+  rm -f "$outfile"; unset CHOREO_DISABLE_TRACING
+  for ext in csv jsonl; do
+    [ -f "$SHARED/$lab.$ext" ] && mv "$SHARED/$lab.$ext" "$OUT/"
+  done
+  rows=$( [ -f "$OUT/$lab.csv" ] && wc -l < "$OUT/$lab.csv" | tr -d ' ' || echo 0 )
+  printf 'as-reported\tp%s_%s\t%s\t%s\t%s\t%s\t\n' "$size" "$mode" "$r" "$rc" "$secs" "$rows" >> "$SUM"
+  [ "$rows" -eq 0 ] && { log "  !! $lab produced NO CSV (rc=$rc)"; return 1; }
+  log "  $lab rc=$rc ${secs}s rows=$rows"
+}
+
+fail=0
+if [ "${E1_PAYLOAD:-0}" = "1" ]; then
+  nc=$(( $(echo "$PAYLOAD_SIZES" | wc -w) * $(echo "$PAYLOAD_MODES" | wc -w) ))
+  log "E1 PAYLOAD sweep: $nc cell(s) x 1 arm x $RUNS runs on $DEVICE (exp $EXP)"
+  for size in $PAYLOAD_SIZES; do
+    for mode in $PAYLOAD_MODES; do
+      for r in $(seq 1 "$RUNS"); do
+        run_payload_one "$size" "$mode" "$r" || fail=$((fail+1))
+      done
+    done
+  done
+  log "E1 payload sweep done on $DEVICE ($fail failed run(s)). CSVs in $OUT/"
+  touch "$HERE/DONE_collect_e1_payload_${DEVICE}"
+  exit $([ "$fail" -eq 0 ] && echo 0 || echo 1)
+fi
+
 ncells=$(echo "$DEPTHS" | wc -w | tr -d ' ')
 log "E1 collection: $ncells depth(s) x $NARMS arms x $RUNS runs on $DEVICE (exp $EXP)"
-fail=0
 for depth in $DEPTHS; do
   for r in $(seq 1 "$RUNS"); do
     # Rotate the arm order each repetition. Without this every repetition runs
