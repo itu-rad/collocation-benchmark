@@ -40,12 +40,16 @@ The tempting invariant ``event_count == 2 * emitted`` is WRONG, and a real
 self-RAG run is what showed it. Two things break it, both benign:
 
 * **Spans that start after the count.** The count is taken when the pipeline
-  finishes, but stage threads then park in a blocking ``get_input`` wait --
-  inside a span -- until ``os._exit`` reaps them. Those spans start after the
-  count, so ``starts >= emitted``, with the surplus being parked threads.
+  finishes, but a thread parked in a blocking wait inside a span keeps that
+  span open until ``os._exit`` reaps it, and may open another. So
+  ``starts >= emitted``, with the surplus being parked threads.
 * **Spans that never close.** Exactly those parked waits: a span open when the
-  process exits was never going to get an end record. The self-RAG run above
-  had 8 (7 stages in ``get_input``, plus the pipeline's ``retrieve_results``).
+  process exits was never going to get an end record.
+
+Both are now rare. The stage-level ``get_input`` wait is deliberately not
+spanned any more (see ``Stage.run_wrapper``), which is what used to park one
+span per stage at teardown; a clean NoOp run reports complete with no notes at
+all. The pipeline's own ``retrieve_results`` loop can still be caught waiting.
 
 So loss is checked where loss actually shows: ``starts < emitted`` means the
 backend dropped start events, and an end record with no start means the

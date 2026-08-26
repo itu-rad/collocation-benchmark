@@ -424,17 +424,30 @@ class Stage:
         perform actions on them and push the results onto the output queues."""
         self.pre_run()
         while True:
-            # No query_id here: attributes are fixed at span START, and at that
-            # instant this stage has not received a query yet -- that is the
-            # whole point of the span. Its START is when the stage began
-            # waiting; the query it eventually got is named by the ".run" span
-            # that follows on the same thread.
-            with trace_span(
-                name=f"{self.name}.get_input",
-                attributes={"thread_id": threading.get_ident(),
-                            "stage": self.name},
-            ):
-                query = self._get_input_from_queues()
+            # DELIBERATELY NOT SPANNED. A ".get_input" span used to wrap this
+            # wait, and it cost without paying for anything:
+            #
+            #  * Nothing consumes it. L_q decomposes exactly into entry, stage
+            #    duration, transition and exit, and every one of those is built
+            #    from the starts of "pipeline query", "<stage>.run",
+            #    "<stage>.push_to_outputs" and "pipeline query processed".
+            #    Removing it leaves a residual of 0.000 us on every query.
+            #  * It could never be correlated to a query. Span attributes are
+            #    fixed at START, and at that instant this stage has not received
+            #    a query -- that is what it is waiting for -- so it carried no
+            #    query_id by construction.
+            #  * It was the span parked threads sat inside at teardown, and so
+            #    the source of the unclosed-span noise in the completeness check.
+            #  * It cost ~27% of the whole span overhead at depth 128 on both
+            #    devices (GB10 +16.16 -> +11.58 us/stage, M2 Pro +63.85 ->
+            #    +46.69), because that overhead tracks the number of events
+            #    pushed through the queue.
+            #
+            # ".push_to_outputs" is NOT removable on the same argument: it is
+            # the boundary between a stage's own work and the hand-off, and that
+            # split is the finding -- transitions are 78% of L_q against 7% for
+            # the stages themselves.
+            query = self._get_input_from_queues()
             if not query:
                 # received terminating element (None)
                 self._push_to_all_outputs(None)
