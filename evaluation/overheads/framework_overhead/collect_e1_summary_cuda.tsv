@@ -1,0 +1,353 @@
+arm	depth	run	rc	seconds	csv_rows	spans
+as-reported	1	1	0	3	406	
+uninstrumented	1	1	0	2	204	
+spans-only	1	1	0	2	205	710
+both	1	1	0	2	407	710
+uninstrumented	1	2	0	1	204	
+spans-only	1	2	0	2	205	710
+both	1	2	0	2	407	710
+as-reported	1	2	0	2	406	
+spans-only	1	3	0	2	205	710
+both	1	3	0	2	407	710
+as-reported	1	3	0	1	406	
+uninstrumented	1	3	0	2	204	
+both	1	4	0	2	407	710
+as-reported	1	4	0	1	406	
+uninstrumented	1	4	0	1	204	
+spans-only	1	4	0	2	205	710
+as-reported	1	5	0	2	406	
+uninstrumented	1	5	0	1	204	
+spans-only	1	5	0	2	205	710
+both	1	5	0	2	407	710
+uninstrumented	1	6	0	2	204	
+spans-only	1	6	0	2	205	710
+both	1	6	0	2	407	710
+as-reported	1	6	0	1	406	
+spans-only	1	7	0	2	205	710
+both	1	7	0	2	407	710
+as-reported	1	7	0	2	406	
+uninstrumented	1	7	0	1	204	
+both	1	8	0	2	407	710
+as-reported	1	8	0	2	406	
+uninstrumented	1	8	0	1	204	
+spans-only	1	8	0	2	205	710
+as-reported	1	9	0	2	406	
+uninstrumented	1	9	0	1	204	
+spans-only	1	9	0	2	205	710
+both	1	9	0	2	407	710
+uninstrumented	1	10	0	2	204	
+spans-only	1	10	0	2	205	710
+both	1	10	0	2	407	710
+as-reported	1	10	0	1	406	
+spans-only	1	11	0	2	205	710
+both	1	11	0	2	407	710
+as-reported	1	11	0	1	406	
+uninstrumented	1	11	0	2	204	
+as-reported	2	1	0	1	608	
+uninstrumented	2	1	0	2	204	
+spans-only	2	1	0	2	205	1014
+both	2	1	0	2	609	1014
+uninstrumented	2	2	0	1	204	
+spans-only	2	2	0	2	205	1014
+both	2	2	0	2	609	1014
+as-reported	2	2	0	2	608	
+spans-only	2	3	0	2	205	1014
+both	2	3	0	2	609	1014
+as-reported	2	3	0	1	608	
+uninstrumented	2	3	0	2	204	
+both	2	4	0	2	609	1014
+as-reported	2	4	0	1	608	
+uninstrumented	2	4	0	2	204	
+spans-only	2	4	0	2	205	1014
+as-reported	2	5	0	1	608	
+uninstrumented	2	5	0	1	204	
+spans-only	2	5	0	2	205	1014
+both	2	5	0	2	609	1014
+uninstrumented	2	6	0	2	204	
+spans-only	2	6	0	2	205	1014
+both	2	6	0	2	609	1014
+as-reported	2	6	0	1	608	
+spans-only	2	7	0	2	205	1014
+both	2	7	0	2	609	1014
+as-reported	2	7	0	2	608	
+uninstrumented	2	7	0	1	204	
+both	2	8	0	2	609	1014
+as-reported	2	8	0	2	608	
+uninstrumented	2	8	0	1	204	
+spans-only	2	8	0	2	205	1014
+as-reported	2	9	0	2	608	
+uninstrumented	2	9	0	1	204	
+spans-only	2	9	0	2	205	1014
+both	2	9	0	2	609	1014
+uninstrumented	2	10	0	2	204	
+spans-only	2	10	0	2	205	1014
+both	2	10	0	2	609	1014
+as-reported	2	10	0	1	608	
+spans-only	2	11	0	2	205	1014
+both	2	11	0	2	609	1014
+as-reported	2	11	0	2	608	
+uninstrumented	2	11	0	1	204	
+as-reported	4	1	0	1	1012	
+uninstrumented	4	1	0	2	204	
+spans-only	4	1	0	2	205	1622
+both	4	1	0	2	1013	1622
+uninstrumented	4	2	0	1	204	
+spans-only	4	2	0	2	205	1622
+both	4	2	0	2	1013	1622
+as-reported	4	2	0	2	1012	
+spans-only	4	3	0	2	205	1622
+both	4	3	0	2	1013	1622
+as-reported	4	3	0	1	1012	
+uninstrumented	4	3	0	2	204	
+both	4	4	0	2	1013	1622
+as-reported	4	4	0	1	1012	
+uninstrumented	4	4	0	2	204	
+spans-only	4	4	0	2	205	1622
+as-reported	4	5	0	1	1012	
+uninstrumented	4	5	0	2	204	
+spans-only	4	5	0	2	205	1622
+both	4	5	0	2	1013	1622
+uninstrumented	4	6	0	1	204	
+spans-only	4	6	0	2	205	1622
+both	4	6	0	2	1013	1622
+as-reported	4	6	0	2	1012	
+spans-only	4	7	0	2	205	1622
+both	4	7	0	2	1013	1622
+as-reported	4	7	0	1	1012	
+uninstrumented	4	7	0	2	204	
+both	4	8	0	2	1013	1622
+as-reported	4	8	0	1	1012	
+uninstrumented	4	8	0	2	204	
+spans-only	4	8	0	2	205	1622
+as-reported	4	9	0	1	1012	
+uninstrumented	4	9	0	2	204	
+spans-only	4	9	0	2	205	1622
+both	4	9	0	2	1013	1622
+uninstrumented	4	10	0	1	204	
+spans-only	4	10	0	2	205	1622
+both	4	10	0	2	1013	1622
+as-reported	4	10	0	2	1012	
+spans-only	4	11	0	2	205	1622
+both	4	11	0	2	1013	1622
+as-reported	4	11	0	1	1012	
+uninstrumented	4	11	0	2	204	
+as-reported	8	1	0	1	1820	
+uninstrumented	8	1	0	2	204	
+spans-only	8	1	0	2	205	2838
+both	8	1	0	2	1821	2838
+uninstrumented	8	2	0	1	204	
+spans-only	8	2	0	2	205	2838
+both	8	2	0	2	1821	2838
+as-reported	8	2	0	2	1820	
+spans-only	8	3	0	2	205	2838
+both	8	3	0	2	1821	2838
+as-reported	8	3	0	1	1820	
+uninstrumented	8	3	0	2	204	
+both	8	4	0	2	1821	2838
+as-reported	8	4	0	1	1820	
+uninstrumented	8	4	0	2	204	
+spans-only	8	4	0	2	205	2838
+as-reported	8	5	0	1	1820	
+uninstrumented	8	5	0	2	204	
+spans-only	8	5	0	2	205	2838
+both	8	5	0	2	1821	2838
+uninstrumented	8	6	0	1	204	
+spans-only	8	6	0	2	205	2838
+both	8	6	0	2	1821	2838
+as-reported	8	6	0	2	1820	
+spans-only	8	7	0	2	205	2838
+both	8	7	0	2	1821	2838
+as-reported	8	7	0	1	1820	
+uninstrumented	8	7	0	2	204	
+both	8	8	0	2	1821	2838
+as-reported	8	8	0	1	1820	
+uninstrumented	8	8	0	2	204	
+spans-only	8	8	0	2	205	2838
+as-reported	8	9	0	1	1820	
+uninstrumented	8	9	0	2	204	
+spans-only	8	9	0	2	205	2838
+both	8	9	0	2	1821	2838
+uninstrumented	8	10	0	1	204	
+spans-only	8	10	0	2	205	2838
+both	8	10	0	2	1821	2838
+as-reported	8	10	0	2	1820	
+spans-only	8	11	0	2	205	2838
+both	8	11	0	2	1821	2838
+as-reported	8	11	0	1	1820	
+uninstrumented	8	11	0	2	204	
+as-reported	16	1	0	1	3436	
+uninstrumented	16	1	0	2	204	
+spans-only	16	1	0	2	205	5270
+both	16	1	0	2	3437	5270
+uninstrumented	16	2	0	2	204	
+spans-only	16	2	0	2	205	5270
+both	16	2	0	2	3437	5270
+as-reported	16	2	0	1	3436	
+spans-only	16	3	0	2	205	5270
+both	16	3	0	3	3437	5270
+as-reported	16	3	0	1	3436	
+uninstrumented	16	3	0	2	204	
+both	16	4	0	2	3437	5270
+as-reported	16	4	0	1	3436	
+uninstrumented	16	4	0	2	204	
+spans-only	16	4	0	2	205	5270
+as-reported	16	5	0	1	3436	
+uninstrumented	16	5	0	2	204	
+spans-only	16	5	0	2	205	5270
+both	16	5	0	2	3437	5270
+uninstrumented	16	6	0	2	204	
+spans-only	16	6	0	2	205	5270
+both	16	6	0	2	3437	5270
+as-reported	16	6	0	1	3436	
+spans-only	16	7	0	2	205	5270
+both	16	7	0	3	3437	5270
+as-reported	16	7	0	1	3436	
+uninstrumented	16	7	0	2	204	
+both	16	8	0	2	3437	5270
+as-reported	16	8	0	1	3436	
+uninstrumented	16	8	0	2	204	
+spans-only	16	8	0	2	205	5270
+as-reported	16	9	0	1	3436	
+uninstrumented	16	9	0	2	204	
+spans-only	16	9	0	2	205	5270
+both	16	9	0	2	3437	5270
+uninstrumented	16	10	0	1	204	
+spans-only	16	10	0	3	205	5270
+both	16	10	0	2	3437	5270
+as-reported	16	10	0	1	3436	
+spans-only	16	11	0	2	205	5270
+both	16	11	0	2	3437	5270
+as-reported	16	11	0	1	3436	
+uninstrumented	16	11	0	1	204	
+as-reported	32	1	0	2	6668	
+uninstrumented	32	1	0	2	204	
+spans-only	32	1	0	2	205	10134
+both	32	1	0	2	6669	10134
+uninstrumented	32	2	0	2	204	
+spans-only	32	2	0	2	205	10134
+both	32	2	0	2	6669	10134
+as-reported	32	2	0	2	6668	
+spans-only	32	3	0	2	205	10134
+both	32	3	0	2	6669	10134
+as-reported	32	3	0	2	6668	
+uninstrumented	32	3	0	1	204	
+both	32	4	0	3	6669	10134
+as-reported	32	4	0	1	6668	
+uninstrumented	32	4	0	2	204	
+spans-only	32	4	0	2	205	10134
+as-reported	32	5	0	1	6668	
+uninstrumented	32	5	0	1	204	
+spans-only	32	5	0	2	205	10134
+both	32	5	0	2	6669	10134
+uninstrumented	32	6	0	1	204	
+spans-only	32	6	0	2	205	10134
+both	32	6	0	3	6669	10134
+as-reported	32	6	0	1	6668	
+spans-only	32	7	0	2	205	10134
+both	32	7	0	3	6669	10134
+as-reported	32	7	0	1	6668	
+uninstrumented	32	7	0	2	204	
+both	32	8	0	2	6669	10134
+as-reported	32	8	0	2	6668	
+uninstrumented	32	8	0	1	204	
+spans-only	32	8	0	2	205	10134
+as-reported	32	9	0	2	6668	
+uninstrumented	32	9	0	1	204	
+spans-only	32	9	0	3	205	10134
+both	32	9	0	2	6669	10134
+uninstrumented	32	10	0	2	204	
+spans-only	32	10	0	2	205	10134
+both	32	10	0	2	6669	10134
+as-reported	32	10	0	2	6668	
+spans-only	32	11	0	2	205	10134
+both	32	11	0	2	6669	10134
+as-reported	32	11	0	2	6668	
+uninstrumented	32	11	0	1	204	
+as-reported	64	1	0	2	13132	
+uninstrumented	64	1	0	2	204	
+spans-only	64	1	0	2	205	19862
+both	64	1	0	3	13133	19862
+uninstrumented	64	2	0	2	204	
+spans-only	64	2	0	2	205	19862
+both	64	2	0	3	13133	19862
+as-reported	64	2	0	1	13132	
+spans-only	64	3	0	2	205	19862
+both	64	3	0	3	13133	19862
+as-reported	64	3	0	1	13132	
+uninstrumented	64	3	0	1	204	
+both	64	4	0	3	13133	19862
+as-reported	64	4	0	1	13132	
+uninstrumented	64	4	0	2	204	
+spans-only	64	4	0	3	205	19862
+as-reported	64	5	0	2	13132	
+uninstrumented	64	5	0	1	204	
+spans-only	64	5	0	3	205	19862
+both	64	5	0	2	13133	19862
+uninstrumented	64	6	0	2	204	
+spans-only	64	6	0	2	205	19862
+both	64	6	0	3	13133	19862
+as-reported	64	6	0	2	13132	
+spans-only	64	7	0	2	205	19862
+both	64	7	0	3	13133	19862
+as-reported	64	7	0	2	13132	
+uninstrumented	64	7	0	1	204	
+both	64	8	0	3	13133	19862
+as-reported	64	8	0	2	13132	
+uninstrumented	64	8	0	1	204	
+spans-only	64	8	0	3	205	19862
+as-reported	64	9	0	2	13132	
+uninstrumented	64	9	0	1	204	
+spans-only	64	9	0	3	205	19862
+both	64	9	0	2	13133	19862
+uninstrumented	64	10	0	2	204	
+spans-only	64	10	0	3	205	19862
+both	64	10	0	2	13133	19862
+as-reported	64	10	0	2	13132	
+spans-only	64	11	0	2	205	19862
+both	64	11	0	3	13133	19862
+as-reported	64	11	0	2	13132	
+uninstrumented	64	11	0	1	204	
+as-reported	128	1	0	3	26060	
+uninstrumented	128	1	0	1	204	
+spans-only	128	1	0	4	205	39318
+both	128	1	0	3	26061	39318
+uninstrumented	128	2	0	2	204	
+spans-only	128	2	0	3	205	39318
+both	128	2	0	3	26061	39318
+as-reported	128	2	0	2	26060	
+spans-only	128	3	0	4	205	39318
+both	128	3	0	3	26061	39318
+as-reported	128	3	0	2	26060	
+uninstrumented	128	3	0	2	204	
+both	128	4	0	3	26061	39318
+as-reported	128	4	0	2	26060	
+uninstrumented	128	4	0	2	204	
+spans-only	128	4	0	3	205	39318
+as-reported	128	5	0	2	26060	
+uninstrumented	128	5	0	2	204	
+spans-only	128	5	0	4	205	39318
+both	128	5	0	3	26061	39318
+uninstrumented	128	6	0	2	204	
+spans-only	128	6	0	3	205	39318
+both	128	6	0	3	26061	39318
+as-reported	128	6	0	2	26060	
+spans-only	128	7	0	3	205	39318
+both	128	7	0	4	26061	39318
+as-reported	128	7	0	2	26060	
+uninstrumented	128	7	0	2	204	
+both	128	8	0	3	26061	39318
+as-reported	128	8	0	2	26060	
+uninstrumented	128	8	0	2	204	
+spans-only	128	8	0	3	205	39318
+as-reported	128	9	0	2	26060	
+uninstrumented	128	9	0	2	204	
+spans-only	128	9	0	3	205	39318
+both	128	9	0	3	26061	39318
+uninstrumented	128	10	0	2	204	
+spans-only	128	10	0	3	205	39318
+both	128	10	0	3	26061	39318
+as-reported	128	10	0	2	26060	
+spans-only	128	11	0	3	205	39318
+both	128	11	0	4	26061	39318
+as-reported	128	11	0	2	26060	
+uninstrumented	128	11	0	2	204	
