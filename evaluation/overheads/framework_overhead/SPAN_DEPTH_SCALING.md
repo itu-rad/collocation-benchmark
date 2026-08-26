@@ -1,5 +1,9 @@
 # Why the span cost appeared to scale with depth — and what it actually is
 
+**Two different causes, one per device.** The GB10 analysis is below; the M2
+Pro turns out to have an unrelated and much larger problem, in the last
+section.
+
 The `spans-only` arm's per-stage cost rises with depth (GB10, 2 cores, µs/stage
 over `uninstrumented`): +4.9 at depth 8, +10.0 at 32, +15.8 at 128. Total spans
 are linear in depth, so per-stage cost should be flat. It is not, and the
@@ -122,3 +126,53 @@ Stopping here is deliberate. The practical conclusions do not depend on the
 answer: the span path is not worth optimising (six ablations), the arms remain
 comparable (any added work is perturbed identically), and a single slope must
 not be quoted for the tracing arms.
+
+
+---
+
+# The M2 Pro is a different problem entirely
+
+The M2 Pro's `spans-only` cost does not drift upward like the GB10's — it
+*steps*, from +25 µs/stage at depth 32 to +54 at 64 and +64 at 128. Running the
+same ablations there gives the opposite answer.
+
+| depth | uninstrumented | pure CPU burn | deque instead of queue | full spans |
+|--:|--:|--:|--:|--:|
+| 16 | 15.26 | +14.75 | — | +25.04 |
+| 32 | 13.96 | +15.18 | **+5.06** | +24.28 |
+| 64 | 13.23 | +12.34 | **+5.96** | +53.64 |
+| 128 | 13.08 | +9.66 | **+2.78** | +65.39 |
+
+**Pure CPU does not reproduce the step** — burn is flat, even decreasing, at the
+same thread counts. So unlike the GB10, this is not the thread chain reacting
+to added work.
+
+**Replacing the multiprocessing queue with a lock-free deque removes almost all
+of it** — +65.39 → +2.78 µs/stage at depth 128, a 23x reduction, and flat
+across depth. On the GB10 the same substitution changed nothing. So on macOS
+the cost *is* the queue put, and it degrades sharply once enough stage threads
+are producing concurrently.
+
+Ruled out here too: span drops (radt reported zero across the whole sweep, and
+the emitted counts are exactly linear in depth), and the queue capacity, which
+never filled.
+
+## What that implies
+
+Staging span events on an in-process deque drained by ONE thread into the
+multiprocessing queue would collapse this: d producer threads would touch only
+a deque (~0.1 µs, flat in thread count) and a single thread would do the
+expensive puts, with batching to amortise them further.
+
+The +2.78 µs figure is a floor, not a prediction: that ablation never drains at
+all. A real implementation still pays for the puts, just from one thread rather
+than d. The honest claim is that the win at depth 128 on the M2 Pro is
+somewhere between the current +65 µs/stage and that floor.
+
+This is also why the two devices' span costs are so far apart at the same
+depth (+16 on the GB10 against +64 on the M2 Pro at depth 128): they are not
+the same phenomenon and should not be reported as one.
+
+The emit lives inside radt, so acting on this means either changing radt or
+staging events before they reach it. That is a decision, not a conclusion, and
+is left open.
