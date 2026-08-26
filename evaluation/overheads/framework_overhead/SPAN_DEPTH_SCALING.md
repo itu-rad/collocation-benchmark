@@ -1,178 +1,89 @@
-# Why the span cost appeared to scale with depth — and what it actually is
+# Why the span cost scales with depth
 
-**Two different causes, one per device.** The GB10 analysis is below; the M2
-Pro turns out to have an unrelated and much larger problem, in the last
-section.
+`spans-only` costs more per stage as the pipeline gets deeper, on both devices,
+even though the number of spans is linear in depth. This records what it is.
 
-The `spans-only` arm's per-stage cost rises with depth (GB10, 2 cores, µs/stage
-over `uninstrumented`): +4.9 at depth 8, +10.0 at 32, +15.8 at 128. Total spans
-are linear in depth, so per-stage cost should be flat. It is not, and the
-question is why.
+> **Correction.** An earlier version of this document concluded the opposite —
+> that the scaling was not the tracing path at all but the thread chain
+> reacting to any added work. That was wrong, and the cause was a bug in the
+> ablation build, not in the data. The variants were dispatched as separate
+> `if` blocks sharing one trailing `else`, so every branch except the last was
+> silently overwritten with the full path. `burn`, `deque` and `onespan` were
+> all running `full`, which is precisely why they "reproduced the curve
+> exactly". The build now uses a single if/elif chain and each variant is
+> verified to bind a distinct implementation before use.
 
-## What it is not
+## The ablation, both devices
 
-Each row is a full sweep at depths 8 / 32 / 128, R=5, taskset -c 18,19.
+µs/stage over `uninstrumented`, R=5. GB10 pinned to cores 18,19; M2 Pro
+unpinned.
 
-| ablation | what it removes | result |
-|---|---|---|
-| `RADT_TRACE_COMPRESSLEVEL` 6 → 0 | the exporter child's gzip | no change (+15.8 → +17.9) |
-| `attrs` — build the attribute dict, never emit | everything downstream of us | **flat: +1.5 / +0.9 / +1.1** |
-| `noattrs` — emit with no attributes at all | the payload | still scales (+2.9 / +11.4 / +13.9) |
-| `deque` — a lock-free deque instead of the queue | the multiprocessing queue | still scales (+5.6 / +12.6 / +15.5) |
-| `gc.disable()` | the garbage collector | no change (+14.9 vs +15.4) |
-| `onespan` — 1 span per stage instead of 3 | two thirds of the spans | **no change** (+15.5 vs +16.1) |
+| variant | what runs | GB10 @8 | @32 | @128 | M2 @8 | @32 | @128 |
+|---|---|--:|--:|--:|--:|--:|--:|
+| `attrs` | build the attribute dict, never emit | +1.29 | +0.93 | +1.01 | +1.82 | +4.15 | +0.87 |
+| `deque` | lock-free deque, radt bypassed | +2.31 | +2.37 | +2.09 | +2.73 | +6.97 | +2.06 |
+| `noqueue` | all of radt's per-span machinery, emit no-op | +7.37 | +6.58 | +6.30 | +13.32 | +14.63 | +8.53 |
+| `burn` | fixed pure CPU instead of emitting | +7.92 | +6.85 | +6.61 | +12.64 | +14.49 | +9.91 |
+| `onespan` | 1 span per stage instead of 3 | +10.11 | +8.63 | +5.96 | +15.37 | +10.51 | +32.85 |
+| `full` | production | +4.51 | +11.99 | **+15.68** | +26.53 | +24.08 | **+62.89** |
 
-So it is not the exporter, not compression, not our attribute construction, not
-the queue, not lock contention, not the payload size, not garbage collection,
-and not the number of spans. Cutting spans per stage by 3x changes nothing.
+Read the rows that are FLAT and the one that is not:
 
-## What it is
+* Our own attribute work is ~+1 µs/stage and flat. Negligible.
+* A lock-free sink is ~+2 µs/stage and flat.
+* radt's per-span bookkeeping *without* the emit — contextvar stack, the
+  lock-guarded id counter, the generator context manager — costs +6-7 µs/stage
+  on the GB10 and +9-15 on the M2 Pro, and **does not scale with depth**.
+* Pure CPU of a similar size is likewise flat, so added work per se does not
+  scale either.
+* Only `full` scales. `full` minus `noqueue` is the emit alone: **+9.4 µs/stage
+  on the GB10 at depth 128, +54 on the M2 Pro.**
 
-Replace the span entirely with a busy-loop of pure CPU — no syscall, no queue,
-no allocation, nothing retained — sized to match one span emit:
+So the depth scaling is the multiprocessing-queue emit.
 
-| depth | pure CPU burn | real spans |
+## It is proportional to event count, not to producer count
+
+Two further results say what kind of cost it is.
+
+**Fewer events, proportionally less cost.** `onespan` emits 2 events per stage
+instead of 6. At depth 128 it costs +5.96 against `full`'s +15.68 on the GB10
+(38%) and +32.85 against +62.89 on the M2 Pro (52%). Cutting events cuts cost.
+
+**Funnelling the puts through one thread does not help at all.** A prototype
+staged every event on a lock-free deque and had a single drainer thread perform
+every queue put, delivering all of them (high-water mark 139 events at depth
+128, so the drainer kept up easily):
+
+| depth | production | staged through one drainer |
 |--:|--:|--:|
-| 8 | +4.30 | +4.90 |
-| 32 | +9.47 | +9.98 |
-| 128 | +14.76 | +15.78 |
+| 8 | +25.37 | +25.19 |
+| 64 | +51.70 | +52.70 |
+| 128 | +63.43 | +60.49 |
 
-Injected CPU reproduces the curve. The scaling is not a property of tracing at
-all: it is what the pipeline does to *any* added per-stage work.
+Identical. So this is not producer-side lock contention — moving the puts to
+one thread changes nothing. It is the total cost of pushing N events through
+the queue, the pipe and the exporter, and the workload pays it wherever the
+put happens.
 
-The reason is the GIL. Measured CPU utilisation with **two** cores available:
+## What that means for a fix
 
-| depth | uninstrumented | with spans |
-|--:|--:|--:|
-| 8 | 44% | 96% |
-| 32 | 104% | 101% |
-| 128 | 100% | 112% |
+Replacing the queue with a deque is not a fix: the deque only looked free
+because it never delivered anything, and the staged version that does deliver
+is no better than what we have.
 
-It pins at ~100%, one core's worth, however many cores it is given. Only one
-thread runs Python bytecode at a time, so d stage threads share a single
-serialised execution budget, and work added per stage is amplified by every
-other thread's wait for it — roughly 1x at depth 8 and 3x at depth 128.
+The lever that works is **fewer, larger queue items** — batching several span
+events into one put — since cost tracks event count. Emitting fewer spans per
+stage is the crude version of that and already buys back roughly its share.
 
-This is also why more cores did not help: 1, 2, 3 and 10 cores were all
-equal-or-worse, which is what a GIL limit looks like and not a core-count limit.
+The emit lives inside radt, so acting on this means changing radt or staging
+events before they reach it. That is a decision, not a conclusion, and is left
+open.
 
-## Consequences
+## Also ruled out
 
-**Do not optimise the span path for this.** Six ablations say the cost is not
-in it. Fewer spans, a cheaper sink, no compression and no GC all leave the
-curve unchanged.
-
-**The comparison remains valid.** The amplification applies to the framework's
-own work identically, so `uninstrumented` vs `spans-only` at a given depth is
-measured in one regime and the difference is real. What must not be done is
-quoting a single slope for `spans-only` — the fit is rejected for exactly this
-reason — or extrapolating its per-stage cost to a depth that was not measured.
-
-**Removing it means escaping the GIL**, not tuning tracing: free-threaded
-CPython, or stages in processes rather than threads. That is a framework
-change, out of scope here, and worth stating as a limit of a thread-per-stage
-design rather than a defect of the tracing.
-
-## Two further mechanisms, both ruled out
-
-**Not GIL preemption.** `sys.setswitchinterval` varied 500x, depths 8 and 128,
-R=5:
-
-| interval | span cost @8 | span cost @128 | amplification |
-|---|--:|--:|--:|
-| 0.0001 s | +5.25 | +16.01 | 3.05x |
-| 0.005 s (default) | +5.11 | +15.95 | 3.12x |
-| 0.05 s | +4.94 | +15.71 | 3.18x |
-
-No effect. In hindsight that is expected: the switch interval only preempts a
-CPU-BOUND thread, and these threads block on queues constantly, releasing the
-GIL voluntarily far more often than every 5 ms. The timer never fires.
-
-**Not run-queue delay in the hand-off.** The transition (stage k's end to stage
-k+1's start) is the wake latency, and it is flat across the whole depth range:
-19.8, 19.7, 19.2, 18.8, 18.6, 18.4, 18.4 µs for depths 2..128.
-
-## Where the cost actually lands
-
-`both` and `as-reported` differ only by spans and both carry per-stage rows, so
-the span cost can be split (µs/stage, GB10, 2 cores):
-
-| depth | total span cost | inside the stage | in the hand-off |
-|--:|--:|--:|--:|
-| 2 | +27.49 | +1.36 | +18.89 |
-| 8 | +22.28 | +1.58 | +18.96 |
-| 32 | +18.91 | +2.46 | −2.70 |
-| 128 | +19.20 | +2.82 | −2.94 |
-
-The instrument's DIRECT cost — the emit, inside the stage body — is small and
-grows only from +1.4 to +2.8 µs. Almost everything else is the hand-off, and
-the hand-off term is not even monotone: it flips sign between depth 8 and 16.
-
-So the per-stage latency of a thread chain is not additive in the work each
-stage does. Adding an instrument mostly perturbs the scheduling of the
-hand-offs, and the size of that perturbation depends on depth and on what else
-is already running — which is why the same spans cost +5 µs/stage added to a
-bare pipeline at depth 8 but +22 µs added to a CSV-instrumented one, converging
-to ~+16-19 at depth 128.
-
-## Not established
-
-The mechanism of the hand-off perturbation. Ruled out: exporter, compression,
-attribute construction, queue, lock contention, payload, GC, span count, GIL
-preemption, and wake latency. What remains is some interaction between thread
-count and hand-off scheduling that none of these ablations isolates.
-
-Stopping here is deliberate. The practical conclusions do not depend on the
-answer: the span path is not worth optimising (six ablations), the arms remain
-comparable (any added work is perturbed identically), and a single slope must
-not be quoted for the tracing arms.
-
-
----
-
-# The M2 Pro is a different problem entirely
-
-The M2 Pro's `spans-only` cost does not drift upward like the GB10's — it
-*steps*, from +25 µs/stage at depth 32 to +54 at 64 and +64 at 128. Running the
-same ablations there gives the opposite answer.
-
-| depth | uninstrumented | pure CPU burn | deque instead of queue | full spans |
-|--:|--:|--:|--:|--:|
-| 16 | 15.26 | +14.75 | — | +25.04 |
-| 32 | 13.96 | +15.18 | **+5.06** | +24.28 |
-| 64 | 13.23 | +12.34 | **+5.96** | +53.64 |
-| 128 | 13.08 | +9.66 | **+2.78** | +65.39 |
-
-**Pure CPU does not reproduce the step** — burn is flat, even decreasing, at the
-same thread counts. So unlike the GB10, this is not the thread chain reacting
-to added work.
-
-**Replacing the multiprocessing queue with a lock-free deque removes almost all
-of it** — +65.39 → +2.78 µs/stage at depth 128, a 23x reduction, and flat
-across depth. On the GB10 the same substitution changed nothing. So on macOS
-the cost *is* the queue put, and it degrades sharply once enough stage threads
-are producing concurrently.
-
-Ruled out here too: span drops (radt reported zero across the whole sweep, and
-the emitted counts are exactly linear in depth), and the queue capacity, which
-never filled.
-
-## What that implies
-
-Staging span events on an in-process deque drained by ONE thread into the
-multiprocessing queue would collapse this: d producer threads would touch only
-a deque (~0.1 µs, flat in thread count) and a single thread would do the
-expensive puts, with batching to amortise them further.
-
-The +2.78 µs figure is a floor, not a prediction: that ablation never drains at
-all. A real implementation still pays for the puts, just from one thread rather
-than d. The honest claim is that the win at depth 128 on the M2 Pro is
-somewhere between the current +65 µs/stage and that floor.
-
-This is also why the two devices' span costs are so far apart at the same
-depth (+16 on the GB10 against +64 on the M2 Pro at depth 128): they are not
-the same phenomenon and should not be reported as one.
-
-The emit lives inside radt, so acting on this means either changing radt or
-staging events before they reach it. That is a decision, not a conclusion, and
-is left open.
+Exporter gzip level (6 vs 0: no change), garbage collection (`gc.disable()`: no
+change), span drops (radt reported zero across both sweeps, emitted counts
+exactly linear in depth), queue capacity (never filled; lowering it 8x changed
+nothing), and GIL preemption (`sys.setswitchinterval` varied 500x: amplification
+unchanged at 3.05x / 3.12x / 3.18x). Those tests did not use the broken
+dispatch and stand.
