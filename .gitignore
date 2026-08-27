@@ -44,8 +44,19 @@ mlruns/
 mlflow.db
 **/*.db
 
-# Collection sentinels: recreated by the next run, meaningless in history.
+# Run-state sentinels and markers. A harness touches these to signal progress
+# to a watcher; they are recreated by the next run and mean nothing in history.
+# Spelled out rather than just DONE_* so a differently-named marker cannot slip
+# back in the way the non-recursive results rule did.
 **/DONE_*
+**/DONE
+**/COMPLETE*
+**/FINISHED*
+**/RUNNING*
+**/STARTED*
+**/*.done
+**/*.lock
+**/*.pid
 
 # Scratch working area: throwaway probes, ablation builds, and cloned upstream
 # repos (kits19, mlperf-inference) that must not become embedded submodules.
