@@ -89,10 +89,21 @@ else
   echo "E1: local store $STORE_DB (overhead-experiment exemption; E1_STORE=res17 to override)"
 fi
 
-SUM="$HERE/collect_e1_summary_${DEVICE}.tsv"
-[ -f "$SUM" ] || printf 'arm\tdepth\trun\trc\tseconds\tcsv_rows\tspans\n' > "$SUM"
+# Provenance lives with the harness, not with the caller and not in /tmp.
+# Both files are stamped with the collection's start time rather than appended
+# to, for two reasons: a /tmp log was lost to a reboot and completeness had to
+# be reconstructed from the CSVs, and an append-only summary silently mixed two
+# collection eras -- averaging 39318 and 26262 span counts into a meaningless
+# 34966, which nearly hid a bad deploy.
+RUNSTAMP=$(date '+%Y%m%d-%H%M%S')
+LOGDIR="$HERE/collect_logs"
+mkdir -p "$LOGDIR"
+SUM="$LOGDIR/collect_e1_${DEVICE}_${RUNSTAMP}.tsv"
+LOG="$LOGDIR/collect_e1_${DEVICE}_${RUNSTAMP}.log"
+printf 'arm\tdepth\trun\trc\tseconds\tcsv_rows\tspans\n' > "$SUM"
 
-log(){ echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
+# Every log line goes to stdout AND to the durable log.
+log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG"; }
 
 # Optional CPU pinning. On GB10 the Grace CPU is heterogeneous (10x Cortex-X925
 # performance + 10x A725 efficiency) and an unpinned workload migrates between
@@ -240,6 +251,7 @@ if [ "${E1_PAYLOAD:-0}" = "1" ]; then
     done
   done
   log "E1 payload sweep done on $DEVICE ($fail failed run(s)). CSVs in $OUT/"
+  log "log + summary: $LOG"
   touch "$HERE/DONE_collect_e1_payload_${DEVICE}"
   exit $([ "$fail" -eq 0 ] && echo 0 || echo 1)
 fi
@@ -260,5 +272,6 @@ for depth in $DEPTHS; do
 done
 
 log "E1 collection done on $DEVICE ($fail failed run(s)). CSVs in $OUT/"
+log "log + summary: $LOG"
 touch "$HERE/DONE_collect_e1_${DEVICE}"
 [ "$fail" -eq 0 ]
