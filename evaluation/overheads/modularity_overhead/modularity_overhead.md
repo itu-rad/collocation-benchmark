@@ -1,195 +1,184 @@
-# Modularity overhead — EfficientNetV2-S, monolith vs Choreo
+# E2 — the cost of decomposition: EfficientNetV2 monolith vs Choreo
 
 **Question.** Empty stages being cheap (the NoOp microbenchmark, `../framework_overhead/`)
-does not prove that wrapping a *real* workload in Choreo's graph/queue/thread
-structure is cheap. Does expressing an EfficientNetV2-S Imagenette fine-tune as a
-Choreo pipeline inflate per-step latency versus a hand-written, monolithic PyTorch
-implementation? This is the real-workload, vs-an-external-baseline counterpart to NoOp.
+does not prove that wrapping a *real* workload in Choreo's graph/queue/thread structure is
+cheap. Does expressing an EfficientNetV2 Imagenette fine-tune as a Choreo pipeline cost
+throughput against a hand-written, monolithic PyTorch implementation — and where does the
+cost land? This is the real-workload counterpart to E1, and the one measured against an
+external baseline rather than against the framework's own configurations.
 
-**Answer (DGX Spark cuda):** the framework's **core wrapper adds +49 µs/step (+0.13 %)** —
-a tiny, fixed, negligible positive overhead. With **tracing enabled** (the `async_tracing`
-radt branch) it adds **+1.75 ms/step (+4.5 %)** — modest on a fast 39 ms vision step,
-negligible on the seconds-scale stages of the case studies. Modularity is cheap.
-
----
-
-## Setup
-
-- **Workload:** transfer-learning fine-tune of **EfficientNetV2-S** on Imagenette —
-  frozen backbone, replaced 10-class head, Adam (lr 1e-3), cross-entropy, **batch 8**.
-  A deliberately *newer* model that is still far smaller than the transformer workloads
-  now common, so the per-step compute is a realistic mid-range target.
-- **Two implementations, identical work:** (a) `baseline_finetune.py` — standalone PyTorch,
-  no framework, no tracing (`--no-radt`); (b) the Choreo pipeline
-  `configs/torchvision_training.yml` (TorchVisionDataLoader → TorchVisionClassification).
-  Both share the same data loading, the same frozen backbone, the same Adam/CE step, the
-  same **12,810** trainable params, and both call `torch.{cuda,mps}.synchronize()` at step
-  end. Both run the **train split only**, `num_workers=0` (see "Isolating the wrapper").
-- **radt:** the `feat/Sipondo/async_tracing` branch (commit 3ba61cb), which exports MLflow
-  trace spans **asynchronously** instead of blocking at span close. This is what makes the
-  tracing-on number realistic; the pip 0.2.28 sync export inflated it ~8× (see Result 2).
-- **Devices (both DUTs):** DGX Spark **cuda** (GB10, torch 2.11+cu130, driver 580.95.05) —
-  reported below — and M2 Pro **mps** (user runs the same driver `--device mps`). Conclusions
-  are about *direction within a device*, never cuda-vs-mps µs.
-- **Clock:** monotonic `perf_counter_ns` (trailing CSV column); wall-clock col 0 is kept only
-  for RadT alignment.
-- **Scheduler:** closed-loop `OfflineLoadScheduler`, one query (one batch = one step) in flight
-  (`serialize_queries: true`).
-- **Steady-state protocol:** each run is **one continuous epoch (1,100 steps)**; the first
-  **200** are dropped (cuDNN autotune / first-call) and the rest pooled across **R = 5** runs
-  → 4,500 steps/arm. Per-step latency is **flat within a run** (verified — see below), so runs
-  need no cooldown; the driver **interleaves** the arms so all see the same conditions. Median
-  + two-sample bootstrap 95 % CI.
-- **Two arms** (as in NoOp): **tracing off** (`CHOREO_DISABLE_TRACING=1`, core dispatch) and
-  **tracing on** (the MLflow span layer). The baseline has no tracing.
+**Status.** Re-collecting on both machines since 2026-08-27. The apparatus, the metric and
+the statistics below are settled; the numbers are not yet in. See *Results* at the end.
 
 ---
 
-## Metric definitions (monotonic perf column)
+## What is run
 
-- **Per-step training latency** — baseline `training_step` start→end vs Choreo
-  `EfficientNet training` start→end. Both bracket the *same* GPU work
-  (`.to`→zero_grad→forward→backward→step→**synchronize**) and both **exclude** data loading.
-  One-in-flight ⇒ the stage's start/end rows strictly alternate ⇒ consecutive pairing is exact.
-- **Overhead** = (median_Choreo − median_baseline), in **absolute µs** *and* as a ratio %, each
-  with a **two-independent-sample** bootstrap CI (the arms are separate process runs, not paired).
+Three things per cell, on an identical workload — the `(model, weights, batch)` triple is
+read out of the same YAML and handed to both sides, so the only difference is the framework:
 
----
+| configuration | what it is | how |
+|---|---|---|
+| `monolith` | a bare PyTorch loop, no framework at all | `baseline_finetune.py` |
+| `choreo` | the same workload declared as a Choreo pipeline | `main.py`, `CHOREO_DISABLE_TRACING=1` |
+| `choreo-traced` | the same pipeline with radt proc tracing on | `main.py`, `CHOREO_PROC_TRACE=1` |
 
-## Result 1 — Modularity adds a negligible, fixed overhead (core dispatch, tracing off)
+    cost of decomposition = choreo        − monolith
+    cost of tracing       = choreo-traced − choreo
 
-Per-step training latency at steady state (cuda, 4,500 steps/arm):
+Their order is rotated by repetition index so none of them always absorbs the warm-up. A
+fixed order systematically penalises whichever runs first, which is where an earlier cell's
+impossible reading of "the wrapper makes work faster" came from.
 
-| arm | median (ms) | 95% CI |
-|---|---:|:---:|
-| baseline (monolith) | 39.171 | [39.144, 39.195] |
-| Choreo (tracing off) | 39.221 | [39.190, 39.252] |
+**Workload.** Transfer-learning fine-tune of EfficientNetV2 on Imagenette — frozen backbone,
+replaced 10-class head, Adam (lr 1e-3), cross-entropy. One query = one batch = one training
+step. Both sides share the data loading, the frozen backbone, the Adam/CE step, the same
+trainable parameter count, and both synchronise the accelerator at step end. Train split
+only.
 
-**Overhead: +49.1 µs [+11.4, +90.9]; +0.13 % [+0.03 %, +0.23 %].** A small, consistent
-**positive** cost — **~0.1 % of a 39 ms step**, i.e. negligible. This is the framework's true
-per-step wrapper cost (queue hand-off + stage log + the `_push_to_outputs`/span machinery that
-falls inside Choreo's measured bracket). It is radt-version-independent (tracing is disabled in
-this arm). It is the expected *direction* (the wrapper can only add work) and the expected
-*magnitude*: five independent code-audit agents found the Choreo bracket carries ~30–150 µs of
-extra work (`queue.put` + `mlflow.start_span` enter/exit after `synchronize()`), and +49 µs
-lands squarely in that range. (`analyze_operational_overhead.py --device cuda`.)
-
-### Why an earlier run *looked* like Choreo was 2 % faster (a measurement artifact, now fixed)
-
-A first collection — all five baseline runs first, `num_workers=2`, 400-step runs — produced a
-*negative* overhead (Choreo −2.1 %), i.e. the framework looking **faster** than the code it
-wraps. A framework beating its own baseline is a red flag, so we tracked it down rather than
-report it. Two confounds, neither of them framework behavior:
-
-1. **Run scheduling + DataLoader workers.** The per-run medians showed the baseline degrading
-   while Choreo stayed flat:
-   ```
-   baseline   r1..r5 = 40.45 40.87 41.36 42.04 42.41   (num_workers=2, all run first)
-   choreo_t0  r1..r5 = 40.53 40.25 40.71 40.73 40.63   (flat)
-   ```
-   A 3,000-step **continuous** probe proved the per-step time is **flat within a run** (39.1 ms,
-   zero drift) — so this is *not* within-run GPU thermal throttling. The cross-run climb tracked
-   `num_workers=2` worker-process effects under dense back-to-back baseline scheduling; with
-   `num_workers=0` and continuous runs the baseline is flat.
-2. **DataLoader prefetch contention.** `num_workers=2` decodes the *next* batch concurrently
-   with the step (~7 % slower than `num_workers=0`); serialized Choreo's loader is idle during
-   the step, so it avoided the tax — an execution-model difference, not wrapper overhead.
-
-**Fix (now the `run_modularity.py` defaults):** `num_workers=0` in both arms (removes prefetch
-contention and any data-path asymmetry), single continuous epoch per run at steady state, and
-interleaved arms. At that matched operating point the artifact is gone and the true +0.13 %
-wrapper cost emerges. (GB10 clock-pinning would also help but needs root.)
-
-## Result 2 — Overhead-in-context (the tracing layer)
-
-The real EfficientNetV2-S step is **39.17 ms**. Per-step framework cost as a fraction:
-
-| layer | per-step cost | % of this step |
-|---|---:|---:|
-| core dispatch (Choreo off − baseline) | +49 µs | +0.13 % |
-| MLflow tracing layer (on − off), async radt | +1.75 ms | +4.5 % |
-
-Core dispatch is negligible. The **tracing layer** (MLflow spans via the `async_tracing` radt)
-is a *fixed* +1.75 ms/step — **+4.5 % of this fast 39 ms vision step, and <0.1 % of a
-seconds-scale LLM or retrieval stage** (the case studies). This is why tracing is a separable,
-optional arm: effectively free where stages are expensive, and tunable for very fast steps.
-§exp-noop shows the per-stage cost is fixed and independent of step size, so its fraction
-shrinks as stages grow.
-
-> **The radt branch matters here.** With the pip `radt==0.2.28` (synchronous span export that
-> blocks at span close), this same arm measured **+14 ms (+36 %)** — an ~8× inflation that is an
-> artifact of blocking export, not the cost of tracing. The `async_tracing` branch exports off
-> the critical path; the median drops to +1.75 ms. (A tail remains — p95 ≈ 102 ms — from periodic
-> async-queue flushes; the median is the right summary of the per-step cost.) These numbers are
-> still a local-store export on the `-p 0` path; an orchestrated run against RadT's server may
-> differ, but the async mechanism is now the real one. (`true_overhead_analysis.py --device cuda`.)
-
-## Result 3 — End-to-end breakdown (descriptive)
-
-| component | median (ms) [95% CI] |
-|---|---|
-| baseline training step | 39.171 [39.144, 39.195] |
-| Choreo training stage | 39.221 [39.190, 39.252] |
-| Choreo dataloader stage | 33.85 [32.75, 35.15] |
-| Choreo end-to-end / query | 74.47 [73.38, 75.71] |
-
-With `num_workers=0` the dataloader stage is a synchronous JPEG decode of 8 full-res images
-(~34 ms) — measured as its own first-class stage, end-to-end visibility a monolith hides. Under
-serialized one-in-flight execution it does **not** overlap the training step, so end-to-end per
-query (74.5 ms) ≈ decode + train. (Cross-query pipelining — overlapping decode with training —
-is a separate framework capability, deliberately *off* here so the per-step metric is clean.)
-(`breakdown_overhead.py --device cuda`.)
+**Sweep.** EfficientNetV2-S at batch {1, 2, 4, 8, 16, 32, 64}, plus EfficientNetV2-M and -L
+at batch 8 — 9 cells, on each of `m2pro` (Apple M2 Pro, torch `mps`) and `gb10` (DGX Spark,
+torch `cuda`). ConvNeXt-L was dropped. Conclusions are about direction *within* a machine,
+never m2pro-vs-gb10 microseconds.
 
 ---
 
-## Mechanism
+## The metric of record: time per query
 
-Both per-step brackets time identical GPU work and exclude data loading; the compute is
-bit-for-bit the same workload. Choreo's measured bracket additionally contains the stage
-start/end log, a `queue.put` (`_push_to_outputs`), and the `mlflow.start_span` enter/exit —
-all *after* `synchronize()`. That CPU work is the +49 µs. With tracing on, the MLflow span
-machinery (attribute construction + handing the span to the async export queue) adds the
-+1.75 ms. Because the EfficientNetV2-S step is ~39 ms of GPU compute, the core wrapper is a
-0.1 % tax and the tracing layer a few percent.
+**Time per query** — start-to-start between consecutive queries, equivalently time per batch,
+equivalently 1/throughput.
 
-## Caveats / threats to validity
+Two properties make it the right one here:
 
-- **The +0.13 % is significant but negligible.** The CI excludes 0 (it is a real fixed cost,
-  not noise), but it is 0.1 % of one step — we report it as the wrapper's true cost, not as
-  "zero". The earlier −2 % was an artifact (above), not a framework speedup.
-- **`num_workers=0` is deliberate** — it removes both the prefetch-contention confound and the
-  decode-vs-launch thread asymmetry, isolating the wrapper. It makes data loading slow
-  (Result 3), but that is outside the per-step training metric.
-- **Tracing-on uses the `async_tracing` radt + a local store.** The `-p 0` path has no RadT
-  MLflow server, so spans export async to an isolated local file store; the case studies'
-  as-used server cost may differ. The async export also leaves a p95 tail (periodic flushes);
-  the median is the per-step summary.
-- **Single batch size / model — now addressed by the scale sweep.** The headline point above is
-  EfficientNetV2-S @ batch 8, the *worst realistic case* (a small, fast step where the fixed
-  wrapper cost is the largest fraction). `configs/scale_sweep.yml` + `analyze_scale_sweep.py`
-  sweep the step-time up ~1–2 orders of magnitude along two axes — batch (1→64 @ EffNetV2-S) and
-  model (EffNetV2-S→M→L→ConvNeXt-L @ batch 8) — to show the *relative* overhead collapses toward
-  zero as the step grows (the amortization curve). The fixed per-step µs cost is confirmed roughly
-  constant; its share of the step is fully explained by step-time. (Full R=5 numbers pending
-  collection on an idle machine; run via `RUN_ON_MAC.md`. The batch sweep loops epochs so large
-  batches on the small Imagenette split still reach the step budget.)
-- **Cross-DUT.** cuda and mps µs are not comparable; we report per device, direction only.
-  The M2 Pro mps half is collected by the user with the same driver and radt branch.
+- **It is anchor-invariant.** In steady state the same period comes out whether you cut at
+  the pipeline row, the training row, or the monolith's own step row: measured on a b8 cell,
+  66118 µs from pipeline starts vs 66242 µs from training starts. That is what makes two
+  processes comparable although they emit *different markers* — which is exactly the
+  constraint `disable_logs: true` imposes on the Choreo side.
+- **It covers the whole cycle**, data loading and preprocessing included, where an in-step
+  marker is blind to the 10–30 % spent there.
+
+**What it replaced, and why.** The previous metric was the training step's own duration,
+compared across the two processes. It is not usable at this noise floor: the framework's
+cost lands mostly *between* steps, which that marker excludes by construction. It measured a
+near-zero difference against ±600 µs of run-to-run noise and flipped sign between
+repetitions — per-run paired differences for one cell ran
+`+7.6 / +30.0 / −50.6 / +21.5 / −6.0 / −1241.8 / −55.2 / +8.1 / −18.6`, and one cell settled
+at −575 µs, i.e. "the wrapper makes work faster". The honest reading of those tables was
+"in-step overhead is below a ±600 µs noise floor", not the signed values printed.
+
+## Co-headline: the query latency breakdown
+
+From the spans of the `choreo-traced` runs: per-stage latency (**dataloader**, **training**)
+plus the auxiliary framework overheads (**entry**, **handoff**, **exit**, **turnaround**).
+
+These are successive instants within *one* query on *one* clock, so unlike any cross-process
+difference they are non-negative by construction and carry no run-level term. They sum to
+the time per query exactly — E1 verified the identity at a residual of **0.000 µs over 300
+queries** on a 2-stage pipeline. Negative intervals are therefore a hard failure of the
+analyzer, never something to take a median over. (Stage CSV rows carry no query id, so an
+index-aligned pairing silently shifts every subsequent step when one row is dropped; that
+had already produced a transition sum of −63842 µs.)
+
+Published alongside it is the identity that ties the two headlines together:
+
+    Δ(time per query) = (dataloader_choreo − gap_monolith)
+                      + (training_choreo   − step_monolith)
+                      + Σ transitions
+
+which can show that part of what looks like added "transition" cost is work that *moved out
+of the stage bodies* rather than work added. Suppressing that term would be the difference
+between an honest decomposition and a flattering one.
+
+## Keeping the instrument out of the measurement
+
+E1's finding was that a log row is not free — 7.7 µs single-threaded, far more under
+stage-thread contention on the logging handler lock — so an experiment that measures the
+framework through its own CSV logger measures the logger too.
+
+- Both Choreo configurations run **`disable_logs: true`**, so neither writes per-stage CSV
+  rows and no synchronous write+flush sits inside the measured interval on one side only.
+  Time per query survives this because it comes from the pipeline-level rows, which
+  `pipeline.py` emits unconditionally (`disable_logs` is a Stage flag; Pipeline has none).
+  What is given up is the per-stage breakdown, which the spans give back at a fraction of
+  the per-event cost.
+- The monolith writes through **the same synchronous `FileHandler` that `main.py` installs**.
+  It previously used a `QueueHandler`/`QueueListener` *and* a stderr sink, so the two sides
+  differed in three ways at once — rows per step, async vs synchronous emit, and a sink whose
+  cost depends on whether stderr is a tty. Matching them costs the monolith ~+15 µs/step
+  against effects of 240–2100 µs, and removes its listener thread, making the control an
+  actual single-threaded loop.
+- **`num_workers = 0`** on both sides — a control, not a tuned knob. It removes the
+  concurrent-prefetch data path so the metric isolates the wrapper. There is no preloading
+  or prefetching anywhere in this experiment.
+- **Clock:** monotonic `perf_counter_ns` (the trailing CSV field). Wall-clock column 0 is
+  kept only for radt alignment and is never used for timing.
+- **Store:** a local MLflow store, not res17. This is the documented exemption for the
+  overhead experiments (E1 and E2) only — they emit far more spans per second than any real
+  workload, and that volume is not what the remote server is there to carry.
+
+## Statistics
+
+- **300 steps per run, first 50 dropped.** Step time is flat from step 0 on the GB10
+  (38.8, 38.7, 38.7 … ms across 900 steps) and flat on a warm M2 Pro run, so the old
+  1000/200 was never buying within-run settling.
+- **R = 11 collected, run 1 dropped → 10 usable, and the drop is the default.** The first
+  repetition of a cell is measurably slower for its *whole* duration — an anchor measured
+  97.2 ms/step for r1 against 89.2 for r2..r6, still 97.4 ms in its *last* 300 steps — so
+  per-step warm-up dropping cannot remove it. On the E2 smoke collection, leaving it in moved
+  one breakdown term by 800 µs.
+- **Statistic of record: the paired across-run difference.** The configurations are
+  interleaved within each repetition, so runs pair by id:
+  `d_i = median(choreo_i) − median(monolith_i)`. Combined across runs by the **median**
+  (robust to one contaminated repetition). The CI resamples run **pairs** with replacement
+  and re-resamples queries within each chosen run — the run is the unit of replication.
+- Per-run paired differences are printed beside every interval, so a single bad repetition
+  is visible rather than absorbed.
+- A **negative cost is not a speed-up**: it means the difference is smaller than what this
+  apparatus resolves at that cell. It is reported as measured rather than clipped.
+
+## Caveats to state in the paper
+
+- `serialize_queries: true` means E2 measures the framework with **pipelining disabled** —
+  the configuration where it can only lose.
+- Choreo runs **6 threads to the monolith's 1**. That is genuine modularity cost, and it
+  should be named rather than left implicit.
+- The `-p 0` and radt-orchestrated paths install *different* logging instruments
+  (`main.py` vs `utils/logger.py`). Nothing may be compared across them.
+
+---
 
 ## Reproduce
 
 ```bash
-# radt: the async_tracing branch (env specs install it; or editable):
-#   pip install -e <radt-checkout>/radt   # feat/Sipondo/async_tracing
-# collect (inside the torch+cuda env), per device
-python evaluation/overheads/modularity_overhead/run_modularity.py --device cuda --runs 5
-python evaluation/overheads/modularity_overhead/run_modularity.py --device mps  --runs 5   # M2 Pro
-# (defaults: --num-workers 0, --cooldown 0, --max-batches 1100, interleaved, both arms)
-
-# analyze (--warmup 200 = steady-state cutoff)
-python evaluation/overheads/modularity_overhead/analyze_operational_overhead.py --device cuda
-python evaluation/overheads/modularity_overhead/breakdown_overhead.py           --device cuda
-python evaluation/overheads/modularity_overhead/true_overhead_analysis.py        --device cuda
-python evaluation/overheads/modularity_overhead/generate_latex_results.py        --device cuda > table2.tex
+python evaluation/overheads/modularity_overhead/gen_configs.py     # 9 cells x 2 devices
+bash   evaluation/overheads/modularity_overhead/collect_e2.sh m2pro 11
+bash   evaluation/overheads/modularity_overhead/collect_e2.sh gb10  11   # taskset-pinned
+python evaluation/overheads/modularity_overhead/analyze_e2.py
+python evaluation/overheads/modularity_overhead/analyze_e2.py --latex gb10 > table2.tex
 ```
-CSVs: `results/mod_{baseline,choreo_t{0,1}}_d{cuda,mps}_r{R}.csv`; env in `run_modularity_env.txt`.
+
+CSVs land in `results/mod_<cell>_<configuration>_<machine>_r<N>.csv`; each collection writes
+a timestamped log and summary TSV to `collect_logs/`, headed by a provenance block (git
+commit and dirty flag, host, platform, python/torch/radt/mlflow versions, pinning, run and
+step counts). Figures go to `paper_assets/`.
+
+---
+
+## Results
+
+**Pending the 2026-08-27 collection.** Numbers, tables and figures go here once
+`analyze_e2.py` runs on the complete dataset; they are deliberately not carried over from
+the previous collection, every part of which was superseded — different metric, different
+logging instrument on the monolith side, fixed configuration order, and pre-dating the
+`get_input` span removal, the marker spans and the cyclic-pipeline termination fix.
+
+Gates that must hold before any number here is reported:
+
+- every cell has 11 repetitions per configuration, zero failures, no truncated CSVs —
+  verified from the CSVs on disk, not from the log;
+- the span count per run matches what a 2-stage pipeline should emit, on both machines
+  (this is what caught a stale deploy in E1);
+- no negative transition intervals anywhere;
+- the Δ(time per query) identity closes to within a stated tolerance;
+- no cell reports a negative cost of decomposition without an explanation.
