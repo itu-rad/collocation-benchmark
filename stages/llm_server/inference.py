@@ -180,11 +180,17 @@ class Inference(Stage):
         # on the one backend (vLLM/Ollama) a serving audience cares most about.
         # Streaming is what makes TTFT measurable, and it is also what
         # llm_mlx already does (stream_generate), so the backends now agree.
+        # Guarded like the mlx stage: get_tokenizer() returns None when the
+        # stage it delegates to has no tokenizer, and prompt-token counting is
+        # telemetry. A missing count must not kill the worker thread.
+        #
+        # disable_logs is checked here as well as inside log_prompt_tokens, so
+        # that tokenising the whole batch is skipped rather than done and thrown
+        # away when the CSV rows are off.
         if not self.disable_logs:
-            log_prompt_tokens(
-                self,
-                sum(len(self.get_tokenizer().encode(p)) for p in batch),
-            )
+            _enc = getattr(self.get_tokenizer(), "encode", None)
+            if callable(_enc):
+                log_prompt_tokens(self, sum(len(_enc(p)) for p in batch))
 
         model_out = []
         n_generated = 0

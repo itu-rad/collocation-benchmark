@@ -106,11 +106,14 @@ class Inference(Stage):
             # normalised per 1k prompt tokens and compared across backends
             # whose prompts are not identical. Counted with the same tokenizer
             # the model consumes.
-            if not self.disable_logs:
-                log_prompt_tokens(
-                    self,
-                    sum(len(self._tokenizer.encode(pr)) for pr in batch),
-                )
+            # Guarded: self._tokenizer is None whenever AutoTokenizer failed to
+            # load (see prepare()), and counting prompt tokens is telemetry, not
+            # the work. An unguarded .encode() here would turn a missing
+            # tokenizer into a dead pipeline thread rather than one absent
+            # measurement.
+            encode = getattr(self._tokenizer, "encode", None)
+            if not self.disable_logs and callable(encode):
+                log_prompt_tokens(self, sum(len(encode(pr)) for pr in batch))
             log_first_token(self, "start")
             for i, prompt in enumerate(batch):
                 awaiting_first = i == 0

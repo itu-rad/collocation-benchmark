@@ -105,10 +105,10 @@ printf 'arm\tdepth\trun\trc\tseconds\tcsv_rows\tspans\n' > "$SUM"
 # Every log line goes to stdout AND to the durable log.
 log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG"; }
 
-# Pin WHAT RAN at the top of the log. run_collection.py used to write a
-# commit-pinned collect_env_<dev>.txt; that driver is superseded and its files
-# were stale, but the provenance it captured is worth keeping and belongs with
-# the collection it describes rather than in a file of its own.
+# Pin WHAT RAN at the top of the log. A previous driver wrote this to a
+# separate commit-pinned file, which went stale the moment that driver was
+# retired. The provenance is worth keeping and belongs with the collection it
+# describes rather than in a file of its own.
 {
   echo "# E1 collection"
   echo "# started      : $(date '+%Y-%m-%d %H:%M:%S %z')"

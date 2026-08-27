@@ -2,7 +2,7 @@
 """Post-collection analyzer for the staged contention experiment (Stages A-D).
 
 Design of record: CONTENTION_EXPERIMENTS_REDESIGN.md (E3'/E6' staged form).
-Consumes the curated collection outputs of evaluation/collect/run_collection.py
+Consumes the curated collection outputs under evaluation/collect/results/
 (evaluation/collect/results/<dev>/<label>_r<r>.csv [+ _arrivals.csv sidecars,
 + optional <label>_r<r>_bandwidth.csv AMC traces]) and emits:
 

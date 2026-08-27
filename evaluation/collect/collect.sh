@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Canonical collection loop (replaces run_collection.py's orchestration).
+# Canonical collection loop: one bash loop over main.py, radt does the rest.
 #
 # The execution model is deliberately minimal (see EXPERIMENTS.md "Execution
 # model" + EXPERIMENT_PLAN.md P0): static, fully-explicit per-(variant x device)

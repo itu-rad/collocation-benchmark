@@ -207,7 +207,7 @@ def radt_entrypoint(args):
         mlflow.log_params(mlflow_config)
 
     # Enter the radt benchmark context ourselves. On the direct `-p N` path
-    # (evaluation/collect/run_collection.py execs `main.py <cfg> -p 0`) nothing
+    # (the collection harnesses exec `main.py <cfg> -p 0`) nothing
     # else enters it, so the macmon/top listener processes never spawn —
     # _RADTBenchmark.__enter__ (radt/run/benchmark.py) is the ONLY place they
     # are started, gated on RADT_PRESENT + RADT_LISTENER_<NAME> env vars.

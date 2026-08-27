@@ -87,7 +87,12 @@ def marker_span(stage: "Stage", name: str, attributes: dict | None = None) -> No
     """
     if not SPANS_ENABLED:
         return
-    attrs = {"stage": stage.name, "query_id": stage.current_query_id}
+    # getattr, not attribute access: this is best-effort telemetry and must not
+    # be able to abort a run. Every real stage is a Stage and has the property,
+    # but a marker can be emitted from a stage-like object that is not, and a
+    # missing query id is worth strictly less than a completed run.
+    attrs = {"stage": stage.name,
+             "query_id": getattr(stage, "current_query_id", None)}
     if attributes:
         attrs.update(attributes)
     with trace_span(name=f"{stage.name}.{name}", attributes=attrs):
