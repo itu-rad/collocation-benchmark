@@ -3,7 +3,28 @@
 `spans-only` costs more per stage as the pipeline gets deeper, on both devices,
 even though the number of spans is linear in depth. This records what it is.
 
-> **Correction.** An earlier version of this document concluded the opposite —
+## Current production numbers
+
+Two spans per stage (`.run`, `.push_to_outputs`), 8 depths x 11 runs. Cost of
+running with tracing, in microseconds per stage over `uninstrumented`:
+
+| depth | 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| GB10 | +1.05 | +0.33 | +11.24 | +1.04 | +2.64 | +4.68 | +8.08 | **+9.71** |
+| M2 Pro | +61.52 | +38.38 | +27.79 | +22.21 | +20.20 | +20.16 | +26.17 | **+41.80** |
+
+(The GB10 depth-4 cell at +11.24 sits far off its neighbours and is noise, not
+shape.) The GB10 curve rises from depth 16 on; the M2 Pro falls to a minimum
+near depth 32 and then climbs. Both are the same effect, identified below.
+
+> **The ablation tables below were measured with THREE spans per stage**,
+> before `.get_input` was removed, so their `full` column is roughly 1.6x
+> today's production cost: GB10 +15.68 against +9.71 at depth 128, M2 Pro
+> +62.89 against +41.80. They are kept because they identify the MECHANISM,
+> which removing that span did not change - and because the removal is itself
+> the cleanest confirmation of what they found (see "Confirmed in production").
+
+> **Correction.** An earlier version of this document concluded the opposite -
 > that the scaling was not the tracing path at all but the thread chain
 > reacting to any added work. That was wrong, and the cause was a bug in the
 > ablation build, not in the data. The variants were dispatched as separate
@@ -71,13 +92,34 @@ Replacing the queue with a deque is not a fix: the deque only looked free
 because it never delivered anything, and the staged version that does deliver
 is no better than what we have.
 
-The lever that works is **fewer, larger queue items** — batching several span
-events into one put — since cost tracks event count. Emitting fewer spans per
-stage is the crude version of that and already buys back roughly its share.
+The lever that works is **fewer events**, since cost tracks event count.
 
-The emit lives inside radt, so acting on this means changing radt or staging
-events before they reach it. That is a decision, not a conclusion, and is left
-open.
+### Confirmed in production
+
+`.get_input` was removed on exactly that basis. It was spanned but consumed by
+nothing; it could never be correlated to a query, because attributes are fixed
+at span start and at that instant the stage has not received one; and it was
+the span parked threads sat inside at teardown. Removing it took spans per
+stage from 3 to 2 - **one third fewer events** - and the measured cost fell:
+
+| depth 128 | before | after | |
+|---|--:|--:|--:|
+| GB10 | +16.16 | +9.71 | -40% |
+| M2 Pro | +63.85 | +41.80 | -35% |
+
+A third fewer events buying back a third to two fifths of the cost is the
+ablation's conclusion holding in production rather than in a scratch build.
+The span count was checked directly rather than assumed: 26262 events per run
+at depth 128 on both devices against 39318 before, exactly two thirds.
+
+Going further means batching several span events into one queue put, cutting
+puts without cutting information. `.push_to_outputs` must NOT be dropped to get
+there: it is the boundary between a stage's own work and the hand-off, and that
+split is the finding - the hand-off dominates and the stages' own work is a
+small minority of L_q.
+
+The emit lives inside radt, so batching means changing radt or staging events
+before they reach it. That is a decision, not a conclusion, and is left open.
 
 ## Also ruled out
 
