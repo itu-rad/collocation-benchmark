@@ -481,7 +481,7 @@ def span_cost_table(od_by_arm, device):
     a, b = od_by_arm.get("uninstrumented"), od_by_arm.get("spans-only")
     if not a or not b:
         have = [k for k in od_by_arm if od_by_arm[k]]
-        print(f"\n## {device} -- cost of tracing: needs both arms "
+        print(f"\n## {device} -- cost of tracing: needs both configurations "
               f"(have: {', '.join(have) or 'none'})\n")
         return
     print(f"\n## {device} -- what running with tracing costs\n")
@@ -516,7 +516,7 @@ def payload_collect(runs, arm="uninstrumented"):
 
 def payload_table(data, arm="uninstrumented"):
     print(f"\n## Zero-copy: per-stage cost vs payload "
-          f"(depth {PAYLOAD_DEPTH}, {arm} arm, L_q/depth)\n")
+          f"(depth {PAYLOAD_DEPTH}, {arm}, L_q/depth)\n")
     print("| payload | ref (us) | ref 95% CI (hier.) | copy (us) | copy 95% CI (hier.) | copy/ref |")
     print("|--------:|---------:|:------------------:|----------:|:-------------------:|---------:|")
     for size in SIZES:
@@ -565,7 +565,7 @@ def latex_depth_table(runs, device):
     # not be used here.
     sel = select(runs, arm="uninstrumented", size=0, mode="ref")
     depths = sorted({r.meta["depth"] for r in sel} & set(DEPTHS))
-    print("% --- Framework overhead: depth scaling (uninstrumented arm) ---")
+    print("% --- Framework overhead: depth scaling, uninstrumented ---")
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Per-stage framework overhead is flat in pipeline depth "
           f"(no-op chains, tracing disabled, {DEVICE_TEX.get(device, device)}). "
@@ -590,7 +590,7 @@ def latex_depth_table(runs, device):
 
 
 def latex_payload_table(runs, device):
-    print("% --- Framework overhead: zero-copy payload sweep (as-reported arm) ---")
+    print("% --- Framework overhead: zero-copy payload sweep, uninstrumented ---")
     print("\\begin{table}[t]\n\\centering")
     print("\\caption{Reference passing is constant in payload size while deep-copy "
           f"is linear (no-op chains, depth~10, tracing disabled, "
@@ -813,7 +813,7 @@ def main():
         for a in ARMS:
             sel = select(runs, arm=a)
             if sel:
-                od_by_arm[a] = depth_table(sel, f"{dev} -- arm '{a}': {ARM_DESC[a]}")
+                od_by_arm[a] = depth_table(sel, f"{dev} -- {a}: {ARM_DESC[a]}")
         span_cost_table(od_by_arm, dev)
         # The payload sweep predates the four-arm split and holds off/proc only,
         # so it still selects on `trace`.
