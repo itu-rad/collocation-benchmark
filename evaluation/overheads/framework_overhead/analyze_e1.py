@@ -66,12 +66,15 @@ DEVICES = ("mlx", "cuda")
 # (disable_logs is a Stage flag and Pipeline has none) -- so the arms differ
 # only in how much instrument runs inside the interval, never in how the
 # interval is timed. See collect_e1.sh.
-ARMS = ("as-reported", "uninstrumented", "spans-only", "both")
-
-# What the harness actually collects now: the two ways the framework is run.
-# `as-reported` and `both` stay in ARMS so archived data still parses and still
-# tables, but nothing new is collected in them and no result depends on them.
-COLLECTED_ARMS = ("uninstrumented", "spans-only")
+# The two ways the framework is run, and the only two reported.
+#   uninstrumented - no CSV rows, no spans
+#   spans-only     - no CSV rows, span tracing on
+# The retired diagnostic arms (`as-reported`, `both`, which carried the CSV
+# instrument) are still PARSED so archived runs are not orphaned, but nothing
+# collects or reports them.
+ARMS = ("uninstrumented", "spans-only")
+COLLECTED_ARMS = ARMS
+RETIRED_ARMS = ("as-reported", "both")
 
 # The first collection used switch-flavoured names, two of which named the
 # logging switch and two the tracing switch, so a reader could not tell what
@@ -89,6 +92,7 @@ _FNAME_RE = re.compile(
 ARM_LOGS = {"as-reported": True, "both": True,
             "uninstrumented": False, "spans-only": False}
 ARM_TRACE = {"as-reported": 0, "uninstrumented": 0, "spans-only": 1, "both": 1}
+
 
 
 def parse_filename(path):
@@ -449,74 +453,43 @@ def depth_table(runs, arm_label):
 
 
 ARM_DESC = {
-    "as-reported":    "CSV logging ON, spans off — how E1 has always measured",
-    "uninstrumented": "CSV logging off, spans off — the framework with no instrument",
-    "spans-only":     "CSV logging off, spans ON — spans replacing the logging",
-    "both":           "CSV logging ON, spans ON — both instruments running",
+    "uninstrumented": "no instrument at all — the framework's own cost",
+    "spans-only":     "span tracing on — the framework as it is run traced",
 }
 
-
-def instrument_table(od_by_arm, device):
-    """Separate what the FRAMEWORK costs from what MEASURING it costs.
-
-    Every number E1 has ever reported for per-stage dispatch came from the
-    `off` arm, and that arm's timing is produced by CSV log rows emitted by the
-    stages themselves. A log row costs ~7.7 us single-threaded and far more
-    under stage-thread contention on the logging handler lock, and at depth 10
-    the stage-to-stage transitions -- where those rows sit -- are 78% of L_q.
-    So `off` measures the framework AND the instrument, inseparably.
-
-    `nolog` runs the identical pipeline with the per-stage rows switched off,
-    leaving only the pipeline-level rows that carry L_q. The difference is the
-    instrument, and what remains is the framework:
-
-        off  - nolog  = the CSV instrument's per-stage cost
-        spans - nolog = the span instrument's per-stage cost
-        proc - off    = the tracing layer on top of the CSV instrument
-
-    A negative difference is not a speed-up; it means the two arms differ by
-    less than the run-to-run noise at that depth, and is reported as measured
-    rather than clipped.
-    """
-    have = [a for a in ARMS if od_by_arm.get(a)]
-    if "as-reported" not in have or "uninstrumented" not in have:
-        print(f"\n## {device} -- instrument decomposition: needs the as-reported "
-              f"and uninstrumented arms (have: {', '.join(have) or 'none'})\n")
-        return
-    depths = sorted(set(od_by_arm["as-reported"]) & set(od_by_arm["uninstrumented"]))
-    print(f"\n## {device} -- what is the framework, what is the instrument\n")
-    print("| depth | O(d) as-reported | O(d) uninstrumented | CSV instrument "
-          "| instrument % of as-reported | O(d) spans-only | span instrument |")
-    print("|------:|-----------------:|--------------------:|---------------:"
-          "|----------------------------:|----------------:|----------------:|")
-    for d in depths:
-        off = od_by_arm["as-reported"][d]["median"]
-        nol = od_by_arm["uninstrumented"][d]["median"]
-        csv_cost = off - nol
-        pct = (100.0 * csv_cost / off) if off else float("nan")
-        sp = od_by_arm.get("spans-only", {}).get(d)
-        sp_s = f"{sp['median']:.2f}" if sp else "—"
-        sp_cost = f"{sp['median'] - nol:+.2f}" if sp else "—"
-        print(f"| {d} | {off:.2f} | {nol:.2f} | {csv_cost:+.2f} | {pct:+.1f}% "
-              f"| {sp_s} | {sp_cost} |")
-    print("\n(all per-stage, microseconds: O(d) = L_q / depth. "
-          "'CSV instrument' = as-reported - uninstrumented; "
-          "'span instrument' = spans-only - uninstrumented.)")
-
-
-def tracing_add_table(od_off, od_on):
-    print("\n### Span-tracing cost on top of the CSV logging (both − as-reported)\n")
-    print("| depth | O(d) as-reported (us) | O(d) both (us) | span-tracing add (us) |")
-    print("|------:|--------------:|---------------:|-----------------:|")
-    for d in sorted(set(od_off) & set(od_on)):
-        a, b = od_off[d]["median"], od_on[d]["median"]
-        print(f"| {d} | {a:.2f} | {b:.2f} | {b - a:+.2f} |")
 
 
 # ---------------------------------------------------------------------------
 # Result 2: zero-copy vs deep-copy (depth 10, tracing OFF, stages >= 1)
 # ---------------------------------------------------------------------------
 PAYLOAD_DEPTH = 10
+
+
+def span_cost_table(od_by_arm, device):
+    """What running with tracing costs, per stage, at each depth.
+
+    The only instrument question left: `uninstrumented` is the framework's own
+    cost, `spans-only` is the framework as it is actually run with tracing, and
+    the difference is what tracing costs. It is not flat in depth, and the
+    driver is the number of concurrent stage threads rather than the span rate
+    -- at a fixed 512 events per query the cost rises 3.4x going from 32 to 128
+    stages, while quadrupling events at a fixed 32 stages only doubles it. See
+    SPAN_DEPTH_SCALING.md.
+    """
+    a, b = od_by_arm.get("uninstrumented"), od_by_arm.get("spans-only")
+    if not a or not b:
+        have = [k for k in od_by_arm if od_by_arm[k]]
+        print(f"\n## {device} -- cost of tracing: needs both arms "
+              f"(have: {', '.join(have) or 'none'})\n")
+        return
+    print(f"\n## {device} -- what running with tracing costs\n")
+    print("| depth | uninstrumented | spans-only | cost of tracing | as % |")
+    print("|------:|---------------:|-----------:|----------------:|-----:|")
+    for d in sorted(set(a) & set(b)):
+        u, sp = a[d]["median"], b[d]["median"]
+        print(f"| {d} | {u:.2f} | {sp:.2f} | {sp - u:+.2f} | "
+              f"{100 * (sp - u) / u:+.1f}% |")
+    print("\n(per-stage microseconds, O(d) = L_q / depth.)")
 
 
 def payload_collect(runs, arm="uninstrumented"):
@@ -760,22 +733,22 @@ def make_figures(per_device, fig_dir):
     fig.savefig(f1, dpi=140); plt.close(fig)
 
     # Fig 2: per-stage self-duration vs payload (zero-copy vs deep-copy), off arm.
-    fig, ax = plt.subplots(figsize=(8.5, 5.4))
+    fig, ax = plt.subplots(figsize=(7.5, 5))
     marker = {"mlx": "o", "cuda": "s"}
-    # Both arms: the claim is architectural, so it must hold with tracing on as
-    # well as off. Tracing lifts the whole curve but does not bend it.
-    style = {"uninstrumented": "-", "spans-only": "--"}
+    # UNINSTRUMENTED only. Zero-copy is a property of the framework, so the
+    # figure shows it with no instrument running; the spans-only arm is
+    # collected and tabled as a check that tracing lifts the curve without
+    # bending it, but plotting both just doubles the lines.
     for dev in per_device:
-        for arm, ls in style.items():
-            data = payload_collect(per_device[dev], arm)
-            for mode, color in [("ref", "tab:green"), ("copy", "tab:red")]:
-                xs = [s for s in SIZES if s in data[mode]]
-                if not xs:
-                    continue
-                ys = [data[mode][s]["median"] for s in xs]
-                xplot = [max(x, 1) for x in xs]  # 0 -> 1 byte for the log axis
-                ax.plot(xplot, ys, marker[dev] + ls, color=color, ms=6, lw=1.3,
-                        label=f"{dev} {mode} ({arm})")
+        data = payload_collect(per_device[dev], "uninstrumented")
+        for mode, color in [("ref", "tab:green"), ("copy", "tab:red")]:
+            xs = [s for s in SIZES if s in data[mode]]
+            if not xs:
+                continue
+            ys = [data[mode][s]["median"] for s in xs]
+            xplot = [max(x, 1) for x in xs]      # 0 -> 1 byte for the log axis
+            ax.plot(xplot, ys, marker[dev] + "-", color=color, ms=6, lw=1.3,
+                    label=f"{dev} {mode}")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("payload size (bytes; 0->1 for log axis)")
     ax.set_ylabel("per-stage cost, L_q/depth, median (us)")
@@ -836,9 +809,7 @@ def main():
             sel = select(runs, arm=a)
             if sel:
                 od_by_arm[a] = depth_table(sel, f"{dev} -- arm '{a}': {ARM_DESC[a]}")
-        instrument_table(od_by_arm, dev)
-        if od_by_arm.get("as-reported") and od_by_arm.get("both"):
-            tracing_add_table(od_by_arm["as-reported"], od_by_arm["both"])
+        span_cost_table(od_by_arm, dev)
         # The payload sweep predates the four-arm split and holds off/proc only,
         # so it still selects on `trace`.
         # Both arms: the framework bare, and the framework traced. The

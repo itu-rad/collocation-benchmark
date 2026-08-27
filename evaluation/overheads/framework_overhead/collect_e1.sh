@@ -62,36 +62,29 @@ mkdir -p "$OUT"
 export RADT_PRESENT=True             # end_run + drain on exit; no RADT_LISTENER_* -> no listeners
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter rather than auto-detection
 
-# Tracking store. E1 defaults to a LOCAL store, unlike the case-study
-# collections, for two reasons measured on 2026-08-25 (depth 4, tracing off,
-# three runs each):
+# Tracking store: the AMBIENT res17 server, with radt's BULK span exporter.
+# Do not point this at a local sqlite/file store. The bulk exporter spools spans
+# to a gzipped artifact and uploads them to the run on res17, and that artifact
+# is the record; a local store makes runs that cannot be cross-referenced with
+# every other experiment.
 #
-#     res17 : 72 s, 11 s, 132 s
-#     local :  5 s,  5 s,   5 s
-#
-# The wall-time cost alone would turn this sweep into ~14 h instead of ~1 h, but
-# the variance is the real problem: it is a sibling process doing network
-# uploads for an unpredictable 11-132 s while we time microsecond-scale stage
-# transitions. E1 is the one experiment where that noise is fatal.
-#
-# Nothing measured is lost. Every E1 quantity comes from the monotonic clock
-# during the pipeline run, and the tracing arms' workload-side cost is the queue
-# put, which is identical whichever store the exporter child later uploads to.
-# The local store also puts the span artifacts on this disk, so the spans arm
-# needs no download round-trip to analyse.
-#   E1_STORE=res17 collect_e1.sh ...   -> use the ambient server instead
-# SQLITE, not a file: URI -- mlflow 3.15 hard-refuses a filesystem tracking
-# backend ("in maintenance mode ... migrate to a database backend"), so every
-# run exits rc=1 and writes no CSV. Artifacts (the span batches) still land as
-# plain directories under <repo>/mlruns/, which utils/span_reader.py reads
-# directly.
-if [ "${E1_STORE:-local}" = "local" ]; then
-  STORE_DB="$HERE/mlruns_e1_${DEVICE}.db"
-  export MLFLOW_TRACKING_URI="sqlite:///${STORE_DB}"
-  unset MLFLOW_TRACKING_USERNAME MLFLOW_TRACKING_PASSWORD
-  EXP=0                              # the local store's default experiment
-  echo "E1: local tracking store at $STORE_DB (E1_STORE=res17 to override)"
+# Credentials come from the conda env (MLFLOW_TRACKING_URI /
+# MLFLOW_TRACKING_USERNAME / MLFLOW_TRACKING_PASSWORD), so nothing is set here
+# and nothing is committed. Fail loudly rather than silently falling back to a
+# local ./mlruns, which is what a missing URI would otherwise produce.
+if [ -z "${MLFLOW_TRACKING_URI:-}" ]; then
+  echo "collect_e1: MLFLOW_TRACKING_URI is unset -- activate the benchmark conda env" >&2
+  echo "  (a missing URI silently writes a local ./mlruns instead of reaching res17)" >&2
+  exit 2
 fi
+case "${MLFLOW_TRACKING_URI}" in
+  sqlite:*|file:*|./*|/*)
+    echo "collect_e1: MLFLOW_TRACKING_URI is a LOCAL store (${MLFLOW_TRACKING_URI})." >&2
+    echo "  E1 records to the res17 server so its span artifacts sit with every" >&2
+    echo "  other experiment's. Point it at the server and re-run." >&2
+    exit 2 ;;
+esac
+echo "E1: recording to ${MLFLOW_TRACKING_URI} (experiment $EXP), bulk span export"
 
 SUM="$HERE/collect_e1_summary_${DEVICE}.tsv"
 [ -f "$SUM" ] || printf 'arm\tdepth\trun\trc\tseconds\tcsv_rows\tspans\n' > "$SUM"
@@ -149,11 +142,10 @@ PAYLOAD_DEPTH=10
 PAYLOAD_SIZES="0 1024 1048576 10485760"
 PAYLOAD_MODES="ref copy"
 
-# The depth sweep collects the TWO ways the framework actually runs, and
-# nothing else. `as-reported` (CSV logging) and `both` were diagnostic: they
-# established that E1's historical number was 58-71% instrument. That question
-# is answered, their data is on disk, and neither is a configuration anyone
-# would ship. E1_ARMS overrides if one is ever needed again.
+# The TWO ways the framework actually runs, and nothing else. The diagnostic
+# arms that carried the CSV instrument are retired: they answered whether E1's
+# historical number was mostly instrument (it was, 58-71%), and neither is a
+# configuration anyone would ship. E1_ARMS restricts to one of the two.
 if [ "${E1_PAYLOAD:-0}" = "1" ]; then
   ARMS=(${E1_ARMS:-uninstrumented spans-only})
 else
@@ -164,10 +156,8 @@ NARMS=${#ARMS[@]}
 
 # config + tracing env for one arm
 arm_config() {
-  case $1 in
-    as-reported|both)         echo "$CFG/noop_depth_${2}_size_0_mode_ref.yml" ;;
-    uninstrumented|spans-only) echo "$CFG/noop_depth_${2}_size_0_mode_ref_nolog.yml" ;;
-  esac
+  # Both arms use the logs-off config: neither writes per-stage CSV rows.
+  echo "$CFG/noop_depth_${2}_size_0_mode_ref_nolog.yml"
 }
 
 run_one() {
@@ -179,8 +169,8 @@ run_one() {
 
   unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
   case $arm in
-    as-reported|uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
-    spans-only|both)            export CHOREO_PROC_TRACE=1 ;;
+    uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
+    spans-only)     export CHOREO_PROC_TRACE=1 ;;
   esac
 
   # Capture through a file, not a pipe: `rc=$?` after a pipeline reports the
