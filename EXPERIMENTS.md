@@ -40,9 +40,11 @@ small O(1) tax, not a scaling one. Measured with the *correct* (bulk+proc) traci
 layer is also negligible. (The old "+4.5% in-process tracing" was a bug in the instrument, not a
 property of the framework — see Infrastructure; we do not report it.)
 **Artifacts.** `evaluation/overheads/modularity_overhead/` — `configs/torchvision_training.yml`
-(Choreo arm) + `baseline_finetune.py` (monolith); `scale_sweep.yml`; `analyze_scale_panels.py`
-(2×2 relative/absolute × batch/model); `modularity_overhead.md`.
-**Status/gap.** Both device halves exist on old tracing → **re-collect with the new tracing.**
++ `gen_configs.py` (the Choreo side) and `baseline_finetune.py` (the monolith); `scale_sweep.yml`;
+`collect_e2.sh` (three configurations: monolith / choreo / choreo-traced) + `analyze_e2.py`;
+`modularity_overhead.md`.
+**Status/gap.** Re-collecting on both machines (2026-08-27) against the current tracing, with time
+per query as the metric of record — the earlier in-step metric sat below its own noise floor.
 
 ## E3 — MLPerf / 3D-UNet: reproduction + closing the measurement gap
 **Question.** Two prongs: (1) **reproduce MLPerf's setup on our hardware** — run MLPerf's *own
@@ -133,9 +135,14 @@ Deliberately minimal:
 - **configs/** — static, fully-explicit YAML, **one file per (variant × device)** (device,
   `serialize_queries`, loadgen, listeners all in the config — no CLI overrides). `gen_configs.py`
   writes them for sweeps (run once).
-- **collect.sh** — a bash `for` loop over `configs/*.yml × runs` calling `python main.py <cfg> -e 138
-  --label <name>_r<r>`. **No `-p` → radt orchestrates** (single pipeline or the multi-pipeline
-  collocation configs alike). `CHOREO_PROC_TRACE=1` set in the script; listeners on for E5.
-- **analyze.py** — reads `results/<device>/` → matplotlib plots + plain tables.
+- **collect_<experiment>.sh** — a bash `for` loop over `configs/*.yml × runs` calling
+  `python main.py <cfg> -e 138 --label <name>_r<r>`. **No `-p` → radt orchestrates** (single
+  pipeline or the multi-pipeline collocation configs alike). `CHOREO_PROC_TRACE=1` set in the
+  script; listeners on for E5. Each writes a timestamped log + summary and a provenance header
+  (git commit, host, platform, library versions) under `collect_logs/`. The overhead experiments
+  (E1, E2) are the exception on two counts: `-p 0` (no radt orchestration) and a local MLflow
+  store instead of res17.
+- **analyze_<experiment>.py** — reads `results/<machine>/` → matplotlib plots + plain tables.
+  Self-contained: parsing, statistics, tables, LaTeX and figures in one file.
 - **Removed:** `run_collection.py` (Cell/gate/marker machinery), `validate_pass.py`'s heavy gate,
   `generate_latex_results.py`. radt does all orchestration; we write no orchestration Python.

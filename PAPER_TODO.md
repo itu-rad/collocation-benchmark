@@ -291,13 +291,13 @@ monolith pass vs many short decomposed calls burn the shared budget differently)
   All parse against `BenchmarkModel` (8 / 13 stages).
 
 ### 2.3 Statistics harness — **P0 [dev]** (touches every experiment)
-- [x] **Hierarchical (cluster) bootstrap implemented (2026-07-13)** in `noop_lib.py`
-  and `modularity_lib.py` (resample runs first, then queries; 10⁴ resamples with a
-  work-budget cap ≥10³ for huge pools; numpy fast path + stdlib fallback). All 7
-  analyzer/table scripts migrated; flat-vector calls still work but are labeled
-  `pooled-legacy`. Effect on committed data: E1 CIs widen ~3–4× (point estimates
-  unchanged, zero-copy claim survives cleanly); E2 mps exposes contaminated runs
-  (§3.2). `table1.tex` / `table2_mps.tex` regenerated.
+- [x] **Hierarchical (cluster) bootstrap implemented (2026-07-13)**, resampling runs
+  first then queries; 10⁴ resamples with a work-budget cap ≥10³ for huge pools; numpy
+  fast path + stdlib fallback. Now lives inside `analyze_e1.py` and `analyze_e2.py`
+  (the shared `noop_lib.py` / `modularity_lib.py` and the seven analyzer/table scripts
+  they fed have since been consolidated away). Effect on committed data: E1 CIs widen
+  ~3–4× (point estimates unchanged, zero-copy claim survives cleanly); E2 mps exposed
+  contaminated runs (§3.2).
 - [x] **Run-level values printed beside every CI** (`run_medians` in summarize; table
   scripts emit them as LaTeX comments; analyzers as columns).
 - [x] **Paired across-run difference implemented** (`paired_overhead_ci`) and made the
@@ -306,15 +306,16 @@ monolith pass vs many short decomposed calls burn the shared budget differently)
 - [ ] **Add CIs to `bandwidth_analysis.py` and `compare_factoid_engines.py`** — deferred
   until the E3′/E4 final experiment shapes land (both scripts will be reworked then);
   no E3/E4 number is reportable from them as-is. Also fix the crude p95 index.
-- [ ] **Raise R to 10 for cheap cells** (E1, E2, E3 — minutes per run): runs are the
-  replication unit, so more runs beat more queries for interval validity. Keep R=5 only
-  where a run is expensive (E4 full arms, E6 cells).
+- [x] **R raised for cheap cells** — E1 and E2 both collect **R=11 and drop run 1** as
+  system warm-up, leaving 10 usable: runs are the replication unit, so more runs beat
+  more queries for interval validity. Keep R=5 only where a run is expensive (E4 full
+  arms, E6 cells). E3 still to do.
 
 ### 2.4 Analysis scripts — **P1 [dev]** (extend what exists)
-- [ ] E1: `analyze_noop_results.py`, `analyze_payload_results.py --fig`,
-  `generate_latex_results.py` — re-run on the verified M2 Pro data.
-- [ ] E2: `analyze_operational_overhead.py`, `true_overhead_analysis.py`,
-  `breakdown_overhead.py`, `generate_latex_results.py` — per device.
+- [x] E1: consolidated into one self-contained `analyze_e1.py` (tables, figures,
+  `--latex MACHINE`); re-run on the clean M2 Pro + GB10 collection.
+- [ ] E2: `analyze_e2.py` (tables, figures, `--latex MACHINE`) — run per machine once
+  the 2026-08-27 collection finishes.
 - [ ] E3/E4: `bandwidth_analysis.py` (timing 2×2) + the new quality scorers + CIs (§2.3).
 - [ ] E5: script to confirm the arrival process matches each MLPerf scenario from the
   trace (requires the never-blocking `queue_depth` rule, §2.6).
@@ -634,13 +635,18 @@ No longer a standalone experiment; it is the Self-RAG monolith arm read along th
 
 ## 4. Analysis, tables & figures — **P0/P1 [dev]**
 
-- [ ] Regenerate **Table: NoOp overhead** (`table1.tex`) from the verified M2 Pro data
-  with hierarchical CIs (§2.3) — expect intervals to widen; that is correct.
-- [ ] Regenerate **Table: modularity overhead** (`table2_mps.tex`) + the GB10 counterpart,
-  paired statistic, hierarchical CIs.
-- [ ] **Fig: depth-flatness** (transition cost vs depth) — E1.
-- [~] **Fig: zero-copy** ref-vs-copy (`payload_zero_copy.pdf/png`) — regenerated;
-  confirm against verified data (§3.1).
+- [x] **Table: NoOp overhead** — `analyze_e1.py --latex <machine>`, from the clean M2 Pro +
+  GB10 collection with hierarchical CIs (§2.3). The hand-kept `table1.tex` is gone; the
+  analyzer is the only source, so the `.md` and the `.tex` cannot disagree.
+- [ ] **Table: modularity overhead** — `analyze_e2.py --latex <machine>`, both machines,
+  paired statistic, hierarchical CIs. Blocked on the 2026-08-27 collection finishing.
+  (`table2_mps.tex` removed: pre-sweep numbers from a retired generator.)
+- [x] **Fig: depth-flatness** (per-stage dispatch cost vs depth) — E1,
+  `framework_overhead/paper_assets/e1_depth_flatness.png`.
+- [x] **Fig: zero-copy** ref-vs-copy — E1,
+  `framework_overhead/paper_assets/e1_payload_zero_copy.png`, from the verified data.
+- [x] **Fig: instrument decomposition** (what tracing costs vs what the framework costs) —
+  E1, `framework_overhead/paper_assets/e1_instrument_decomposition.png`.
 - [ ] **Fig/Table: VQA 2×2** — within-mapping serial→contended deltas + occupancy/concurrency
   + DRAM-bandwidth trace — E3.
 - [ ] **Table: Self-RAG trade-off** — latency/throughput + EM/F1 per task per DUT, with the

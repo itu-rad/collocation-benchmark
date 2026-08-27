@@ -79,9 +79,8 @@ the old `benchmark_macos_overhead` workaround env is retired).
 
 1. Machine idle (close apps, disable heavy background jobs), on AC power.
 2. `python evaluation/pilots/run_pilots.py --device mlx` (~45–90 min).
-3. Same session, E2 re-collection (contaminated tracing-off arm):
-   `python evaluation/overheads/modularity_overhead/run_modularity.py
-   --device mps --runs 10 --max-batches 1100` (~1–2 h at R=10).
+3. Same session, E2 re-collection:
+   `bash evaluation/overheads/modularity_overhead/collect_e2.sh m2pro 11`.
 4. `derive_knobs.py` → `apply_knobs.py --dry-run` → review → apply → commit.
 
 ## Notes

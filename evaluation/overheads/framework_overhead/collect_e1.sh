@@ -272,7 +272,6 @@ if [ "${E1_PAYLOAD:-0}" = "1" ]; then
   done
   log "E1 payload sweep done on $DEVICE ($fail failed run(s)). CSVs in $OUT/"
   log "log + summary: $LOG"
-  touch "$HERE/DONE_collect_e1_payload_${DEVICE}"
   exit $([ "$fail" -eq 0 ] && echo 0 || echo 1)
 fi
 
@@ -293,5 +292,4 @@ done
 
 log "E1 collection done on $DEVICE ($fail failed run(s)). CSVs in $OUT/"
 log "log + summary: $LOG"
-touch "$HERE/DONE_collect_e1_${DEVICE}"
 [ "$fail" -eq 0 ]

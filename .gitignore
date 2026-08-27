@@ -248,3 +248,16 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+# ---------------------------------------------------------------------------
+# collect_logs/ IS tracked, on purpose: it is the provenance record for every
+# collection — git commit and dirty flag, host, platform, python/torch/radt/
+# mlflow versions, core pinning, per-run return codes, timings and span counts.
+# That is what makes a reported number reproducible, so it belongs in git even
+# though the CSVs it describes do not.
+#
+# This negation sits at the END of the file deliberately: the Python-boilerplate
+# `*.log` above (line ~147, from the Django section) would otherwise swallow the
+# collection logs and quietly contradict the policy stated at the top.
+!**/collect_logs/
+!**/collect_logs/*.log
+!**/collect_logs/*.tsv

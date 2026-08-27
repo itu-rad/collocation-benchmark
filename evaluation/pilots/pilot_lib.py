@@ -14,8 +14,8 @@ never blocked and the realized rate matched the intended one.
 Per-query latency comes from the trace CSV's pipeline rows keyed by
 (epoch, batch) — the unique per-query key across ALL workloads (NoOp runs vary
 epoch at batch 0; Self-RAG/case-study runs keep epoch constant and vary batch;
-training pipelines vary both). Same convention as
-modularity_lib.parse_pipeline_latency.
+training pipelines vary both). Same convention as the pipeline-row parsing in
+the overhead analyzers (analyze_e1.py, analyze_e2.py).
 """
 
 from __future__ import annotations

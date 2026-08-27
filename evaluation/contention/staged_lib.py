@@ -4,8 +4,8 @@ Design of record: CONTENTION_EXPERIMENTS_REDESIGN.md (E3'/E6', staged form,
 signed off 2026-07-14). This module owns everything analyze_staged.py needs
 that is *format*-shaped: trace parsing with per-pipeline separation, arrivals
 sidecar matching (coordinated-omission-safe response anchoring), AMC bandwidth
-CSV joins, and the hierarchical (run-cluster) bootstrap machinery, adapted
-from evaluation/overheads/framework_overhead/noop_lib.py.
+CSV joins, and the hierarchical (run-cluster) bootstrap machinery, which
+originated in the E1 overhead analysis (now analyze_e1.py).
 
 Trace CSV row layouts (fields are comma-separated; pipeline and stage names
 contain spaces but never commas, so a plain comma split is safe; the trailing
@@ -27,7 +27,7 @@ by pipeline name, so both layouts analyze identically.
 Stage-duration attribution: a stage is a single thread that processes queries
 in FIFO order, so its run start/end events alternate in perf order; we pair
 them sequentially and attribute the k-th execution to the k-th query submitted
-to that pipeline. (This holds under overlap/pipelining, where the noop_lib
+to that pipeline. (This holds under overlap/pipelining, where E1's
 window-bracketing approach would not.)
 
 Response-time anchoring (coordinated omission): the response of query i is
@@ -51,20 +51,53 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 REPO_ROOT = _HERE.parent.parent
-sys.path.insert(0, str(REPO_ROOT / "evaluation" / "overheads" / "framework_overhead"))
 sys.path.insert(0, str(REPO_ROOT / "evaluation" / "pilots"))
 
-import noop_lib  # noqa: E402  (median/p95/ols_slope + bootstrap conventions)
 import pilot_lib  # noqa: E402  (parse_arrivals, load_knobs/get_knob)
 
 NS = 1e9
 
-median = noop_lib.median
-p95 = noop_lib.p95
-ols_slope = noop_lib.ols_slope
 parse_arrivals = pilot_lib.parse_arrivals
 load_knobs = pilot_lib.load_knobs
 get_knob = pilot_lib.get_knob
+
+
+# Inlined from what used to be framework_overhead/noop_lib.py. E1 was
+# consolidated into a single self-contained analyze_e1.py and the shared library
+# went away with it; these three are the only pieces anything outside E1 used.
+# Linear-interpolated percentile, matching numpy's default and pilot_lib's.
+def _percentile(sorted_vec, q):
+    if not sorted_vec:
+        return float("nan")
+    pos = q * (len(sorted_vec) - 1)
+    lo = math.floor(pos)
+    hi = math.ceil(pos)
+    if lo == hi:
+        return sorted_vec[int(pos)]
+    return sorted_vec[lo] * (hi - pos) + sorted_vec[hi] * (pos - lo)
+
+
+def median(vec):
+    return _percentile(sorted(vec), 0.5) if vec else float("nan")
+
+
+def p95(vec):
+    return _percentile(sorted(vec), 0.95) if vec else float("nan")
+
+
+def ols_slope(xs, ys):
+    """Slope + intercept of an ordinary least-squares fit (for depth-flatness)."""
+    n = len(xs)
+    if n < 2:
+        return float("nan"), float("nan")
+    mx = sum(xs) / n
+    my = sum(ys) / n
+    sxx = sum((x - mx) ** 2 for x in xs)
+    if sxx == 0:
+        return float("nan"), float("nan")
+    sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    slope = sxy / sxx
+    return slope, my - slope * mx
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +371,8 @@ def bandwidth_window_stats(rows: list[dict], t0: float, t1: float) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Hierarchical (run-cluster) bootstrap — adapted from noop_lib.hier_bootstrap_ci
+# Hierarchical (run-cluster) bootstrap — same construction as the overhead
+# analyzers' hier_bootstrap_ci (analyze_e1.py / analyze_e2.py)
 # to (a) arbitrary statistics and (b) run-level scalar tables for slopes.
 # ---------------------------------------------------------------------------
 
@@ -350,7 +384,7 @@ def hier_boot_ci(run_vecs, stat_fn, alpha=0.05, seed=0, n=10000):
 
     Runs are the cluster/replication unit (experimental_setup.tex
     §Statistics); resampling queries inside each resampled run mirrors
-    noop_lib.hier_bootstrap_ci exactly, with the same work budget.
+    E1's hier_bootstrap_ci exactly, with the same work budget.
     """
     import numpy as np
     run_vecs = [np.asarray([v for v in vec if not math.isnan(v)], dtype=float)

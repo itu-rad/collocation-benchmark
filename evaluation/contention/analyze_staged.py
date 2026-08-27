@@ -18,8 +18,8 @@ Consumes the curated collection outputs under evaluation/collect/results/
     python evaluation/contention/analyze_staged.py --device cuda \\
         --results-dir evaluation/collect/results/cuda --plots
 
-Statistical conventions (shared with the rest of the paper via staged_lib /
-noop_lib): the RUN is the unit of replication; per-query quantiles get a
+Statistical conventions (shared with the rest of the paper via staged_lib, and
+matching the overhead analyzers): the RUN is the unit of replication; per-query quantiles get a
 hierarchical (run-then-query) bootstrap CI; run-level scalars (throughput,
 realized co-runner rate) get a run-resampling CI; dose-response slopes get a
 within-level run-resampling bootstrap, and pairwise engine slope ratios are

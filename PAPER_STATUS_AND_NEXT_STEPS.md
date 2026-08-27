@@ -151,16 +151,18 @@ the abstract/intro lean on it). But of the collected data:
   exposes* and let Self-RAG's within-pipeline concurrency + the (to-be-run) VQA contention carry
   the empirical weight. I strongly recommend (a) — it directly substantiates the title.
 
-**G3 — Tables 1 and 2 are placeholders.**
-- **Table 1** (noop depth 1–64): current CSVs only cover depths 1/10/50/100, and even depth-1
-  doesn't match the printed number (printed 0.055 ms; recompute from
-  `noop_chain_depth_1.csv` ≈ 0.126 ms). Re-run the full sweep (2/4/8/16/32/64) on the *final*
-  target machine and regenerate via `generate_latex_results.py`. The `rob` note already says
-  "this table will change."
-- **Table 2** (EfficientNetV2-S overhead): **no data at all** — `baseline_finetune.csv` and the
-  training CSV don't exist. The printed numbers (negative overhead, P99 −10.79%) are the
-  nonsensical placeholder you flagged ("waiting for a go-ahead from Ties after radt updates").
-  Must be collected fresh after RadT fixes.
+**G3 — Tables 1 and 2.** Both are now backed by data; neither has been written into the paper yet.
+- **Table 1** (E1, NoOp depth + payload sweep): **closed.** Re-collected on M2 Pro and GB10 over
+  powers of two 1–128, two configurations (`uninstrumented` / `spans-only`), 11 repetitions with
+  run 1 dropped. The headline moved substantially once the instrument was separated from the
+  framework — the per-stage dispatch cost the old tables reported was inflated by the CSV logger
+  measuring it. Regenerate with `analyze_e1.py --latex <machine>`; there is no hand-maintained
+  `.tex` any more.
+- **Table 2** (E2, EfficientNetV2 monolith vs Choreo): **collecting** (started 2026-08-27, both
+  machines, ~9 cells × 3 configurations × 11 repetitions). The metric of record changed to time
+  per query — the earlier in-step comparison sat below its own ±600 µs noise floor and flipped
+  sign between repetitions, which is where the nonsensical negative overhead came from.
+  Regenerate with `analyze_e2.py --latex <machine>`.
 
 **G4 — VQA / bandwidth study: run or cut.** The §5 "bandwidth tax" paragraph and ColPali mention
 presuppose data that doesn't exist. Note the apparatus uses **CLIP+FAISS+Qwen VQA**, not ColPali —

@@ -14,7 +14,7 @@ mix commits).
     python evaluation/pilots/run_pilots.py --list                # show cells
     python evaluation/pilots/run_pilots.py --only e4_factoid_mono4b --runs-override 1 --n-override 5   # smoke
 
-Follows the run_matrix.py driver idiom: subprocess `python main.py <tmpcfg>
+Follows the overhead collection idiom: subprocess `python main.py <tmpcfg>
 -p 0 --label pilot_<cell>_r<r>`, loadgen-block override via yaml→tempfile,
 idempotent (skips existing results unless --force).
 """
@@ -215,7 +215,7 @@ def make_pilot_config(base_cfg_path: Path, n_queries: int, timeout_s: int,
     """Copy the base config with the loadgen block overridden to serial pilot
     mode (closed-loop, one in flight). On the mlx device, device-agnostic
     torch configs (E5 resnet, E6 torchvision) get their stage `device: cuda`
-    remapped to `mps` (same device patching run_modularity.py does).
+    remapped to `mps`.
     Returns the temp file path."""
     doc = yaml.safe_load(base_cfg_path.read_text(encoding="utf-8"))
     # Some configs declare platform-specific radt listeners (e.g. 'smi') that

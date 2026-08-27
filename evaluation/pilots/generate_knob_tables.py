@@ -3,8 +3,8 @@
 
 One booktabs table per experiment: Knob | Value (M2 / GB10) | Rule |
 Verification. %-comments carry pilot provenance (filenames, medians, commit,
-date) in the same convention as the overhead generate_latex_results.py
-scripts. Cells whose pilot hasn't run yet render [[pending pilot]].
+date) in the same convention as the overhead analyzers' --latex output. Cells
+whose pilot hasn't run yet render [[pending pilot]].
 
     python evaluation/pilots/generate_knob_tables.py > knob_tables.tex
 """

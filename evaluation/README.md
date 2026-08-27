@@ -37,59 +37,112 @@ zero-copy (reference O(1) vs deep-copy O(payload)), and overhead-in-context.
 Everything lives under `overheads/framework_overhead/`; the write-up is
 `framework_overhead.md`.
 
-**Collect (one driver does the whole matrix, both arms, R runs):**
+**Collect** (`collect_e1.sh` runs the whole depth sweep, both configurations, R
+repetitions):
 ```bash
 # on the M2 Pro, inside the project env
-python evaluation/overheads/framework_overhead/run_matrix.py --runs 5
+bash evaluation/overheads/framework_overhead/collect_e1.sh m2pro 11 143
+# on the GB10 — pin to one X925 performance core, or the Grace scheduler
+# migrates the run between core types and the timing goes bimodal
+bash evaluation/overheads/framework_overhead/collect_e1.sh gb10 11 143
 ```
-`run_matrix.py` generates any missing configs, runs the depth sweep
-`{1..10,16,32,50,64,100}` × {tracing off, on} and the payload sweep (depth 10 ×
-{0,1KiB,1MiB,10MiB} × {ref,copy}, tracing off), sets `CHOREO_DISABLE_TRACING` for
-the off arm, curates each CSV into `results/noop_d{D}_s{S}_m{M}_t{0|1}_r{R}.csv`,
-and writes `run_matrix_env.txt` (perf_counter resolution + CPU/mem SKU). It is
-resumable (skips existing CSVs unless `--force`).
+Two configurations, named for the role each plays rather than the switch that
+sets it — they are the only two ways the framework is actually run:
 
-**Analyze** (all share `noop_lib.py` so the `.md` and `.tex` never disagree):
+| configuration | CSV stage logging | spans | what it is |
+|---|---|---|---|
+| `uninstrumented` | off | off | the framework bare |
+| `spans-only` | off | on | the framework traced |
+
+`spans-only − uninstrumented` is therefore what tracing costs. Per-query latency
+`L_q` survives with stage logging off because it comes from the pipeline-level
+rows, which `pipeline.py` emits unconditionally. CSVs land in
+`evaluation/results/<machine>/noop_depth_D_size_S_mode_M_<configuration>_<machine>_rN.csv`;
+a timestamped log and summary go to `collect_logs/`, headed by a provenance
+block (git commit + dirty flag, host, platform, python/torch/radt/mlflow, run
+and step counts). `E1_PAYLOAD=1` collects the payload sweep instead (depth 10 ×
+{0, 1 KiB, 1 MiB, 10 MiB} × {ref, copy}).
+
+**Analyze** (one self-contained analyzer — tables, statistics and figures):
 ```bash
-python evaluation/overheads/framework_overhead/analyze_noop_results.py --arm both
-python evaluation/overheads/framework_overhead/analyze_payload_results.py --fig
-python evaluation/overheads/framework_overhead/generate_latex_results.py > tables.tex
+python evaluation/overheads/framework_overhead/analyze_e1.py
+python evaluation/overheads/framework_overhead/analyze_e1.py --latex m2pro > tables.tex
 ```
 Timing uses the monotonic `perf_counter_ns` trailing CSV column (wall-clock
-column 0 is kept only for RadT alignment). To run one cell by hand:
-`python main.py <config> -p 0 --label <label>` (prefix `CHOREO_DISABLE_TRACING=1`
-for the core-dispatch arm).
+column 0 is kept only for radt alignment); CIs are a hierarchical bootstrap with
+the RUN as the unit of replication. Figures go to `framework_overhead/paper_assets/`.
+To run one cell by hand: `python main.py <config> -p 0 --label <label>`.
+
+Overhead experiments (E1 and E2 only) record to a LOCAL MLflow store rather than
+res17 — the microbenchmark emits far more spans per second than any real
+workload, and that volume is not what the remote server is there to carry.
 
 ### 2. Modularity overhead — EfficientNetV2-S monolith vs Choreo
 
-**What:** the same EfficientNetV2-S Imagenette fine-tune expressed two ways — a
-hand-written PyTorch monolith vs the Choreo pipeline — to show the framework's
-graph/queue/thread wrapper adds per-step overhead *within noise*. The
+**What:** the same EfficientNetV2 Imagenette fine-tune expressed two ways — a
+hand-written PyTorch monolith vs the Choreo pipeline — to measure what the
+framework's graph/queue/thread wrapper costs on a real workload. The
 real-workload counterpart to the NoOp experiment. Everything lives under
 `overheads/modularity_overhead/`; the write-up is `modularity_overhead.md`.
-Same two-arm design (core dispatch / tracing) and monotonic perf clock as §1.
 
-**Collect (one driver, both arms, R runs; run on each DUT):**
-```bash
-# inside the project torch+cuda env (e.g. benchmark_engines)
-python evaluation/overheads/modularity_overhead/run_modularity.py --device cuda --runs 5
-python evaluation/overheads/modularity_overhead/run_modularity.py --device mps  --runs 5   # M2 Pro
-```
-Runs the baseline (R times, `--no-radt` = zero-framework control) and the Choreo
-pipeline (R times × {tracing off, on}), patches the config's `device`/`max_queries`
-per run, curates CSVs into `results/mod_{baseline,choreo_t{0,1}}_d{dev}_r{R}.csv`,
-and writes `run_modularity_env.txt` (perf resolution + torch/cuda/SKU). Resumable.
+Three things run per cell, on an identical workload (the `(model, weights,
+batch)` triple is read from the same YAML both sides are given):
 
-**Analyze** (all share `modularity_lib.py`; pass `--device cuda|mps`):
+| configuration | what it is |
+|---|---|
+| `monolith` | `baseline_finetune.py` — no framework at all |
+| `choreo` | `main.py` with `CHOREO_DISABLE_TRACING=1` |
+| `choreo-traced` | `main.py` with `CHOREO_PROC_TRACE=1` |
+
+`choreo − monolith` is the cost of decomposition; `choreo-traced − choreo` is
+the cost of turning tracing on. Their order is rotated by repetition index so
+none of them always absorbs the warm-up.
+
+**Metric of record: time per query** — start-to-start between consecutive
+queries, i.e. 1/throughput, covering the whole cycle including data loading and
+preprocessing. It is anchor-invariant in steady state (the same period comes out
+of the pipeline row, the training row or the monolith's step row), which is what
+makes the two processes comparable although they emit different markers. The
+earlier metric — the training step's own duration compared across processes — is
+not usable: the framework's cost lands mostly *between* steps, which that marker
+excludes by construction, so it measured a near-zero difference against ±600 µs
+of run-to-run noise and flipped sign between repetitions.
+
+**Co-headline: the query latency breakdown**, from the spans of the
+`choreo-traced` runs — per-stage latency (dataloader, training) plus the
+auxiliary framework overheads (entry, handoff, exit, turnaround). Those are
+successive instants within one query on one clock, so they are non-negative by
+construction and carry no run-level term; they sum to the time per query exactly
+(E1 verified the identity at a residual of 0.000 µs over 300 queries).
+
+Both Choreo configurations run with `disable_logs: true` so that no synchronous
+write+flush sits inside the measured interval on one side only; the monolith
+writes through the same `FileHandler` `main.py` installs, so the instrument
+matches on both sides.
+
+**Collect (one harness, all three configurations, R repetitions; per machine):**
 ```bash
-python evaluation/overheads/modularity_overhead/analyze_operational_overhead.py --device cuda
-python evaluation/overheads/modularity_overhead/breakdown_overhead.py           --device cuda
-python evaluation/overheads/modularity_overhead/true_overhead_analysis.py        --device cuda
-python evaluation/overheads/modularity_overhead/generate_latex_results.py        --device cuda > table2.tex
+python evaluation/overheads/modularity_overhead/gen_configs.py   # regenerate cells
+bash evaluation/overheads/modularity_overhead/collect_e2.sh m2pro 11
+bash evaluation/overheads/modularity_overhead/collect_e2.sh gb10  11
 ```
-Per-step metric: baseline `training_step` vs Choreo `EfficientNet training` (same GPU
-work, data loading excluded), monotonic perf column, pooled R runs, warmup 100,
-two-sample bootstrap CI; "within noise" = ratio CI contains 0.
+Sweep: EfficientNetV2-S at batch {1,2,4,8,16,32,64}, plus EfficientNetV2-M and -L
+at batch 8 — 9 cells, 300 steps per run. CSVs land in
+`results/mod_<cell>_<configuration>_<machine>_rN.csv`, with a timestamped log,
+summary TSV and provenance header in `collect_logs/`. Local MLflow store, as in §1.
+
+**Analyze:**
+```bash
+python evaluation/overheads/modularity_overhead/analyze_e2.py
+python evaluation/overheads/modularity_overhead/analyze_e2.py --latex gb10 > table2.tex
+```
+Warmup 50 queries per run; **run 1 of every cell is dropped by default** — the
+first repetition is measurably slower for its whole duration, so per-step warmup
+cannot remove it, and collection runs R+1 to leave R usable. Statistic of
+record: the paired across-run difference (runs pair by id because the
+configurations are interleaved within each repetition), combined by median, with
+a bootstrap that resamples run PAIRS and re-resamples queries within each.
+Figures go to `modularity_overhead/paper_assets/`.
 
 ### 3. Multimodal VQA — unified-memory bandwidth contention (Apple Silicon)
 
@@ -202,14 +255,19 @@ same directory. No execution side effects beyond the report file.
 The overhead experiments are self-contained under `overheads/`, each with its
 own analyzers + `results/`:
 
-- **framework_overhead** — `run_matrix.py` (driver) + `noop_lib.py`; analyzers
-  `analyze_noop_results.py`, `analyze_payload_results.py`, `generate_latex_results.py`
-  read `results/noop_d*_s*_m*_t*_r*.csv`.
-- **modularity_overhead** — `run_modularity.py` (driver) + `modularity_lib.py`; analyzers
-  `analyze_operational_overhead.py` (headline within-noise), `breakdown_overhead.py`
-  (dataloader/end-to-end), `true_overhead_analysis.py` (overhead-in-context),
-  `generate_latex_results.py` (Table 2) read `results/mod_*_d{cuda,mps}_r*.csv` via the
-  monotonic perf column. Take `--device cuda|mps`.
+Each is one collection harness plus one self-contained analyzer — parsing,
+statistics, tables, LaTeX and figures in a single file, so the `.md` and the
+`.tex` cannot disagree:
+
+- **framework_overhead** — `collect_e1.sh` + `analyze_e1.py`, reading
+  `evaluation/results/<machine>/noop_depth_*_<configuration>_<machine>_r*.csv`.
+  Configs are generated by `noop_chain_generator.py` and `gen_nolog_configs.py`.
+- **modularity_overhead** — `collect_e2.sh` + `analyze_e2.py`, reading
+  `results/mod_<cell>_<configuration>_<machine>_r*.csv`. Configs are generated
+  by `gen_configs.py`; the monolith control is `baseline_finetune.py`.
+
+Both take `--machines m2pro gb10` (the MACHINE, not the torch device string —
+that lives inside the config) and read the monotonic perf column.
 
 ## Output format reference
 

@@ -1,30 +1,43 @@
 #!/usr/bin/env python3
-"""E2 — Modularity-overhead analysis. SELF-CONTAINED: parsing, statistics,
-tables, LaTeX and figures all live in this one file (imports nothing local).
+"""E2 — the cost of decomposition. SELF-CONTAINED: parsing, statistics, tables,
+LaTeX and figures all live in this one file (imports nothing local except
+utils/span_reader.py for the span-derived breakdown).
 
-Compares the per-step training latency of a hand-written PyTorch fine-tune (the
-bare monolith, "baseline") against the identical workload wrapped as a Choreo
-pipeline, across a scale sweep (batch 1..64 at EfficientNetV2-S; model S/M/L +
-ConvNeXt-L at batch 8):
+Three things run per cell, on the identical workload (EfficientNetV2 fine-tune on
+Imagenette, frozen backbone; one query = one batch = one training step):
 
-    core   = choreo t0 (tracing off) - baseline   -> the framework wrapper itself
-    total  = choreo t2 (bulk+proc tracing) - baseline -> wrapper + span export
+    monolith        a hand-written PyTorch loop, no framework
+    choreo          the same workload declared as a Choreo pipeline, tracing off
+    choreo-traced   the same Choreo pipeline with radt proc tracing on
 
-Result: the RELATIVE overhead amortizes toward zero as the step grows, while the
-ABSOLUTE overhead stays a roughly fixed per-step cost — a small O(1) tax, not a
-scaling one.
+    cost of choreo   = choreo - monolith        -> the framework wrapper itself
+    cost of tracing  = choreo-traced - choreo   -> what turning tracing on adds
 
-Metric of record: the TRAINING-STAGE step — baseline `training_step` vs Choreo
-`EfficientNet training` — both bracketing identical GPU work and both excluding
-data loading. All latencies come from the monotonic perf_counter_ns column (the
-trailing CSV field), never wall-clock column 0.
+Metric of record: TIME PER QUERY — start-to-start between consecutive queries,
+i.e. 1/throughput. It covers the WHOLE cycle (data loading and preprocessing
+included), and it is anchor-invariant in steady state: measured from pipeline
+starts or from training starts it gives the same number (66118 vs 66242 us on a
+b8 cell). That invariance is what makes it comparable across the three, whose
+marker sets differ — the Choreo stages run with `disable_logs: true` so that no
+synchronous write+flush sits inside the measured interval on one side only.
 
-Statistic of record: the PAIRED across-run difference. The arms are interleaved
-run-by-run (collect.sh runs baseline, t0, t2 back-to-back within each repetition),
-so runs pair by id: d_i = median(choreo_i) - median(base_i). The CI resamples
-PAIRS with replacement and re-resamples steps within each chosen run.
+Co-headline: the QUERY LATENCY BREAKDOWN, taken from the spans of the
+choreo-traced runs — per-stage latency (dataloader, training) plus the auxiliary
+framework overheads (entry, handoff, exit, turnaround). It sums to the time per
+query by construction; E1 verified the decomposition exact (residual 0.000 us
+over 300 queries on a 2-stage pipeline). Negative intervals are a hard failure,
+never something to take a median over.
 
-    python analyze_e2.py [--device mps cuda] [--warmup 200] [--fig-dir DIR] [--latex DEVICE]
+All latencies come from the monotonic perf_counter_ns column (the trailing CSV
+field), never wall-clock column 0.
+
+Statistic of record: the PAIRED across-run difference. The three configurations
+are interleaved run-by-run, their order rotated by repetition index, so runs pair
+by id: d_i = median(choreo_i) - median(monolith_i). The CI resamples PAIRS with
+replacement and re-resamples queries within each chosen run.
+
+    python analyze_e2.py [--machines m2pro gb10] [--warmup 50] [--drop-runs 1]
+                         [--fig-dir DIR] [--no-breakdown] [--latex MACHINE]
 """
 
 from __future__ import annotations
@@ -41,20 +54,35 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 NS_PER_MS = 1e6
 NS_PER_US = 1e3
-WARMUP = 200                      # steps dropped per run (kernel autotune / first-call)
 
-TRAIN_STAGE = "EfficientNet training"     # Choreo training stage
-BASELINE_STEP = "training_step"           # monolith per-step marker
-BASELINE_LOOP = "training_loop"           # session marker (see parse_baseline_steps)
+# Steps dropped at the head of each run. Was 200, which was never needed:
+# measured on the previous collection, step time is flat from step 0 on the GB10
+# (38.8, 38.7, 38.7 ... ms across 900 steps) and flat on a warm M2 Pro run. What
+# does exist is a whole-run effect, handled by DROP_RUNS below.
+WARMUP = 50
 
-# arm t0 = tracing off (core wrapper); t2 = radt bulk+proc span export.
-# (t1, the superseded in-process mlflow exporter, is not collected.)
-ARM_CORE, ARM_TRACED = 0, 2
+# Markers. The monolith brackets its own step; Choreo runs with disable_logs
+# on both stages, so it writes NO per-stage rows -- its timing comes from the
+# pipeline-level row, which pipeline.py emits unconditionally. That asymmetry
+# is deliberate: it makes the two sides write the same NUMBER of rows through
+# the same synchronous handler, so the instrument is equal on both.
+MONOLITH_STEP = "training_step"            # monolith per-step marker
+MONOLITH_LOOP = "training_loop"            # session marker (see parse_monolith_steps)
+PIPELINE_ROW = "pipeline - "               # Choreo per-query row, prefix match
+DATALOADER_STAGE = "Load Imagenette samples from TorchVision Dataset"
+TRAIN_STAGE = "EfficientNet training"
+
+# The three things run per cell, named for what they are.
+MONOLITH, CHOREO, CHOREO_TRACED = "monolith", "choreo", "choreo-traced"
+CONFIGS = (MONOLITH, CHOREO, CHOREO_TRACED)
+CONFIG_DESC = {
+    MONOLITH:      "bare PyTorch loop, no framework",
+    CHOREO:        "the framework, tracing off",
+    CHOREO_TRACED: "the framework, tracing on",
+}
 
 # The model sweep is a SIZE ladder within one architecture family (S -> M -> L),
-# so step time is the only thing changing. ConvNeXt-L was dropped: a different
-# architecture confounds size with architecture and adds nothing to the
-# amortization claim. Its data is archived under results/_archive_convnextl_dropped/.
+# so step time is the only thing changing.
 MODEL_DISPLAY = {"effv2s": "EfficientNetV2-S", "effv2m": "EfficientNetV2-M",
                  "effv2l": "EfficientNetV2-L"}
 MODEL_ORDER = ["effv2s", "effv2m", "effv2l"]   # by step-time, re-sorted at runtime
@@ -62,20 +90,25 @@ BATCHES = [1, 2, 4, 8, 16, 32, 64]
 ANCHOR_MODEL, ANCHOR_BATCH = "effv2s", 8
 
 _FNAME_RE = re.compile(
-    r"^mod_(?P<impl>baseline|choreo)(?:_t(?P<trace>\d))?"
-    r"_m(?P<model>[a-z0-9]+)_b(?P<batch>\d+)"
-    r"_d(?P<dev>[a-z0-9]+)_r(?P<run>\d+)\.csv$"
+    r"^mod_m(?P<model>[a-z0-9]+)_b(?P<batch>\d+)"
+    r"_(?P<config>monolith|choreo-traced|choreo)"
+    r"_(?P<machine>[a-z0-9]+)_r(?P<run>\d+)\.csv$"
 )
 
 
 def parse_filename(path):
+    """Return dict(model, batch, config, machine, run, path) or None.
+
+    No aliasing of the previous naming: that data was deleted rather than
+    archived, so there is nothing to stay compatible with, and a regex that
+    silently accepts two schemes is how two collection eras get mixed.
+    """
     m = _FNAME_RE.match(os.path.basename(path))
     if not m:
         return None
-    return {"impl": m["impl"],
-            "trace": int(m["trace"]) if m["trace"] is not None else None,
-            "model": m["model"], "batch": int(m["batch"]),
-            "dev": m["dev"], "run": int(m["run"]), "path": path}
+    return {"model": m["model"], "batch": int(m["batch"]),
+            "config": m["config"], "machine": m["machine"],
+            "run": int(m["run"]), "path": path}
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +146,7 @@ def _pair(evs):
     return [e - s for s, e in _pair_spans(evs)]
 
 
-def parse_baseline_steps(path):
+def parse_monolith_steps(path):
     """Per-step durations for the LAST session in the file.
 
     baseline_finetune historically opened its log in append mode, so re-runs
@@ -123,57 +156,59 @@ def parse_baseline_steps(path):
     against pre-fix contaminated files."""
     evs = []
     for (mod, phase, event, perf) in _rows(path):
-        if mod == BASELINE_LOOP and phase == "run" and event == "start":
+        if mod == MONOLITH_LOOP and phase == "run" and event == "start":
             evs = []
-        elif mod == BASELINE_STEP and phase == "run" and event in ("start", "end"):
+        elif mod == MONOLITH_STEP and phase == "run" and event in ("start", "end"):
             evs.append((perf, event))
     return _pair(evs)
 
 
-def parse_choreo_steps(path):
-    """Per-step durations of the Choreo training stage."""
-    return _pair(_choreo_events(path))
-
-
-def _choreo_events(path):
+def _pipeline_events(path):
+    """Choreo's per-query row events. Emitted unconditionally by pipeline.py,
+    so they survive `disable_logs: true` on the stages."""
     return [(perf, ev) for (mod, ph, ev, perf) in _rows(path)
-            if mod == TRAIN_STAGE and ph == "run" and ev in ("start", "end")]
+            if mod.startswith(PIPELINE_ROW) and ph == "run"
+            and ev in ("start", "end")]
 
 
-def _baseline_events(path):
-    """The LAST session's step events (see parse_baseline_steps for why)."""
+def _monolith_events(path):
+    """The LAST session's step events (see parse_monolith_steps for why)."""
     evs = []
     for (mod, phase, event, perf) in _rows(path):
-        if mod == BASELINE_LOOP and phase == "run" and event == "start":
+        if mod == MONOLITH_LOOP and phase == "run" and event == "start":
             evs = []
-        elif mod == BASELINE_STEP and phase == "run" and event in ("start", "end"):
+        elif mod == MONOLITH_STEP and phase == "run" and event in ("start", "end"):
             evs.append((perf, event))
     return evs
 
 
-def parse_step_periods(path, impl):
-    """Per-step PERIODS: the start-to-start interval between consecutive steps.
+def _events(path, config):
+    return _monolith_events(path) if config == MONOLITH else _pipeline_events(path)
 
-    The step *duration* (parse_*_steps) is only the time inside the training
-    marker. The period additionally contains everything BETWEEN steps — the
-    dataloader, the queue hand-offs, and, in the Choreo arms, the framework's
-    own per-query scaffolding. It is the reciprocal of end-to-end throughput,
-    so a paired difference of periods is the framework's cost as a user
-    experiences it, not as the step marker sees it.
 
-    Returned as a per-step series (n-1 values) so it drops straight into
-    paired_overhead, which bootstraps within a run and across run pairs.
+def parse_time_per_query(path, config):
+    """TIME PER QUERY: start-to-start between consecutive queries. The metric.
+
+    One query is one batch here, so this is equally time per batch, and it is
+    1/throughput. It covers the WHOLE cycle -- data loading and preprocessing
+    included -- unlike the step's own duration, which excludes everything
+    between steps and so is blind to where most of the framework's cost lands.
+
+    It is also anchor-invariant: in steady state the same period is measured
+    whether you cut at the monolith's step row or Choreo's pipeline row. That
+    is what makes the two comparable while they emit different markers.
+
+    Returned as a per-query series (n-1 values) so it drops straight into
+    paired_overhead, which resamples within a run and across run pairs.
     """
-    evs = _baseline_events(path) if impl == "baseline" else _choreo_events(path)
-    spans = _pair_spans(evs)
+    spans = _pair_spans(_events(path, config))
     starts = np.asarray([s for s, _ in spans], dtype=np.float64)
     return np.diff(starts) if starts.size > 1 else np.asarray([])
 
 
-def parse_step_spans(path, impl):
-    """(start_ns, end_ns) per step — used for the in-step vs period coverage."""
-    return _pair_spans(_baseline_events(path) if impl == "baseline"
-                       else _choreo_events(path))
+def parse_step_spans(path, config):
+    """(start_ns, end_ns) per query -- the bracketed interval, for coverage."""
+    return _pair_spans(_events(path, config))
 
 
 # Repetitions discarded as SYSTEM warm-up (whole runs, not steps). The first
@@ -181,9 +216,11 @@ def parse_step_spans(path, impl):
 # 2026-08-18 mps anchor: baseline r1 = 97.2 ms/step vs 89.2 for r2..r6, still
 # 97.4 in its last 300 steps, so per-step warm-up dropping cannot remove it
 # (cold page cache / power state on the collection's first process launch).
-# Left at 0 = report everything; the per-run medians printed under each table
-# make such an outlier visible rather than silently dropped.
-DROP_RUNS = 0
+# Default 1, not opt-in: on the E2 smoke collection leaving run 1 in moved one
+# breakdown term by 800 us. Collection therefore runs R+1 repetitions so that
+# dropping the first still leaves R usable. The per-run medians printed under
+# each table keep any further outlier visible rather than silently dropped.
+DROP_RUNS = 1
 
 
 def steps_by_run(metas, warmup=WARMUP, drop_runs=None):
@@ -195,7 +232,7 @@ def steps_by_run(metas, warmup=WARMUP, drop_runs=None):
     for m in metas:
         if keep is not None and m["run"] not in keep:
             continue
-        fn = parse_baseline_steps if m["impl"] == "baseline" else parse_choreo_steps
+        fn = parse_monolith_steps
         d = fn(m["path"])[warmup:]
         if d:
             out[m["run"]] = d
@@ -214,7 +251,7 @@ def periods_by_run(metas, warmup=WARMUP, drop_runs=None, keep_runs=None):
             continue
         if keep_runs is not None and m["run"] not in keep_runs:
             continue
-        d = parse_step_periods(m["path"], m["impl"])[warmup:]
+        d = parse_time_per_query(m["path"], m["config"])[warmup:]
         if len(d):
             out[m["run"]] = d
     return out
@@ -231,7 +268,7 @@ def coverage_by_run(metas, warmup=WARMUP, drop_runs=None, keep_runs=None):
             continue
         if keep_runs is not None and m["run"] not in keep_runs:
             continue
-        spans = parse_step_spans(m["path"], m["impl"])[warmup:]
+        spans = parse_step_spans(m["path"], m["config"])[warmup:]
         if len(spans) < 2:
             continue
         durs = np.asarray([e - s for s, e in spans], dtype=np.float64)
@@ -240,21 +277,19 @@ def coverage_by_run(metas, warmup=WARMUP, drop_runs=None, keep_runs=None):
     return out
 
 
-def load(results_dir, device):
+def load(results_dir, machine):
     metas = []
     for p in sorted(glob.glob(os.path.join(results_dir, "mod_*.csv"))):
         m = parse_filename(p)
-        if m and m["dev"] == device:
+        if m and m["machine"] == machine:
             metas.append(m)
     return metas
 
 
-def select(metas, impl=None, trace=None, model=None, batch=None):
+def select(metas, config=None, model=None, batch=None):
     out = []
     for m in metas:
-        if impl is not None and m["impl"] != impl:
-            continue
-        if trace is not None and m["trace"] != trace:
+        if config is not None and m["config"] != config:
             continue
         if model is not None and m["model"] != model:
             continue
@@ -319,11 +354,11 @@ def _combine(vals, estimator=None):
 def paired_overhead(base_by_run, arm_by_run, n_boot=10000, seed=0, estimator=None):
     """Paired across-run overhead — the statistic of record.
 
-    d_i = median(arm_i) - median(base_i) over runs shared by both arms, combined
-    across runs by ESTIMATOR (median by default; see above). The CI resamples
-    PAIRS with replacement and re-resamples steps within each chosen run, and
-    applies the same estimator to each bootstrap replicate. Also reports the
-    difference as a % of the pooled baseline median."""
+    d_i = median(b_i) - median(a_i) over runs both configurations share,
+    combined across runs by ESTIMATOR (median by default; see above). The CI
+    resamples PAIRS with replacement and re-resamples queries within each chosen
+    run, and applies the same estimator to each bootstrap replicate. Also
+    reports the difference as a % of the pooled median of the reference (a)."""
     shared = sorted(set(base_by_run) & set(arm_by_run))
     if len(shared) < 2:
         return None
@@ -393,49 +428,51 @@ def _regime_filter(arms, ratio):
 
 
 def cell_result(metas, model, batch, warmup):
-    """core/total overhead for one (model,batch) cell, or None if incomplete."""
-    base = steps_by_run(select(metas, impl="baseline", model=model, batch=batch), warmup)
-    t0 = steps_by_run(select(metas, impl="choreo", trace=ARM_CORE, model=model, batch=batch), warmup)
-    t2 = steps_by_run(select(metas, impl="choreo", trace=ARM_TRACED, model=model, batch=batch), warmup)
-    if not base or not t0:
+    """Everything for one (model, batch) cell, or None if incomplete.
+
+    TIME PER QUERY is the metric of record and is available for all three
+    configurations. The step's own duration exists only for the monolith --
+    Choreo runs with `disable_logs: true` and writes no per-stage rows -- so
+    there is deliberately no cross-configuration in-step comparison here. That
+    comparison was E2's old headline and it was unusable: the framework's cost
+    lands mostly BETWEEN steps, which the step marker excludes by construction,
+    so it measured a near-zero difference against run-to-run noise an order of
+    magnitude larger, and flipped sign between repetitions.
+    """
+    sel = lambda c: select(metas, config=c, model=model, batch=batch)
+    kw = dict(warmup=warmup)
+    q_mono = periods_by_run(sel(MONOLITH), **kw)
+    q_cho  = periods_by_run(sel(CHOREO), **kw)
+    q_tra  = periods_by_run(sel(CHOREO_TRACED), **kw)
+    if not q_mono or not q_cho:
         return None
+
     dropped = []
     if MAX_REGIME_RATIO:
-        arms = [base, t0, t2] if t2 else [base, t0]
+        arms = [q_mono, q_cho, q_tra] if q_tra else [q_mono, q_cho]
         arms, dropped = _regime_filter(arms, MAX_REGIME_RATIO)
-        if t2:
-            base, t0, t2 = arms
+        if q_tra:
+            q_mono, q_cho, q_tra = arms
         else:
-            base, t0 = arms
-        if not base or not t0:
+            q_mono, q_cho = arms
+        if not q_mono or not q_cho:
             return None
-    out = {"model": model, "batch": batch, "regime_dropped": dropped,
-           "base": summarize(base), "t0": summarize(t0),
-           "core": paired_overhead(base, t0)}
-    out["t2"] = summarize(t2) if t2 else None
-    out["total"] = paired_overhead(base, t2) if t2 else None
-    # tracing layer alone = traced arm vs core arm (both wrapped)
-    out["tracing"] = paired_overhead(t0, t2) if t2 else None
 
-    # --- end-to-end: the same paired statistic on step PERIODS ---------------
-    # The step marker is not the whole story: it excludes the dataloader and the
-    # framework's per-query scaffolding between steps. The period (start-to-start)
-    # is 1/throughput, so this is the cost the user actually pays. Runs the regime
-    # filter removed above are removed here too, by run id.
-    keep_runs = set(base) if MAX_REGIME_RATIO else None
-    kw = dict(warmup=warmup, keep_runs=keep_runs)
-    pb = periods_by_run(select(metas, impl="baseline", model=model, batch=batch), **kw)
-    p0 = periods_by_run(select(metas, impl="choreo", trace=ARM_CORE, model=model, batch=batch), **kw)
-    p2 = periods_by_run(select(metas, impl="choreo", trace=ARM_TRACED, model=model, batch=batch), **kw)
-    out["period_base"] = summarize(pb) if pb else None
-    out["e2e_core"] = paired_overhead(pb, p0) if (pb and p0) else None
-    out["e2e_total"] = paired_overhead(pb, p2) if (pb and p2) else None
-    cov = coverage_by_run(select(metas, impl="baseline", model=model, batch=batch), **kw)
+    out = {"model": model, "batch": batch, "regime_dropped": dropped,
+           "q_monolith": summarize(q_mono), "q_choreo": summarize(q_cho),
+           "q_traced": summarize(q_tra) if q_tra else None,
+           # what decomposing costs, and what tracing costs on top of it
+           "cost_of_choreo": paired_overhead(q_mono, q_cho),
+           "cost_of_tracing": paired_overhead(q_cho, q_tra) if q_tra else None}
+
+    # The monolith's own split, needed for the identity below: the step it
+    # brackets, and the gap between steps where its data loading happens.
+    steps = steps_by_run(sel(MONOLITH), warmup)
+    out["monolith_step"] = summarize(steps) if steps else None
+    out["coverage"] = float("nan")
+    cov = coverage_by_run(sel(MONOLITH), **kw)
     if cov:
-        import numpy as _np
-        out["coverage"] = float(_np.median([d / p for d, p in cov.values() if p]))
-    else:
-        out["coverage"] = float("nan")
+        out["coverage"] = float(np.median([d / p for d, p in cov.values() if p]))
     return out
 
 
@@ -460,209 +497,251 @@ def _ov(o):
             f"{o['pct']:+.3f}% [{o['pct_lo']:+.3f}, {o['pct_hi']:+.3f}]")
 
 
-def print_cells(cells, device):
-    print(f"\n## {device} — per-cell overhead (paired across runs)\n")
-    print(f"| cell | R | step (ms) | core (µs/step, {ESTIMATOR}) | core % | "
-          f"core (mean) | +tracing (µs/step) | total % |")
-    print("|---|--:|--:|---|--:|--:|---|--:|")
+def print_cells(cells, machine):
+    """Time per query per configuration, and what each layer costs."""
+    print(f"\n## {machine} — time per query, and what decomposition costs\n")
+    print("| cell | R | monolith (ms) | choreo (ms) | cost of choreo (µs) | as % "
+          "| cost of tracing (µs) | as % |")
+    print("|---|--:|--:|--:|---|--:|---|--:|")
     for c in cells:
         name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
-        core_abs, core_pct = _ov(c["core"])
-        tot_abs, tot_pct = _ov(c["total"])
-        R = c["core"]["pairs"] if c["core"] else 0
-        cmean = f"{c['core']['abs_mean_us']:+.1f}" if c["core"] else "—"
-        print(f"| {name} | {R} | {c['base']['median']:.2f} | {core_abs} | "
-              f"{core_pct.split(' ')[0]} | {cmean} | {tot_abs} | "
-              f"{tot_pct.split(' ')[0]} |")
-    print("\n(core = Choreo wrapper, tracing off, vs the bare monolith; "
-          "+tracing = wrapper + radt bulk/proc span export. "
-          "Brackets: 95% CI, bootstrap over run pairs.)")
+        ch_abs, ch_pct = _ov(c["cost_of_choreo"])
+        tr_abs, tr_pct = _ov(c["cost_of_tracing"])
+        R = c["cost_of_choreo"]["pairs"] if c["cost_of_choreo"] else 0
+        print(f"| {name} | {R} | {c['q_monolith']['median']:.2f} | "
+              f"{c['q_choreo']['median']:.2f} | {ch_abs} | "
+              f"{ch_pct.split(' ')[0]} | {tr_abs} | {tr_pct.split(' ')[0]} |")
+    print("\n(time per query = start-to-start between consecutive queries = "
+          "1/throughput, covering the whole cycle including data loading. "
+          "'cost of choreo' = choreo − monolith; 'cost of tracing' = "
+          "choreo-traced − choreo. Brackets: 95% CI, bootstrap over run pairs.)")
+    print("\nA NEGATIVE cost is not a speed-up: it means the difference is "
+          "smaller than what this apparatus resolves at that cell. It is printed "
+          "as measured rather than clipped.")
     for c in cells:
         if c.get("regime_dropped"):
             print(f"- MIXED-REGIME repetitions dropped, "
                   f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}: "
-                  f"{c['regime_dropped']} (arms landed in different step-time regimes)")
+                  f"{c['regime_dropped']}")
     for c in cells:
-        if c["core"]:
-            pp = " / ".join(f"{v:+.1f}" for v in c["core"]["per_pair_us"])
-            print(f"- per-run paired core diffs (µs), "
+        if c["cost_of_choreo"]:
+            pp = " / ".join(f"{v:+.1f}" for v in c["cost_of_choreo"]["per_pair_us"])
+            print(f"- per-run paired differences (µs), "
                   f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}: {pp}")
 
 
-def print_e2e(cells, device):
-    """End-to-end cost: the same paired statistic applied to the step PERIOD.
+# ---------------------------------------------------------------------------
+# Query latency breakdown, from the spans of the traced configuration
+# ---------------------------------------------------------------------------
+def _span_runs(machine, store=None):
+    """{label: run_id} from the local MLflow store this machine recorded to."""
+    import mlflow
+    db = store or os.path.join(HERE, f"mlruns_e2_{machine}.db")
+    if not os.path.exists(db):
+        return {}, None
+    mlflow.set_tracking_uri(f"sqlite:///{db}")
+    c = mlflow.MlflowClient()
+    out = {}
+    for r in c.search_runs(["0"], max_results=5000):
+        name = r.data.tags.get("mlflow.runName", "")
+        out[name.split(" | ")[0]] = r.info.run_id
+    return out, c
 
-    E2's headline (`core`) is measured on the training-step marker alone. That
-    marker does not cover the dataloader or the framework's per-query
-    scaffolding, so it can only ever see part of what the wrapper costs. The
-    period (step start -> next step start) covers all of it and is exactly
-    1/throughput. Reporting only the first number would understate the
-    framework's cost by whatever fraction of the wall clock the marker misses —
-    the `step covers` column below.
+
+def breakdown_by_run(machine, model, batch, runs, warmup, store=None):
+    """Per-run query latency breakdown from the traced configuration's spans.
+
+    Six components per query, in order: entry, dataloader, handoff, training,
+    exit, turnaround. They are successive instants within ONE query on ONE
+    clock, so unlike any difference taken across two processes they are
+    non-negative by construction and carry no run-level term at all.
     """
-    print(f"\n## {device} — end-to-end cost (step PERIOD = 1/throughput)\n")
-    print("| cell | R | period (ms) | step covers | core e2e (µs/step) | core e2e % "
-          "| +tracing e2e (µs/step) | total e2e % |")
-    print("|---|--:|--:|--:|---|--:|---|--:|")
-    for c in cells:
-        if not c.get("e2e_core"):
+    from utils.span_reader import read_dir
+    labels, client = _span_runs(machine, store)
+    if not labels:
+        return {}
+    out = {}
+    for r in runs:
+        lab = f"mod_m{model}_b{batch}_{CHOREO_TRACED}_{machine}_r{r}"
+        rid = labels.get(lab)
+        if rid is None:
             continue
-        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
-        ca, cp = _ov(c["e2e_core"])
-        ta, tp = _ov(c["e2e_total"])
-        R = c["e2e_core"]["pairs"]
-        print(f"| {name} | {R} | {c['period_base']['median']:.2f} | "
-              f"{100 * c['coverage']:.1f}% | {ca} | {cp.split(' ')[0]} | "
-              f"{ta} | {tp.split(' ')[0]} |")
-    print("\n(period = training-step start to the next step's start, on the same "
-          "monotonic clock; `step covers` = median step duration / median period "
-          "in the BASELINE arm, i.e. how much of the wall clock E2's headline "
-          "metric can see at all. Brackets: 95% CI, bootstrap over run pairs.)")
-    # The comparison that matters: headline vs end-to-end, same cells.
-    print(f"\n### {device} — headline (in-step) vs end-to-end, side by side\n")
-    print("| cell | core in-step µs | core in-step % | core e2e µs | core e2e % | "
-          "understated by |")
-    print("|---|--:|--:|--:|--:|--:|")
-    for c in cells:
-        if not (c.get("core") and c.get("e2e_core")):
+        t = read_dir(client.download_artifacts(run_id=rid, path="radt-trace"))
+        pq  = t.by_query("pipeline query");  pqp = t.by_query("pipeline query processed")
+        dlr = t.by_query(f"{DATALOADER_STAGE}.run")
+        dlp = t.by_query(f"{DATALOADER_STAGE}.push_to_outputs")
+        trr = t.by_query(f"{TRAIN_STAGE}.run")
+        trp = t.by_query(f"{TRAIN_STAGE}.push_to_outputs")
+        qs = sorted([q for q in pq if q in pqp and q in dlr and q in dlp
+                     and q in trr and q in trp],
+                    key=lambda q: pq[q].perf_start_ns)[warmup:]
+        if len(qs) < 2:
             continue
-        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
-        a, b = c["core"]["abs_us"], c["e2e_core"]["abs_us"]
-        ratio = f"{b / a:.1f}x" if a > 0 and b > 0 else "n/a"
-        print(f"| {name} | {a:+.1f} | {c['core']['pct']:+.3f}% | {b:+.1f} | "
-              f"{c['e2e_core']['pct']:+.3f}% | {ratio} |")
-    print("\n(`understated by` is only meaningful where BOTH estimates are "
-          "positive; a negative estimate is apparatus noise, not a speed-up.)")
+        P = lambda d, q: d[q].perf_start_ns
+        comp = {
+            "entry":      [P(dlr, q) - P(pq, q) for q in qs],
+            "dataloader": [P(dlp, q) - P(dlr, q) for q in qs],
+            "handoff":    [P(trr, q) - P(dlp, q) for q in qs],
+            "training":   [P(trp, q) - P(trr, q) for q in qs],
+            "exit":       [P(pqp, q) - P(trp, q) for q in qs],
+            "turnaround": [P(pq, qs[i + 1]) - P(pqp, qs[i]) for i in range(len(qs) - 1)],
+        }
+        # These intervals cannot legitimately be negative: they are successive
+        # instants in a strictly sequential pipeline. A negative one means the
+        # spans were mis-paired, which would silently shift every later query,
+        # so refuse the run rather than take a median over it.
+        bad = {k: sum(1 for v in vs if v < 0) for k, vs in comp.items()}
+        if any(bad.values()):
+            print(f"  !! run {r}: NEGATIVE intervals {bad} — run excluded; "
+                  f"spans are mis-paired and a median over them would be wrong")
+            continue
+        out[r] = comp
+    return out
 
 
-def print_sweeps(cells, device):
-    """The amortization claim: relative shrinks with step size, absolute ~fixed."""
-    bs = sorted([c for c in cells if c["model"] == ANCHOR_MODEL], key=lambda c: c["batch"])
+def print_breakdown(machine, cells, metas, warmup, store=None):
+    """Where a query's latency goes, split into stage work and framework cost."""
+    print(f"\n## {machine} — query latency breakdown (traced configuration)\n")
+    print("| cell | R | entry | dataloader | handoff | training | exit | turnaround "
+          "| framework | total | framework % |")
+    print("|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|")
+    any_row = False
+    for c in cells:
+        runs = sorted({m["run"] for m in select(metas, config=CHOREO_TRACED,
+                                                model=c["model"], batch=c["batch"])})
+        if DROP_RUNS:
+            runs = runs[DROP_RUNS:]
+        bd = breakdown_by_run(machine, c["model"], c["batch"], runs, warmup, store)
+        if not bd:
+            continue
+        any_row = True
+        med = {k: np.median([np.median(bd[r][k]) for r in bd]) / NS_PER_US
+               for k in ("entry", "dataloader", "handoff", "training", "exit",
+                         "turnaround")}
+        fw = med["entry"] + med["handoff"] + med["exit"] + med["turnaround"]
+        tot = fw + med["dataloader"] + med["training"]
+        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
+        print(f"| {name} | {len(bd)} | {med['entry']:.1f} | {med['dataloader']:.1f} "
+              f"| {med['handoff']:.1f} | {med['training']:.1f} | {med['exit']:.1f} "
+              f"| {med['turnaround']:.1f} | {fw:.1f} | {tot:.1f} | "
+              f"{100 * fw / tot:.2f}% |")
+        c["breakdown"] = med
+    if not any_row:
+        print("| (no traced spans found for this machine) |")
+        return
+    print("\n(microseconds per query. `dataloader` and `training` are the stages "
+          "doing real work; `entry`, `handoff`, `exit` and `turnaround` are the "
+          "framework moving the query between them, and are what decomposition "
+          "adds. They sum to the time per query by construction.)")
+
+
+def print_identity(machine, cells):
+    """Reconcile the measured cost of choreo against the breakdown.
+
+    Decomposing does not only ADD scaffolding; it also relocates the stage
+    bodies, and those two effects can be of similar size and opposite sign. If
+    only the net were reported, a cell where they cancel would read as
+    "modularity is free" when in fact both terms are large.
+
+        cost of choreo = (dataloader − monolith gap)
+                       + (training   − monolith step)
+                       + framework scaffolding
+    """
+    rows = [c for c in cells if c.get("breakdown") and c.get("monolith_step")]
+    if not rows:
+        return
+    print(f"\n## {machine} — where the cost of decomposition comes from\n")
+    print("| cell | dl − gap | training − step | framework | sum | measured | "
+          "residual |")
+    print("|---|--:|--:|--:|--:|--:|--:|")
+    for c in rows:
+        b = c["breakdown"]
+        step = c["monolith_step"]["median"] * (NS_PER_MS / NS_PER_US)
+        gap = c["q_monolith"]["median"] * (NS_PER_MS / NS_PER_US) - step
+        d_dl = b["dataloader"] - gap
+        d_tr = b["training"] - step
+        fw = b["entry"] + b["handoff"] + b["exit"] + b["turnaround"]
+        measured = c["cost_of_choreo"]["abs_us"] if c["cost_of_choreo"] else float("nan")
+        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
+        print(f"| {name} | {d_dl:+.1f} | {d_tr:+.1f} | {fw:+.1f} | "
+              f"{d_dl + d_tr + fw:+.1f} | {measured:+.1f} | "
+              f"{measured - (d_dl + d_tr + fw):+.1f} |")
+    print("\n(microseconds. The monolith's gap is its time per query minus its "
+          "step, i.e. where its own data loading happens. A large residual means "
+          "the medians are being combined across quantities that do not add "
+          "exactly; a large `dl − gap` means decomposition MOVED work rather "
+          "than adding it, which the net alone would hide.)")
+
+
+def print_sweeps(cells, machine):
+    """The amortization claim: relative cost shrinks as the query gets heavier."""
+    bs = sorted([c for c in cells if c["model"] == ANCHOR_MODEL],
+                key=lambda c: c["batch"])
     ms = sorted([c for c in cells if c["batch"] == ANCHOR_BATCH],
-                key=lambda c: c["base"]["median"])
-    for title, sel, label in (("Batch sweep (EfficientNetV2-S)", bs, "batch"),
-                              ("Model sweep (batch 8)", ms, "model")):
-        if len(sel) < 2:
+                key=lambda c: c["q_monolith"]["median"])
+    for title, sel_, label in (("Batch sweep (EfficientNetV2-S)", bs, "batch"),
+                               ("Model sweep (batch 8)", ms, "model")):
+        if len(sel_) < 2:
             continue
-        print(f"\n### {device} — {title}\n")
-        print(f"| {label} | step (ms) | core µs/step | core % of step | total µs/step | total % |")
-        print("|---|--:|--:|--:|--:|--:|")
-        for c in sel:
+        print(f"\n### {machine} — {title}\n")
+        print(f"| {label} | time per query (ms) | cost of choreo (µs) | as % |")
+        print("|---|--:|--:|--:|")
+        for c in sel_:
             key = c["batch"] if label == "batch" else MODEL_DISPLAY.get(c["model"], c["model"])
-            core = c["core"]; tot = c["total"]
-            print(f"| {key} | {c['base']['median']:.2f} | "
-                  f"{core['abs_us']:+.1f} | {core['pct']:+.3f}% | "
-                  f"{tot['abs_us']:+.1f} | {tot['pct']:+.3f}% |" if tot else
-                  f"| {key} | {c['base']['median']:.2f} | {core['abs_us']:+.1f} | "
-                  f"{core['pct']:+.3f}% | — | — |")
-        if len(sel) >= 3:
-            steps = [c["base"]["median"] for c in sel]
-            pcts = [c["core"]["pct"] for c in sel]
-            abss = [c["core"]["abs_us"] for c in sel]
-            # Report what the numbers do; do NOT assert the expected conclusion.
-            # The claim (relative shrinks, absolute ~fixed) only holds if the
-            # per-cell spread is small next to the effect — say so either way.
-            spread = max(abss) - min(abss)
-            rel_drops = abs(pcts[-1]) < abs(pcts[0])
-            print(f"\nstep {steps[0]:.1f} → {steps[-1]:.1f} ms "
-                  f"({steps[-1]/max(steps[0],1e-9):.1f}×): "
-                  f"core {pcts[0]:+.3f}% → {pcts[-1]:+.3f}% "
-                  f"({'relative shrinks' if rel_drops else 'relative does NOT shrink'}), "
-                  f"absolute {abss[0]:+.1f} → {abss[-1]:+.1f} µs/step "
-                  f"(spread {spread:.1f} µs across cells; "
-                  f"{'consistent with a ~fixed cost' if spread < 200 else 'TOO NOISY to call fixed'}).")
+            o = c["cost_of_choreo"]
+            print(f"| {key} | {c['q_monolith']['median']:.2f} | "
+                  f"{o['abs_us']:+.1f} | {o['pct']:+.3f}% |")
+        qs = [c["q_monolith"]["median"] for c in sel_]
+        pcts = [c["cost_of_choreo"]["pct"] for c in sel_]
+        print(f"\ntime per query {qs[0]:.1f} → {qs[-1]:.1f} ms ({qs[-1]/qs[0]:.1f}×): "
+              f"cost {pcts[0]:+.3f}% → {pcts[-1]:+.3f}%")
 
 
-# ---------------------------------------------------------------------------
-# LaTeX
-# ---------------------------------------------------------------------------
-def print_latex(cells, device):
-    print("% --- E2 modularity overhead: scale sweep ---")
+def print_latex(cells, machine):
+    print("% --- E2 modularity overhead: time per query ---")
     print("\\begin{table}[t]\n\\centering")
-    print("\\caption{Wrapping real work in Choreo costs a small, roughly FIXED "
-          "per-step amount, so the \\emph{relative} overhead amortizes toward zero "
-          "as the step grows (" + device + "). Paired across-run difference; "
-          "bootstrap \\SI{95}{\\percent} CI over run pairs.}")
+    print("\\caption{Cost of decomposition, as time per query.}")
     print("\\label{tab:modularity-sweep}")
     print("\\begin{tabular}{lrrr}\n\\toprule")
-    print("Cell & Step (\\si{\\milli\\second}) & Core (\\si{\\micro\\second}/step) & "
-          "Core (\\si{\\percent}) \\\\\n\\midrule")
+    print("Cell & Time per query (\\si{\\milli\\second}) & "
+          "Cost (\\si{\\micro\\second}) & \\% \\\\\n\\midrule")
     for c in cells:
+        o = c["cost_of_choreo"]
+        if not o:
+            continue
         name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
-        o = c["core"]
-        print(f"{name} & {c['base']['median']:.2f} & "
-              f"{o['abs_us']:+.1f} [{o['abs_lo_us']:+.1f}, {o['abs_hi_us']:+.1f}] & "
-              f"{o['pct']:+.3f} \\\\")
+        print(f"{name} & {c['q_monolith']['median']:.2f} & "
+              f"{o['abs_us']:+.1f} & {o['pct']:+.3f} \\\\")
     print("\\bottomrule\n\\end{tabular}\n\\end{table}")
 
 
-# ---------------------------------------------------------------------------
-# Figure: 2x2 amortization panels
-# ---------------------------------------------------------------------------
-def make_figure(per_device, fig_dir):
-    """Overhead vs STEP TIME — the variable the amortization claim is about.
-
-    Plots 95% CIs, because most sweep cells have only 3 usable repetitions and
-    their intervals cross zero: without error bars a noisy cell would look
-    exactly as authoritative as the R=9 anchor. No titles — the caption carries
-    that in the paper; panels are identified by their axis labels."""
+def make_figure(per_machine, fig_dir):
+    """Cost of decomposition against how heavy the query is."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    style = {"mps": ("tab:blue", "o", "M2 Pro (mps)"),
-             "cuda": ("tab:orange", "s", "GB10 (cuda)")}
     fig, ax = plt.subplots(1, 2, figsize=(12, 4.6))
-
-    for dev, cells in per_device.items():
-        color, marker, label = style.get(dev, ("tab:gray", "^", dev))
-        cs = sorted([c for c in cells if c["core"]], key=lambda c: c["base"]["median"])
-        xs = [c["base"]["median"] for c in cs]
+    style = {"m2pro": ("tab:blue", "o"), "gb10": ("tab:orange", "s")}
+    for machine, cells in per_machine.items():
+        color, marker = style.get(machine, ("tab:green", "^"))
+        cs = sorted([c for c in cells if c["cost_of_choreo"]],
+                    key=lambda c: c["q_monolith"]["median"])
+        if not cs:
+            continue
+        xs = [c["q_monolith"]["median"] for c in cs]
         for a, key, lo_k, hi_k in ((ax[0], "pct", "pct_lo", "pct_hi"),
                                    (ax[1], "abs_us", "abs_lo_us", "abs_hi_us")):
-            ys = [c["core"][key] for c in cs]
-            lo = [c["core"][key] - c["core"][lo_k] for c in cs]
-            hi = [c["core"][hi_k] - c["core"][key] for c in cs]
+            ys = [c["cost_of_choreo"][key] for c in cs]
+            lo = [c["cost_of_choreo"][key] - c["cost_of_choreo"][lo_k] for c in cs]
+            hi = [c["cost_of_choreo"][hi_k] - c["cost_of_choreo"][key] for c in cs]
             a.errorbar(xs, ys, yerr=[lo, hi], fmt=marker + "-", color=color,
-                       ms=5, lw=1.3, capsize=3, elinewidth=1, alpha=0.9,
-                       label=f"{label} core")
-        # ring the high-confidence anchor cell (R=9)
-        for c in cs:
-            if c["model"] == ANCHOR_MODEL and c["batch"] == ANCHOR_BATCH:
-                for a, key in ((ax[0], "pct"), (ax[1], "abs_us")):
-                    a.plot([c["base"]["median"]], [c["core"][key]], marker,
-                           color=color, ms=12, mfc="none", mew=2,
-                           label=f"{label} anchor (R=9)")
-
-    # A single pathological cell (mps b2, CI to +25%) would squash every other
-    # point, so clip each axis to the bulk of the data and mark any interval that
-    # runs off-scale rather than silently cropping it.
-    for a, key, lo_k, hi_k in ((ax[0], "pct", "pct_lo", "pct_hi"),
-                               (ax[1], "abs_us", "abs_lo_us", "abs_hi_us")):
-        pts, los, his = [], [], []
-        for cells in per_device.values():
-            for c in cells:
-                if c["core"]:
-                    pts.append(c["core"][key])
-                    los.append(c["core"][lo_k])
-                    his.append(c["core"][hi_k])
-        if not pts:
-            continue
-        span = max(max(pts) - min(pts), 1e-9)
-        lim_lo = min(min(pts) - 0.6 * span, np.percentile(los, 25))
-        lim_hi = max(max(pts) + 0.6 * span, np.percentile(his, 75))
-        a.set_ylim(lim_lo, lim_hi)
-        n_clip = sum(1 for l, h in zip(los, his) if l < lim_lo or h > lim_hi)
-        if n_clip:
-            a.annotate(f"{n_clip} interval(s) extend off-scale",
-                       xy=(0.02, 0.03), xycoords="axes fraction",
-                       fontsize=7, style="italic", color="0.35")
-
-    ax[0].set_ylabel("core overhead (% of step)")
-    ax[1].set_ylabel("core overhead (µs/step)")
+                       ms=5, lw=1.3, capsize=3, label=machine)
+    ax[0].set_ylabel("cost of decomposition (% of time per query)")
+    ax[1].set_ylabel("cost of decomposition (µs/query)")
     for a in ax:
         a.set_xscale("log")
-        a.set_xlabel("baseline step time (ms, log scale)")
+        a.set_xlabel("time per query (ms, log scale)")
         a.axhline(0, color="k", lw=0.8, alpha=0.5)
         a.grid(alpha=0.3, which="both")
         a.legend(fontsize=8)
@@ -679,23 +758,28 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
-    ap.add_argument("--devices", nargs="+", default=["mps", "cuda"])
+    ap.add_argument("--machines", nargs="+", default=["m2pro", "gb10"],
+                    help="which machines to report (the filename token)")
     ap.add_argument("--warmup", type=int, default=WARMUP,
-                    help="steps dropped per run (within-run warm-up)")
+                    help="queries dropped at the head of each run")
     ap.add_argument("--drop-runs", type=int, default=DROP_RUNS,
-                    help="discard the first N repetitions of each cell entirely "
-                         "(SYSTEM warm-up: the first run of a collection is slower "
-                         "for its whole duration; see DROP_RUNS)")
+                    help="discard the first N repetitions of each cell entirely. "
+                         "Defaults to 1 and should stay there: the first "
+                         "repetition is slower for its WHOLE duration, and on a "
+                         "smoke collection it moved one term by 800 us.")
     ap.add_argument("--max-regime-ratio", type=float, default=MAX_REGIME_RATIO,
-                    help="drop repetitions whose arms differ in step time by more "
-                         "than this ratio (e.g. 1.25); catches bistable cells. "
-                         "0 disables. Outcome-independent: looks at step times, "
-                         "not at the measured overhead.")
+                    help="drop repetitions whose configurations differ in time "
+                         "per query by more than this ratio (e.g. 1.25); catches "
+                         "bistable cells. 0 disables. Outcome-independent: it "
+                         "looks at the times, never at the cost they imply.")
     ap.add_argument("--estimator", choices=["median", "mean"], default=ESTIMATOR,
                     help="how per-run paired differences are combined "
-                         "(median = robust to a contaminated repetition)")
-    ap.add_argument("--fig-dir", default=os.path.join(HERE, "..", "paper_assets"))
-    ap.add_argument("--latex", metavar="DEVICE", nargs="?", const="cuda", default=None)
+                         "(median = robust to one contaminated repetition)")
+    ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
+    ap.add_argument("--no-breakdown", action="store_true",
+                    help="skip the span-derived breakdown (it reads the local "
+                         "MLflow store, which is slower than the CSV tables)")
+    ap.add_argument("--latex", metavar="MACHINE", nargs="?", const="gb10", default=None)
     args = ap.parse_args()
     DROP_RUNS = args.drop_runs
     ESTIMATOR = args.estimator
@@ -711,29 +795,39 @@ def main():
 
     fig_dir = os.path.abspath(args.fig_dir)
     os.makedirs(fig_dir, exist_ok=True)
-    print("# E2 — Modularity overhead (real workload, scale sweep)\n")
-    print(f"Estimator: {ESTIMATOR} of per-run paired differences "
-          f"(runs dropped as system warm-up: {DROP_RUNS}).")
-    print(f"Warm-up steps dropped per run: {args.warmup}. Metric: training-stage step "
-          "(monotonic perf clock). Statistic: paired across-run difference "
-          "(arms interleaved per repetition); 95% CI bootstrapped over run pairs.\n")
-    per_device = {}
-    for dev in args.devices:
-        metas = load(args.results_dir, dev)
+    print("# E2 — the cost of decomposition (EfficientNetV2 / Imagenette)\n")
+    print("Three things are run per cell: the **monolith** (a bare PyTorch loop), "
+          "**choreo** (the framework, tracing off), and **choreo-traced** (the "
+          "framework, tracing on). Their order is rotated every repetition so "
+          "none of them always absorbs the warm-up.\n")
+    print(f"Metric of record: TIME PER QUERY — start-to-start between consecutive "
+          f"queries, i.e. 1/throughput, covering the whole cycle including data "
+          f"loading and preprocessing. Estimator: {ESTIMATOR} of per-run paired "
+          f"differences; 95% CI bootstrapped over run pairs. Queries dropped at "
+          f"the head of each run: {args.warmup}. Repetitions dropped as system "
+          f"warm-up: {DROP_RUNS}.\n")
+
+    per_machine = {}
+    for machine in args.machines:
+        metas = load(args.results_dir, machine)
         if not metas:
-            print(f"\n## {dev}: no CSVs in {args.results_dir}\n")
+            print(f"\n## {machine}: no CSVs in {args.results_dir}\n")
             continue
         cells = collect_cells(metas, args.warmup)
         if not cells:
-            print(f"\n## {dev}: no complete cells yet ({len(metas)} CSVs present)\n")
+            print(f"\n## {machine}: no complete cells yet "
+                  f"({len(metas)} CSVs present)\n")
             continue
-        per_device[dev] = cells
-        print(f"\n# ===== {dev} ({len(metas)} CSVs, {len(cells)} cells) =====")
-        print_cells(cells, dev)
-        print_e2e(cells, dev)
-        print_sweeps(cells, dev)
-    if per_device:
-        print(f"\n**Figure:** `{make_figure(per_device, fig_dir)}`")
+        per_machine[machine] = cells
+        print(f"\n# ===== {machine} ({len(metas)} CSVs, {len(cells)} cells) =====")
+        print_cells(cells, machine)
+        if not args.no_breakdown:
+            print_breakdown(machine, cells, metas, args.warmup)
+            print_identity(machine, cells)
+        print_sweeps(cells, machine)
+
+    if per_machine:
+        print(f"\n**Figure:** `{make_figure(per_machine, fig_dir)}`")
 
 
 if __name__ == "__main__":

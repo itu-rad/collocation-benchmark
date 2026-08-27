@@ -12,7 +12,7 @@
   **static, fully-explicit YAML, one per (variant × device)** (device/`serialize_queries`/loadgen/
   listeners all in the config — **no CLI flags**). radt does all orchestration (no `-p` → it schedules
   single- or multi-pipeline configs alike). Python only for **config generation (once)** and
-  **analysis**. Retire `run_collection.py`, the `validate_pass.py` gate, and `generate_latex_results.py`.
+  **analysis**. Retired: `run_collection.py`, the `validate_pass.py` gate, and `generate_latex_results.py`.
 
 The canonical loop (one `collect.sh` per experiment):
 ```bash
@@ -220,28 +220,42 @@ counters and made the centerpiece.
 
 ## E2 — Modularity overhead (model × batch sweep)
 - **Thesis.** wrapping real work is negligible; relative overhead amortizes with scale, absolute fixed.
-- **Done.** Choreo config + `baseline_finetune.py` + `scale_sweep.yml` + `analyze_scale_panels.py`;
-  CSVs on old tracing.
-- **Gap.** re-collect with new tracing on both devices; port to the bash model. **The monolith arm is
-  `baseline_finetune.py`, not `main.py`** — keep it as a second short loop (it is the non-framework
-  reference; that's fine).
-- **Hyperparameters (pilot-tune).** `max_batches`/run + warm-up steps dropped (currently 1100 / first
-  200 — re-verify steady-state flatness); **R=10** (decided — cheap fidelity cell); the canonical
-  batch anchor (b8). *Fixed:* batch
-  {1,2,4,8,16,32,64}, model {S,M,L}, fine-tune head; **`num_workers=0`** — a control (not tuned) that
-  removes the concurrent-prefetch data-path confound so the per-step metric isolates the framework
-  wrapper, identically in both arms.
-- **Code TODOs.** `gen_configs.py` (batch {1,2,4,8,16,32,64}@S + model {S,M,L}@b8, × device →
-  static YAMLs); `collect.sh` (Choreo arm via `main.py`, tracing on **and** a tracing-off arm via
-  `CHOREO_DISABLE_TRACING=1`, + the baseline loop); reuse `analyze_scale_panels.py` as `analyze.py`.
-- **Data points.** `{baseline, choreo core, choreo traced}` × sweep cells × `{mps, cuda}` × **R=10**.
+- **Done.** `gen_configs.py` → static per-(cell × device) YAMLs; `collect_e2.sh` (three
+  configurations, order rotated by repetition, provenance header, timestamped log under
+  `collect_logs/`, local MLflow store); `analyze_e2.py` (self-contained: tables, `--latex MACHINE`,
+  figures); `baseline_finetune.py` rebuilt so its logging instrument matches `main.py`'s exactly
+  (single synchronous `FileHandler`, no listener thread, no stderr sink — the monolith is now an
+  actual single-threaded loop).
+- **In flight.** Collection on both machines, started 2026-08-27.
+- **Metric of record: TIME PER QUERY** — start-to-start between consecutive queries, i.e.
+  1/throughput, covering the whole cycle including data loading. Anchor-invariant in steady state,
+  which is what makes the monolith and Choreo comparable although they emit different markers. It
+  replaces the in-step training-marker comparison, which excluded by construction the between-step
+  interval where the framework's cost actually lands, and so measured a near-zero difference
+  against ±600 µs of run-to-run noise.
+- **Co-headline: the query latency breakdown** from the `choreo-traced` spans — per-stage latency
+  (dataloader, training) plus the auxiliary framework overheads (entry, handoff, exit, turnaround).
+  Successive instants within one query on one clock: non-negative by construction, no run-level
+  term, and they sum to the time per query exactly. Negative intervals are a hard failure.
+- **Hyperparameters.** 300 steps/run, warmup 50 — step time is flat from step 0 on both machines,
+  so the old 1000/200 was never buying within-run settling. **R = 11 collected, run 1 dropped as
+  system warm-up → 10 usable**; the paired statistic bootstraps over runs, so repetitions buy more
+  than steps. *Fixed:* batch {1,2,4,8,16,32,64} at EfficientNetV2-S, plus M and L at b8 (ConvNeXt-L
+  dropped); fine-tune head; **`num_workers=0`** — a control (not a tuned knob) that removes the
+  concurrent-prefetch data path, applied identically on both sides. Both Choreo configurations run
+  `disable_logs: true` so no synchronous write+flush sits inside the measured interval on one side
+  only.
+- **Data points.** `{monolith, choreo, choreo-traced}` × 9 cells × `{m2pro, gb10}` × **R=11**.
 - **Commands.**
   ```
   python evaluation/overheads/modularity_overhead/gen_configs.py
-  bash   evaluation/overheads/modularity_overhead/collect.sh mps 10
-  bash   evaluation/overheads/modularity_overhead/collect.sh cuda 10
-  python evaluation/overheads/modularity_overhead/analyze_scale_panels.py --device {mps,cuda} --fig e2.png
+  bash   evaluation/overheads/modularity_overhead/collect_e2.sh m2pro 11
+  bash   evaluation/overheads/modularity_overhead/collect_e2.sh gb10  11
+  python evaluation/overheads/modularity_overhead/analyze_e2.py
   ```
+- **Caveats to state in the paper.** `serialize_queries: true` means E2 measures the framework with
+  pipelining disabled — the configuration where it can only lose. Choreo runs 6 threads to the
+  monolith's 1; that is genuine modularity cost and should be named rather than left implicit.
 
 ### E2 — OPEN (deferred, not blocking)
 - **Arm-ordering bias.** `collect.sh` runs the arms in a fixed order within each
