@@ -137,6 +137,26 @@ framework through its own CSV logger measures the logger too.
 - A **negative cost is not a speed-up**: it means the difference is smaller than what this
   apparatus resolves at that cell. It is reported as measured rather than clipped.
 
+## A span whose count is wait-dependent
+
+`pipeline.py`'s result loop spans **every poll**, including the ones that time out empty
+after 0.1 s. Its count is therefore proportional to how long the pipeline spends waiting,
+not to how many queries ran: on EfficientNetV2-L b8 the same 300 queries produce ~3006 spans
+on gb10 (243 ms/query → ~4 polls each) and ~3890 on m2pro (570 ms/query → ~7 polls each),
+against a fixed 6 per query. Two consequences:
+
+- **The total span count is not a deploy-integrity check here.** In E1 a span-count mismatch
+  is what caught a stale deploy; in E2 the totals legitimately differ across machines and
+  drift between runs. Check the six fixed per-query types instead, and check code identity by
+  checksum.
+- **It lands in the cost of tracing, and it scales with waiting rather than with work.** Each
+  poll span is export work charged to the `choreo-traced` configuration, so a slower machine
+  appears to pay more tracing cost per query for a reason that has nothing to do with the
+  query. `choreo − monolith` is unaffected, and so is the breakdown (which is keyed by query
+  id and uses only the six fixed types); only the tracing number carries this component, and
+  it should be reported as what tracing costs *in this configuration* rather than as a
+  per-query constant.
+
 ## Caveats to state in the paper
 
 - `serialize_queries: true` means E2 measures the framework with **pipelining disabled** —
@@ -177,8 +197,9 @@ Gates that must hold before any number here is reported:
 
 - every cell has 11 repetitions per configuration, zero failures, no truncated CSVs —
   verified from the CSVs on disk, not from the log;
-- the span count per run matches what a 2-stage pipeline should emit, on both machines
-  (this is what caught a stale deploy in E1);
+- the **fixed** per-query span types number exactly six per query on both machines
+  (`pipeline query`, `pipeline query processed`, and `.run` + `.push_to_outputs` for each of
+  the two stages) — see the note below on why the *total* span count cannot be used for this;
 - no negative transition intervals anywhere;
 - the Δ(time per query) identity closes to within a stated tolerance;
 - no cell reports a negative cost of decomposition without an explanation.
