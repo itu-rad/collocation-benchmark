@@ -642,8 +642,10 @@ def latex_payload_table(runs, device):
 # ---------------------------------------------------------------------------
 # Figures
 # ---------------------------------------------------------------------------
-ARM_STYLE = {"as-reported": "tab:blue", "uninstrumented": "tab:green",
-             "both": "tab:red", "spans-only": "tab:orange"}
+# Only the two arms that are collected. `as-reported` and `both` were
+# diagnostic and are retired, so plotting them would centre the figures on
+# configurations nobody runs.
+ARM_STYLE = {"uninstrumented": "tab:green", "spans-only": "tab:orange"}
 
 
 def _od_curve(runs, arm):
@@ -668,10 +670,9 @@ def make_instrument_figure(per_device, fig_dir):
     plateaus IS the result -- the gap between them is our own logger, not the
     framework.
 
-    Right column: that gap plotted directly, against the independently measured
-    cost of the two CSV rows each stage writes (7.7 us/row, timed in isolation).
-    If the decomposition is real, the measured gap should sit on that line
-    without having been fitted to it.
+    Right column: the gap between them, which is what running with tracing on
+    costs per stage. It is not flat -- see SPAN_DEPTH_SCALING.md; the cost is
+    the multiprocessing-queue emit and tracks the number of span events.
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -696,22 +697,15 @@ def make_instrument_figure(per_device, fig_dir):
 
         ax = axes[row][1]
         base = dict(curves["uninstrumented"])
-        for arm, color, lbl in (
-                ("as-reported", "tab:blue",
-                 "CSV instrument (as-reported - uninstrumented)"),
-                ("spans-only", "tab:orange",
-                 "span instrument (spans-only - uninstrumented)")):
-            pts = [(d, v - base[d]) for d, v in curves[arm] if d in base]
-            if pts:
-                xs, ys = zip(*pts)
-                ax.plot(xs, ys, "o-", color=color, ms=4, lw=1.4, label=lbl)
-        # 2 CSV rows per stage per query x 7.7 us/row, measured standalone.
-        ax.axhline(2 * 7.7, color="k", ls="--", lw=1.0, alpha=0.6,
-                   label="2 log rows x 7.7 us (measured separately)")
+        pts = [(d, v - base[d]) for d, v in curves["spans-only"] if d in base]
+        if pts:
+            xs, ys = zip(*pts)
+            ax.plot(xs, ys, "o-", color=ARM_STYLE["spans-only"], ms=4, lw=1.4,
+                    label="cost of tracing (spans-only - uninstrumented)")
         ax.axhline(0, color="k", lw=0.6, alpha=0.4)
         ax.set_xscale("log", base=2)
         ax.set_xlabel("pipeline depth (stages)")
-        ax.set_ylabel(f"{dev}: instrument cost per stage (us)")
+        ax.set_ylabel(f"{dev}: cost of tracing per stage (us)")
         ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
 
     fig.tight_layout()
@@ -766,19 +760,25 @@ def make_figures(per_device, fig_dir):
     fig.savefig(f1, dpi=140); plt.close(fig)
 
     # Fig 2: per-stage self-duration vs payload (zero-copy vs deep-copy), off arm.
-    fig, ax = plt.subplots(figsize=(7.5, 5))
+    fig, ax = plt.subplots(figsize=(8.5, 5.4))
     marker = {"mlx": "o", "cuda": "s"}
+    # Both arms: the claim is architectural, so it must hold with tracing on as
+    # well as off. Tracing lifts the whole curve but does not bend it.
+    style = {"uninstrumented": "-", "spans-only": "--"}
     for dev in per_device:
-        data = payload_collect(per_device[dev])
-        for mode, color in [("ref", "tab:green"), ("copy", "tab:red")]:
-            xs = [s for s in SIZES if s in data[mode]]
-            ys = [data[mode][s]["median"] for s in xs]
-            xplot = [max(x, 1) for x in xs]      # 0 -> 1 byte for the log axis
-            ax.plot(xplot, ys, marker[dev] + "-", color=color, ms=6, lw=1.3,
-                    label=f"{dev} {mode}")
+        for arm, ls in style.items():
+            data = payload_collect(per_device[dev], arm)
+            for mode, color in [("ref", "tab:green"), ("copy", "tab:red")]:
+                xs = [s for s in SIZES if s in data[mode]]
+                if not xs:
+                    continue
+                ys = [data[mode][s]["median"] for s in xs]
+                xplot = [max(x, 1) for x in xs]  # 0 -> 1 byte for the log axis
+                ax.plot(xplot, ys, marker[dev] + ls, color=color, ms=6, lw=1.3,
+                        label=f"{dev} {mode} ({arm})")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("payload size (bytes; 0->1 for log axis)")
-    ax.set_ylabel("per-stage self-duration median (us)")
+    ax.set_ylabel("per-stage cost, L_q/depth, median (us)")
     ax.grid(alpha=0.3, which="both"); ax.legend(fontsize=8)
     fig.tight_layout()
     f2 = os.path.join(fig_dir, "e1_payload_zero_copy.png")
