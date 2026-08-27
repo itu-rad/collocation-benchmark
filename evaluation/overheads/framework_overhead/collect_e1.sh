@@ -119,7 +119,7 @@ log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG";
   echo "# platform     : $(python -c 'import platform;print(platform.platform())' 2>/dev/null)"
   echo "# python       : $(python -c 'import sys;print(sys.version.split()[0])' 2>/dev/null)"
   echo "# torch        : $(python -c 'import torch;print(torch.__version__)' 2>/dev/null || echo n/a)"
-  echo "# radt         : $(python -c 'import radt;print(getattr(radt,\"__version__\",\"?\"))' 2>/dev/null || echo n/a)"
+  echo "# radt         : $(python -c 'import radt;print(getattr(radt, "__version__", "?"))' 2>/dev/null || echo n/a)"
   echo "# mlflow       : $(python -c 'import mlflow;print(mlflow.__version__)' 2>/dev/null || echo n/a)"
   echo "# pin          : ${PIN:-none}"
   echo "# runs         : $RUNS"
