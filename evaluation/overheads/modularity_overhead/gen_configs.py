@@ -28,6 +28,12 @@ TEMPLATE = os.path.join(HERE, "configs", "torchvision_training.yml")
 CELLS = os.path.join(HERE, "configs", "scale_sweep.yml")
 NUM_WORKERS = 0
 
+# Two different things were both called "device". The torch device string
+# ("mps"/"cuda") goes INSIDE the config; the filename and run label carry the
+# MACHINE, so an M2 Pro and the M3 Pro that replaces it stay distinguishable.
+# evaluation/pilots/derive_knobs.py already uses this convention.
+DEVICE_NAME = {"mps": "m2pro", "cuda": "gb10"}
+
 
 def cell_name(cell):
     """Stable per-cell label: m<tag>_b<batch> (matches the CSV suffix scheme)."""
@@ -41,9 +47,15 @@ def build(cell, device, template):
     cfg["listeners"] = []
     cfg["name"] = f"E2 modularity {cell['model']} batch {cell['batch']} ({device})"
     pipe = cfg["pipelines"][0]
-    pipe["loadgen"]["max_queries"] = int(cell.get("max_batches", 1000))
+    pipe["loadgen"]["max_queries"] = int(cell.get("max_batches", 300))
     for stage in pipe["stages"]:
         comp = stage.get("component", "")
+        # Both Choreo arms are logs-off. The metric of record is the step
+        # PERIOD, taken from the pipeline-level rows that pipeline.py emits
+        # unconditionally, and the per-stage breakdown comes from spans.
+        # Leaving the per-stage CSV rows on would put a synchronous
+        # write+flush inside the measured interval on one side only.
+        stage["disable_logs"] = True
         if "TorchVisionClassification" in comp:
             stage["config"]["device"] = device
             stage["config"]["model"]["component"] = f"torchvision.models.{cell['model']}"
@@ -70,7 +82,9 @@ def main():
     for device in args.devices:
         for cell in cells:
             cfg = build(cell, device, args.template)
-            path = os.path.join(args.out_dir, f"mod_{cell_name(cell)}_{device}.yml")
+            machine = DEVICE_NAME.get(device, device)
+            path = os.path.join(args.out_dir,
+                                f"mod_{cell_name(cell)}_{machine}.yml")
             with open(path, "w", encoding="utf-8") as f:
                 yaml.safe_dump(cfg, f, sort_keys=False)
             print(f"wrote {os.path.relpath(path, HERE)}")

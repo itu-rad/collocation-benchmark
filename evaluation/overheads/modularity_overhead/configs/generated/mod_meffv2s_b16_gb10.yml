@@ -1,4 +1,4 @@
-name: E2 modularity efficientnet_v2_m batch 8 (mps)
+name: E2 modularity efficientnet_v2_s batch 16 (cuda)
 listeners: []
 pipelines:
 - name: EfficientNetv2 S Imagenette training
@@ -11,7 +11,7 @@ pipelines:
   loadgen:
     component: loadgen.OfflineLoadScheduler
     queue_depth: 10
-    max_queries: 1000
+    max_queries: 300
     timeout: 300000
     config:
       rate: 0
@@ -22,25 +22,25 @@ pipelines:
     - 1
     component: stages.torchvision_classification.TorchVisionDataLoader
     polling_policy: utils.queues.polling.SingleQueuePolicy
-    disable_logs: false
+    disable_logs: true
     config:
-      batch_size: 8
+      batch_size: 16
       preprocess: true
       num_workers: 0
       dataset:
         component: torchvision.datasets.Imagenette
         split:
         - train
-        weights: EfficientNet_V2_M_Weights.IMAGENET1K_V1
+        weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1
   - name: EfficientNet training
     id: 1
     outputs: []
     component: stages.torchvision_classification.TorchVisionClassification
     polling_policy: utils.queues.polling.SingleQueuePolicy
-    disable_logs: false
+    disable_logs: true
     config:
       model:
-        component: torchvision.models.efficientnet_v2_m
+        component: torchvision.models.efficientnet_v2_s
         replace_classifier: true
         num_classes: 10
       optimizer:
@@ -48,4 +48,4 @@ pipelines:
         lr: 0.001
       criterion:
         component: torch.nn.CrossEntropyLoss
-      device: mps
+      device: cuda

@@ -11,7 +11,7 @@ pipelines:
   loadgen:
     component: loadgen.OfflineLoadScheduler
     queue_depth: 10
-    max_queries: 1000
+    max_queries: 300
     timeout: 300000
     config:
       rate: 0
@@ -22,7 +22,7 @@ pipelines:
     - 1
     component: stages.torchvision_classification.TorchVisionDataLoader
     polling_policy: utils.queues.polling.SingleQueuePolicy
-    disable_logs: false
+    disable_logs: true
     config:
       batch_size: 8
       preprocess: true
@@ -37,7 +37,7 @@ pipelines:
     outputs: []
     component: stages.torchvision_classification.TorchVisionClassification
     polling_policy: utils.queues.polling.SingleQueuePolicy
-    disable_logs: false
+    disable_logs: true
     config:
       model:
         component: torchvision.models.efficientnet_v2_l

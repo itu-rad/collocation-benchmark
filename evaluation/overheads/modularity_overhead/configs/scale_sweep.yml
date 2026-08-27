@@ -16,25 +16,33 @@
 # workload (same model, weights/resolution, head, batch) — the single source of
 # truth is the (model, weights, batch) triple here, fed to both arms.
 #
-# max_batches is UNIFORM at 1000 across all cells so every cell has the same
-# steady-state N (1000 - 200 warmup = 800 steps/run) — equal-weight cells for the
-# per-run and within-run variability analysis. The epoch-loop in both arms reaches
-# 1000 regardless of batch size (large batches loop the small Imagenette split).
+# max_batches is UNIFORM at 300 across all cells so every cell has the same
+# steady-state N (300 - 50 warmup = 250 steps/run). It was 1000 with a 200-step
+# warmup; both were larger than needed. Measured on the previous collection, step
+# time is flat from step 0 on the GB10 (38.8, 38.7, 38.7 ... ms across 900 steps)
+# and flat on a warm M2 Pro run, so the long run bought no within-run settling.
+# The effect that does exist is the FIRST RUN of a cell being slow for its whole
+# duration, which is a whole-run drop, not a step drop.
+#
+# Shorter runs are the better trade because the statistic bootstraps over RUNS:
+# at roughly constant wall time this buys ~3x the repetitions, and run-to-run
+# variance is what dominates. The epoch-loop in both arms reaches 300 regardless
+# of batch size (large batches loop the small Imagenette split).
 #
 # Usage:
-#   python run_modularity.py --device mps  --cells configs/scale_sweep.yml
-#   python run_modularity.py --device cuda --cells configs/scale_sweep.yml
+#   python gen_configs.py            # regenerate configs/generated/
+#   ./collect_e2.sh m2pro 11         # collect
 
 cells:
   # --- batch sweep @ EfficientNetV2-S (b8 = shared anchor, also the model-sweep S) ---
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 1,  max_batches: 1000}
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 2,  max_batches: 1000}
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 4,  max_batches: 1000}
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 8,  max_batches: 1000}
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 16, max_batches: 1000}
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 32, max_batches: 1000}
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 64, max_batches: 1000}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 1,  max_batches: 300}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 2,  max_batches: 300}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 4,  max_batches: 300}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 8,  max_batches: 300}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 16, max_batches: 300}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 32, max_batches: 300}
+  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 64, max_batches: 300}
 
   # --- model sweep @ batch 8 (efficientnet_v2_s covered by the anchor above) ---
-  - {tag: effv2m,    model: efficientnet_v2_m, weights: EfficientNet_V2_M_Weights.IMAGENET1K_V1, batch: 8, max_batches: 1000}
-  - {tag: effv2l,    model: efficientnet_v2_l, weights: EfficientNet_V2_L_Weights.IMAGENET1K_V1, batch: 8, max_batches: 1000}
+  - {tag: effv2m,    model: efficientnet_v2_m, weights: EfficientNet_V2_M_Weights.IMAGENET1K_V1, batch: 8, max_batches: 300}
+  - {tag: effv2l,    model: efficientnet_v2_l, weights: EfficientNet_V2_L_Weights.IMAGENET1K_V1, batch: 8, max_batches: 300}

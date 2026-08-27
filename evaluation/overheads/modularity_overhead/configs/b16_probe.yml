@@ -1,4 +1,0 @@
-# Single-cell probe for measuring the online span-export cost on GB10.
-# b16 is the cell where the tracing jitter is clearest.
-cells:
-  - {tag: effv2s, model: efficientnet_v2_s, weights: EfficientNet_V2_S_Weights.IMAGENET1K_V1, batch: 16, max_batches: 1000, runs: 1}

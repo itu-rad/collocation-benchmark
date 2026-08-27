@@ -150,10 +150,44 @@ def committed_warmup(pattern: str, window: int, epsilon: float,
             "window": window, "epsilon": epsilon}
 
 
+# Inlined from what used to be modularity_overhead/modularity_lib.py. That
+# module was E2's old analysis library, dead for E2 itself (its filename regex
+# restricts the trace token to [01] and so rejects every current file) but alive
+# for this one call. Carrying a whole superseded library on one function's
+# account, via a sys.path insert into another experiment's directory, cost more
+# than the twenty lines it provided.
+_E2_TRAIN_STAGE = "EfficientNet training"
+
+
 def _e2_step_series(path: str) -> list[float]:
-    sys.path.insert(0, str(REPO_ROOT / "evaluation" / "overheads" / "modularity_overhead"))
-    import modularity_lib as ml
-    return [v / 1e9 for v in ml.parse_choreo_train_steps(path)]
+    """Per-step durations (seconds) of E2's training stage, from a trace CSV.
+
+    Rows are `wall, pipeline, module, phase, event, ..., perf_ns`; alternating
+    start/end events for the training stage are paired, and a stray unpaired
+    event is skipped rather than allowed to shift every subsequent step.
+    """
+    evs = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            parts = [x.strip() for x in line.split(",")]
+            if len(parts) < 6:
+                continue
+            try:
+                perf = int(parts[-1])
+            except ValueError:
+                continue
+            if parts[2] == _E2_TRAIN_STAGE and parts[3] == "run" \
+                    and parts[4] in ("start", "end"):
+                evs.append((perf, parts[4]))
+    evs.sort()
+    out, i = [], 0
+    while i < len(evs) - 1:
+        if evs[i][1] == "start" and evs[i + 1][1] == "end":
+            out.append((evs[i + 1][0] - evs[i][0]) / 1e9)
+            i += 2
+        else:
+            i += 1
+    return out
 
 
 # ---------------------------------------------------------------------------
