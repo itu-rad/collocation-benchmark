@@ -49,7 +49,9 @@ SIZES = [0, 1024, 1048576, 10485760]
 DEPTHS = [1, 2, 4, 8, 16, 32, 64, 128]
 SIZE_LABEL = {0: "0", 1024: "1 KiB", 1048576: "1 MiB", 10485760: "10 MiB"}
 WARMUP_K = 1                      # warm-up epochs dropped per run
-DEVICES = ("mlx", "cuda")
+# Named by MACHINE, not by backend: the Apple box is being replaced by an M3
+# Pro, and "mlx" would make the two indistinguishable in the run names.
+DEVICES = ("m2pro", "gb10")
 
 # The four arms are the 2x2 of two INDEPENDENT instruments, and are named for
 # the role each one plays rather than for the switch that produces it:
@@ -86,7 +88,7 @@ _LEGACY_ARM = {"off": "as-reported", "nolog": "uninstrumented",
 _FNAME_RE = re.compile(
     r"^noop_depth_(?P<depth>\d+)_size_(?P<size>\d+)_mode_(?P<mode>ref|copy)"
     r"_(?P<arm>as-reported|uninstrumented|spans-only|both|proc|off|nolog|spans)"
-    r"_(?P<device>mlx|cuda)_r(?P<run>\d+)\.csv$"
+    r"_(?P<device>[a-z0-9]+)_r(?P<run>\d+)\.csv$"
 )
 
 ARM_LOGS = {"as-reported": True, "both": True,
@@ -553,7 +555,8 @@ def payload_table(data, arm="uninstrumented"):
 # ---------------------------------------------------------------------------
 SIZE_TEX = {0: "0", 1024: "\\SI{1}{\\kibi\\byte}",
             1048576: "\\SI{1}{\\mebi\\byte}", 10485760: "\\SI{10}{\\mebi\\byte}"}
-DEVICE_TEX = {"mlx": "Apple~M2~Pro", "cuda": "NVIDIA~GB10"}
+DEVICE_TEX = {"m2pro": "Apple~M2~Pro", "m3pro": "Apple~M3~Pro",
+              "gb10": "NVIDIA~GB10"}
 
 
 def latex_depth_table(runs, device):
@@ -734,7 +737,9 @@ def make_figures(per_device, fig_dir):
 
     # Fig 2: per-stage self-duration vs payload (zero-copy vs deep-copy), off arm.
     fig, ax = plt.subplots(figsize=(7.5, 5))
-    marker = {"mlx": "o", "cuda": "s"}
+    # .get() with a default: a new machine (m3pro) must not crash the figures
+    # just because it has no marker assigned yet.
+    marker = {"m2pro": "o", "m3pro": "^", "gb10": "s"}
     # UNINSTRUMENTED only. Zero-copy is a property of the framework, so the
     # figure shows it with no instrument running; the spans-only arm is
     # collected and tabled as a check that tracing lifts the curve without
@@ -747,7 +752,7 @@ def make_figures(per_device, fig_dir):
                 continue
             ys = [data[mode][s]["median"] for s in xs]
             xplot = [max(x, 1) for x in xs]      # 0 -> 1 byte for the log axis
-            ax.plot(xplot, ys, marker[dev] + "-", color=color, ms=6, lw=1.3,
+            ax.plot(xplot, ys, marker.get(dev, "o") + "-", color=color, ms=6, lw=1.3,
                     label=f"{dev} {mode}")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("payload size (bytes; 0->1 for log axis)")
@@ -772,7 +777,7 @@ def main():
     ap.add_argument("--warmup", type=int, default=WARMUP_K,
                     help="warm-up epochs dropped per run")
     ap.add_argument("--root", default=root, help="repo root (holds evaluation/results/)")
-    ap.add_argument("--latex", metavar="DEVICE", nargs="?", const="mlx", default=None,
+    ap.add_argument("--latex", metavar="DEVICE", nargs="?", const="m2pro", default=None,
                     help="emit the paper LaTeX tables for DEVICE (default mlx) to "
                          "stdout and exit; no Markdown/figures")
     args = ap.parse_args()

@@ -62,29 +62,32 @@ mkdir -p "$OUT"
 export RADT_PRESENT=True             # end_run + drain on exit; no RADT_LISTENER_* -> no listeners
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter rather than auto-detection
 
-# Tracking store: the AMBIENT res17 server, with radt's BULK span exporter.
-# Do not point this at a local sqlite/file store. The bulk exporter spools spans
-# to a gzipped artifact and uploads them to the run on res17, and that artifact
-# is the record; a local store makes runs that cannot be cross-referenced with
-# every other experiment.
+# Tracking store: LOCAL, and deliberately so -- this exemption covers the
+# OVERHEAD experiments (E1, E2) only. Every other experiment records to res17.
 #
-# Credentials come from the conda env (MLFLOW_TRACKING_URI /
-# MLFLOW_TRACKING_USERNAME / MLFLOW_TRACKING_PASSWORD), so nothing is set here
-# and nothing is committed. Fail loudly rather than silently falling back to a
-# local ./mlruns, which is what a missing URI would otherwise produce.
-if [ -z "${MLFLOW_TRACKING_URI:-}" ]; then
-  echo "collect_e1: MLFLOW_TRACKING_URI is unset -- activate the benchmark conda env" >&2
-  echo "  (a missing URI silently writes a local ./mlruns instead of reaching res17)" >&2
-  exit 2
+# Recording to res17 does not change the framework's own number, but it inflates
+# the traced arm badly. Measured at depth 8, same code, same runs:
+#
+#   uninstrumented   local 134.0 us   res17 130.3 us   -2.8%  (noise)
+#   spans-only       local 327.0 us   res17 469.3 us  +43.5%
+#
+# That gap is an artifact of MICROBENCHMARKING, not a cost any real workload
+# pays: a depth-128 NoOp run emits ~26000 spans in a couple of seconds, a span
+# rate nothing realistic comes close to. Measuring the framework against a
+# remote server at that rate would report the server, not the framework.
+#
+# E1_STORE=res17 overrides, and experiment 143 on res17 stays reserved for E1
+# if it is ever wanted there.
+if [ "${E1_STORE:-local}" = "res17" ]; then
+  [ -n "${MLFLOW_TRACKING_URI:-}" ] || { echo "collect_e1: E1_STORE=res17 but MLFLOW_TRACKING_URI is unset" >&2; exit 2; }
+  echo "E1: recording to ${MLFLOW_TRACKING_URI} (experiment $EXP), bulk span export"
+else
+  STORE_DB="$HERE/mlruns_e1_${DEVICE}.db"
+  export MLFLOW_TRACKING_URI="sqlite:///${STORE_DB}"
+  unset MLFLOW_TRACKING_USERNAME MLFLOW_TRACKING_PASSWORD
+  EXP=0
+  echo "E1: local store $STORE_DB (overhead-experiment exemption; E1_STORE=res17 to override)"
 fi
-case "${MLFLOW_TRACKING_URI}" in
-  sqlite:*|file:*|./*|/*)
-    echo "collect_e1: MLFLOW_TRACKING_URI is a LOCAL store (${MLFLOW_TRACKING_URI})." >&2
-    echo "  E1 records to the res17 server so its span artifacts sit with every" >&2
-    echo "  other experiment's. Point it at the server and re-run." >&2
-    exit 2 ;;
-esac
-echo "E1: recording to ${MLFLOW_TRACKING_URI} (experiment $EXP), bulk span export"
 
 SUM="$HERE/collect_e1_summary_${DEVICE}.tsv"
 [ -f "$SUM" ] || printf 'arm\tdepth\trun\trc\tseconds\tcsv_rows\tspans\n' > "$SUM"
