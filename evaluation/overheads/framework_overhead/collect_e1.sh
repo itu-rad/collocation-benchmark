@@ -105,6 +105,26 @@ printf 'arm\tdepth\trun\trc\tseconds\tcsv_rows\tspans\n' > "$SUM"
 # Every log line goes to stdout AND to the durable log.
 log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG"; }
 
+# Pin WHAT RAN at the top of the log. run_collection.py used to write a
+# commit-pinned collect_env_<dev>.txt; that driver is superseded and its files
+# were stale, but the provenance it captured is worth keeping and belongs with
+# the collection it describes rather than in a file of its own.
+{
+  echo "# E1 collection"
+  echo "# started      : $(date '+%Y-%m-%d %H:%M:%S %z')"
+  echo "# device       : $DEVICE"
+  echo "# git_commit   : $(git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown)"
+  echo "# git_dirty    : $(test -n "$(git -C "$ROOT" status --porcelain 2>/dev/null)" && echo yes || echo no)"
+  echo "# host         : $(hostname)"
+  echo "# platform     : $(python -c 'import platform;print(platform.platform())' 2>/dev/null)"
+  echo "# python       : $(python -c 'import sys;print(sys.version.split()[0])' 2>/dev/null)"
+  echo "# torch        : $(python -c 'import torch;print(torch.__version__)' 2>/dev/null || echo n/a)"
+  echo "# radt         : $(python -c 'import radt;print(getattr(radt,\"__version__\",\"?\"))' 2>/dev/null || echo n/a)"
+  echo "# mlflow       : $(python -c 'import mlflow;print(mlflow.__version__)' 2>/dev/null || echo n/a)"
+  echo "# pin          : ${PIN:-none}"
+  echo "# runs         : $RUNS"
+} >> "$LOG"
+
 # Optional CPU pinning. On GB10 the Grace CPU is heterogeneous (10x Cortex-X925
 # performance + 10x A725 efficiency) and an unpinned workload migrates between
 # them; E1 measures us-scale transitions, so that noise is fatal and the cuda

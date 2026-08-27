@@ -29,10 +29,22 @@ stages/anemll/models/
 # how 5594 files and 94 MB came to be tracked without anyone deciding to.
 **/results/**/*.csv
 **/results/**/*.jsonl
+**/results/**/*.json
+**/results/**/*.md
 **/results/*.csv
 **/results/*.jsonl
+**/results/*.json
+**/results/*.md
 **/results_*.csv
 **/analysis/**/*.csv
+
+# Model outputs and generated text. Produced per run by the LLM stages; large,
+# regenerable, and not under a results/ directory, so the rules above miss them.
+**/outputs/**/*.jsonl
+**/*_outputs.jsonl
+**/quality_report.*
+**/verification_report.*
+**/quality_power_*.md
 
 # Superseded collections, kept on disk rather than deleted but never tracked.
 **/_archive*/
