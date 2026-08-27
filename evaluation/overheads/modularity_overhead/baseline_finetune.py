@@ -7,12 +7,7 @@ from torch.utils.data import DataLoader
 import os
 import time
 import logging
-from logging.handlers import QueueHandler, QueueListener
-import queue
 import radt
-
-# Global listener to ensure we can stop it at the end
-log_listener = None
 
 # Trace column layout must match the framework (utils/logger.py): wall-clock
 # column 0 (RadT alignment) + monotonic perf_counter_ns trailing column
@@ -33,36 +28,46 @@ def _install_perf_clock():
 
 
 def setup_logging(label="baseline_finetune"):
-    global log_listener
     # Use absolute path for log directory (this experiment's own results dir)
     log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "results"))
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, f"{label}.csv")
 
+    # THE SAME INSTRUMENT AS CHOREO (main.py, the -p 0 path): install the perf
+    # clock, one logging.FileHandler with PERF_FORMAT, attached DIRECTLY to the
+    # `benchmark` logger. Nothing else.
+    #
+    # This used to be a QueueHandler feeding a QueueListener on a background
+    # thread, fanning out to a FileHandler AND a StreamHandler. Against Choreo
+    # that made the two sides differ in three ways at once, not one:
+    #
+    #   monolith  async emit (put_nowait; format+write+flush happen on the
+    #             listener thread), sinks = file + stderr
+    #   Choreo    synchronous emit (write+flush syscall on the emitting thread,
+    #             under the handler lock), sink = file
+    #
+    # The emit-path difference sits INSIDE the measured interval on both sides
+    # and does not cancel, and the stderr sink made the monolith's cost depend
+    # on whether stderr was a terminal or a redirect -- an uncontrolled term in
+    # one side only. The control also ran two threads while standing in for the
+    # single-threaded floor.
+    #
+    # Cost of matching: the monolith now pays a synchronous write+flush per row
+    # on its training thread instead of a queue put, roughly +15 us/step against
+    # effects of 240-2100 us. It also drops a thread.
+    #
+    # mode='w' is the one deliberate difference from main.py: append mode
+    # silently accumulated stale sessions into re-runs, which biased the median.
     _install_perf_clock()
     formatter = logging.Formatter(PERF_FORMAT)
-
-    # These handlers will be used by the Listener in a background thread
-    # mode='w': truncate — append mode silently accumulated stale sessions
-    # into re-runs (the baseline-append bug; see modularity_lib session split)
     file_handler = logging.FileHandler(filename=log_file, mode='w')
     file_handler.setFormatter(formatter)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-
-    # Create a queue for the QueueHandler to push to
-    log_queue = queue.Queue(-1)
-    q_handler = QueueHandler(log_queue)
 
     logger = logging.getLogger("benchmark")
     logger.setLevel(logging.INFO)
-    logger.addHandler(q_handler)
+    logger.addHandler(file_handler)
 
-    # Start the listener in a background thread to handle the actual I/O
-    log_listener = QueueListener(log_queue, file_handler, stream_handler)
-    log_listener.start()
-
-    return logger
+    return logger, file_handler
 
 
 def parse_args():
@@ -76,7 +81,7 @@ def parse_args():
                     default="auto", help="compute device (auto: cuda>mps>cpu)")
     ap.add_argument("--model", default="efficientnet_v2_s",
                     help="torchvision.models factory name (e.g. efficientnet_v2_s, "
-                         "efficientnet_v2_m, efficientnet_v2_l, convnext_large). "
+                         "efficientnet_v2_m, efficientnet_v2_l). "
                          "MUST match the Choreo cell's model.component so both arms "
                          "do identical per-step work.")
     ap.add_argument("--weights", default="EfficientNet_V2_S_Weights.IMAGENET1K_V1",
@@ -84,7 +89,7 @@ def parse_args():
                          "transform (input resolution). MUST match the Choreo cell's "
                          "dataloader dataset.weights.")
     ap.add_argument("--batch-size", type=int, default=8)
-    ap.add_argument("--num-workers", type=int, default=2,
+    ap.add_argument("--num-workers", type=int, default=0,
                     help="DataLoader worker processes (match the Choreo config)")
     ap.add_argument("--max-batches", type=int, default=1000,
                     help="number of training steps to run")
@@ -92,9 +97,7 @@ def parse_args():
                     help="output CSV basename in results/ (so R runs don't collide)")
     ap.add_argument("--no-radt", action="store_true",
                     help="skip the RADTBenchmark telemetry wrapper -> a true "
-                         "zero-framework control (used by run_modularity.py)")
-    ap.add_argument("--run", type=int, default=None,
-                    help="run index, for provenance only")
+                         "zero-framework control (used by collect_e2.sh)")
     return ap.parse_args()
 
 
@@ -260,7 +263,7 @@ def run_training(args, logger):
 
 def main():
     args = parse_args()
-    logger = setup_logging(args.label)
+    logger, file_handler = setup_logging(args.label)
 
     try:
         if args.no_radt:
@@ -271,8 +274,10 @@ def main():
             with radt.run.RADTBenchmark() as run:
                 run_training(args, logger)
     finally:
-        if log_listener:
-            log_listener.stop()
+        # Flush and close explicitly: with no listener thread draining on exit,
+        # the last rows would otherwise be lost on a hard teardown.
+        file_handler.flush()
+        file_handler.close()
 
 
 if __name__ == "__main__":
