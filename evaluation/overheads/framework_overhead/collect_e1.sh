@@ -43,6 +43,19 @@
 set -uo pipefail
 
 usage() { sed -n '2,40p' "$0" >&2; exit 2; }
+
+# Keep the machine awake for the whole collection, and re-exec under caffeinate
+# rather than relying on the operator to remember it. An m2pro E2 collection was
+# running fine at ~170 s/run until the laptop was left on battery overnight; it
+# cycled through Deep Idle / DarkWake and three runs came back with 20-25 steps
+# above 2x the median and their MEDIAN moved 4-6%, while still reporting rc=0
+# and exactly the right row count. Nothing but the timing said anything was
+# wrong. The overhead experiments resolve effects far smaller than that.
+if [ "$(uname)" = "Darwin" ] && [ -z "${E1_NO_CAFFEINATE:-}" ] \
+   && [ -z "${_E1_CAFFEINATED:-}" ] && command -v caffeinate >/dev/null 2>&1; then
+  export _E1_CAFFEINATED=1
+  exec caffeinate -dimsu "$0" "$@"
+fi
 DEVICE=${1:-}; RUNS=${2:-11}; EXP=${3:-138}
 [ -n "$DEVICE" ] || usage
 # Powers of two only. O(d) is a smooth curve, so 2^0..2^7 already spans the full

@@ -44,13 +44,31 @@
 #     cell-glob : restrict to matching cells, e.g. 'meffv2s_b8' (default: all)
 set -uo pipefail
 
-usage() { sed -n '2,50p' "$0" >&2; exit 2; }
+usage() { sed -n '2,44p' "$0" >&2; exit 2; }
 MACHINE=${1:-}; RUNS=${2:-11}; CELLGLOB=${3:-*}
 [ -n "$MACHINE" ] || usage
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/../../.." && pwd)
 cd "$ROOT"
+
+# Keep the machine awake for the whole collection, and re-exec under caffeinate
+# rather than asking the operator to remember it. A 2026-08-27 m2pro run was
+# collecting fine at ~170 s/run until the laptop was left on battery; it then
+# spent the night cycling through Deep Idle / DarkWake, and three runs came back
+# with 20-25 steps above 2x the median and their MEDIAN moved 4-6%. E2 is trying
+# to resolve effects around 0.05% of a step, so those runs were unusable -- and
+# they carried rc=0 and exactly the right row count, so nothing but the timing
+# said anything was wrong. -d display, -i idle, -m disk, -s system, -u declares
+# the user active.
+#
+# This is prevention, not detection: keep printing per-run seconds in the log so
+# a wall-clock anomaly is still visible if something else stalls a run.
+if [ "$(uname)" = "Darwin" ] && [ -z "${E2_NO_CAFFEINATE:-}" ] \
+   && [ -z "${_E2_CAFFEINATED:-}" ] && command -v caffeinate >/dev/null 2>&1; then
+  export _E2_CAFFEINATED=1
+  exec caffeinate -dimsu "$0" "$@"
+fi
 
 RESULTS="$HERE/results"
 CHOREO_OUT="evaluation/results"      # main.py hardcodes its CSV here
