@@ -556,6 +556,11 @@ def breakdown_by_run(machine, model, batch, runs, warmup, store=None):
     clock, so unlike any difference taken across two processes they are
     non-negative by construction and carry no run-level term at all.
     """
+    # Running this file as a script puts ITS directory on sys.path, not the repo
+    # root, so utils/ is not importable without help.
+    root = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+    if root not in sys.path:
+        sys.path.insert(0, root)
     from utils.span_reader import read_dir
     labels, client = _span_runs(machine, store)
     if not labels:
