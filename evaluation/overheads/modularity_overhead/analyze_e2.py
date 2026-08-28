@@ -69,6 +69,7 @@ WARMUP = 50
 MONOLITH_STEP = "training_step"            # monolith per-step marker
 MONOLITH_LOOP = "training_loop"            # session marker (see parse_monolith_steps)
 PIPELINE_ROW = "pipeline - "               # Choreo per-query row, prefix match
+PIPELINE_PREPARE = "pipeline"              # session marker (see _pipeline_events)
 DATALOADER_STAGE = "Load Imagenette samples from TorchVision Dataset"
 TRAIN_STAGE = "EfficientNet training"
 
@@ -164,11 +165,28 @@ def parse_monolith_steps(path):
 
 
 def _pipeline_events(path):
-    """Choreo's per-query row events. Emitted unconditionally by pipeline.py,
-    so they survive `disable_logs: true` on the stages."""
-    return [(perf, ev) for (mod, ph, ev, perf) in _rows(path)
-            if mod.startswith(PIPELINE_ROW) and ph == "run"
-            and ev in ("start", "end")]
+    """Choreo's per-query row events, for the LAST session in the file.
+
+    The rows are emitted unconditionally by pipeline.py, so they survive
+    `disable_logs: true` on the stages.
+
+    Reset at every `pipeline, prepare, start`, exactly as parse_monolith_steps
+    does for the monolith. main.py appends to an existing label's CSV, so a run
+    that is killed part-way leaves a partial session and the next run with the
+    same label concatenates onto it. That happened for real —
+    mod_meffv2l_b8_choreo-traced_m2pro_r7 came out at 655 rows instead of 603
+    and carried a 57-MINUTE interval between the two sessions. Its median
+    survived only because the junk landed inside the dropped warm-up, which is
+    luck rather than a guarantee: the same file at a different warm-up, or a
+    kill later in the run, would corrupt the cell silently."""
+    evs = []
+    for (mod, phase, event, perf) in _rows(path):
+        if mod == PIPELINE_PREPARE and phase == "prepare" and event == "start":
+            evs = []
+        elif (mod.startswith(PIPELINE_ROW) and phase == "run"
+              and event in ("start", "end")):
+            evs.append((perf, event))
+    return evs
 
 
 def _monolith_events(path):
