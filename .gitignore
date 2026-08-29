@@ -261,3 +261,10 @@ cython_debug/
 !**/collect_logs/
 !**/collect_logs/*.log
 !**/collect_logs/*.tsv
+
+# Local MLflow span stores imported from another machine for analysis, plus the
+# artifact tree they point at. Regenerable by re-running collection; the DB
+# carries absolute artifact paths that are rewritten on import, so it is
+# machine-local by construction and must not be shared.
+**/mlruns/
+**/mlruns_e2_*.db

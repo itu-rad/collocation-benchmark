@@ -738,6 +738,70 @@ def print_latex(cells, machine):
     print("\\bottomrule\n\\end{tabular}\n\\end{table}")
 
 
+def make_breakdown_figure(per_machine, fig_dir):
+    """Where a query's latency goes, and what the framework adds to it.
+
+    Panels 1-2, one per machine: the four AUXILIARY components stacked, per
+    cell, ordered by how heavy the query is. They are what decomposition adds --
+    the dataloader and training stages are the real work and are left out so the
+    scaffolding is legible at all. Panel 3: that scaffolding as a share of the
+    query, which is the amortization claim.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    machines = [m for m in per_machine
+                if any(c.get("breakdown") for c in per_machine[m])]
+    if not machines:
+        return None
+    parts = ("entry", "handoff", "exit", "turnaround")
+    colors = {"entry": "tab:blue", "handoff": "tab:orange",
+              "exit": "tab:green", "turnaround": "tab:red"}
+
+    fig, ax = plt.subplots(1, len(machines) + 1,
+                           figsize=(5.2 * (len(machines) + 1), 4.4))
+    for i, machine in enumerate(machines):
+        cells = sorted([c for c in per_machine[machine] if c.get("breakdown")],
+                       key=lambda c: c["q_monolith"]["median"])
+        labels = [f"{MODEL_DISPLAY.get(c['model'], c['model']).replace('EfficientNetV2-', '')}"
+                  f"\nb{c['batch']}" for c in cells]
+        bottom = [0.0] * len(cells)
+        for part in parts:
+            vals = [c["breakdown"][part] for c in cells]
+            ax[i].bar(labels, vals, bottom=bottom, label=part,
+                      color=colors[part], edgecolor="white", linewidth=0.5)
+            bottom = [b + v for b, v in zip(bottom, vals)]
+        ax[i].set_title(machine, fontsize=10)
+        ax[i].set_ylabel("framework overhead per query (µs)")
+        ax[i].tick_params(axis="x", labelsize=7)
+        ax[i].grid(alpha=0.3, axis="y")
+        ax[i].legend(fontsize=8)
+
+    for machine in machines:
+        cells = sorted([c for c in per_machine[machine] if c.get("breakdown")],
+                       key=lambda c: c["q_monolith"]["median"])
+        xs = [c["q_monolith"]["median"] for c in cells]
+        ys = [100.0 * sum(c["breakdown"][k] for k in parts)
+              / (sum(c["breakdown"][k] for k in parts)
+                 + c["breakdown"]["dataloader"] + c["breakdown"]["training"])
+              for c in cells]
+        marker = {"m2pro": "o-", "gb10": "s-"}.get(machine, "^-")
+        ax[-1].plot(xs, ys, marker, ms=5, lw=1.3, label=machine)
+    ax[-1].set_xscale("log")
+    ax[-1].set_yscale("log")
+    ax[-1].set_xlabel("time per query (ms, log scale)")
+    ax[-1].set_ylabel("framework overhead (% of query, log scale)")
+    ax[-1].grid(alpha=0.3, which="both")
+    ax[-1].legend(fontsize=8)
+
+    fig.tight_layout()
+    out = os.path.join(fig_dir, "e2_query_latency_breakdown.png")
+    fig.savefig(out, dpi=140)
+    plt.close(fig)
+    return out
+
+
 def make_figure(per_machine, fig_dir):
     """Cost of decomposition against how heavy the query is."""
     import matplotlib
@@ -850,7 +914,11 @@ def main():
         print_sweeps(cells, machine)
 
     if per_machine:
-        print(f"\n**Figure:** `{make_figure(per_machine, fig_dir)}`")
+        figs = [make_figure(per_machine, fig_dir),
+                make_breakdown_figure(per_machine, fig_dir)]
+        for f in figs:
+            if f:
+                print(f"\n**Figure:** `{f}`")
 
 
 if __name__ == "__main__":
