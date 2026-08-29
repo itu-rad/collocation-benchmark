@@ -179,10 +179,15 @@ run_one() {
 
   outfile=$(mktemp)
   start=$(date +%s)
+  # Never append onto a stale CSV, on EITHER side. main.py appends to an
+  # existing label's file, so a run killed part-way leaves a partial session
+  # that the next run with the same label concatenates onto. That has now bitten
+  # twice: mod_meffv2l_b8_choreo-traced_m2pro_r7 (655 rows, a 57-minute
+  # interval) and mod_meffv2s_b64_choreo_gb10_r1 (955 rows, a 4.6-hour one).
+  # The skip-if-exists check above only looks in $RESULTS; the Choreo side
+  # writes to $CHOREO_OUT first, which nothing was clearing.
+  rm -f "$RESULTS/$lab.csv" "$CHOREO_OUT/$lab.csv" "$CHOREO_OUT/$lab.jsonl"
   if [ "$conf" = monolith ]; then
-    # Never append onto a stale CSV: the monolith opens mode='w', but a leftover
-    # from an interrupted run would otherwise be parsed as this run's data.
-    rm -f "$RESULTS/$lab.csv"
     ${PINCMD[@]+"${PINCMD[@]}"} python evaluation/overheads/modularity_overhead/baseline_finetune.py \
       --device "$TORCH_DEVICE" --model "$MODEL" --weights "$WEIGHTS" \
       --batch-size "$BATCH" --num-workers 0 --max-batches "$MAXB" \
