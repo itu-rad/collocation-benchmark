@@ -574,10 +574,15 @@ both serial/concurrent to measure the concurrency knob's latency delta.
 > that's the contribution; the science is the vehicle.
 
 **MUST-FIX APPARATUS (science indefensible otherwise):**
-- [ ] **Calibrate the AMC counters** — closure protocol (known-byte STREAM/matmul/ANE
-  loads per engine), publish agent→bucket map + residual unattributed fraction per cell,
-  cap totals to the spec ceiling. Currently reports 331 GB/s on a ~200 GB/s bus
-  (physically impossible → disqualifying). BLOCKS all M2 bytes/s claims.
+- [x] **Calibrate the AMC counters (2026-08-31)** — closure protocol run on an idle M2 Pro;
+  results in `evaluation/contention/AMC_CALIBRATION.md`. Closes to **0.999 (CPU)** and
+  **1.005 (GPU)** against known-byte read loads, 100% attribution to the right bucket, 0.0%
+  unattributed residual, peak total 168.7 GB/s = 84% of the ~200 GB/s ceiling. The 331 GB/s
+  reading PREDATED commit 43d33a7 (2026-07-20), which fixed the sampler summing the
+  controller aggregate *and* its per-requestor components (exactly 2x); half of 331 is the
+  ~165 GB/s a saturating GPU load really delivers. M2 bytes/s claims are unblocked for
+  READ traffic. Still open: write / mixed read-write closure (write-allocate is where a
+  counter axis most easily misleads) and the ANE bucket (no known-byte ANE load driven).
 - [ ] **Fix the under-dosing (Stage A/B)** — heavier backgrounds toward measured post-fg
   headroom, foreground at 0.7–0.8× capacity, extend past B=2 (B=4, stacked co-runners),
   until degradation CIs exclude zero → converts the NULL into a LOCATED tolerance boundary.
