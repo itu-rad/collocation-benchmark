@@ -274,46 +274,54 @@ across the batch sweep b1 -> b64, framework overhead 570 -> 2534 µs and its sha
 1.61% -> 0.26% (the lowest share of any cell is 0.18%, at EfficientNetV2-L b8); `entry` is
 flat at 63-76 µs and `handoff` at 74-138 µs across the same 64x payload range.
 
-**One term does not behave, and its cause is still open.** `exit` grows 248 -> 2081 µs with
-batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is the interval from the
-training stage's `push_to_outputs` to `pipeline query processed` — the finished query
-crossing from the training thread to the collector thread.
+**One term does not behave: `exit`, and it is now explained and fixable.** It grows
+248 -> 2081 µs with batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is
+the interval from the training stage's `push_to_outputs` to `pipeline query processed` — the
+finished query crossing from the training thread to the collector thread.
 
-It is tightly payload-linked. Regressing `exit` on input-tensor size across all nine cells:
+**Cause: returning the batch's resident pages to the OS, on the collector thread.** The
+training stage returns the same query object it received and never clears `query.data`
+(`stages/torchvision_classification/classification.py`), so the input batch — 113 MB at
+S b64 — rides through to the collector, where the query goes out of scope and the memory is
+released. Note `inputs = inputs.to(self._device)` rebinds a *local*, so what is released is
+the **host** tensor, not the device copy.
 
-| machine | fit | correlation |
-|---|---|--:|
-| m2pro | `exit = 16.17 µs/MB · payload + 189 µs` | **+0.996** |
-| gb10 | `exit = 2.11 µs/MB · payload + 595 µs` | +0.534 |
+Freeing that memory is nearly free on Linux and expensive on macOS:
 
-The model sweep separates payload from work: EfficientNetV2-S/M/L at b8 are 14.2 / 22.1 /
-22.1 MB of input and `exit` reads 409 / 524 / 535 µs — it tracks **input size**, not the
-model. A bigger model doing more work does not move it; a bigger tensor does.
+| payload | free on m2pro | free on gb10 |
+|--:|--:|--:|
+| 1.8 MB | 37.8 µs | 1.8 µs |
+| 56.6 MB | 607.7 µs | 0.7 µs |
+| 113.2 MB | **1223.6 µs** | **0.7 µs** |
 
-**The obvious mechanism is falsified.** The training stage returns the same query object it
-received and never clears `query.data`, so the batch rides through to the collector and is
-released there — which made unified-memory reclamation on the consuming thread the natural
-explanation. Measured directly, it cannot be:
+macOS returns dirty pages to the kernel synchronously on free; glibc retains them in its
+arena. That ~1750x difference at 113 MB is the whole of the machine asymmetry — it is a
+platform allocator property, not a framework-logic one.
 
-| payload | free CPU tensor (m2pro) | free CPU tensor (gb10) | free device copy (m2pro) | (gb10) |
-|--:|--:|--:|--:|--:|
-| 1.8 MB | 1.3 µs | 0.4 µs | 0.9 µs | 4.3 µs |
-| 113.2 MB | **0.6 µs** | **0.4 µs** | 1.0 µs | 18.9 µs |
+**Confirmed by intervention, not just correlation.** Clearing `query.data` before the
+hand-off (the payload is dead by then; nothing downstream reads it) on an otherwise identical
+b64 traced run:
 
-Freeing 113 MB costs well under a microsecond on both machines and does not scale with size —
-allocators return large blocks without touching them. It cannot account for 2081 µs. Note
-also that `inputs = inputs.to(self._device)` rebinds a local, so what the collector releases
-is the **host** tensor, not the device copy; and the only free cost that *does* scale here is
-GB10's device release, which is the machine that does not show the effect.
+| | `exit` |
+|---|--:|
+| as shipped | 2232 µs |
+| `query.data` cleared before push | **356 µs** |
 
-**What stands:** the term is real, reproducible, payload-linked at r = +0.996, and specific
-to the M2 Pro. **What does not:** any claim about why. The remaining suspect is that `exit`
-is a cross-thread handoff whose latency degrades under the larger resident footprint at high
-batch — several 113 MB tensors alive in queues at once — rather than any cost of the payload
-itself. That is untested. The falsifying experiment is cheap: clear `query.data` before the
-push (the payload is dead by then, and that stage carries a commented-out line that did
-exactly this) and see whether `exit` flattens. It has not been run, because it changes the
-framework and would mean re-collecting E2 a third time.
+an **84% reduction**, consistent with the 1224 µs measured free cost. The rest of the
+breakdown is unchanged (entry 75 -> 72 µs, handoff 146 -> 134, training 701 -> 697 ms).
+
+> **A measurement caution, recorded because it nearly buried this.** An earlier version of
+> this section asserted the deallocation mechanism from an r = +0.996 correlation alone; it
+> was then *retracted* when a microbenchmark showed freeing 113 MB costing 0.6 µs. That
+> benchmark was wrong: it freed `torch.empty` buffers whose pages were never touched, so
+> there was nothing resident to return. Filling the tensor first — as the dataloader does —
+> moves the cost from 0.7 µs to 1224 µs. A microbenchmark that does not reproduce the
+> workload's page-residency does not measure the workload's free cost.
+
+**Not applied to the shipped framework.** The one-line change would cut ~1.9 ms/query at
+S b64 on the M2 Pro and reduce peak footprint, but it changes what E2 measures and would mean
+re-collecting a third time. The measurement above is a standalone probe; the shipped code is
+unchanged and the reported numbers are of the framework as it stands.
 
 So: "the framework's cost is a fixed O(1) tax" is supported on GB10 and **not** on the M2
 Pro, where it carries a 16 µs/MB payload term the framework could avoid. The amortization
