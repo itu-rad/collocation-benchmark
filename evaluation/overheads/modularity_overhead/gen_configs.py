@@ -32,7 +32,10 @@ NUM_WORKERS = 0
 # ("mps"/"cuda") goes INSIDE the config; the filename and run label carry the
 # MACHINE, so an M2 Pro and the M3 Pro that replaces it stay distinguishable.
 # evaluation/pilots/derive_knobs.py already uses this convention.
-DEVICE_NAME = {"mps": "m2pro", "cuda": "gb10"}
+# The Apple experiment machine is the M3 Pro (itu-mac). The M2 Pro that
+# preceded it is now a staging box only -- code is developed there, no reported
+# data comes from it -- so "mps" maps to m3pro.
+DEVICE_NAME = {"mps": "m3pro", "cuda": "gb10"}
 
 
 def cell_name(cell):

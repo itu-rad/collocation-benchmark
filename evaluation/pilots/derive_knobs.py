@@ -72,7 +72,7 @@ N_TIMING = 110       # R-NTIMING (refined 2026-07-14: (N-1)*R >= 500 pooled
                      # which pooled only 195 — rule collision found by
                      # validate_pass.py)
 N_QUALITY = 120      # R-NQUALITY
-DEVICE_NAME = {"mlx": "m2pro", "cuda": "gb10"}
+DEVICE_NAME = {"mlx": "m3pro", "cuda": "gb10"}
 
 
 # ---------------------------------------------------------------------------

@@ -897,7 +897,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
-    ap.add_argument("--machines", nargs="+", default=["m2pro", "gb10"],
+    ap.add_argument("--machines", nargs="+", default=["m3pro", "gb10"],
                     help="which machines to report (the filename token)")
     ap.add_argument("--warmup", type=int, default=WARMUP,
                     help="queries dropped at the head of each run")

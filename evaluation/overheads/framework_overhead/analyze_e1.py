@@ -49,9 +49,13 @@ SIZES = [0, 1024, 1048576, 10485760]
 DEPTHS = [1, 2, 4, 8, 16, 32, 64, 128]
 SIZE_LABEL = {0: "0", 1024: "1 KiB", 1048576: "1 MiB", 10485760: "10 MiB"}
 WARMUP_K = 1                      # warm-up epochs dropped per run
-# Named by MACHINE, not by backend: the Apple box is being replaced by an M3
-# Pro, and "mlx" would make the two indistinguishable in the run names.
-DEVICES = ("m2pro", "gb10")
+# Named by MACHINE, not by backend: "mlx" would make two Apple machines
+# indistinguishable in the run names. m2pro is kept in the list because E1's
+# Apple half was collected there before that box became a staging machine; it is
+# historical data, not a machine anything new runs on. A machine with no runs
+# under evaluation/results/<machine>/ is skipped with a notice, so listing all
+# three is harmless.
+DEVICES = ("m2pro", "m3pro", "gb10")
 
 # The four arms are the 2x2 of two INDEPENDENT instruments, and are named for
 # the role each one plays rather than for the switch that produces it:
