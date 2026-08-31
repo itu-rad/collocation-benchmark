@@ -323,10 +323,33 @@ breakdown is unchanged (entry 75 -> 72 µs, handoff 146 -> 134, training 701 -> 
 > moves the cost from 0.7 µs to 1224 µs. A microbenchmark that does not reproduce the
 > workload's page-residency does not measure the workload's free cost.
 
-**Not applied to the shipped framework.** The one-line change would cut ~1.9 ms/query at
-S b64 on the M2 Pro and reduce peak footprint, but it changes what E2 measures and would mean
-re-collecting a third time. The measurement above is a standalone probe; the shipped code is
-unchanged and the reported numbers are of the framework as it stands.
+**Not fixable without giving up per-query allocation, and therefore not fixed.** Two
+interventions were tried, both measured with interleaved same-session A/B runs at b64:
+
+| intervention | `exit` | `handoff` | **time per query** |
+|---|--:|--:|--:|
+| as shipped | 2556 µs | 142 µs | **977.56 ms** |
+| clear `query.data` in the stage | 356 | — | 965.7 (within drift) |
+| release the query in the collector before it blocks | **250** | **1721** | **977.55 ms** |
+
+Neither removes the cost; both relocate it. The collector-side release is the instructive
+one: it moves 2306 µs out of `exit` and 1579 µs of it reappears in `handoff`, with time per
+query unchanged to 0.01 ms. It would also wreck the presentation of a real result — `handoff`
+is flat at 105-202 µs across a 64x payload range, which *is* the zero-copy finding, and this
+change would inflate it 12x while making the framework no faster.
+
+The reason is structural: **under `serialize_queries: true` there is no idle thread to hide
+the work in.** One query is in flight by construction, so any work on any thread is on the
+critical path, and freeing 113 MB has to happen somewhere. Moving it only changes which
+interval is charged. Under pipelining there would be idle capacity to absorb it, but that is
+the configuration where latency matters least.
+
+What would actually remove it is not allocating a fresh batch per query — buffer reuse in the
+dataloader. That is rejected on design grounds: it constrains what a stage may do with its
+output, and the framework's value is that it does not.
+
+So the term is reported as measured: a real, platform-specific cost of ~16 µs/MB on macOS
+that the framework pays and cannot relocate away, not an inefficiency to be tuned out.
 
 So: "the framework's cost is a fixed O(1) tax" is supported on GB10 and **not** on the M2
 Pro, where it carries a 16 µs/MB payload term the framework could avoid. The amortization
