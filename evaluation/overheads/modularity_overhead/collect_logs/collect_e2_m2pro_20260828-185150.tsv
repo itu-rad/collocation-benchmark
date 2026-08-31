@@ -1,0 +1,298 @@
+config	cell	run	rc	seconds	csv_rows	spans
+monolith	meffv2l_b8	1	0	170	605	
+choreo	meffv2l_b8	1	0	169	602	
+choreo-traced	meffv2l_b8	1	0	163	603	2401
+choreo	meffv2l_b8	2	0	164	602	
+choreo-traced	meffv2l_b8	2	0	162	603	2401
+monolith	meffv2l_b8	2	0	161	605	
+choreo-traced	meffv2l_b8	3	0	164	603	2401
+monolith	meffv2l_b8	3	0	161	605	
+choreo	meffv2l_b8	3	0	161	602	
+monolith	meffv2l_b8	4	0	160	605	
+choreo	meffv2l_b8	4	0	161	602	
+choreo-traced	meffv2l_b8	4	0	162	603	2401
+choreo	meffv2l_b8	5	0	161	602	
+choreo-traced	meffv2l_b8	5	0	161	603	2401
+monolith	meffv2l_b8	5	0	161	605	
+choreo-traced	meffv2l_b8	6	0	163	603	2401
+monolith	meffv2l_b8	6	0	162	605	
+choreo	meffv2l_b8	6	0	164	602	
+monolith	meffv2l_b8	7	0	162	605	
+choreo	meffv2l_b8	7	0	162	602	
+choreo-traced	meffv2l_b8	7	0	162	603	2401
+choreo	meffv2l_b8	8	0	160	602	
+choreo-traced	meffv2l_b8	8	0	162	603	2401
+monolith	meffv2l_b8	8	0	163	605	
+choreo-traced	meffv2l_b8	9	0	163	603	2401
+monolith	meffv2l_b8	9	0	162	605	
+choreo	meffv2l_b8	9	0	164	602	
+monolith	meffv2l_b8	10	0	160	605	
+choreo	meffv2l_b8	10	0	161	602	
+choreo-traced	meffv2l_b8	10	0	164	603	2401
+choreo	meffv2l_b8	11	0	161	602	
+choreo-traced	meffv2l_b8	11	0	163	603	2401
+monolith	meffv2l_b8	11	0	160	605	
+monolith	meffv2m_b8	1	0	96	605	
+choreo	meffv2m_b8	1	0	96	602	
+choreo-traced	meffv2m_b8	1	0	95	603	2401
+choreo	meffv2m_b8	2	0	95	602	
+choreo-traced	meffv2m_b8	2	0	97	603	2401
+monolith	meffv2m_b8	2	0	95	605	
+choreo-traced	meffv2m_b8	3	0	97	603	2401
+monolith	meffv2m_b8	3	0	94	605	
+choreo	meffv2m_b8	3	0	94	602	
+monolith	meffv2m_b8	4	0	93	605	
+choreo	meffv2m_b8	4	0	94	602	
+choreo-traced	meffv2m_b8	4	0	95	603	2401
+choreo	meffv2m_b8	5	0	94	602	
+choreo-traced	meffv2m_b8	5	0	95	603	2401
+monolith	meffv2m_b8	5	0	94	605	
+choreo-traced	meffv2m_b8	6	0	96	603	2401
+monolith	meffv2m_b8	6	0	95	605	
+choreo	meffv2m_b8	6	0	94	602	
+monolith	meffv2m_b8	7	0	93	605	
+choreo	meffv2m_b8	7	0	94	602	
+choreo-traced	meffv2m_b8	7	0	95	603	2401
+choreo	meffv2m_b8	8	0	95	602	
+choreo-traced	meffv2m_b8	8	0	96	603	2401
+monolith	meffv2m_b8	8	0	93	605	
+choreo-traced	meffv2m_b8	9	0	95	603	2401
+monolith	meffv2m_b8	9	0	92	605	
+choreo	meffv2m_b8	9	0	94	602	
+monolith	meffv2m_b8	10	0	92	605	
+choreo	meffv2m_b8	10	0	94	602	
+choreo-traced	meffv2m_b8	10	0	96	603	2401
+choreo	meffv2m_b8	11	0	94	602	
+choreo-traced	meffv2m_b8	11	0	96	603	2401
+monolith	meffv2m_b8	11	0	93	605	
+monolith	meffv2s_b16	1	0	79	605	
+choreo	meffv2s_b16	1	0	80	602	
+choreo-traced	meffv2s_b16	1	0	80	603	2401
+choreo	meffv2s_b16	2	0	80	602	
+choreo-traced	meffv2s_b16	2	0	81	603	2401
+monolith	meffv2s_b16	2	0	77	605	
+choreo-traced	meffv2s_b16	3	0	81	603	2401
+monolith	meffv2s_b16	3	0	79	605	
+choreo	meffv2s_b16	3	0	80	602	
+monolith	meffv2s_b16	4	0	77	605	
+choreo	meffv2s_b16	4	0	80	602	
+choreo-traced	meffv2s_b16	4	0	81	603	2401
+choreo	meffv2s_b16	5	0	80	602	
+choreo-traced	meffv2s_b16	5	0	81	603	2401
+monolith	meffv2s_b16	5	0	79	605	
+choreo-traced	meffv2s_b16	6	0	82	603	2401
+monolith	meffv2s_b16	6	0	78	605	
+choreo	meffv2s_b16	6	0	81	602	
+monolith	meffv2s_b16	7	0	78	605	
+choreo	meffv2s_b16	7	0	80	602	
+choreo-traced	meffv2s_b16	7	0	82	603	2401
+choreo	meffv2s_b16	8	0	79	602	
+choreo-traced	meffv2s_b16	8	0	82	603	2401
+monolith	meffv2s_b16	8	0	78	605	
+choreo-traced	meffv2s_b16	9	0	82	603	2401
+monolith	meffv2s_b16	9	0	78	605	
+choreo	meffv2s_b16	9	0	81	602	
+monolith	meffv2s_b16	10	0	77	605	
+choreo	meffv2s_b16	10	0	79	602	
+choreo-traced	meffv2s_b16	10	0	81	603	2401
+choreo	meffv2s_b16	11	0	80	602	
+choreo-traced	meffv2s_b16	11	0	82	603	2401
+monolith	meffv2s_b16	11	0	79	605	
+monolith	meffv2s_b1	1	0	15	605	
+choreo	meffv2s_b1	1	0	16	602	
+choreo-traced	meffv2s_b1	1	0	17	603	2401
+choreo	meffv2s_b1	2	0	16	602	
+choreo-traced	meffv2s_b1	2	0	17	603	2401
+monolith	meffv2s_b1	2	0	14	605	
+choreo-traced	meffv2s_b1	3	0	17	603	2401
+monolith	meffv2s_b1	3	0	15	605	
+choreo	meffv2s_b1	3	0	17	602	
+monolith	meffv2s_b1	4	0	15	605	
+choreo	meffv2s_b1	4	0	16	602	
+choreo-traced	meffv2s_b1	4	0	18	603	2401
+choreo	meffv2s_b1	5	0	15	602	
+choreo-traced	meffv2s_b1	5	0	17	603	2401
+monolith	meffv2s_b1	5	0	14	605	
+choreo-traced	meffv2s_b1	6	0	17	603	2401
+monolith	meffv2s_b1	6	0	15	605	
+choreo	meffv2s_b1	6	0	16	602	
+monolith	meffv2s_b1	7	0	15	605	
+choreo	meffv2s_b1	7	0	16	602	
+choreo-traced	meffv2s_b1	7	0	18	603	2401
+choreo	meffv2s_b1	8	0	16	602	
+choreo-traced	meffv2s_b1	8	0	18	603	2401
+monolith	meffv2s_b1	8	0	14	605	
+choreo-traced	meffv2s_b1	9	0	17	603	2401
+monolith	meffv2s_b1	9	0	15	605	
+choreo	meffv2s_b1	9	0	17	602	
+monolith	meffv2s_b1	10	0	15	605	
+choreo	meffv2s_b1	10	0	16	602	
+choreo-traced	meffv2s_b1	10	0	18	603	2401
+choreo	meffv2s_b1	11	0	17	602	
+choreo-traced	meffv2s_b1	11	0	19	603	2401
+monolith	meffv2s_b1	11	0	16	605	
+monolith	meffv2s_b2	1	0	16	605	
+choreo	meffv2s_b2	1	0	20	602	
+choreo-traced	meffv2s_b2	1	0	20	603	2401
+choreo	meffv2s_b2	2	0	19	602	
+choreo-traced	meffv2s_b2	2	0	19	603	2401
+monolith	meffv2s_b2	2	0	16	605	
+choreo-traced	meffv2s_b2	3	0	19	603	2401
+monolith	meffv2s_b2	3	0	16	605	
+choreo	meffv2s_b2	3	0	18	602	
+monolith	meffv2s_b2	4	0	17	605	
+choreo	meffv2s_b2	4	0	18	602	
+choreo-traced	meffv2s_b2	4	0	20	603	2401
+choreo	meffv2s_b2	5	0	18	602	
+choreo-traced	meffv2s_b2	5	0	19	603	2401
+monolith	meffv2s_b2	5	0	17	605	
+choreo-traced	meffv2s_b2	6	0	20	603	2401
+monolith	meffv2s_b2	6	0	17	605	
+choreo	meffv2s_b2	6	0	19	602	
+monolith	meffv2s_b2	7	0	18	605	
+choreo	meffv2s_b2	7	0	18	602	
+choreo-traced	meffv2s_b2	7	0	20	603	2401
+choreo	meffv2s_b2	8	0	18	602	
+choreo-traced	meffv2s_b2	8	0	20	603	2401
+monolith	meffv2s_b2	8	0	17	605	
+choreo-traced	meffv2s_b2	9	0	21	603	2401
+monolith	meffv2s_b2	9	0	17	605	
+choreo	meffv2s_b2	9	0	19	602	
+monolith	meffv2s_b2	10	0	16	605	
+choreo	meffv2s_b2	10	0	19	602	
+choreo-traced	meffv2s_b2	10	0	19	603	2401
+choreo	meffv2s_b2	11	0	19	602	
+choreo-traced	meffv2s_b2	11	0	19	603	2401
+monolith	meffv2s_b2	11	0	17	605	
+monolith	meffv2s_b32	1	0	151	605	
+choreo	meffv2s_b32	1	0	153	602	
+choreo-traced	meffv2s_b32	1	0	155	603	2401
+choreo	meffv2s_b32	2	0	151	602	
+choreo-traced	meffv2s_b32	2	0	152	603	2401
+monolith	meffv2s_b32	2	0	150	605	
+choreo-traced	meffv2s_b32	3	0	154	603	2401
+monolith	meffv2s_b32	3	0	151	605	
+choreo	meffv2s_b32	3	0	153	602	
+monolith	meffv2s_b32	4	0	151	605	
+choreo	meffv2s_b32	4	0	170	602	
+choreo-traced	meffv2s_b32	4	0	171	603	2401
+choreo	meffv2s_b32	5	0	152	602	
+choreo-traced	meffv2s_b32	5	0	152	603	2401
+monolith	meffv2s_b32	5	0	150	605	
+choreo-traced	meffv2s_b32	6	0	154	603	2401
+monolith	meffv2s_b32	6	0	149	605	
+choreo	meffv2s_b32	6	0	154	602	
+monolith	meffv2s_b32	7	0	150	605	
+choreo	meffv2s_b32	7	0	152	602	
+choreo-traced	meffv2s_b32	7	0	153	603	2401
+choreo	meffv2s_b32	8	0	152	602	
+choreo-traced	meffv2s_b32	8	0	153	603	2401
+monolith	meffv2s_b32	8	0	150	605	
+choreo-traced	meffv2s_b32	9	0	152	603	2401
+monolith	meffv2s_b32	9	0	150	605	
+choreo	meffv2s_b32	9	0	152	602	
+monolith	meffv2s_b32	10	0	150	605	
+choreo	meffv2s_b32	10	0	152	602	
+choreo-traced	meffv2s_b32	10	0	152	603	2401
+choreo	meffv2s_b32	11	0	153	602	
+choreo-traced	meffv2s_b32	11	0	156	603	2401
+monolith	meffv2s_b32	11	0	150	605	
+monolith	meffv2s_b4	1	0	25	605	
+choreo	meffv2s_b4	1	0	25	602	
+choreo-traced	meffv2s_b4	1	0	26	603	2401
+choreo	meffv2s_b4	2	0	26	602	
+choreo-traced	meffv2s_b4	2	0	26	603	2401
+monolith	meffv2s_b4	2	0	24	605	
+choreo-traced	meffv2s_b4	3	0	26	603	2401
+monolith	meffv2s_b4	3	0	23	605	
+choreo	meffv2s_b4	3	0	26	602	
+monolith	meffv2s_b4	4	0	23	605	
+choreo	meffv2s_b4	4	0	26	602	
+choreo-traced	meffv2s_b4	4	0	27	603	2401
+choreo	meffv2s_b4	5	0	25	602	
+choreo-traced	meffv2s_b4	5	0	27	603	2401
+monolith	meffv2s_b4	5	0	24	605	
+choreo-traced	meffv2s_b4	6	0	26	603	2401
+monolith	meffv2s_b4	6	0	23	605	
+choreo	meffv2s_b4	6	0	26	602	
+monolith	meffv2s_b4	7	0	23	605	
+choreo	meffv2s_b4	7	0	26	602	
+choreo-traced	meffv2s_b4	7	0	26	603	2401
+choreo	meffv2s_b4	8	0	26	602	
+choreo-traced	meffv2s_b4	8	0	27	603	2401
+monolith	meffv2s_b4	8	0	24	605	
+choreo-traced	meffv2s_b4	9	0	26	603	2401
+monolith	meffv2s_b4	9	0	24	605	
+choreo	meffv2s_b4	9	0	25	602	
+monolith	meffv2s_b4	10	0	23	605	
+choreo	meffv2s_b4	10	0	25	602	
+choreo-traced	meffv2s_b4	10	0	27	603	2401
+choreo	meffv2s_b4	11	0	25	602	
+choreo-traced	meffv2s_b4	11	0	27	603	2401
+monolith	meffv2s_b4	11	0	24	605	
+monolith	meffv2s_b64	1	0	295	605	
+choreo	meffv2s_b64	1	0	297	602	
+choreo-traced	meffv2s_b64	1	0	296	603	2401
+choreo	meffv2s_b64	2	0	297	602	
+choreo-traced	meffv2s_b64	2	0	298	603	2401
+monolith	meffv2s_b64	2	0	294	605	
+choreo-traced	meffv2s_b64	3	0	298	603	2401
+monolith	meffv2s_b64	3	0	296	605	
+choreo	meffv2s_b64	3	0	297	602	
+monolith	meffv2s_b64	4	0	293	605	
+choreo	meffv2s_b64	4	0	298	602	
+choreo-traced	meffv2s_b64	4	0	297	603	2401
+choreo	meffv2s_b64	5	0	299	602	
+choreo-traced	meffv2s_b64	5	0	299	603	2401
+monolith	meffv2s_b64	5	0	293	605	
+choreo-traced	meffv2s_b64	6	0	298	603	2401
+monolith	meffv2s_b64	6	0	294	605	
+choreo	meffv2s_b64	6	0	298	602	
+monolith	meffv2s_b64	7	0	297	605	
+choreo	meffv2s_b64	7	0	297	602	
+choreo-traced	meffv2s_b64	7	0	297	603	2401
+choreo	meffv2s_b64	8	0	297	602	
+choreo-traced	meffv2s_b64	8	0	298	603	2401
+monolith	meffv2s_b64	8	0	295	605	
+choreo-traced	meffv2s_b64	9	0	297	603	2401
+monolith	meffv2s_b64	9	0	293	605	
+choreo	meffv2s_b64	9	0	299	602	
+monolith	meffv2s_b64	10	0	300	605	
+choreo	meffv2s_b64	10	0	322	602	
+choreo-traced	meffv2s_b64	10	0	299	603	2401
+choreo	meffv2s_b64	11	0	297	602	
+choreo-traced	meffv2s_b64	11	0	298	603	2401
+monolith	meffv2s_b64	11	0	293	605	
+monolith	meffv2s_b8	1	0	42	605	
+choreo	meffv2s_b8	1	0	44	602	
+choreo-traced	meffv2s_b8	1	0	46	603	2401
+choreo	meffv2s_b8	2	0	44	602	
+choreo-traced	meffv2s_b8	2	0	46	603	2401
+monolith	meffv2s_b8	2	0	42	605	
+choreo-traced	meffv2s_b8	3	0	50	603	2401
+monolith	meffv2s_b8	3	0	56	605	
+choreo	meffv2s_b8	3	0	50	602	
+monolith	meffv2s_b8	4	0	44	605	
+choreo	meffv2s_b8	4	0	47	602	
+choreo-traced	meffv2s_b8	4	0	49	603	2401
+choreo	meffv2s_b8	5	0	46	602	
+choreo-traced	meffv2s_b8	5	0	46	603	2401
+monolith	meffv2s_b8	5	0	43	605	
+choreo-traced	meffv2s_b8	6	0	46	603	2401
+monolith	meffv2s_b8	6	0	43	605	
+choreo	meffv2s_b8	6	0	45	602	
+monolith	meffv2s_b8	7	0	43	605	
+choreo	meffv2s_b8	7	0	45	602	
+choreo-traced	meffv2s_b8	7	0	45	603	2401
+choreo	meffv2s_b8	8	0	44	602	
+choreo-traced	meffv2s_b8	8	0	46	603	2401
+monolith	meffv2s_b8	8	0	42	605	
+choreo-traced	meffv2s_b8	9	0	46	603	2401
+monolith	meffv2s_b8	9	0	42	605	
+choreo	meffv2s_b8	9	0	45	602	
+monolith	meffv2s_b8	10	0	43	605	
+choreo	meffv2s_b8	10	0	44	602	
+choreo-traced	meffv2s_b8	10	0	46	603	2401
+choreo	meffv2s_b8	11	0	43	602	
+choreo-traced	meffv2s_b8	11	0	46	603	2401
+monolith	meffv2s_b8	11	0	42	605	
