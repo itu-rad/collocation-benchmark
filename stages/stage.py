@@ -182,6 +182,8 @@ class Stage:
         # (which notify it on put) and its polling policy (which waits on it),
         # so fan-in polling blocks instead of busy-waiting.
         self._input_cond = threading.Condition()
+        self._keep_payload_at_exit = getattr(
+            self._stage_config, "keep_payload_at_exit", False)
         self.output_queues: dict[int, Queue] = {}
         self._logger = logging.getLogger("benchmark")
         # The query this stage is currently processing, per THREAD: most stages
@@ -348,6 +350,22 @@ class Stage:
         # of them names it.
         qid = next((getattr(o, "query_id", None) for o in outputs.values()
                     if o is not None), None)
+        # A query leaving the pipeline (its output queue is the pipeline's, keyed
+        # -1) is not read again: retrieve_results logs ids and timestamps, never
+        # query.data, and TerminalCapture serialises the payload inside its own
+        # run(). Drop the payload here so the workload's memory is released on
+        # THIS stage's thread -- where a monolithic implementation also pays for
+        # it -- instead of on the collector thread, where it lands inside the
+        # framework's measured exit interval and is charged to the framework.
+        #
+        # It is the same work either way; this puts it in the right place. On
+        # macOS releasing a written 113 MB batch is ~1.2 ms of page teardown
+        # (0.7 us on glibc), which is why it was visible at all.
+        if -1 in self.output_queues and not self._keep_payload_at_exit:
+            for output in outputs.values():
+                if output is not None:
+                    output.data = None
+
         with trace_span(
             name=f"{self.name}.push_to_outputs",
             attributes={"thread_id": threading.get_ident(),
