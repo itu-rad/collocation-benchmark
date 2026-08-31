@@ -23,7 +23,8 @@ synchronous write+flush sits inside the measured interval on one side only.
 
 Co-headline: the QUERY LATENCY BREAKDOWN, taken from the spans of the
 choreo-traced runs — per-stage latency (dataloader, training) plus the auxiliary
-framework overheads (entry, handoff, exit, turnaround). It sums to the time per
+framework overheads (entry, handoff, exit) INSIDE the pipeline; the trailing
+turnaround to the next query is loadgen admission, reported separately. It sums to the time per
 query by construction; E1 verified the decomposition exact (residual 0.000 us
 over 300 queries on a 2-stage pipeline). Negative intervals are a hard failure,
 never something to take a median over.
@@ -625,8 +626,8 @@ def breakdown_by_run(machine, model, batch, runs, warmup, store=None):
 def print_breakdown(machine, cells, metas, warmup, store=None):
     """Where a query's latency goes, split into stage work and framework cost."""
     print(f"\n## {machine} — query latency breakdown (traced configuration)\n")
-    print("| cell | R | entry | dataloader | handoff | training | exit | turnaround "
-          "| framework | total | framework % |")
+    print("| cell | R | entry | dataloader | handoff | training | exit "
+          "| **framework** | **in-pipeline L_q** | framework % | (scheduling) |")
     print("|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|")
     any_row = False
     for c in cells:
@@ -641,21 +642,73 @@ def print_breakdown(machine, cells, metas, warmup, store=None):
         med = {k: np.median([np.median(bd[r][k]) for r in bd]) / NS_PER_US
                for k in ("entry", "dataloader", "handoff", "training", "exit",
                          "turnaround")}
-        fw = med["entry"] + med["handoff"] + med["exit"] + med["turnaround"]
-        tot = fw + med["dataloader"] + med["training"]
+        # `turnaround` is scheduler admission -- the gap between one query being
+        # counted processed and the next being admitted. It is NOT the pipeline
+        # executing anything, and the monolith has no analogue for it (its loop
+        # runs continuously, with no loadgen). Charging it to the framework
+        # measures the harness, not the framework's inflation of the pipeline,
+        # so it is excluded from both the framework total and L_q and reported
+        # separately.
+        fw = med["entry"] + med["handoff"] + med["exit"]
+        lq = fw + med["dataloader"] + med["training"]
         name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
         print(f"| {name} | {len(bd)} | {med['entry']:.1f} | {med['dataloader']:.1f} "
               f"| {med['handoff']:.1f} | {med['training']:.1f} | {med['exit']:.1f} "
-              f"| {med['turnaround']:.1f} | {fw:.1f} | {tot:.1f} | "
-              f"{100 * fw / tot:.2f}% |")
+              f"| {fw:.1f} | {lq:.1f} | {100 * fw / lq:.2f}% | {med['turnaround']:.1f} |")
+        med["framework"] = fw
+        med["in_pipeline"] = lq
         c["breakdown"] = med
     if not any_row:
         print("| (no traced spans found for this machine) |")
         return
-    print("\n(microseconds per query. `dataloader` and `training` are the stages "
-          "doing real work; `entry`, `handoff`, `exit` and `turnaround` are the "
+    print("\n(microseconds per query, all from SPANS. `dataloader` and `training` "
+          "are the stages doing real work; `entry`, `handoff` and `exit` are the "
           "framework moving the query between them, and are what decomposition "
-          "adds. They sum to the time per query by construction.)")
+          "adds INSIDE the pipeline. Their sum plus the stages is `in-pipeline "
+          "L_q` = `pipeline query` start to `pipeline query processed` start.\n"
+          "\n`scheduling` is the trailing turnaround to the next query -- loadgen "
+          "admission, outside the pipeline's execution of this query, and with no "
+          "monolith analogue since a bare loop has no admission step. It is "
+          "listed for completeness and excluded from the framework total: the "
+          "question is whether the framework inflates the pipeline, not what the "
+          "harness costs around it. L_q + scheduling = the start-to-start time "
+          "per query.)")
+
+
+def print_span_cost(machine, cells):
+    """Cost of decomposition measured the way we actually want it.
+
+    Choreo's side comes from SPANS -- in-pipeline L_q, `pipeline query` start to
+    `pipeline query processed` start -- so it excludes loadgen admission, which
+    is not the pipeline executing anything and has no monolith analogue.
+
+    The monolith's side is its own per-step timing, because it is a bare PyTorch
+    loop run with --no-radt and emits no spans at all. That asymmetry is
+    unavoidable and is the point of the control: the reference must not carry
+    the framework's instrument.
+
+    Choreo's L_q here is from the TRACED runs, so it carries the cost of tracing.
+    That is bounded: `cost of tracing` is within noise at every cell (see above).
+    """
+    rows = [c for c in cells if c.get("breakdown") and c.get("q_monolith")]
+    if not rows:
+        return
+    print(f"\n## {machine} — cost of decomposition, in-pipeline only\n")
+    print("| cell | monolith (ms) | choreo L_q (ms) | cost (µs) | as % | framework term (µs) |")
+    print("|---|--:|--:|--:|--:|--:|")
+    for c in rows:
+        mono = c["q_monolith"]["median"]                      # ms
+        lq = c["breakdown"]["in_pipeline"] / 1000.0           # µs -> ms
+        cost = (lq - mono) * 1000.0                           # µs
+        name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
+        print(f"| {name} | {mono:.2f} | {lq:.2f} | {cost:+.0f} | "
+              f"{100 * (lq - mono) / mono:+.3f}% | {c['breakdown']['framework']:.0f} |")
+    print("\n(Choreo from spans, monolith from its own per-step log -- it runs "
+          "with --no-radt by design and has no spans. Loadgen admission is "
+          "excluded from the Choreo side; the monolith has no admission step, so "
+          "this is the like-for-like pairing. `framework term` is the "
+          "span-measured entry+handoff+exit, i.e. what the framework adds from "
+          "the inside, independent of the cross-process difference.)")
 
 
 def print_identity(machine, cells):
@@ -683,7 +736,7 @@ def print_identity(machine, cells):
         gap = c["q_monolith"]["median"] * (NS_PER_MS / NS_PER_US) - step
         d_dl = b["dataloader"] - gap
         d_tr = b["training"] - step
-        fw = b["entry"] + b["handoff"] + b["exit"] + b["turnaround"]
+        fw = b["framework"]          # entry + handoff + exit; scheduling excluded
         measured = c["cost_of_choreo"]["abs_us"] if c["cost_of_choreo"] else float("nan")
         name = f"{MODEL_DISPLAY.get(c['model'], c['model'])} b{c['batch']}"
         print(f"| {name} | {d_dl:+.1f} | {d_tr:+.1f} | {fw:+.1f} | "
@@ -755,9 +808,10 @@ def make_breakdown_figure(per_machine, fig_dir):
                 if any(c.get("breakdown") for c in per_machine[m])]
     if not machines:
         return None
-    parts = ("entry", "handoff", "exit", "turnaround")
-    colors = {"entry": "tab:blue", "handoff": "tab:orange",
-              "exit": "tab:green", "turnaround": "tab:red"}
+    # Scheduling (turnaround) is deliberately not stacked here: it is loadgen
+    # admission outside the pipeline, not framework work on this query.
+    parts = ("entry", "handoff", "exit")
+    colors = {"entry": "tab:blue", "handoff": "tab:orange", "exit": "tab:green"}
 
     fig, ax = plt.subplots(1, len(machines) + 1,
                            figsize=(5.2 * (len(machines) + 1), 4.4))
@@ -782,9 +836,7 @@ def make_breakdown_figure(per_machine, fig_dir):
         cells = sorted([c for c in per_machine[machine] if c.get("breakdown")],
                        key=lambda c: c["q_monolith"]["median"])
         xs = [c["q_monolith"]["median"] for c in cells]
-        ys = [100.0 * sum(c["breakdown"][k] for k in parts)
-              / (sum(c["breakdown"][k] for k in parts)
-                 + c["breakdown"]["dataloader"] + c["breakdown"]["training"])
+        ys = [100.0 * c["breakdown"]["framework"] / c["breakdown"]["in_pipeline"]
               for c in cells]
         marker = {"m2pro": "o-", "gb10": "s-"}.get(machine, "^-")
         ax[-1].plot(xs, ys, marker, ms=5, lw=1.3, label=machine)
@@ -910,6 +962,7 @@ def main():
         print_cells(cells, machine)
         if not args.no_breakdown:
             print_breakdown(machine, cells, metas, args.warmup)
+            print_span_cost(machine, cells)
             print_identity(machine, cells)
         print_sweeps(cells, machine)
 

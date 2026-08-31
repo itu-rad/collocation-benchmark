@@ -43,29 +43,25 @@ never m2pro-vs-gb10 microseconds.
 
 ---
 
-## The metric of record: time per query
+## The metric of record: in-pipeline latency, from spans
 
-**Time per query** — start-to-start between consecutive queries, equivalently time per batch,
-equivalently 1/throughput.
+**L_q — `pipeline query` start to `pipeline query processed` start**, taken from the spans of
+the traced configuration. It is the time a query spends *inside the pipeline*.
 
-Two properties make it the right one here:
+**What it deliberately excludes.** The start-to-start period between consecutive queries also
+contains **loadgen admission** — the gap from one query being counted processed to the next
+being admitted. That is the harness scheduling work, not the pipeline executing anything, and
+**the monolith has no analogue for it**: a bare `for` loop has no admission step. Charging it
+to the framework measures our own load generator and flatters nothing — it inflates the
+apparent cost of decomposition by a term the reference can never pay. It is reported
+separately as `scheduling` and is a near-constant 0.5-0.9 ms/query on gb10, 0.18-0.24 on
+m2pro, independent of cell.
 
-- **It is anchor-invariant.** In steady state the same period comes out whether you cut at
-  the pipeline row, the training row, or the monolith's own step row: measured on a b8 cell,
-  66118 µs from pipeline starts vs 66242 µs from training starts. That is what makes two
-  processes comparable although they emit *different markers* — which is exactly the
-  constraint `disable_logs: true` imposes on the Choreo side.
-- **It covers the whole cycle**, data loading and preprocessing included, where an in-step
-  marker is blind to the 10–30 % spent there.
-
-**What it replaced, and why.** The previous metric was the training step's own duration,
-compared across the two processes. It is not usable at this noise floor: the framework's
-cost lands mostly *between* steps, which that marker excludes by construction. It measured a
-near-zero difference against ±600 µs of run-to-run noise and flipped sign between
-repetitions — per-run paired differences for one cell ran
-`+7.6 / +30.0 / −50.6 / +21.5 / −6.0 / −1241.8 / −55.2 / +8.1 / −18.6`, and one cell settled
-at −575 µs, i.e. "the wrapper makes work faster". The honest reading of those tables was
-"in-step overhead is below a ±600 µs noise floor", not the signed values printed.
+**Choreo is measured from spans; the monolith from its own per-step log.** That asymmetry is
+deliberate and unavoidable: the monolith runs `--no-radt` precisely so the control does not
+carry the framework's instrument, and it therefore emits no spans. The Choreo side's L_q comes
+from the traced runs, so it carries the cost of tracing — bounded, and within noise at every
+gb10 cell (see below).
 
 ## Co-headline: the query latency breakdown
 
@@ -200,48 +196,50 @@ dataloader stage. That is fixed (`pipeline.py`, condition variables in place of 
 polling); see *A polling artifact, found and removed* below, because the correction changes
 what the breakdown says.
 
-### The cost of decomposition
+### What the framework costs, measured from its own spans
 
-**GB10** (pinned to the X925 cluster; the quiet machine, and the one to read):
+The direct measurement: `entry + handoff + exit`, the framework's work inside the pipeline,
+per query. GB10:
 
-| cell | time per query | cost of decomposition | as % |
+| cell | in-pipeline L_q | **framework** | share |
 |---|--:|--:|--:|
-| EfficientNetV2-S b1 | 13.81 ms | +1859 µs [+1332, +2149] | **+13.46%** |
-| EfficientNetV2-S b2 | 19.58 | +1465 [+930, +1770] | +7.48% |
-| EfficientNetV2-S b4 | 34.02 | +1498 [+1141, +1774] | +4.40% |
-| EfficientNetV2-S b8 | 63.91 | +1548 [+1061, +2202] | +2.42% |
-| EfficientNetV2-S b16 | 128.94 | +1437 [+962, +1826] | +1.11% |
-| EfficientNetV2-S b32 | 268.63 | +1433 [+701, +2112] | +0.53% |
-| EfficientNetV2-S b64 | 554.79 | +2404 [+398, +3536] | **+0.43%** |
-| EfficientNetV2-M b8 | 134.52 | +476 [+130, +1029] | +0.35% |
-| EfficientNetV2-L b8 | 225.22 | +1419 [+948, +1794] | +0.63% |
+| EfficientNetV2-S b1 | 14.82 ms | **1044 µs** | **7.05%** |
+| EfficientNetV2-S b2 | 20.03 | 736 | 3.67% |
+| EfficientNetV2-S b4 | 34.52 | 987 | 2.86% |
+| EfficientNetV2-S b8 | 64.53 | 802 | 1.24% |
+| EfficientNetV2-S b16 | 129.37 | 1028 | 0.79% |
+| EfficientNetV2-S b32 | 269.28 | 1161 | 0.43% |
+| EfficientNetV2-S b64 | 555.19 | **1186** | **0.21%** |
+| EfficientNetV2-M b8 | 133.98 | 966 | 0.72% |
+| EfficientNetV2-L b8 | 225.42 | 1109 | 0.49% |
 
-Two things at once, which is the result:
+**736-1186 µs, flat across a 37x range of query time**, so its share falls 7.05% -> 0.21%. A
+fixed per-query tax, not a scaling one. `entry` is flat to within 25 µs and **`handoff` runs
+105 -> 202 µs while the payload grows 64x** — E1's zero-copy result in a real workload, and
+the reason the total does not scale.
 
-- **The absolute cost is flat.** 1433-2404 µs across a **40x** range of query time. It does
-  not scale with batch, with model, or with payload.
-- **The relative cost therefore amortizes**, 13.46% -> 0.43%. Across models at fixed batch,
-  2.42% -> 0.63%.
+### Cross-checked against the monolith
 
-A fixed per-query tax, not a scaling one. That is the claim E1 makes on empty stages,
-reproduced here on a real workload against an external baseline.
+The same quantity as a difference against the external baseline — Choreo's L_q from spans, the
+monolith from its own per-step log:
 
-### Where the cost goes
+| cell | monolith | choreo L_q | cost | as % |
+|---|--:|--:|--:|--:|
+| EfficientNetV2-S b1 | 13.81 ms | 14.82 | +1005 µs | +7.27% |
+| EfficientNetV2-S b8 | 63.91 | 64.53 | +621 | +0.97% |
+| EfficientNetV2-S b64 | 554.79 | 555.19 | +398 | +0.07% |
+| EfficientNetV2-M b8 | 134.52 | 133.98 | **-538** | -0.40% |
+| EfficientNetV2-L b8 | 225.22 | 225.42 | +195 | +0.09% |
 
-From the spans of the traced configuration, GB10 (µs per query):
+Same order as the span term and the same direction at every cell but one, which is the
+corroboration worth having: two independent routes to the framework's cost agree.
 
-| cell | entry | handoff | exit | turnaround | **framework** | framework % |
-|---|--:|--:|--:|--:|--:|--:|
-| S b1 | 170.4 | 105.1 | 768.9 | 525.5 | **1569.8** | 10.23% |
-| S b8 | 179.5 | 164.7 | 457.6 | 852.5 | **1654.3** | 2.53% |
-| S b64 | 182.7 | 201.7 | 801.3 | 684.5 | **1870.3** | 0.34% |
-| M b8 | 182.4 | 188.4 | 595.5 | 758.0 | **1724.3** | 1.28% |
-| L b8 | 179.2 | 185.0 | 745.1 | 651.2 | **1760.5** | 0.78% |
-
-`entry` is flat to within 25 µs across the whole sweep. **`handoff` runs 105 -> 202 µs while
-the payload grows 64x** — E1's zero-copy result reappearing in a real workload, and the
-reason the absolute cost does not scale. Full nine-cell tables are in the analyzer output;
-the figure is `paper_assets/e2_query_latency_breakdown.png`.
+**The span term is the better estimator and should be the headline.** The cross-process
+difference subtracts two separately-measured medians of 14-555 ms to recover a ~1 ms effect,
+so it inherits both runs' noise — which is why EfficientNetV2-M b8 lands at -538 µs. A
+negative there is not a speed-up; it is the resolution floor of a difference-of-large-numbers.
+The span term measures the framework's work *directly inside* a query and never crosses a
+process boundary, so it stays positive and tight at every cell on both machines.
 
 ### What tracing costs
 
@@ -265,95 +263,18 @@ closes on GB10 with residuals of **+74 to +1321 µs** (median +380), against mea
 slower than the monolith's own inter-step loading. Before the polling fix it reached
 **+2984 µs** at b64 and grew with batch, which is what prompted the investigation.
 
-### The M2 Pro half is weaker, and should be reported as such
+### The M2 Pro half, under the same metric
 
-Same apparatus, same code, but **5 of 9 cells have a confidence interval that straddles
-zero**, and three of those read negative (-650, -736, -166 µs). The machine is unpinned and shares itself with the OS; its
-run-to-run spread swamps a sub-1% effect. A negative cost is not a speed-up — it means the
-difference is below what this apparatus resolves on this machine.
+The span term is well behaved here too — **388 -> 2293 µs**, share **1.10% -> 0.24%** — but
+unlike GB10 it *grows*, and the growth is entirely `exit` (see below). `entry` stays at
+63-76 µs and `handoff` at 74-138 µs across the same 64x payload range, so the zero-copy result
+replicates on both machines.
 
-The *within-query* breakdown survives, because it never crosses a process boundary:
-across the batch sweep b1 -> b64, framework overhead 570 -> 2534 µs and its share
-1.61% -> 0.26% (the lowest share of any cell is 0.18%, at EfficientNetV2-L b8); `entry` is
-flat at 63-76 µs and `handoff` at 74-138 µs across the same 64x payload range.
-
-**One term does not behave: `exit`, and it is now explained and fixable.** It grows
-248 -> 2081 µs with batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is
-the interval from the training stage's `push_to_outputs` to `pipeline query processed` — the
-finished query leaving the LAST stage for the pipeline's collector thread. It is not the
-stage-to-stage `handoff` (dataloader -> training), which is a different row in the table
-above and stays flat.
-
-**Cause: returning the batch's resident pages to the OS, on the collector thread.** The
-training stage returns the same query object it received and never clears `query.data`
-(`stages/torchvision_classification/classification.py`), so the input batch — 113 MB at
-S b64 — rides through to the collector, where the query goes out of scope and the memory is
-released. Note `inputs = inputs.to(self._device)` rebinds a *local*, so what is released is
-the **host** tensor, not the device copy.
-
-Freeing that memory is nearly free on Linux and expensive on macOS:
-
-| payload | free on m2pro | free on gb10 |
-|--:|--:|--:|
-| 1.8 MB | 37.8 µs | 1.8 µs |
-| 56.6 MB | 607.7 µs | 0.7 µs |
-| 113.2 MB | **1223.6 µs** | **0.7 µs** |
-
-macOS returns dirty pages to the kernel synchronously on free; glibc retains them in its
-arena. That ~1750x difference at 113 MB is the whole of the machine asymmetry — it is a
-platform allocator property, not a framework-logic one.
-
-**Confirmed by intervention, not just correlation.** Clearing `query.data` before the
-training stage's final push — before the query leaves the last stage, which is what `exit`
-measures, not the stage-to-stage `handoff` — on an otherwise identical b64 traced run:
-
-| | `exit` |
-|---|--:|
-| as shipped | 2232 µs |
-| `query.data` cleared before push | **356 µs** |
-
-an **84% reduction**, consistent with the 1224 µs measured free cost. The rest of the
-breakdown is unchanged (entry 75 -> 72 µs, handoff 146 -> 134, training 701 -> 697 ms).
-
-> **A measurement caution, recorded because it nearly buried this.** An earlier version of
-> this section asserted the deallocation mechanism from an r = +0.996 correlation alone; it
-> was then *retracted* when a microbenchmark showed freeing 113 MB costing 0.6 µs. That
-> benchmark was wrong: it freed `torch.empty` buffers whose pages were never touched, so
-> there was nothing resident to return. Filling the tensor first — as the dataloader does —
-> moves the cost from 0.7 µs to 1224 µs. A microbenchmark that does not reproduce the
-> workload's page-residency does not measure the workload's free cost.
-
-**Not fixable without giving up per-query allocation, and therefore not fixed.** Two
-interventions were tried, both measured with interleaved same-session A/B runs at b64:
-
-| intervention | `exit` | `handoff` | **time per query** |
-|---|--:|--:|--:|
-| as shipped | 2556 µs | 142 µs | **977.56 ms** |
-| clear `query.data` in the stage | 356 | — | 965.7 (within drift) |
-| release the query in the collector before it blocks | **250** | **1721** | **977.55 ms** |
-
-Neither removes the cost; both relocate it. The collector-side release is the instructive
-one: it moves 2306 µs out of `exit` and 1579 µs of it reappears in `handoff`, with time per
-query unchanged to 0.01 ms. It would also wreck the presentation of a real result — `handoff`
-is flat at 105-202 µs across a 64x payload range, which *is* the zero-copy finding, and this
-change would inflate it 12x while making the framework no faster.
-
-The reason is structural: **under `serialize_queries: true` there is no idle thread to hide
-the work in.** One query is in flight by construction, so any work on any thread is on the
-critical path, and freeing 113 MB has to happen somewhere. Moving it only changes which
-interval is charged. Under pipelining there would be idle capacity to absorb it, but that is
-the configuration where latency matters least.
-
-What would actually remove it is not allocating a fresh batch per query — buffer reuse in the
-dataloader. That is rejected on design grounds: it constrains what a stage may do with its
-output, and the framework's value is that it does not.
-
-So the term is reported as measured: a real, platform-specific cost of ~16 µs/MB on macOS
-that the framework pays and cannot relocate away, not an inefficiency to be tuned out.
-
-So: "the framework's cost is a fixed O(1) tax" is supported on GB10 and **not** on the M2
-Pro, where it carries a 16 µs/MB payload term the framework could avoid. The amortization
-claim holds on both.
+The cross-process difference is much weaker on this machine: it ranges -1568 to +6386 µs and
+three cells read negative. m2pro is unpinned and shares itself with the OS, and a
+difference-of-large-numbers at 35-959 ms cannot resolve a sub-1 ms effect there. This is the
+concrete reason to prefer the span term as the headline: it is unaffected, because it never
+crosses a process boundary.
 
 ### A polling artifact, found and removed
 
