@@ -274,19 +274,12 @@ across the batch sweep b1 -> b64, framework overhead 570 -> 2534 µs and its sha
 1.61% -> 0.26% (the lowest share of any cell is 0.18%, at EfficientNetV2-L b8); `entry` is
 flat at 63-76 µs and `handoff` at 74-138 µs across the same 64x payload range.
 
-**One term does not behave, and the cause is identifiable.** `exit` grows 248 -> 2081 µs
-with batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is the interval
-from the training stage's `push_to_outputs` to `pipeline query processed` — handing the
-finished batch back.
+**One term does not behave, and its cause is still open.** `exit` grows 248 -> 2081 µs with
+batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is the interval from the
+training stage's `push_to_outputs` to `pipeline query processed` — the finished query
+crossing from the training thread to the collector thread.
 
-It is the **payload being deallocated on the collector thread**. The training stage returns
-the *same query object* it received (`output = {idx: query for idx in self.output_queues}`,
-`stages/torchvision_classification/classification.py`) and never clears `query.data`, so the
-full input batch — 113 MB at S b64 — rides through to the collector. When the collector
-finishes logging, that query goes out of scope and the tensor is freed *there*, inside this
-interval. MPS reclamation scales with the block; CUDA's caching allocator does not.
-
-The data says exactly that. Regressing `exit` on the input-tensor size across all nine cells:
+It is tightly payload-linked. Regressing `exit` on input-tensor size across all nine cells:
 
 | machine | fit | correlation |
 |---|---|--:|
@@ -294,15 +287,33 @@ The data says exactly that. Regressing `exit` on the input-tensor size across al
 | gb10 | `exit = 2.11 µs/MB · payload + 595 µs` | +0.534 |
 
 The model sweep separates payload from work: EfficientNetV2-S/M/L at b8 are 14.2 / 22.1 /
-22.1 MB of input, and `exit` reads 409 / 524 / 535 µs — it tracks the **input size**, not the
+22.1 MB of input and `exit` reads 409 / 524 / 535 µs — it tracks **input size**, not the
 model. A bigger model doing more work does not move it; a bigger tensor does.
 
-**What is established:** the term is payload-driven reclamation on the consuming thread, and
-it is an M2 Pro (unified memory) effect, not a framework-logic one. **What is not:** the
-intervention. Clearing `query.data` before the push — the payload is dead by then, nothing
-downstream reads it, and there is a commented-out line in that stage that did exactly this —
-should collapse the term. That has not been run, because it changes the framework and would
-require re-collecting E2 a third time.
+**The obvious mechanism is falsified.** The training stage returns the same query object it
+received and never clears `query.data`, so the batch rides through to the collector and is
+released there — which made unified-memory reclamation on the consuming thread the natural
+explanation. Measured directly, it cannot be:
+
+| payload | free CPU tensor (m2pro) | free CPU tensor (gb10) | free device copy (m2pro) | (gb10) |
+|--:|--:|--:|--:|--:|
+| 1.8 MB | 1.3 µs | 0.4 µs | 0.9 µs | 4.3 µs |
+| 113.2 MB | **0.6 µs** | **0.4 µs** | 1.0 µs | 18.9 µs |
+
+Freeing 113 MB costs well under a microsecond on both machines and does not scale with size —
+allocators return large blocks without touching them. It cannot account for 2081 µs. Note
+also that `inputs = inputs.to(self._device)` rebinds a local, so what the collector releases
+is the **host** tensor, not the device copy; and the only free cost that *does* scale here is
+GB10's device release, which is the machine that does not show the effect.
+
+**What stands:** the term is real, reproducible, payload-linked at r = +0.996, and specific
+to the M2 Pro. **What does not:** any claim about why. The remaining suspect is that `exit`
+is a cross-thread handoff whose latency degrades under the larger resident footprint at high
+batch — several 113 MB tensors alive in queues at once — rather than any cost of the payload
+itself. That is untested. The falsifying experiment is cheap: clear `query.data` before the
+push (the payload is dead by then, and that stage carries a commented-out line that did
+exactly this) and see whether `exit` flattens. It has not been run, because it changes the
+framework and would mean re-collecting E2 a third time.
 
 So: "the framework's cost is a fixed O(1) tax" is supported on GB10 and **not** on the M2
 Pro, where it carries a 16 µs/MB payload term the framework could avoid. The amortization
