@@ -30,7 +30,8 @@
 # Only the tracing env var and the config differ.
 #
 #   usage: collect_e1.sh <device> [runs] [exp] [depth-list]
-#     device     : mlx | cuda   (names the results dir analyze_e1.py globs)
+#     machine    : m3pro | gb10  (names the results dir analyze_e1.py globs, and
+#                  the run labels; the torch/backend string is not this)
 #     runs       : repetitions per cell per arm (default 11; run 1 is dropped
 #                  as system warm-up -- the first repetition of a cell is
 #                  slower for its WHOLE duration, not just its first steps)
