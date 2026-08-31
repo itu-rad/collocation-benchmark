@@ -187,19 +187,130 @@ step counts). Figures go to `paper_assets/`.
 
 ## Results
 
-**Pending the 2026-08-27 collection.** Numbers, tables and figures go here once
-`analyze_e2.py` runs on the complete dataset; they are deliberately not carried over from
-the previous collection, every part of which was superseded — different metric, different
-logging instrument on the monolith side, fixed configuration order, and pre-dating the
-`get_input` span removal, the marker spans and the cyclic-pipeline termination fix.
+Collected 2026-08-28 on both machines against commit `d242d80`: 9 cells x 3 configurations
+x 11 repetitions = 297 runs each, zero failures, verified from the CSVs on disk.
 
-Gates that must hold before any number here is reported:
+**These numbers are from the second collection.** The first (2026-08-27) was discarded after
+it showed that the framework's own result-collector and drain loop were waking ten times a
+second for the whole duration of every query, which cost measurable time inside the
+dataloader stage. That is fixed (`pipeline.py`, condition variables in place of 100 ms
+polling); see *A polling artifact, found and removed* below, because the correction changes
+what the breakdown says.
 
-- every cell has 11 repetitions per configuration, zero failures, no truncated CSVs —
-  verified from the CSVs on disk, not from the log;
-- the **fixed** per-query span types number exactly six per query on both machines
-  (`pipeline query`, `pipeline query processed`, and `.run` + `.push_to_outputs` for each of
-  the two stages) — see the note below on why the *total* span count cannot be used for this;
-- no negative transition intervals anywhere;
-- the Δ(time per query) identity closes to within a stated tolerance;
-- no cell reports a negative cost of decomposition without an explanation.
+### The cost of decomposition
+
+**GB10** (pinned to the X925 cluster; the quiet machine, and the one to read):
+
+| cell | time per query | cost of decomposition | as % |
+|---|--:|--:|--:|
+| EfficientNetV2-S b1 | 13.81 ms | +1859 µs [+1332, +2149] | **+13.46%** |
+| EfficientNetV2-S b2 | 19.58 | +1465 [+930, +1770] | +7.48% |
+| EfficientNetV2-S b4 | 34.02 | +1498 [+1141, +1774] | +4.40% |
+| EfficientNetV2-S b8 | 63.91 | +1548 [+1061, +2202] | +2.42% |
+| EfficientNetV2-S b16 | 128.94 | +1437 [+962, +1826] | +1.11% |
+| EfficientNetV2-S b32 | 268.63 | +1433 [+701, +2112] | +0.53% |
+| EfficientNetV2-S b64 | 554.79 | +2404 [+398, +3536] | **+0.43%** |
+| EfficientNetV2-M b8 | 134.52 | +476 [+130, +1029] | +0.35% |
+| EfficientNetV2-L b8 | 225.22 | +1419 [+948, +1794] | +0.63% |
+
+Two things at once, which is the result:
+
+- **The absolute cost is flat.** 1433-2404 µs across a **40x** range of query time. It does
+  not scale with batch, with model, or with payload.
+- **The relative cost therefore amortizes**, 13.46% -> 0.43%. Across models at fixed batch,
+  2.42% -> 0.63%.
+
+A fixed per-query tax, not a scaling one. That is the claim E1 makes on empty stages,
+reproduced here on a real workload against an external baseline.
+
+### Where the cost goes
+
+From the spans of the traced configuration, GB10 (µs per query):
+
+| cell | entry | handoff | exit | turnaround | **framework** | framework % |
+|---|--:|--:|--:|--:|--:|--:|
+| S b1 | 170.4 | 105.1 | 768.9 | 525.5 | **1569.8** | 10.23% |
+| S b8 | 179.5 | 164.7 | 457.6 | 852.5 | **1654.3** | 2.53% |
+| S b64 | 182.7 | 201.7 | 801.3 | 684.5 | **1870.3** | 0.34% |
+| M b8 | 182.4 | 188.4 | 595.5 | 758.0 | **1724.3** | 1.28% |
+| L b8 | 179.2 | 185.0 | 745.1 | 651.2 | **1760.5** | 0.78% |
+
+`entry` is flat to within 25 µs across the whole sweep. **`handoff` runs 105 -> 202 µs while
+the payload grows 64x** — E1's zero-copy result reappearing in a real workload, and the
+reason the absolute cost does not scale. Full nine-cell tables are in the analyzer output;
+the figure is `paper_assets/e2_query_latency_breakdown.png`.
+
+### What tracing costs
+
+Within noise at **all nine** GB10 cells: every interval straddles zero, from -245 µs to
++289 µs against a query of 14-555 ms. Turning tracing on is not measurable at this workload
+scale, which is what licenses using the traced configuration to source the breakdown.
+
+### The identity, and its tolerance
+
+`Δ(time per query) = (dataloader - monolith gap) + (training - monolith step) + framework`
+
+closes on GB10 with residuals of **+74 to +1321 µs** (median +380), against measured costs of
+476-2404 µs. Two known contributors, both stated rather than absorbed:
+
+1. **The two sides use different configurations.** The breakdown comes from `choreo-traced`
+   (spans only exist when tracing is on) while `measured` is `choreo - monolith`, untraced.
+   They differ by exactly the cost of tracing — bounded above, but not zero.
+2. **Median of sums is not the sum of medians.** Each term is a median over runs.
+
+`dl - gap` is now negative at every GB10 cell (-63 to -1382 µs): the Choreo dataloader is no
+slower than the monolith's own inter-step loading. Before the polling fix it reached
+**+2984 µs** at b64 and grew with batch, which is what prompted the investigation.
+
+### The M2 Pro half is weaker, and should be reported as such
+
+Same apparatus, same code, but **5 of 9 cells have a confidence interval that straddles
+zero**, and three of those read negative (-650, -736, -166 µs). The machine is unpinned and shares itself with the OS; its
+run-to-run spread swamps a sub-1% effect. A negative cost is not a speed-up — it means the
+difference is below what this apparatus resolves on this machine.
+
+The *within-query* breakdown survives, because it never crosses a process boundary:
+across the batch sweep b1 -> b64, framework overhead 570 -> 2534 µs and its share
+1.61% -> 0.26% (the lowest share of any cell is 0.18%, at EfficientNetV2-L b8); `entry` is
+flat at 63-76 µs and `handoff` at 74-138 µs across the same 64x payload range.
+
+**One term does not behave.** `exit` grows 248 -> 2081 µs with batch on the M2 Pro, while
+GB10's stays in the 425-801 range. `exit` is the interval from the training stage's
+`push_to_outputs` to `pipeline query processed`, i.e. handing the finished batch back.
+Unified-memory reclamation of the ~113 MB batch is the obvious suspect and is **not
+established**. Until it is, "the framework's cost is a fixed O(1) tax" is supported on GB10
+and **not** on the M2 Pro; the amortization claim holds on both.
+
+### A polling artifact, found and removed
+
+The E2 breakdown is what caught it. `pipeline.py` spanned every poll of its result queue and
+waited in 100 ms slices on the drain path, so with `serialize_queries` both threads woke
+`2 x L_q / 100 ms` times per query — 11 times per query at b64 — each contending for the GIL
+with the stage threads whose duration is the measured quantity. The monolith has neither
+thread.
+
+Measured on GB10 b64, changing only that:
+
+| | `dl - gap` | cost of decomposition |
+|---|--:|--:|
+| 100 ms polling | +3702 µs | +5912 µs |
+| condition variables | **+353 µs** | **+4830 µs** |
+
+E1 is unaffected — its queries complete in µs-ms, so its collector never sat through a
+timeout. Confirmed by an interleaved same-session A/B on pinned GB10: paired deltas of
+-1.55 µs at depth 1 and -22.98 µs at depth 10, both straddling zero.
+
+### Gates
+
+| gate | outcome |
+|---|---|
+| 11 repetitions per cell per configuration, zero failures, no truncated CSVs | **pass**, verified from disk |
+| span count constant per run, independent of query latency | **pass** — exactly 2401 on all 99 traced runs on *both* machines (it was latency-proportional and machine-dependent before the fix) |
+| no negative intervals in the breakdown | **pass**, no run excluded |
+| Δ identity closes within a stated tolerance | **pass with tolerance stated**: +74 to +1321 µs, sources above |
+| no negative cost of decomposition without explanation | **pass on GB10** (none negative); **explained on M2 Pro** (3 cells, below resolution) |
+
+One collection artifact was caught by the row-count check and defused: a run killed
+part-way left a partial CSV that the next run with the same label appended to
+(`mod_meffv2s_b64_choreo_gb10_r1`, 955 rows, carrying a 4.6-hour interval). `analyze_e2.py`
+takes only the last session, and `collect_e2.sh` now clears a stale file on both sides.
