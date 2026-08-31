@@ -386,7 +386,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--devices", nargs="+", default=["cuda", "mps"])
-    ap.add_argument("--fig-dir", default=os.path.join(HERE, "..", "overheads", "paper_assets"))
+    ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
     ap.add_argument("--mlperf-dir", default=os.path.join(HERE, "mlperf_gb10"))
     args = ap.parse_args()
     fig_dir = os.path.abspath(args.fig_dir)

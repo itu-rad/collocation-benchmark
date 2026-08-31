@@ -485,7 +485,7 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
     ap.add_argument("--devices", nargs="+", default=["mlx", "cuda"])
-    ap.add_argument("--fig-dir", default=os.path.join(HERE, "..", "overheads", "paper_assets"))
+    ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
     args = ap.parse_args()
     fig_dir = os.path.abspath(args.fig_dir); os.makedirs(fig_dir, exist_ok=True)
 

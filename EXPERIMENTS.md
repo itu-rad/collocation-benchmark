@@ -22,13 +22,20 @@ prefill/decode split). A 6th, the **capacity/size sweep, is a stretch goal** (on
 ## E1 — NoOp / framework overhead
 **Question.** What does Choreo's machinery cost, independent of any real work? Bounds per-stage
 dispatch and the payload-passing model, so later overhead is attributable to the workload.
-**Shows.** (1) per-stage dispatch small + **flat** vs depth (~60–85 µs/stage); (2) context passing
-**zero-copy** by reference (~31 µs) vs deep-copy (~1059 µs, ~33×). Tracing OFF/ON arms separate the
-tracing layer.
-**Artifacts.** `evaluation/overheads/framework_overhead/` — NoOp configs, analyzers, figures in
-`evaluation/overheads/paper_assets/`.
-**Status/gap.** Apparatus exists; prior matrix was on a busy Linux box + old tracing → **re-collect
-on both devices (idle M2 + quiesced GB10) with the new tracing.**
+**Shows.** (1) per-stage dispatch small + **flat** vs depth (11.8 µs/stage on m2pro, 15.2 on gb10);
+(2) context passing **zero-copy** by reference — flat at ~16 µs/stage from 0 to 10 MiB (0.033 µs/MB)
+against a deep-copy counterfactual that grows with payload (115.0 µs/MB, reaching **74×** ref at
+10 MiB). The `uninstrumented` / `spans-only` configurations separate the tracing layer from the
+framework.
+**Artifacts.** `evaluation/overheads/framework_overhead/` — NoOp configs, `collect_e1.sh` +
+`analyze_e1.py`, figures in `framework_overhead/paper_assets/` (each experiment owns its own
+`paper_assets/`; there is no shared one).
+**Status.** **Closed.** Re-collected on M2 Pro and GB10 (idle / X925-pinned), powers of two 1–128,
+two configurations (`uninstrumented` / `spans-only`), R=11 with run 1 dropped. Marginal per-stage
+dispatch cost 11.78 µs (m2pro) / 15.18 µs (gb10). Zero-copy holds: reference passing is flat in
+payload (0.033 µs/MB) against deep copy at 115.0 µs/MB. Unaffected by the 2026-08-28 polling fix —
+verified by an interleaved same-session A/B on pinned GB10 (paired delta −1.55 µs at depth 1,
+−22.98 at depth 10, both straddling zero).
 
 ## E2 — Modularity overhead (real workload, model × batch sweep)
 **Question.** When the wrapped stage does *real* GPU work, is the decomposition overhead negligible,
