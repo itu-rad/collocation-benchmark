@@ -274,12 +274,39 @@ across the batch sweep b1 -> b64, framework overhead 570 -> 2534 µs and its sha
 1.61% -> 0.26% (the lowest share of any cell is 0.18%, at EfficientNetV2-L b8); `entry` is
 flat at 63-76 µs and `handoff` at 74-138 µs across the same 64x payload range.
 
-**One term does not behave.** `exit` grows 248 -> 2081 µs with batch on the M2 Pro, while
-GB10's stays in the 425-801 range. `exit` is the interval from the training stage's
-`push_to_outputs` to `pipeline query processed`, i.e. handing the finished batch back.
-Unified-memory reclamation of the ~113 MB batch is the obvious suspect and is **not
-established**. Until it is, "the framework's cost is a fixed O(1) tax" is supported on GB10
-and **not** on the M2 Pro; the amortization claim holds on both.
+**One term does not behave, and the cause is identifiable.** `exit` grows 248 -> 2081 µs
+with batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is the interval
+from the training stage's `push_to_outputs` to `pipeline query processed` — handing the
+finished batch back.
+
+It is the **payload being deallocated on the collector thread**. The training stage returns
+the *same query object* it received (`output = {idx: query for idx in self.output_queues}`,
+`stages/torchvision_classification/classification.py`) and never clears `query.data`, so the
+full input batch — 113 MB at S b64 — rides through to the collector. When the collector
+finishes logging, that query goes out of scope and the tensor is freed *there*, inside this
+interval. MPS reclamation scales with the block; CUDA's caching allocator does not.
+
+The data says exactly that. Regressing `exit` on the input-tensor size across all nine cells:
+
+| machine | fit | correlation |
+|---|---|--:|
+| m2pro | `exit = 16.17 µs/MB · payload + 189 µs` | **+0.996** |
+| gb10 | `exit = 2.11 µs/MB · payload + 595 µs` | +0.534 |
+
+The model sweep separates payload from work: EfficientNetV2-S/M/L at b8 are 14.2 / 22.1 /
+22.1 MB of input, and `exit` reads 409 / 524 / 535 µs — it tracks the **input size**, not the
+model. A bigger model doing more work does not move it; a bigger tensor does.
+
+**What is established:** the term is payload-driven reclamation on the consuming thread, and
+it is an M2 Pro (unified memory) effect, not a framework-logic one. **What is not:** the
+intervention. Clearing `query.data` before the push — the payload is dead by then, nothing
+downstream reads it, and there is a commented-out line in that stage that did exactly this —
+should collapse the term. That has not been run, because it changes the framework and would
+require re-collecting E2 a third time.
+
+So: "the framework's cost is a fixed O(1) tax" is supported on GB10 and **not** on the M2
+Pro, where it carries a 16 µs/MB payload term the framework could avoid. The amortization
+claim holds on both.
 
 ### A polling artifact, found and removed
 
