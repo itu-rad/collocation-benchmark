@@ -71,6 +71,9 @@ at −575 µs, i.e. "the wrapper makes work faster". The honest reading of those
 
 From the spans of the `choreo-traced` runs: per-stage latency (**dataloader**, **training**)
 plus the auxiliary framework overheads (**entry**, **handoff**, **exit**, **turnaround**).
+Those four are distinct intervals and the names are load-bearing: `entry` is pipeline ->
+first stage, `handoff` is stage -> stage (dataloader -> training), `exit` is last stage ->
+out of the pipeline, and `turnaround` is between consecutive queries.
 
 These are successive instants within *one* query on *one* clock, so unlike any cross-process
 difference they are non-negative by construction and carry no run-level term. They sum to
@@ -277,7 +280,9 @@ flat at 63-76 µs and `handoff` at 74-138 µs across the same 64x payload range.
 **One term does not behave: `exit`, and it is now explained and fixable.** It grows
 248 -> 2081 µs with batch on the M2 Pro while GB10's stays in the 425-801 range. `exit` is
 the interval from the training stage's `push_to_outputs` to `pipeline query processed` — the
-finished query crossing from the training thread to the collector thread.
+finished query leaving the LAST stage for the pipeline's collector thread. It is not the
+stage-to-stage `handoff` (dataloader -> training), which is a different row in the table
+above and stays flat.
 
 **Cause: returning the batch's resident pages to the OS, on the collector thread.** The
 training stage returns the same query object it received and never clears `query.data`
@@ -299,8 +304,8 @@ arena. That ~1750x difference at 113 MB is the whole of the machine asymmetry �
 platform allocator property, not a framework-logic one.
 
 **Confirmed by intervention, not just correlation.** Clearing `query.data` before the
-hand-off (the payload is dead by then; nothing downstream reads it) on an otherwise identical
-b64 traced run:
+training stage's final push — before the query leaves the last stage, which is what `exit`
+measures, not the stage-to-stage `handoff` — on an otherwise identical b64 traced run:
 
 | | `exit` |
 |---|--:|
