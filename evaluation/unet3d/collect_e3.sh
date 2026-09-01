@@ -127,6 +127,58 @@ elif not any("DiceScore" in s["component"] for s in p["stages"]):
     sys.exit(f"collect_e3: accuracy config has no scorer, so it would produce no DICE")
 PY
 
+# ---------------------------------------------------------------------------
+# Machine occupancy: record it, and refuse to start on a busy machine.
+#
+# On 2026-09-01 a gb10 collection ran for 40 minutes alongside a MobileNetV2
+# training job that started 26 seconds after it and held ~97 GB of GPU memory.
+# Nothing said so: rc=0, the right row counts, the right span counts. E3
+# measures the RATIO of CPU preprocessing to GPU inference, so a co-resident
+# GPU job inflates the inference stage specifically -- it biases prong 2
+# conservatively and breaks prong 1 outright, because the reference it is
+# compared against was measured on an idle machine. The whole collection had to
+# be thrown away.
+#
+# Provenance headers recorded the git commit and the library versions but never
+# WHO ELSE WAS ON THE MACHINE, which is the one thing that mattered. So: record
+# it always, and make a busy machine a refusal rather than a footnote.
+# E3_ALLOW_BUSY=1 overrides, deliberately -- it should be a decision someone
+# makes, not a default.
+occupancy_report() {
+  echo "# load         : $(uptime | sed 's/.*load average[s]*: //')"
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    local apps
+    apps=$(nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader 2>/dev/null)
+    echo "# gpu_procs    : ${apps:-none}"
+  fi
+  echo "# other_python : $(pgrep -af python 2>/dev/null | grep -v "$$" \
+        | grep -vE "main\.py|collect_e3|nvidia-smi" | wc -l | tr -d ' ')"
+}
+
+busy_check() {
+  local others
+  # Anything else holding GPU memory. Our own run has not started yet at this
+  # point, so any process here is someone else's.
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    others=$(nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader 2>/dev/null \
+             | grep -c . || true)
+    if [ "${others:-0}" -gt 0 ]; then
+      echo "collect_e3: the GPU already has ${others} process(es) on it:" >&2
+      nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv 2>/dev/null >&2
+      echo "            E3 measures the ratio of CPU preprocessing to GPU inference." >&2
+      echo "            A co-resident GPU job inflates the inference stage and makes" >&2
+      echo "            both prongs unusable. Wait for the machine, or set" >&2
+      echo "            E3_ALLOW_BUSY=1 to collect anyway and mark the data." >&2
+      return 1
+    fi
+  fi
+  return 0
+}
+
+if [ -z "${E3_ALLOW_BUSY:-}" ]; then
+  busy_check || exit 4
+fi
+
 RUNSTAMP=$(date '+%Y%m%d-%H%M%S')
 LOGDIR="$HERE/collect_logs"
 mkdir -p "$LOGDIR"
@@ -153,6 +205,8 @@ log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG";
   echo "# store        : $MLFLOW_TRACKING_URI (experiment $EXP)"
   echo "# pin          : none (enforced)"
   echo "# runs         : $RUNS"
+  echo "# allow_busy   : ${E3_ALLOW_BUSY:-no}"
+  occupancy_report
 } >> "$LOG"
 
 run_one() {

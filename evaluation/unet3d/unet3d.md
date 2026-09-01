@@ -223,3 +223,39 @@ One defect is deliberately **not** fixed: `inference.py` allocates two float64
 `[1,3,D,H,W]` host arrays (~1.2 GB for the largest case) inside the measured inference span
 and never explicitly syncs the device. That is faithful to the reference, so it is measured
 rather than "fixed" — but it is there, and it should not be attributed to the framework.
+
+---
+
+## Collection log
+
+**2026-09-01, m3pro (itu-mac).** Dataset staged from the M2 Pro (3.8 GB raw + the 119 MB
+TorchScript model — the machine had neither). Accuracy pass then R=6 timed, unpinned, under
+`caffeinate`.
+
+**2026-09-01, gb10 (babyxena).** Accuracy pass completed clean and **closes prong 1 on
+accuracy**:
+
+| harness | cases | mean DICE | kidney | tumor |
+|---|--:|--:|--:|--:|
+| MLPerf reference | 43 | 0.86168 | 0.9347 | 0.7887 |
+| Choreo | 42 | **0.86329** | 0.93418 | 0.79241 |
+
+Kidney agrees to 0.0005 and tumor to 0.004; the mean clears MLPerf's gate (0.85308) with
+room. That agreement is also what validates `KiTS19DiceScore` as the reference formula — an
+earlier ad-hoc scoring of the same runs used a merged-kidney convention (kidney = classes
+{1,2}) and does not reproduce the reference's per-class numbers.
+
+**The gb10 TIMED pass of 2026-09-01 is contaminated and must not be used.** A MobileNetV2
+training job (`train_cloud.py`) started on the same machine 26 seconds after the collection
+began and held ~97 GB of GPU memory throughout. E3 measures the *ratio* of CPU preprocessing
+to GPU inference, so a co-resident GPU job inflates the inference stage specifically: it
+biases prong 2 conservatively (the hidden share looks smaller than it is) and breaks prong 1
+outright, since the reference it is compared against was measured on an idle machine. The
+foreign job was left running — it is not ours to kill — and a re-collection is queued to
+start once the machine goes idle, moving the contaminated runs aside rather than deleting
+them.
+
+This is the second time a concurrent workload has silently corrupted a collection on a shared
+machine (the first was a Mac that slept mid-run). Neither was visible in the return code, the
+row count or the span count. The lesson for the harness: **record machine occupancy in the
+provenance header**, not just the git commit and the library versions.
