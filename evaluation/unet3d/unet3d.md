@@ -276,6 +276,21 @@ constant at 463, so nothing about the pipeline itself changed. The accuracy pass
 before the foreign job started and does strictly *more* work per case (it resamples the label
 too, and scores the result), finished in a third of r1's time.
 
+The span-level view says the same thing, and says *where* it lands:
+
+| run | preprocess (median) | inference (median) | framework |
+|---|--:|--:|--:|
+| perf r1 | 2067 ms | 19650 ms | 1472 µs |
+| perf r2 | 1776 ms | 11459 ms | 1154 µs |
+| swing | **−14%** | **−42%** | — |
+
+Inference moves three times as much as preprocessing between two identical runs. That is the
+signature of GPU contention rather than general machine noise, and it fixes the direction of
+the bias: with inference inflated, the share prong 2 reports is **understated**, not
+flattered. The framework term is 1.2–1.5 ms — larger than E2's 0.4–0.6 ms because this graph
+has three stages and two hand-offs rather than two and one, and about 0.005% of a 23-second
+query either way.
+
 E3 measures the *ratio* of CPU preprocessing to GPU inference, so a co-resident GPU job
 inflates the inference stage specifically: it biases prong 2 conservatively — the hidden
 share looks smaller than it is — and it breaks prong 1 outright, since the reference it is
