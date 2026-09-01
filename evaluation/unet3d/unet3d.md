@@ -259,6 +259,15 @@ room. That agreement is also what validates `KiTS19DiceScore` as the reference f
 earlier ad-hoc scoring of the same runs used a merged-kidney convention (kidney = classes
 {1,2}) and does not reproduce the reference's per-class numbers.
 
+**The two devices agree numerically.** The m3pro accuracy pass scores mean DICE **0.86341**
+(kidney 0.93356, tumor 0.79326) against gb10's 0.86329, and per case the two differ by at
+most **7e-5** (median 4e-6). CUDA and MPS produce the same segmentation to within rounding.
+
+That matters for prong 2, not just for tidiness: the cross-device comparison is the argument
+that the hidden share grows where the accelerator is faster. If the two devices produced
+materially different segmentations they would be doing different amounts of work, and any
+latency difference between them would be partly that rather than the hardware. They do not.
+
 **The gb10 TIMED pass of 2026-09-01 is contaminated and must not be used.** A MobileNetV2
 training job (`train_cloud.py`) started on the same machine 26 seconds after the collection
 began and held ~97 GB of GPU memory throughout.
