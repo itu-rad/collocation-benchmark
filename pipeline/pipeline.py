@@ -28,6 +28,8 @@ class Pipeline:
         self._logger = logging.getLogger("benchmark")
         self._pipeline_config = pipeline_config
         self.name = self._pipeline_config.name
+        # Pipeline-level twin of the Stage flag; see PipelineModel.disable_logs.
+        self._disable_logs = bool(getattr(pipeline_config, "disable_logs", False))
         stage_config = pipeline_config.stages
         stage_config_dict = {stage.id: stage for stage in stage_config}
 
@@ -266,15 +268,16 @@ class Pipeline:
                 new_query = self._output_queues[idx].get_nowait()
 
             # log the end of pipeline execution
-            self._logger.info(
-                "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
-                self.name,
-                new_query.split,
-                new_query.query_id,
-                new_query.query_submitted_timestamp,
-                new_query.epoch,
-                new_query.batch + 1,
-            )
+            if not self._disable_logs:
+                self._logger.info(
+                    "%s, pipeline - %s, run, end, %d, %.6f, %d, %d",
+                    self.name,
+                    new_query.split,
+                    new_query.query_id,
+                    new_query.query_submitted_timestamp,
+                    new_query.epoch,
+                    new_query.batch + 1,
+                )
 
             with trace_span(
                 name="pipeline query processed",
@@ -388,15 +391,16 @@ class Pipeline:
 
             query.epoch = epoch_dict[query.split]
 
-            self._logger.info(
-                "%s, pipeline - %s, run, start, %d, %.6f, %d, %d",
-                self.name,
-                query.split,
-                query.query_id,
-                query.query_submitted_timestamp,
-                query.epoch,
-                query.batch + 1,
-            )
+            if not self._disable_logs:
+                self._logger.info(
+                    "%s, pipeline - %s, run, start, %d, %.6f, %d, %d",
+                    self.name,
+                    query.split,
+                    query.query_id,
+                    query.query_submitted_timestamp,
+                    query.epoch,
+                    query.batch + 1,
+                )
 
             out_flow_id = uuid.uuid4()
             with trace_span(

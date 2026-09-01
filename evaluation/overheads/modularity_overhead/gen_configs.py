@@ -48,8 +48,15 @@ def build(cell, device, template):
     # No listeners: the overhead cells run via `main.py -p 0` with RADT_PRESENT
     # unset, so nothing spawns anyway — drop them so the config states the truth.
     cfg["listeners"] = []
+    # E2 measures from SPANS, so the pipeline's per-query CSV rows are pure
+    # contamination: the write is synchronous and lands inside the span-measured
+    # `exit` interval (142-217 us/query on GB10, ~81 on Apple silicon = 42-50%
+    # of exit). The stage-level flag below never silenced these -- it is a Stage
+    # flag and Pipeline had none until now. E1 keeps its rows: its
+    # `uninstrumented` arm has no spans, so they are its only instrument.
     cfg["name"] = f"E2 modularity {cell['model']} batch {cell['batch']} ({device})"
     pipe = cfg["pipelines"][0]
+    pipe["disable_logs"] = True
     pipe["loadgen"]["max_queries"] = int(cell.get("max_batches", 300))
     for stage in pipe["stages"]:
         comp = stage.get("component", "")

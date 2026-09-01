@@ -49,3 +49,4 @@ pipelines:
       criterion:
         component: torch.nn.CrossEntropyLoss
       device: mps
+  disable_logs: true

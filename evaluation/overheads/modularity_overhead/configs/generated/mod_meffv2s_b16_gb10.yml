@@ -49,3 +49,4 @@ pipelines:
       criterion:
         component: torch.nn.CrossEntropyLoss
       device: cuda
+  disable_logs: true
