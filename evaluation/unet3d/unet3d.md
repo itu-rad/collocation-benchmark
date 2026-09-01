@@ -252,16 +252,24 @@ accuracy**:
 | harness | cases | mean DICE | kidney | tumor |
 |---|--:|--:|--:|--:|
 | MLPerf reference | 43 | 0.86168 | 0.9347 | 0.7887 |
-| Choreo | 42 | **0.86329** | 0.93418 | 0.79241 |
+| Choreo, gb10 | 42 | **0.86329** | 0.93418 | 0.79241 |
+| Choreo, m3pro | 42 | **0.86330** | 0.93418 | 0.79242 |
 
 Kidney agrees to 0.0005 and tumor to 0.004; the mean clears MLPerf's gate (0.85308) with
 room. That agreement is also what validates `KiTS19DiceScore` as the reference formula — an
 earlier ad-hoc scoring of the same runs used a merged-kidney convention (kidney = classes
 {1,2}) and does not reproduce the reference's per-class numbers.
 
-**The two devices agree numerically.** The m3pro accuracy pass scores mean DICE **0.86341**
-(kidney 0.93356, tumor 0.79326) against gb10's 0.86329, and per case the two differ by at
-most **7e-5** (median 4e-6). CUDA and MPS produce the same segmentation to within rounding.
+**The two devices agree numerically, to five decimal places.**
+
+| machine | cases | mean DICE | kidney | tumor | run seconds | rows | spans |
+|---|--:|--:|--:|--:|--:|--:|--:|
+| gb10 (cuda) | 42 | 0.86329 | 0.93418 | 0.79241 | 425 | 431 | 547 |
+| m3pro (mps) | 42 | 0.86330 | 0.93418 | 0.79242 | 2602 | 431 | 547 |
+
+Per case the two differ by at most **7e-5** (median 4e-6). CUDA and MPS produce the same
+segmentation to within rounding, and the two accuracy runs emitted identical row and span
+counts, so the pipelines were structurally identical as well.
 
 That matters for prong 2, not just for tidiness: the cross-device comparison is the argument
 that the hidden share grows where the accelerator is faster. If the two devices produced
