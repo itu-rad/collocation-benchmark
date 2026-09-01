@@ -288,11 +288,13 @@ The wall-clock column shows it without any appeal to what was running:
 | perf r1 | 23:39–00:02 | **1404** | 463 |
 | perf r2 | 00:02–00:16 | **811** | 463 |
 | perf r3 | 00:16–00:24 | **487** | 463 |
+| perf r4 | 00:24–00:31 | **417** | 463 |
 
 Identical work, 42 cases each, and the span count is constant at 463 throughout — nothing
 about the pipeline changed. What changed is the machine: the foreign job ended at about
 00:22, and the run times decay monotonically towards the idle baseline as it wound down,
-**1404 → 811 → 487 s**, a factor of 2.9 across three consecutive runs of the same work. The
+**1404 → 811 → 487 → 417 s**, a factor of **3.4** across four consecutive runs of the same
+work, settling at an idle baseline of ~417 s. The
 accuracy pass ran before it started, does strictly *more* work per case (it resamples the
 label too, and scores the result), and still finished in a third of r1's time.
 
