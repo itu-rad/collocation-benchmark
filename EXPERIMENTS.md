@@ -69,15 +69,26 @@ end-to-end *per request* and reveals the preprocessing/loading portion MLPerf hi
 shrinks the inference denominator so preprocessing dominates more — inference ~95% of end-to-end on
 M2 vs ~81% on GB10). The point is that this cost **cannot be hidden online** (you can't prefetch a
 request you haven't received) — so it is real latency the standard's offline framing omits.
-**Artifacts.** `evaluation/unet3d/` + `stages/unet3d_kits19/` — 3D-UNet stages, per-case timing +
-`analyze_preprocessing.py` (the preprocessing-fraction of per-request latency), `FINDING_A.md`,
-`inference_cases.json` (42 cases), R=1 CSVs both devices. Model: Zenodo 5597155 `.ptc`; data:
-`neheller/kits19`. Prong 1 also needs the **MLPerf reference harness** (the official inference repo,
-cloned under `scratchpad/mlperf-inference`) run on GB10 for the ground-truth numbers.
-(`run_pipelined.py` — the old serial-vs-pipelined "hiding" analysis — is out of scope.)
-**Status/gap.** Validated on MPS (Dice ~0.86–0.91); both device 42-case CSVs (R=1). **Missing:**
-prong 1 — run the **MLPerf reference on GB10** and build the Choreo-vs-reference parity (accuracy +
-performance, same device). ResNet scenario-reduction: cut.
+**Artifacts.** `evaluation/unet3d/` — one launch script (`collect_e3.sh`), one self-contained
+analyzer (`analyze_e3.py`), the write-up (`unet3d.md`), four configs and `mlperf_reference/`. Stages
+in `stages/unet3d_kits19/`, including `KiTS19DiceScore`, a port of the reference harness's
+`get_dice_score` so the parity gate can be re-derived rather than cited from a log. Model: Zenodo
+5597155 `.ptc`; data: `neheller/kits19` (both machine-local and gitignored). Prong 1 also needs the
+**MLPerf reference harness** (`mlcommons/inference`, cloned under `scratchpad/`) run on GB10.
+
+**Measurement.** Spans only — the `perf` configs set `disable_logs` on the pipeline and on all three
+stages, so nothing is written per query. A separate `acc` config adds the scorer, runs R=1 and is
+never timed, mirroring MLPerf's own AccuracyOnly/PerformanceOnly split; keeping output handling in
+the timed graph would be the same error as the CSV write E2 removed. `KiTS19Preprocess` emits a
+`case_size` marker span carrying `n_subvolumes` and the post-resample shape, so each case's size is
+a property of its own trace instead of a join against another experiment's CSV. **E3 runs UNPINNED**
+on both machines, unlike E1/E2: pinning throttles CPU preprocessing but not GPU inference, which
+would inflate the very ratio this experiment reports, so `collect_e3.sh` refuses a `PIN`.
+
+**Status/gap.** Reworked to the E1/E2 shape 2026-09-01; collection under way on both machines.
+**Missing:** a **VALID** MLPerf reference run on GB10 — the one on disk announces its own
+invalidity (`Result is : INVALID`, 43 queries against the 64 loadgen needs for early stopping), so
+the parity claim cannot rest on it. ResNet scenario-reduction: cut.
 
 ## E4 — Self-RAG decomposition & prefill/decode split (cross-device)
 **Question.** What does decomposing agentic RAG cost vs a monolith, and *why*? The framework splits

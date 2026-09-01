@@ -1,7 +1,9 @@
 # Evaluation
 
 This directory contains the experimental setup, runners, and analysis tooling
-for the four studies the Choreo paper relies on. Each experiment produces
+for the studies the Choreo paper relies on (`../EXPERIMENTS.md` is the
+authoritative list and numbering; the sections below are ordered by
+directory, not by experiment number). Each experiment produces
 plain-text CSV traces (and, for the complex cases, a JSONL sidecar with
 per-query outputs); analysis scripts read those traces and emit Markdown or
 LaTeX reports.
@@ -16,6 +18,10 @@ evaluation/
 │   │                         # analyzers + configs/ + results/
 │   └── modularity_overhead/  # standalone PyTorch that re-implements a
 │                             # Choreo workload for an honest A/B
+├── unet3d/           # E3 — MLPerf 3D-UNet / KiTS19: parity with MLPerf's
+│                     # own reference harness, then the share its offline
+│                     # measurement boundary hides. Self-contained:
+│                     # collect_e3.sh + analyze_e3.py + configs/ + results/
 ├── scripts/          # analysis scripts for the case studies (no execution
 │                     # side effects beyond writing files into results/)
 └── results/          # all CSV/JSONL traces from runs + all Markdown/LaTeX
@@ -162,7 +168,32 @@ different resolution:
 
 Figures go to `modularity_overhead/paper_assets/`.
 
-### 3. Multimodal VQA — unified-memory bandwidth contention (Apple Silicon)
+### 3. MLPerf 3D-UNet / KiTS19 — parity, then the measurement boundary
+
+**What:** two prongs. Reproduce MLPerf's own reference harness with Choreo on the
+same machine (GB10) on accuracy and performance, then show what its offline
+measurement boundary hides online — MLPerf preloads preprocessed volumes and
+times only inference, but an arriving request has nothing to prefetch. Everything
+lives under `unet3d/`; the write-up is
+[`unet3d.md`](unet3d/unet3d.md), which carries the full method, the reasons for
+the two-config split, and the objections it has to keep answered.
+
+**Timing is spans only** and **E3 runs UNPINNED**, unlike E1 and E2 — pinning
+throttles CPU preprocessing but not GPU inference, which would inflate the very
+ratio the experiment reports, so `collect_e3.sh` refuses a `PIN`.
+
+```bash
+bash evaluation/unet3d/collect_e3.sh gb10  1 acc   # accuracy pass, never timed
+bash evaluation/unet3d/collect_e3.sh gb10  6       # timed, repetition 1 dropped
+bash evaluation/unet3d/collect_e3.sh m3pro 1 acc
+bash evaluation/unet3d/collect_e3.sh m3pro 6
+python evaluation/unet3d/analyze_e3.py --machines m3pro gb10
+```
+
+Records to res17 (experiment 138), not a local store — the local-store exemption
+covers the overhead experiments only.
+
+### 4. Multimodal VQA — unified-memory bandwidth contention (Apple Silicon)
 
 **What:** image-grounded VQA pipeline (CLIP-Large vision encode →
 FAISS over 10 k COCO captions → Qwen 3.5-9B answer) run under two
@@ -214,7 +245,7 @@ python evaluation/scripts/bandwidth_analysis.py --cells
 Reports land at `results/verification_report.md` and
 `results/bandwidth_report.md`.
 
-### 4. Self-RAG — topology comparison (monolith vs decomposed)
+### 5. Self-RAG — topology comparison (monolith vs decomposed)
 
 **What:** two Self-RAG pipelines that do the same job with different
 decompositions:
@@ -283,6 +314,10 @@ statistics, tables, LaTeX and figures in a single file, so the `.md` and the
 - **modularity_overhead** — `collect_e2.sh` + `analyze_e2.py`, reading
   `results/mod_<cell>_<configuration>_<machine>_r*.csv`. Configs are generated
   by `gen_configs.py`; the monolith control is `baseline_finetune.py`.
+
+`unet3d/` follows the same shape — `collect_e3.sh` + `analyze_e3.py` — but reads
+SPANS from res17 rather than CSVs from disk, because its configs write nothing
+per query.
 
 Both take `--machines m3pro gb10` (the MACHINE, not the torch device string —
 that lives inside the config) and read the monotonic perf column.

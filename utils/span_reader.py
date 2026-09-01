@@ -74,6 +74,31 @@ class IncompleteTrace(RuntimeError):
     """The artifact does not hold every span the workload emitted."""
 
 
+_GZIP_MAGIC = b"\x1f\x8b"
+
+
+def _open_batch(path):
+    """Open a span batch, gzipped or not, deciding by CONTENT not by name.
+
+    The batches are written as ``spans-NNNNNN.jsonl.gz`` and are gzipped on the
+    machine that produced them. They do not necessarily arrive that way: pulling
+    a run's artifacts from the remote tracking server yields files with the same
+    ``.gz`` name whose bytes are already decompressed, because the transfer
+    layer decompresses in flight and the name is just a name.
+
+    Trusting the extension therefore worked for every locally-stored trace (E1
+    and E2 read a sqlite store on the same disk) and failed on the first trace
+    read back from res17, with a `BadGzipFile` naming the JSON it had just been
+    handed. Sniff the two magic bytes instead; it is one read and it cannot be
+    wrong in either direction.
+    """
+    with open(path, "rb") as probe:
+        gzipped = probe.read(2) == _GZIP_MAGIC
+    if gzipped:
+        return gzip.open(path, "rt", encoding="utf-8")
+    return open(path, "rt", encoding="utf-8")
+
+
 @dataclass
 class Span:
     span_id: int
@@ -282,7 +307,7 @@ def read_dir(trace_dir, emitted=None, strict=True):
     live, spans = {}, []
     events = starts = ends = unmatched = 0
     for b in batches:
-        with gzip.open(os.path.join(trace_dir, b), "rt", encoding="utf-8") as f:
+        with _open_batch(os.path.join(trace_dir, b)) as f:
             for line in f:
                 rec = json.loads(line)
                 events += 1
