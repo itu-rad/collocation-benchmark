@@ -141,17 +141,32 @@ def span_runs(machine, tracking_uri=None, experiment="138"):
         mlflow.set_tracking_uri(tracking_uri)
     c = mlflow.MlflowClient()
     prefix = f"unet3d_42_perf_{machine}_r"
-    out, seen, token = {}, 0, None
+    # {label: (start_time, run_id)} -- a label can legitimately appear more than
+    # once, because re-collecting a cell reuses the run labels and the old
+    # mlflow runs stay put. Keeping whichever came back last from the search
+    # would pick by page order, i.e. arbitrarily, and could analyse a
+    # superseded collection without saying so. Keep the most recent and say how
+    # many were passed over.
+    best, counts, seen, token = {}, {}, 0, None
     while True:
         page = c.search_runs([str(experiment)], max_results=1000, page_token=token)
         seen += len(page)
         for r in page:
             label = r.data.tags.get("mlflow.runName", "").split(" | ")[0]
-            if label.startswith(prefix):
-                out[label] = r.info.run_id
+            if not label.startswith(prefix):
+                continue
+            counts[label] = counts.get(label, 0) + 1
+            prev = best.get(label)
+            if prev is None or r.info.start_time > prev[0]:
+                best[label] = (r.info.start_time, r.info.run_id)
         token = page.token
         if not token:
             break
+    out = {lab: rid for lab, (_, rid) in best.items()}
+    stale = {lab: n - 1 for lab, n in counts.items() if n > 1}
+    if stale:
+        print(f"  NOTE: {machine} has superseded mlflow runs under the same "
+              f"label(s); the most recent of each is used: {stale}")
     if not out:
         print(f"  (no runs matching {prefix}* among {seen} runs in experiment "
               f"{experiment})")
