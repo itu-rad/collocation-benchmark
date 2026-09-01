@@ -10,6 +10,37 @@ ASPLOS-style review rounds on `experimental_setup.tex` (all ended at *Accept on 
 conditional on collection*) **and the full repo/code/data audit of 2026-07-12**
 (advisor review: framework code, evaluation artifacts, statistics, and paper docs).
 
+> ## Status as of 2026-09-01 — read this before the checklist below
+>
+> Much of this document dates from July and describes machines and experiment shapes that
+> have since changed. Where it disagrees with this block, this block is right.
+>
+> - **Machines.** The M2 Pro is **superseded** and is now a staging machine only. Real
+>   collection happens on **`m3pro`** (Apple M3 Pro, host `itu-mac`) and **`gb10`** (DGX
+>   Spark, host `babyxena`). Any `[M2]` tag below means "the Apple machine", now m3pro.
+> - **E1 — CLOSED.** Two configurations (`uninstrumented`, `+ tracing`), both machines,
+>   figures regenerated. See `evaluation/overheads/framework_overhead/`.
+> - **E2 — CLOSED** (2026-08-31 collection, 198 runs per machine, zero failures). It now
+>   runs **two** configurations, not three: the untraced Choreo arm was dropped because the
+>   cost of tracing straddled zero at every cell, and because gating the per-query CSV write
+>   left that arm with no instrument at all. Every Choreo number comes from spans. Headline:
+>   the framework costs **194–562 µs per query**, fixed rather than proportional, so its
+>   share falls 0.66% → 0.03% (m3pro) and 1.92% → 0.10% (gb10) across the batch sweep. The
+>   cross-process monolith comparison is published alongside and is **n.s. at 10 of 18
+>   cells** — that is the resolution floor of a difference of large numbers, and it is
+>   stated rather than hidden. See `evaluation/overheads/modularity_overhead/`.
+>   The July finding below about "the E2 mps tracing-off arm is contaminated" is moot: that
+>   arm no longer exists.
+> - **E3 — REWORKED, collecting.** Cut to the E1/E2 shape (one launch script, one analyzer,
+>   spans only, no CSV). **Prong 1 accuracy is closed on gb10**: Choreo 0.86329 mean DICE
+>   against the reference's 0.86168, clearing MLPerf's 0.85308 gate. Outstanding: a **VALID**
+>   MLPerf reference *performance* run (the one on disk announces `Result is : INVALID`), and
+>   a **clean** gb10 timed pass — the 2026-09-01 one was contaminated by a concurrent
+>   training job and is queued to be re-collected. See `evaluation/unet3d/unet3d.md`.
+> - **Statistics.** All three closed/reworked analyzers use a hierarchical bootstrap with the
+>   run as the unit of replication; E3's analyzer now has CIs, which item 3 below lists as
+>   outstanding.
+
 **Legend**
 - `[ ]` todo · `[~]` in progress · `[x]` done · `[?]` needs verification of status
 - **P0** = on the critical path (a headline claim is unreportable without it) ·
