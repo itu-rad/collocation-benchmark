@@ -154,7 +154,7 @@ def breakdown_by_run(machine, tracking_uri=None, experiment="138",
     means the spans were mis-paired, which would silently shift every later
     query, so the run is refused rather than medianed over.
     """
-    from utils.span_reader import read_dir
+    from utils.span_reader import read_dir, IncompleteTrace, COUNT_TAG
     labels, client = span_runs(machine, tracking_uri, experiment)
     if not labels:
         return {}
@@ -164,8 +164,20 @@ def breakdown_by_run(machine, tracking_uri=None, experiment="138",
     out = {}
     for lab in runs:
         r = int(lab.rsplit("_r", 1)[1])
-        t = read_dir(client.download_artifacts(run_id=labels[lab],
-                                               path="radt-trace"))
+        # Pass the workload's own span count so the DROP check can run: radt
+        # silently discards events on queue overflow and only warns, and a run
+        # missing spans would otherwise analyse cleanly on whatever survived.
+        tag = client.get_run(labels[lab]).data.tags.get(COUNT_TAG)
+        try:
+            t = read_dir(client.download_artifacts(run_id=labels[lab],
+                                                   path="radt-trace"),
+                         emitted=int(tag) if tag else None)
+        except (IncompleteTrace, OSError, ValueError) as e:
+            # One damaged artifact must not cost the whole report. Say which
+            # run and why, and carry on with the rest -- silently dropping it
+            # would leave a smaller R with nothing explaining the difference.
+            print(f"  !! {lab}: trace unusable, run excluded — {e}")
+            continue
         pq = t.by_query("pipeline query")
         pqp = t.by_query("pipeline query processed")
         ldr, ldp = t.by_query(f"{LOAD_STAGE}.run"), t.by_query(f"{LOAD_STAGE}.push_to_outputs")
