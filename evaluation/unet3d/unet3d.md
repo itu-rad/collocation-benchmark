@@ -282,16 +282,22 @@ began and held ~97 GB of GPU memory throughout.
 
 The wall-clock column shows it without any appeal to what was running:
 
-| run | seconds | spans |
-|---|--:|--:|
-| accuracy pass (before the foreign job started) | 425 | 547 |
-| perf r1 | **1404** | 463 |
-| perf r2 | **811** | 463 |
+| run | window | seconds | spans |
+|---|---|--:|--:|
+| accuracy pass (before the foreign job started) | 23:32–23:39 | 425 | 547 |
+| perf r1 | 23:39–00:02 | **1404** | 463 |
+| perf r2 | 00:02–00:16 | **811** | 463 |
+| perf r3 | 00:16–00:24 | **487** | 463 |
 
-Identical work, 42 cases each, and r1 takes 73% longer than r2 — while the span count is
-constant at 463, so nothing about the pipeline itself changed. The accuracy pass, which ran
-before the foreign job started and does strictly *more* work per case (it resamples the label
-too, and scores the result), finished in a third of r1's time.
+Identical work, 42 cases each, and the span count is constant at 463 throughout — nothing
+about the pipeline changed. What changed is the machine: the foreign job ended at about
+00:22, and the run times decay monotonically towards the idle baseline as it wound down,
+**1404 → 811 → 487 s**, a factor of 2.9 across three consecutive runs of the same work. The
+accuracy pass ran before it started, does strictly *more* work per case (it resamples the
+label too, and scores the result), and still finished in a third of r1's time.
+
+A collection whose runs vary by 2.9x is not a collection with noise in it; it is a
+measurement of the other job.
 
 The span-level view says the same thing, and says *where* it lands:
 
