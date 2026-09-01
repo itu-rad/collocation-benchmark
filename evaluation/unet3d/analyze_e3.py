@@ -128,17 +128,33 @@ STAGE_WORK = ("load", "preprocess", "inference")
 
 
 def span_runs(machine, tracking_uri=None, experiment="138"):
-    """{label: run_id} for this machine's perf runs, from the tracking store."""
+    """{label: run_id} for this machine's perf runs, from the tracking store.
+
+    Paginated deliberately. Experiment 138 is the shared paper experiment and
+    already holds thousands of runs across E1-E7; a single capped search_runs
+    would quietly return a prefix of them, and the runs it dropped would look
+    exactly like runs that were never collected -- a smaller R with nothing
+    explaining the difference. Walk every page and say how many were seen.
+    """
     import mlflow
     if tracking_uri:
         mlflow.set_tracking_uri(tracking_uri)
     c = mlflow.MlflowClient()
-    out = {}
-    for r in c.search_runs([str(experiment)], max_results=5000):
-        name = r.data.tags.get("mlflow.runName", "")
-        label = name.split(" | ")[0]
-        if label.startswith(f"unet3d_42_perf_{machine}_r"):
-            out[label] = r.info.run_id
+    prefix = f"unet3d_42_perf_{machine}_r"
+    out, seen, token = {}, 0, None
+    while True:
+        page = c.search_runs([str(experiment)], max_results=1000, page_token=token)
+        seen += len(page)
+        for r in page:
+            label = r.data.tags.get("mlflow.runName", "").split(" | ")[0]
+            if label.startswith(prefix):
+                out[label] = r.info.run_id
+        token = page.token
+        if not token:
+            break
+    if not out:
+        print(f"  (no runs matching {prefix}* among {seen} runs in experiment "
+              f"{experiment})")
     return out, c
 
 
