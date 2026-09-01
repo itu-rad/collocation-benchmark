@@ -40,8 +40,8 @@ Everything lives under `overheads/framework_overhead/`; the write-up is
 **Collect** (`collect_e1.sh` runs the whole depth sweep, both configurations, R
 repetitions):
 ```bash
-# on the M2 Pro, inside the project env
-bash evaluation/overheads/framework_overhead/collect_e1.sh m2pro 11 143
+# on the M3 Pro, inside the project env
+bash evaluation/overheads/framework_overhead/collect_e1.sh m3pro 11 143
 # on the GB10 — pin to one X925 performance core, or the Grace scheduler
 # migrates the run between core types and the timing goes bimodal
 bash evaluation/overheads/framework_overhead/collect_e1.sh gb10 11 143
@@ -66,7 +66,7 @@ and step counts). `E1_PAYLOAD=1` collects the payload sweep instead (depth 10 ×
 **Analyze** (one self-contained analyzer — tables, statistics and figures):
 ```bash
 python evaluation/overheads/framework_overhead/analyze_e1.py
-python evaluation/overheads/framework_overhead/analyze_e1.py --latex m2pro > tables.tex
+python evaluation/overheads/framework_overhead/analyze_e1.py --latex m3pro > tables.tex
 ```
 Timing uses the monotonic `perf_counter_ns` trailing CSV column (wall-clock
 column 0 is kept only for radt alignment); CIs are a hierarchical bootstrap with
@@ -77,7 +77,7 @@ Overhead experiments (E1 and E2 only) record to a LOCAL MLflow store rather than
 res17 — the microbenchmark emits far more spans per second than any real
 workload, and that volume is not what the remote server is there to carry.
 
-### 2. Modularity overhead — EfficientNetV2-S monolith vs Choreo
+### 2. Modularity overhead — EfficientNetV2 monolith vs Choreo
 
 **What:** the same EfficientNetV2 Imagenette fine-tune expressed two ways — a
 hand-written PyTorch monolith vs the Choreo pipeline — to measure what the
@@ -85,18 +85,20 @@ framework's graph/queue/thread wrapper costs on a real workload. The
 real-workload counterpart to the NoOp experiment. Everything lives under
 `overheads/modularity_overhead/`; the write-up is `modularity_overhead.md`.
 
-Three things run per cell, on an identical workload (the `(model, weights,
+Two things run per cell, on an identical workload (the `(model, weights,
 batch)` triple is read from the same YAML both sides are given):
 
 | configuration | what it is |
 |---|---|
-| `monolith` | `baseline_finetune.py` — no framework at all |
-| `choreo` | `main.py` with `CHOREO_DISABLE_TRACING=1` |
-| `choreo-traced` | `main.py` with `CHOREO_PROC_TRACE=1` |
+| `monolith` | `baseline_finetune.py` — no framework at all, no tracing |
+| `choreo-traced` | `main.py` with `CHOREO_PROC_TRACE=1` — the framework as it is actually run |
 
-`choreo − monolith` is the cost of decomposition; `choreo-traced − choreo` is
-the cost of turning tracing on. Their order is rotated by repetition index so
-none of them always absorbs the warm-up.
+`choreo-traced − monolith` is the cost of decomposition, tracing included.
+Their order is rotated by repetition index so neither always absorbs the
+warm-up. There is deliberately no third, untraced Choreo configuration: tracing
+is how the framework is run, splitting the cost in two doubled the collection
+for a term that was within noise at every cell, and the split is measured
+directly and far more precisely by E1.
 
 **Metric of record: time per query** — start-to-start between consecutive
 queries, i.e. 1/throughput, covering the whole cycle including data loading and
@@ -115,16 +117,21 @@ successive instants within one query on one clock, so they are non-negative by
 construction and carry no run-level term; they sum to the time per query exactly
 (E1 verified the identity at a residual of 0.000 µs over 300 queries).
 
-Both Choreo configurations run with `disable_logs: true` so that no synchronous
-write+flush sits inside the measured interval on one side only; the monolith
-writes through the same `FileHandler` `main.py` installs, so the instrument
-matches on both sides.
+**Choreo writes no per-query CSV rows at all.** Both flags are set on the E2
+configs — `disable_logs` on the pipeline (the per-query rows) and on each stage
+(the per-stage rows) — so every Choreo number in E2 comes from spans. This is
+not cosmetic: the synchronous write+flush was 42–50% of the measured `exit`
+term before it was gated off. The monolith keeps its own log because it is the
+only instrument a bare loop has; the asymmetry is the point of the control, and
+it means the two sides are compared on `in-pipeline L_q` (spans, admission
+excluded) against `time per query` (the monolith's own steps).
 
-**Collect (one harness, all three configurations, R repetitions; per machine):**
+**Collect (one harness, both configurations, R repetitions; per machine):**
 ```bash
 python evaluation/overheads/modularity_overhead/gen_configs.py   # regenerate cells
-bash evaluation/overheads/modularity_overhead/collect_e2.sh m2pro 11
-bash evaluation/overheads/modularity_overhead/collect_e2.sh gb10  11
+bash evaluation/overheads/modularity_overhead/collect_e2.sh m3pro 11
+# on the GB10, pin as in E1
+PIN=19 bash evaluation/overheads/modularity_overhead/collect_e2.sh gb10 11
 ```
 Sweep: EfficientNetV2-S at batch {1,2,4,8,16,32,64}, plus EfficientNetV2-M and -L
 at batch 8 — 9 cells, 300 steps per run. CSVs land in
@@ -138,10 +145,21 @@ python evaluation/overheads/modularity_overhead/analyze_e2.py --latex gb10 > tab
 ```
 Warmup 50 queries per run; **run 1 of every cell is dropped by default** — the
 first repetition is measurably slower for its whole duration, so per-step warmup
-cannot remove it, and collection runs R+1 to leave R usable. Statistic of
-record: the paired across-run difference (runs pair by id because the
-configurations are interleaved within each repetition), combined by median, with
-a bootstrap that resamples run PAIRS and re-resamples queries within each.
+cannot remove it, and collection runs R+1 to leave R usable.
+
+Two statistics are reported, and they answer the same question with very
+different resolution:
+
+- **Cost of decomposition** — the paired across-run difference between the
+  monolith's time per query and Choreo's in-pipeline `L_q` (runs pair by id
+  because the configurations are interleaved within each repetition), combined
+  by median, bootstrapped over run PAIRS. It is the honest end-to-end
+  comparison, and at most cells its interval contains zero: the cost is below
+  what a cross-process comparison resolves.
+- **Framework term** — `entry + handoff + exit`, measured from spans on one
+  clock inside the Choreo process. Same bootstrap, but no cross-process drift,
+  so the interval is orders of magnitude tighter. This is what the figure plots.
+
 Figures go to `modularity_overhead/paper_assets/`.
 
 ### 3. Multimodal VQA — unified-memory bandwidth contention (Apple Silicon)
@@ -266,7 +284,7 @@ statistics, tables, LaTeX and figures in a single file, so the `.md` and the
   `results/mod_<cell>_<configuration>_<machine>_r*.csv`. Configs are generated
   by `gen_configs.py`; the monolith control is `baseline_finetune.py`.
 
-Both take `--machines m2pro gb10` (the MACHINE, not the torch device string —
+Both take `--machines m3pro gb10` (the MACHINE, not the torch device string —
 that lives inside the config) and read the monotonic perf column.
 
 ## Output format reference
