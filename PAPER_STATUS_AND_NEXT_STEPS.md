@@ -153,7 +153,7 @@ the abstract/intro lean on it). But of the collected data:
 
 **G3 — Tables 1 and 2.** Both are now backed by data; neither has been written into the paper yet.
 - **Table 1** (E1, NoOp depth + payload sweep): **closed.** Re-collected on M2 Pro and GB10 over
-  powers of two 1–128, two configurations (`uninstrumented` / `spans-only`), 11 repetitions with
+  powers of two 1–128, two configurations (`uninstrumented` / `+ tracing`), 11 repetitions with
   run 1 dropped. The headline moved substantially once the instrument was separated from the
   framework — the per-stage dispatch cost the old tables reported was inflated by the CSV logger
   measuring it. Regenerate with `analyze_e1.py --latex <machine>`; there is no hand-maintained

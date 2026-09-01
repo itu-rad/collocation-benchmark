@@ -1,6 +1,6 @@
 # Why the span cost scales with depth
 
-`spans-only` costs more per stage as the pipeline gets deeper, on both devices,
+`+ tracing` costs more per stage as the pipeline gets deeper, on both devices,
 even though the number of spans is linear in depth. This records what it is.
 
 ## Current production numbers

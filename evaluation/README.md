@@ -52,9 +52,9 @@ sets it — they are the only two ways the framework is actually run:
 | configuration | CSV stage logging | spans | what it is |
 |---|---|---|---|
 | `uninstrumented` | off | off | the framework bare |
-| `spans-only` | off | on | the framework traced |
+| `+ tracing` | off | on | the framework as it is actually run |
 
-`spans-only − uninstrumented` is therefore what tracing costs. Per-query latency
+`+ tracing − uninstrumented` is therefore what tracing costs. Per-query latency
 `L_q` survives with stage logging off because it comes from the pipeline-level
 rows, which `pipeline.py` emits unconditionally. CSVs land in
 `evaluation/results/<machine>/noop_depth_D_size_S_mode_M_<configuration>_<machine>_rN.csv`;

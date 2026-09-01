@@ -12,11 +12,11 @@
 #
 #   arm             config              CSV logging  spans   collected?
 #   uninstrumented  ..._mode_ref_nolog      off       off    YES - the framework bare
-#   spans-only      ..._mode_ref_nolog      off       on     YES - the framework traced
+#   traced      ..._mode_ref_nolog      off       on     YES - the framework traced
 #   as-reported     ..._mode_ref            on        off    no  - diagnostic, answered
 #   both            ..._mode_ref            on        on     no  - diagnostic, answered
 #
-#   spans-only - uninstrumented = what it costs to run with tracing on, which
+#   traced - uninstrumented = what it costs to run with tracing on, which
 #   is the only instrument question left, because those two are the only ways
 #   the framework is actually run.
 #
@@ -83,7 +83,7 @@ export RADT_TRACE_BACKEND=radt       # force the BULK exporter rather than auto-
 # the traced arm badly. Measured at depth 8, same code, same runs:
 #
 #   uninstrumented   local 134.0 us   res17 130.3 us   -2.8%  (noise)
-#   spans-only       local 327.0 us   res17 469.3 us  +43.5%
+#   traced       local 327.0 us   res17 469.3 us  +43.5%
 #
 # That gap is an artifact of MICROBENCHMARKING, not a cost any real workload
 # pays: a depth-128 NoOp run emits ~26000 spans in a couple of seconds, a span
@@ -147,7 +147,7 @@ log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG";
 #
 # Two cores, not one, and not more. Measured R=5 at depth 128 (us/stage):
 #
-#   cores   uninstrumented   spans-only
+#   cores   uninstrumented   traced
 #     1         10.04          33.42   <- exporter starved
 #     2         16.05          32.01   <- neither starved
 #     3         16.37          48.14
@@ -182,7 +182,7 @@ fi
 #   uninstrumented - the metric is L_q / depth. The pipeline-level rows are
 #                    always written, so this needs no instrument at all, and it
 #                    is the framework's true payload behaviour.
-#   spans-only     - the same, plus the per-stage breakdown recovered from the
+#   traced     - the same, plus the per-stage breakdown recovered from the
 #                    spans themselves: "<stage>.run" start to
 #                    "<stage>.push_to_outputs" start IS the stage's
 #                    self-duration, which is where a deep copy happens.
@@ -195,10 +195,10 @@ PAYLOAD_MODES="ref copy"
 # historical number was mostly instrument (it was, 58-71%), and neither is a
 # configuration anyone would ship. E1_ARMS restricts to one of the two.
 if [ "${E1_PAYLOAD:-0}" = "1" ]; then
-  ARMS=(${E1_ARMS:-uninstrumented spans-only})
+  ARMS=(${E1_ARMS:-uninstrumented traced})
 else
   # shellcheck disable=SC2206
-  ARMS=(${E1_ARMS:-uninstrumented spans-only})
+  ARMS=(${E1_ARMS:-uninstrumented traced})
 fi
 NARMS=${#ARMS[@]}
 
@@ -218,7 +218,7 @@ run_one() {
   unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
   case $arm in
     uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
-    spans-only)     export CHOREO_PROC_TRACE=1 ;;
+    traced)     export CHOREO_PROC_TRACE=1 ;;
   esac
 
   # Capture through a file, not a pipe: `rc=$?` after a pipeline reports the
@@ -250,7 +250,7 @@ run_payload_one() {
   unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
   case $arm in
     uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
-    spans-only)     export CHOREO_PROC_TRACE=1 ;;
+    traced)     export CHOREO_PROC_TRACE=1 ;;
   esac
   local outfile; outfile=$(mktemp)
   start=$(date +%s)
