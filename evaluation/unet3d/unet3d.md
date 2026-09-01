@@ -168,6 +168,20 @@ the credentials live as conda env config vars, so activate the environment rathe
 invoking the python binary directly. Results land in `results/<machine>/`, a timestamped log
 and summary TSV in `collect_logs/` headed by a provenance block, figures in `paper_assets/`.
 
+**Analysis runs wherever the results are.** `analyze_e3.py` reads the timing from spans on
+res17, so that half works from anywhere, but the DICE table is a local file the accuracy pass
+wrote on the collecting machine. Pull it before analysing off-machine:
+
+```bash
+rsync -a babyxena:collocation-benchmark/evaluation/unet3d/results/dice_gb10.csv \
+         evaluation/unet3d/results/
+rsync -a itu-mac:collocation-benchmark/evaluation/unet3d/results/dice_m3pro.csv \
+         evaluation/unet3d/results/
+```
+
+Without them the accuracy row reads `—` and the analyzer says so rather than skipping the
+table.
+
 **Still needed before prong 1 closes:** a **valid** MLPerf reference run on GB10. The one on
 disk announces its own invalidity — `logs_perf/mlperf_log_summary.txt` says `Result is :
 INVALID`, 43 queries processed against the 64 loadgen needs for early stopping. The parity
