@@ -1,416 +1,717 @@
 #!/usr/bin/env python3
-"""E3 — MLPerf / 3D-UNet analysis. SELF-CONTAINED: parsing, statistics, tables
-and figures in this one file.
+"""E3 — MLPerf 3D-UNet / KiTS19. SELF-CONTAINED: parsing, statistics, tables and
+figures in this one file, so the .md and the .tex cannot disagree.
 
-Two prongs:
+Everything on the Choreo side comes from SPANS. The perf configs set
+`disable_logs` on the pipeline and on every stage, so a Choreo CSV from this
+experiment holds two `prepare` rows and nothing else; if one holds hundreds, a
+config lost a flag and the run was measuring its own logger.
 
-  1. PARITY (GB10 only). Choreo reproduces MLPerf's own reference harness on the
-     SAME device, on both axes:
-       * accuracy    — mean Dice, Choreo stage code vs the MLPerf reference
-       * performance — MLPerf times ONLY inference, so the like-for-like Choreo
-                       number is its inference-stage duration, not end-to-end.
-     Same box, same model, same 42-case set => a clean apples-to-apples check.
+Two prongs, and the order matters.
 
-  2. MEASUREMENT BOUNDARY (both devices). MLPerf preprocesses the dataset offline
-     (its QSL preload) and times only inference. That is valid for offline batch,
-     but in ONLINE serving a request arrives with its own raw data: there is
-     nothing to prefetch, so loading+preprocessing sit on the per-request critical
-     path. Choreo times the whole graph and exposes that share — variable across
-     samples, and a LARGER fraction on the faster device (Amdahl: a faster GPU
-     shrinks the inference denominator, so preprocessing dominates more).
+  1. PARITY, GB10 ONLY. Choreo's port against MLPerf's OWN reference harness on
+     the SAME machine, on accuracy (DICE) and on performance. MLPerf times only
+     inference, so the like-for-like Choreo number is its inference-stage
+     duration -- NOT end-to-end. This is a same-device faithfulness check and
+     must never be presented as a cross-device claim. Without it, prong 2 reads
+     as a strawman.
+
+  2. THE MEASUREMENT BOUNDARY, BOTH MACHINES. MLPerf preprocesses the dataset
+     offline -- its QSL preloads .pkl files -- and times only inference. That is
+     valid for offline batch. Online, a request arrives with its own raw volume,
+     so there is nothing to prefetch and load+preprocess sit unavoidably on the
+     per-request critical path. Choreo times the whole graph and reports the
+     share MLPerf reports as zero. That share is VARIABLE across cases (KiTS19
+     volumes tile into 8-144 sliding-window sub-volumes) and LARGER on the
+     faster device, because GB10's GPU is far faster than the Mac's while CPU
+     preprocessing is only somewhat faster.
+
+     The claim is about the measurement BOUNDARY, not about an unoptimisable
+     stage. DALI or a prefetch pipeline can hide preprocessing for offline
+     batch; neither can prefetch a request that has not arrived yet.
 
 Inputs
-  Choreo timing : evaluation/unet3d/results/<dev>/unet3d_42_<dev>_r<N>.csv
-                  (main.py stage markers; monotonic perf_counter_ns, last field)
-  Choreo Dice   : evaluation/unet3d/results/choreo_dice_<dev>.csv
-  MLPerf perf   : evaluation/unet3d/mlperf_gb10/logs_perf/mlperf_log_summary.txt
-  MLPerf Dice   : evaluation/unet3d/mlperf_gb10/mlperf_accuracy_dice.txt
+  Choreo timing : spans on res17 (experiment 138), runs named
+                  unet3d_42_perf_<machine>_r<N>
+  Choreo DICE   : results/dice_<machine>.csv        (from the accuracy pass)
+  MLPerf perf   : mlperf_reference/logs_perf/mlperf_log_summary.txt
+                  mlperf_reference/logs_perf/mlperf_log_trace.json  (per-sample)
+  MLPerf DICE   : mlperf_reference/mlperf_accuracy_dice.txt
+  Case order    : data/kits19/preprocessed_mlperf/preprocessed_files.pkl
+                  (maps MLPerf's sample_idx to a case id)
 
-    python analyze_e3.py [--devices cuda mps] [--fig-dir DIR]
+    python analyze_e3.py [--machines m3pro gb10] [--fig-dir DIR]
 """
-
 from __future__ import annotations
 
 import argparse
 import csv
-import glob
 import json
 import os
+import pickle
 import re
-import statistics as st
+import sys
+
+import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 NS_MS = 1e6
+NS_US = 1e3
 
 LOAD_STAGE = "KiTS19 case loader"
 PREP_STAGE = "KiTS19 preprocess"
 INFER_STAGE = "3D-UNet sliding-window inference"
-DEV_LABEL = {"cuda": "GB10 (cuda)", "mps": "M2 Pro (mps)"}
+SIZE_MARKER = f"{PREP_STAGE}.case_size"
+
+MACHINE_LABEL = {"m3pro": "M3 Pro (mps)", "gb10": "GB10 (cuda)"}
+PARITY_MACHINE = "gb10"          # prong 1 is same-device, and this is the device
+
+# MLPerf's 3D-UNet/KiTS19 accuracy gate: 99% of the reference DICE.
+MLPERF_REFERENCE_DICE = 0.86170
+ACCURACY_GATE = 0.99 * MLPERF_REFERENCE_DICE
+
+# The first repetition of a cell is slower for its WHOLE duration, so per-query
+# warm-up dropping cannot remove it. Collect R+1 and drop it.
+DROP_RUNS = 1
+WARMUP = 0                       # 42 queries per run; there is nothing to spare
+
+_BOOT_WORK_BUDGET = 5e7
 
 
 # ---------------------------------------------------------------------------
-# Choreo timing CSVs
+# Statistics — hierarchical bootstrap, the run as the unit of replication
 # ---------------------------------------------------------------------------
-def _rows(path):
-    with open(path, "r", encoding="utf-8") as f:
+def summarize(by_run, unit=NS_MS, n_boot=10000, seed=0):
+    """median + 95% CI, resampling runs then queries within each chosen run."""
+    arrs = [np.asarray(v, dtype=np.float64) for v in by_run.values()
+            if len(v)]
+    if not arrs:
+        return None
+    a = np.concatenate(arrs)
+    n_eff = int(min(n_boot, max(1000, _BOOT_WORK_BUDGET // max(a.size, 1))))
+    rng = np.random.default_rng(seed)
+    R = len(arrs)
+    boots = np.empty(n_eff)
+    for i in range(n_eff):
+        parts = [arrs[j][rng.integers(0, arrs[j].size, arrs[j].size)]
+                 for j in rng.integers(0, R, R)]
+        boots[i] = np.median(np.concatenate(parts))
+    lo, hi = np.percentile(boots, [2.5, 97.5])
+    return {"runs": R, "n": int(a.size),
+            "median": float(np.median(a)) / unit,
+            "mean": float(a.mean()) / unit,
+            "p90": float(np.percentile(a, 90)) / unit,
+            "ci_lo": float(lo) / unit, "ci_hi": float(hi) / unit,
+            "run_medians": [float(np.median(v)) / unit for v in arrs]}
+
+
+def fmt(s, prec=2):
+    if not s:
+        return "—"
+    return f"{s['median']:.{prec}f} [{s['ci_lo']:.{prec}f}, {s['ci_hi']:.{prec}f}]"
+
+
+# ---------------------------------------------------------------------------
+# Choreo spans
+# ---------------------------------------------------------------------------
+# The six intervals a 3-stage graph yields per query. `entry`, the two hand-offs
+# and `exit` are the framework moving the query between stages -- E2 measures
+# them at 0.2-0.6 ms, which is noise against a 6 s query here, and they are kept
+# only so the components provably sum to L_q.
+COMPONENTS = ("entry", "load", "handoff_lp", "preprocess", "handoff_pi",
+              "inference", "exit")
+STAGE_WORK = ("load", "preprocess", "inference")
+
+
+def span_runs(machine, tracking_uri=None, experiment="138"):
+    """{label: run_id} for this machine's perf runs, from the tracking store."""
+    import mlflow
+    if tracking_uri:
+        mlflow.set_tracking_uri(tracking_uri)
+    c = mlflow.MlflowClient()
+    out = {}
+    for r in c.search_runs([str(experiment)], max_results=5000):
+        name = r.data.tags.get("mlflow.runName", "")
+        label = name.split(" | ")[0]
+        if label.startswith(f"unet3d_42_perf_{machine}_r"):
+            out[label] = r.info.run_id
+    return out, c
+
+
+def breakdown_by_run(machine, tracking_uri=None, experiment="138",
+                     drop_runs=DROP_RUNS, warmup=WARMUP):
+    """Per-run, per-query component durations plus each query's case size.
+
+    Returns {run_index: {"comp": {name: [ns per query]}, "case": [...],
+                         "n_sub": [...]}}.
+
+    The components are successive instants within ONE query on ONE clock, so
+    they are non-negative by construction and sum to L_q exactly. A negative one
+    means the spans were mis-paired, which would silently shift every later
+    query, so the run is refused rather than medianed over.
+    """
+    from utils.span_reader import read_dir
+    labels, client = span_runs(machine, tracking_uri, experiment)
+    if not labels:
+        return {}
+    runs = sorted(labels, key=lambda s: int(s.rsplit("_r", 1)[1]))
+    if drop_runs:
+        runs = runs[drop_runs:]
+    out = {}
+    for lab in runs:
+        r = int(lab.rsplit("_r", 1)[1])
+        t = read_dir(client.download_artifacts(run_id=labels[lab],
+                                               path="radt-trace"))
+        pq = t.by_query("pipeline query")
+        pqp = t.by_query("pipeline query processed")
+        ldr, ldp = t.by_query(f"{LOAD_STAGE}.run"), t.by_query(f"{LOAD_STAGE}.push_to_outputs")
+        prr, prp = t.by_query(f"{PREP_STAGE}.run"), t.by_query(f"{PREP_STAGE}.push_to_outputs")
+        inr, inp = t.by_query(f"{INFER_STAGE}.run"), t.by_query(f"{INFER_STAGE}.push_to_outputs")
+        size = t.by_query(SIZE_MARKER)
+        tables = (pq, pqp, ldr, ldp, prr, prp, inr, inp)
+        qs = sorted([q for q in pq if all(q in d for d in tables)],
+                    key=lambda q: pq[q].perf_start_ns)[warmup:]
+        if not qs:
+            continue
+        P = lambda d, q: d[q].perf_start_ns
+        comp = {
+            "entry":      [P(ldr, q) - P(pq, q) for q in qs],
+            "load":       [P(ldp, q) - P(ldr, q) for q in qs],
+            "handoff_lp": [P(prr, q) - P(ldp, q) for q in qs],
+            "preprocess": [P(prp, q) - P(prr, q) for q in qs],
+            "handoff_pi": [P(inr, q) - P(prp, q) for q in qs],
+            "inference":  [P(inp, q) - P(inr, q) for q in qs],
+            "exit":       [P(pqp, q) - P(inp, q) for q in qs],
+        }
+        bad = {k: sum(1 for v in vs if v < 0) for k, vs in comp.items()}
+        if any(bad.values()):
+            print(f"  !! {lab}: NEGATIVE intervals {bad} — run excluded; the "
+                  f"spans are mis-paired and a median over them would be wrong")
+            continue
+        # The case identity and its size come from the marker span the
+        # preprocess stage emits, so each case's size is a property of ITS OWN
+        # trace rather than something joined in from another run's side file.
+        miss = [q for q in qs if q not in size]
+        if miss:
+            print(f"  !! {lab}: {len(miss)} query(s) with no {SIZE_MARKER} "
+                  f"marker — case size unavailable for them")
+        out[r] = {
+            "comp": comp,
+            "case": [size[q].attributes.get("case") if q in size else None for q in qs],
+            "n_sub": [size[q].attributes.get("n_subvolumes") if q in size else None
+                      for q in qs],
+            "shape": [size[q].attributes.get("image_shape") if q in size else None
+                      for q in qs],
+        }
+    return out
+
+
+def per_case(bd):
+    """{case: {component: [ns across runs], "n_sub": int}} — the per-case view.
+
+    KiTS19 cases are not interchangeable: they differ by ~18x in sliding-window
+    count, so pooling them and reporting one median throws away the independent
+    variable. Every prong-2 claim is per case first and aggregated afterwards.
+    """
+    out = {}
+    for r, d in bd.items():
+        for i, case in enumerate(d["case"]):
+            if case is None:
+                continue
+            e = out.setdefault(case, {c: [] for c in COMPONENTS})
+            for c in COMPONENTS:
+                e[c].append(d["comp"][c][i])
+            n = d["n_sub"][i]
+            if n is not None:
+                e["n_sub"] = int(n)
+            if d["shape"][i]:
+                e["shape"] = d["shape"][i]
+    return out
+
+
+# ---------------------------------------------------------------------------
+# MLPerf reference harness
+# ---------------------------------------------------------------------------
+def read_mlperf_summary(path):
+    """Validity, query count and the latency percentiles the summary reports."""
+    if not os.path.exists(path):
+        return None
+    txt = open(path, encoding="utf-8", errors="replace").read()
+    def g(pat, cast=float):
+        m = re.search(pat, txt)
+        return cast(m.group(1)) if m else None
+    out = {
+        "scenario": (re.search(r"Scenario\s*:\s*(\S+)", txt) or [None, None])[1]
+                    if re.search(r"Scenario\s*:\s*(\S+)", txt) else None,
+        "mode": (re.search(r"Mode\s*:\s*(\S+)", txt).group(1)
+                 if re.search(r"Mode\s*:\s*(\S+)", txt) else None),
+        "validity": (re.search(r"Result is\s*:\s*(\S+)", txt).group(1)
+                     if re.search(r"Result is\s*:\s*(\S+)", txt) else None),
+        "queries": g(r"Only processed (\d+) queries", int),
+        "min_queries_needed": g(r"at least (\d+) queries", int),
+        "min_ms": g(r"Min latency \(ns\)\s*:\s*(\d+)"),
+        "max_ms": g(r"Max latency \(ns\)\s*:\s*(\d+)"),
+        "mean_ms": g(r"Mean latency \(ns\)\s*:\s*(\d+)"),
+        "p50_ms": g(r"50\.00 percentile latency \(ns\)\s*:\s*(\d+)"),
+        "p90_ms": g(r"90\.00 percentile latency \(ns\)\s*:\s*(\d+)"),
+        "p99_ms": g(r"99\.00 percentile latency \(ns\)\s*:\s*(\d+)"),
+    }
+    for k in ("min_ms", "max_ms", "mean_ms", "p50_ms", "p90_ms", "p99_ms"):
+        if out[k] is not None:
+            out[k] /= NS_MS
+    return out
+
+
+def read_mlperf_per_sample(trace_path, qsl_pkl):
+    """{case: latency_ms} from the loadgen trace.
+
+    SingleStream issues one sample per query, and each `Sample` begin event
+    carries `complete_ns` (the query's latency, since issue_start_ns is 0) and
+    `sample_idx`. The index is into the QSL's file list, which is the pickle the
+    reference harness itself loads -- so the mapping is the harness's own, not a
+    reconstruction.
+    """
+    if not (os.path.exists(trace_path) and os.path.exists(qsl_pkl)):
+        return {}
+    with open(qsl_pkl, "rb") as f:
+        files = pickle.load(f)["file_list"]
+    out = {}
+    with open(trace_path, encoding="utf-8", errors="replace") as f:
         for line in f:
-            parts = [p.strip() for p in line.split(",")]
-            if len(parts) < 6:
+            line = line.strip().rstrip(",")
+            if not line.startswith("{"):
                 continue
             try:
-                perf = int(parts[-1])
+                rec = json.loads(line)
             except ValueError:
                 continue
-            yield parts[2], parts[3], parts[4], perf, parts
-
-
-def parse_run(path):
-    """Per-request timings for one run.
-
-    Returns list of dicts (one per request, in arrival order) with load/prep/
-    infer/e2e in ms. queue_depth=1 + serialize_queries, so exactly one request is
-    in flight and stage markers pair unambiguously in order."""
-    per_stage = {LOAD_STAGE: [], PREP_STAGE: [], INFER_STAGE: []}
-    open_ev = {}
-    e2e = []
-    pipe_open = None
-    for mod, phase, event, perf, parts in _rows(path):
-        if mod.startswith("pipeline -") and phase == "run":
-            if event == "start":
-                pipe_open = perf
-            elif event == "end" and pipe_open is not None:
-                e2e.append((perf - pipe_open) / NS_MS)
-                pipe_open = None
-        elif mod in per_stage and phase == "run":
-            if event == "start":
-                open_ev[mod] = perf
-            elif event == "end" and mod in open_ev:
-                per_stage[mod].append((perf - open_ev.pop(mod)) / NS_MS)
-    n = min(len(e2e), *(len(v) for v in per_stage.values())) if e2e else 0
-    out = []
-    for i in range(n):
-        load, prep, inf = (per_stage[LOAD_STAGE][i], per_stage[PREP_STAGE][i],
-                           per_stage[INFER_STAGE][i])
-        tot = e2e[i]
-        out.append({"idx": i, "load": load, "prep": prep, "infer": inf, "e2e": tot,
-                    "pre_frac": 100.0 * (load + prep) / tot if tot else float("nan")})
+            if rec.get("name") != "Sample" or rec.get("ph") != "b":
+                continue
+            a = rec.get("args") or {}
+            idx, comp = a.get("sample_idx"), a.get("complete_ns")
+            if idx is None or comp is None or idx >= len(files):
+                continue
+            out[files[idx]] = comp / NS_MS
     return out
 
 
-def load_device(device):
-    """All runs for a device: list of per-request lists."""
-    d = os.path.join(HERE, "results", device)
-    runs = []
-    for p in sorted(glob.glob(os.path.join(d, f"unet3d_42_{device}_r*.csv"))):
-        r = parse_run(p)
-        if r:
-            runs.append(r)
-    return runs
-
-
-def per_case_median(runs):
-    """Median across repetitions for each request index (cases are iterated in a
-    fixed order, so index k is the same case in every run)."""
-    if not runs:
-        return []
-    n = min(len(r) for r in runs)
-    out = []
-    for i in range(n):
-        vals = [r[i] for r in runs]
-        out.append({k: st.median([v[k] for v in vals])
-                    for k in ("load", "prep", "infer", "e2e", "pre_frac")} | {"idx": i})
-    return out
-
-
-# ---------------------------------------------------------------------------
-# MLPerf reference outputs
-# ---------------------------------------------------------------------------
-def parse_mlperf_summary(path):
-    """Pull the SingleStream latency percentiles out of mlperf_log_summary.txt."""
+def read_mlperf_dice(path):
+    """{mean, kidney, tumor} from the reference accuracy script's output."""
     if not os.path.exists(path):
-        return {}
-    out = {}
-    # Percentile labels vary across loadgen versions ("90th" vs "90.0th"), so
-    # match any "<number>th percentile" as well as the named rows.
-    for line in open(path, encoding="utf-8", errors="replace"):
-        m = re.match(r"\s*([A-Za-z0-9_.]+(?:\s+[A-Za-z()/_.]+)*)\s*:\s*(.+)", line)
-        if not m:
-            continue
-        k, v = m.group(1).strip(), m.group(2).strip()
-        if not re.search(r"latency|Result is|Early stopping|QPS", k):
-            continue
-        try:
-            out[k] = float(v) / 1e6 if "(ns)" in k else float(v)
-        except ValueError:
-            out[k] = v
-        if line.startswith("Scenario"):
-            out["Scenario"] = line.split(":", 1)[1].strip()
-    return out
+        return None
+    m = re.search(r"Accuracy:\s*mean\s*=\s*([\d.]+),\s*kidney\s*=\s*([\d.]+),"
+                  r"\s*tumor\s*=\s*([\d.]+)",
+                  open(path, encoding="utf-8", errors="replace").read())
+    if not m:
+        return None
+    return {"mean": float(m.group(1)), "kidney": float(m.group(2)),
+            "tumor": float(m.group(3))}
 
 
-def parse_mlperf_dice(path):
-    """Dice from accuracy_kits.py, which prints
-    `Accuracy: mean = X, kidney = Y, tumor = Z`. Returns {mean,kidney,tumor}."""
+def read_choreo_dice(machine):
+    path = os.path.join(HERE, "results", f"dice_{machine}.csv")
     if not os.path.exists(path):
-        return {}
-    txt = open(path, encoding="utf-8", errors="replace").read()
-    out = {}
-    for key in ("mean", "kidney", "tumor"):
-        m = re.search(key + r"\s*=\s*([0-9.]+)", txt)
-        if m:
-            out[key] = float(m.group(1))
-    return out
-
-
-def parse_choreo_dice(path):
-    """Per-case Dice from run_full_experiment.py (the same stage code path as the
-    Choreo pipeline). Returns {mean,kidney,tumor} as medians over cases."""
-    if not os.path.exists(path):
-        return {}
-    cols = {"mean": "dice_mean", "kidney": "dice_kidney", "tumor": "dice_tumor"}
-    acc = {k: [] for k in cols}
-    for r in csv.DictReader(open(path)):
-        if r.get("error"):
-            continue
-        for k, c in cols.items():
-            try:
-                acc[k].append(float(r[c]))
-            except (ValueError, KeyError):
-                pass
-    return {k: st.mean(v) for k, v in acc.items() if v}
+        return None
+    rows = list(csv.DictReader(open(path, encoding="utf-8")))
+    if not rows:
+        return None
+    k = [float(r["dice_kidney"]) for r in rows]
+    t = [float(r["dice_tumor"]) for r in rows]
+    m = [float(r["dice_mean"]) for r in rows]
+    return {"cases": len(rows), "mean": float(np.mean(m)),
+            "kidney": float(np.mean(k)), "tumor": float(np.mean(t)),
+            "per_case": {r["case"]: float(r["dice_mean"]) for r in rows}}
 
 
 # ---------------------------------------------------------------------------
-# Tables
+# Prong 1 — parity
 # ---------------------------------------------------------------------------
-def parity_table(cuda_runs, mlperf_dir):
-    print("\n## Prong 1 — parity with the MLPerf reference harness (GB10, same device)\n")
-    # Prefer the COMPLIANT run (1024 queries, logs_perf_full) when it exists;
-    # fall back to the bounded 43-query run, which loadgen flags INVALID.
-    full = os.path.join(mlperf_dir, "logs_perf_full", "mlperf_log_summary.txt")
-    bounded = os.path.join(mlperf_dir, "logs_perf", "mlperf_log_summary.txt")
-    src = full if os.path.exists(full) else bounded
-    summ = parse_mlperf_summary(src)
-    print(f"_reference latency from `{os.path.basename(os.path.dirname(src))}`_\n")
-    ref = parse_mlperf_dice(os.path.join(mlperf_dir, "mlperf_accuracy_dice.txt"))
-    cho = parse_choreo_dice(os.path.join(HERE, "results", "choreo_dice_cuda.csv"))
-    if not cuda_runs:
-        print("_no Choreo cuda runs yet_\n")
-    infer = [q["infer"] for r in cuda_runs for q in r]
-    e2e = [q["e2e"] for r in cuda_runs for q in r]
+def print_parity(machine, bd, cases):
+    ref_dir = os.path.join(HERE, "mlperf_reference")
+    summary = read_mlperf_summary(os.path.join(ref_dir, "logs_perf",
+                                               "mlperf_log_summary.txt"))
+    ref_dice = read_mlperf_dice(os.path.join(ref_dir, "mlperf_accuracy_dice.txt"))
+    our_dice = read_choreo_dice(machine)
 
-    print("| quantity | MLPerf reference | Choreo | note |")
-    print("|---|--:|--:|---|")
-    for key, label in (("mean", "mean Dice (composite)"), ("kidney", "Dice kidney"),
-                       ("tumor", "Dice tumor")):
-        rd = f"{ref[key]:.4f}" if key in ref else "—"
-        cd = f"{cho[key]:.4f}" if key in cho else "—"
-        delta = (f"Δ {abs(ref[key] - cho[key]):.4f}"
-                 if key in ref and key in cho else "same 42-case KiTS19 set")
-        print(f"| {label} | {rd} | {cd} | {delta} |")
-    ml = summ.get("Mean latency (ns)")
-    mp50 = next((v for k, v in summ.items()
-                 if re.match(r"50(\.0+)?(th)? percentile latency \(ns\)", k)), None)
-    mp90 = next((v for k, v in summ.items()
-                 if re.match(r"90(\.0+)?(th)? percentile latency \(ns\)", k)), None)
-    # Compare MEDIANS first: MLPerf's own headline for SingleStream is a
-    # percentile, and the mean is pulled around by the case mix (volume sizes
-    # differ ~10x across KiTS19 cases, and the two harnesses do not issue the
-    # identical multiset of samples).
+    print(f"\n## Prong 1 — parity with the MLPerf reference harness ({machine} only)\n")
+    print("Same machine, same model, same 42-case set. MLPerf times ONLY "
+          "inference, so the like-for-like Choreo number is its inference-stage "
+          "duration — not end-to-end. This is a same-device faithfulness check "
+          "and is NOT a cross-device claim.\n")
+
+    # --- accuracy ---
+    print("### Accuracy (DICE)\n")
+    print("| harness | cases | mean | kidney | tumor |")
+    print("|---|--:|--:|--:|--:|")
+    if ref_dice:
+        print(f"| MLPerf reference | 43 | {ref_dice['mean']:.5f} | "
+              f"{ref_dice['kidney']:.4f} | {ref_dice['tumor']:.4f} |")
+    if our_dice:
+        print(f"| Choreo | {our_dice['cases']} | {our_dice['mean']:.5f} | "
+              f"{our_dice['kidney']:.4f} | {our_dice['tumor']:.4f} |")
+    else:
+        print("| Choreo | — | — | — | — |")
+    print(f"\nMLPerf's accuracy gate is 99% of {MLPERF_REFERENCE_DICE:.5f} = "
+          f"**{ACCURACY_GATE:.5f}**.", end=" ")
+    if our_dice:
+        verdict = "CLEARS" if our_dice["mean"] >= ACCURACY_GATE else "**FAILS**"
+        print(f"Choreo scores {our_dice['mean']:.5f} and {verdict} it.")
+    else:
+        print("No Choreo DICE yet — run the accuracy pass "
+              "(`collect_e3.sh <machine> 1 acc`).")
+    print("\nThe reference scores 43 cases and Choreo 42: `inference_cases.json` "
+          "omits case_00400. The two means are therefore over slightly different "
+          "sets, which is stated rather than hidden — it is worth ~one case in "
+          "43 and does not move the gate.")
+
+    # --- performance ---
+    print("\n### Performance (inference only, the part MLPerf times)\n")
+    if not summary:
+        print("No MLPerf summary found; the parity table cannot be built.")
+        return
+    if summary["validity"] != "VALID":
+        print(f"> **The reference run on disk is `{summary['validity']}`.** "
+              f"loadgen processed {summary['queries']} queries and needs "
+              f"{summary['min_queries_needed']} to clear early stopping. Its "
+              f"percentiles are reported below because they are what exists, "
+              f"but the parity claim is NOT closed until a valid reference run "
+              f"replaces it.\n")
+    infer = summarize({r: d["comp"]["inference"] for r, d in bd.items()}) if bd else None
+    print("| harness | median (ms) | mean (ms) | p90 (ms) | min | max |")
+    print("|---|--:|--:|--:|--:|--:|")
+    print(f"| MLPerf reference | {summary['p50_ms']:.0f} | {summary['mean_ms']:.0f} "
+          f"| {summary['p90_ms']:.0f} | {summary['min_ms']:.0f} | {summary['max_ms']:.0f} |")
     if infer:
-        cmed = st.median(infer)
-        cmean = st.mean(infer)
-        p90 = sorted(infer)[int(0.9 * (len(infer) - 1))]
-        if mp50:
-            d = 100.0 * abs(cmed - mp50) / mp50
-            print(f"| inference latency, median (ms) | {mp50:.0f} | {cmed:.0f} | "
-                  f"**{d:.1f}% apart** — like-for-like: MLPerf times ONLY inference |")
-        if ml:
-            print(f"| inference latency, mean (ms) | {ml:.0f} | {cmean:.0f} | "
-                  f"mean is case-mix sensitive; see median |")
-        if mp90:
-            print(f"| inference latency, p90 (ms) | {mp90:.0f} | {p90:.0f} | |")
-    if e2e:
-        print(f"| end-to-end per request (ms) | not measured | {st.median(e2e):.0f} | "
-              f"MLPerf's boundary excludes load+preprocess — prong 2 |")
-    if summ.get("Scenario"):
-        print(f"\nMLPerf scenario: **{summ['Scenario']}**"
-              + (f" (loadgen verdict: {summ['Result is']})" if "Result is" in summ else "")
-              + ". A bounded run (one QSL pass) is a same-device parity check, NOT a "
-                "compliant submission — loadgen requires 1024 SingleStream queries.")
-    print("\n**Accuracy caveat — two differences, both known:** (a) the MLPerf "
-          "reference postprocesses its logged predictions back to the ORIGINAL voxel "
-          "spacing before scoring, while the Choreo number is scored on the resampled "
-          "grid the model actually runs on; (b) the reference scores 43 cases while "
-          "Choreo's inference_cases.json is a strict 42-case subset (it omits "
-          "case_00400). So read the agreement as 'both clear the MLPerf accuracy gate "
-          "(99% of 0.86170 = 0.8531)', not as a bit-exact match.")
+        print(f"| Choreo (inference stage) | {infer['median']:.0f} | "
+              f"{infer['mean']:.0f} | {infer['p90']:.0f} | — | — |")
+        d = 100.0 * (infer["median"] - summary["p50_ms"]) / summary["p50_ms"]
+        print(f"\nMedian inference latency differs by **{d:+.1f}%**.")
+    else:
+        print("| Choreo (inference stage) | — | — | — | — | — |")
+        return
+
+    # --- matched, per case ---
+    ref_cases = read_mlperf_per_sample(
+        os.path.join(ref_dir, "logs_perf", "mlperf_log_trace.json"),
+        os.path.join(ROOT, "data", "kits19", "preprocessed_mlperf",
+                     "preprocessed_files.pkl"))
+    shared = sorted(set(ref_cases) & set(cases))
+    if len(shared) < 2:
+        print("\nNo per-case matching possible (the reference trace or the QSL "
+              "file list is missing), so only the pooled percentiles above are "
+              "comparable.")
+        return
+    diffs = []
+    for c in shared:
+        ours = float(np.median(cases[c]["inference"])) / NS_MS
+        diffs.append(100.0 * (ours - ref_cases[c]) / ref_cases[c])
+    diffs = np.asarray(diffs)
+    print(f"\n**Matched per case, all {len(shared)} cases both harnesses ran.** "
+          f"Choreo vs the reference on the SAME case: median difference "
+          f"**{np.median(diffs):+.1f}%**, mean {diffs.mean():+.1f}%, range "
+          f"{diffs.min():+.1f}% to {diffs.max():+.1f}%.")
+    if len(shared) < len(cases):
+        print(f"\n({len(cases) - len(shared)} Choreo case(s) had no matching "
+              f"reference sample — the reference run is short.)")
 
 
-def boundary_table(per_device):
-    print("\n## Prong 2 — what MLPerf's measurement boundary hides (online serving)\n")
-    print("| device | n cases | e2e median (ms) | load+preprocess (ms) | inference (ms) "
-          "| preprocessing share | share range across cases |")
-    print("|---|--:|--:|--:|--:|--:|---|")
-    for dev, cases in per_device.items():
+# ---------------------------------------------------------------------------
+# Prong 2 — the measurement boundary
+# ---------------------------------------------------------------------------
+def print_boundary(per_machine):
+    print("\n## Prong 2 — what the measurement boundary hides\n")
+    print("MLPerf's QSL preloads preprocessed `.pkl` volumes, so its timed "
+          "section starts after load and preprocess have already happened. "
+          "Online they cannot: the request arrives as a raw volume. Below, "
+          "`MLPerf-visible` is the inference stage alone — everything MLPerf "
+          "would report — and `hidden` is what its boundary excludes.\n")
+    print("| machine | R | end-to-end L_q (ms) | load | preprocess | inference "
+          "| framework | hidden share (95% CI) |")
+    print("|---|--:|--:|--:|--:|--:|--:|---|")
+    for machine, (bd, cases) in per_machine.items():
+        if not bd:
+            continue
+        s = {c: summarize({r: d["comp"][c] for r, d in bd.items()})
+             for c in COMPONENTS}
+        lq = summarize({r: [sum(v) for v in zip(*(d["comp"][c] for c in COMPONENTS))]
+                        for r, d in bd.items()})
+        fw = sum(s[c]["median"] for c in ("entry", "handoff_lp", "handoff_pi", "exit"))
+        # The share is the median of PER-QUERY shares, not the ratio of two
+        # pooled medians. Those differ, and not slightly: the cases span an 18x
+        # size range, so the median preprocess and the median L_q belong to
+        # different cases and their ratio describes no request that ever ran.
+        share = summarize({r: [100.0 * (c_l + c_p) / tot
+                               for c_l, c_p, tot in zip(
+                                   d["comp"]["load"], d["comp"]["preprocess"],
+                                   [sum(v) for v in zip(*(d["comp"][c]
+                                                          for c in COMPONENTS))])]
+                           for r, d in bd.items()}, unit=1.0)
+        print(f"| {MACHINE_LABEL.get(machine, machine)} | {lq['runs']} | "
+              f"{lq['median']:.0f} | {s['load']['median']:.0f} | "
+              f"{s['preprocess']['median']:.0f} | {s['inference']['median']:.0f} | "
+              f"{fw:.1f} | **{share['median']:.1f}%** "
+              f"[{share['ci_lo']:.1f}, {share['ci_hi']:.1f}] |")
+    print("\n(milliseconds, medians over all cases and repetitions. `framework` "
+          "is entry + the two hand-offs + exit — the sub-millisecond scaffolding "
+          "E2 measures directly; it is listed so the components provably sum to "
+          "L_q, not because it is interesting at this scale.\n"
+          "\n`load` is near-zero by design and that is not an error: "
+          "KiTS19CaseLoader emits only the case id and its file paths. The "
+          "actual read, decompress, resample, normalize and pad all happen "
+          "inside `preprocess`, which is where MLPerf's offline QSL does them "
+          "too. The hidden share is therefore essentially the preprocess stage.)")
+
+    print("\n### The share is not one number — it varies by case\n")
+    print("| machine | median | p25 | p75 | min | max | cases |")
+    print("|---|--:|--:|--:|--:|--:|--:|")
+    for machine, (bd, cases) in per_machine.items():
         if not cases:
             continue
-        e2e = [c["e2e"] for c in cases]
-        pre = [c["load"] + c["prep"] for c in cases]
-        inf = [c["infer"] for c in cases]
-        fr = [c["pre_frac"] for c in cases]
-        print(f"| {DEV_LABEL.get(dev, dev)} | {len(cases)} | {st.median(e2e):.0f} | "
-              f"{st.median(pre):.0f} | {st.median(inf):.0f} | "
-              f"**{st.median(fr):.1f}%** | {min(fr):.1f}–{max(fr):.1f}% |")
-    print("\nThe preprocessing share is what an offline-preload benchmark reports as "
-          "zero. It cannot be hidden online: a request arrives with its own raw "
-          "volume, so there is nothing to prefetch.")
+        sh = []
+        for c, d in cases.items():
+            tot = sum(float(np.median(d[k])) for k in COMPONENTS)
+            hid = float(np.median(d["load"])) + float(np.median(d["preprocess"]))
+            if tot:
+                sh.append(100.0 * hid / tot)
+        if not sh:
+            continue
+        sh = np.asarray(sh)
+        print(f"| {MACHINE_LABEL.get(machine, machine)} | {np.median(sh):.1f}% | "
+              f"{np.percentile(sh, 25):.1f}% | {np.percentile(sh, 75):.1f}% | "
+              f"{sh.min():.1f}% | {sh.max():.1f}% | {len(sh)} |")
+    print("\nThe MEDIAN is the number to quote. The maximum is the endpoint of a "
+          "range, not a representative case, and quoting it alone is the "
+          "objection this table exists to answer.")
+
+    print("\n### Why: the two stages scale with different things\n")
+    print("| machine | preprocess (ms) | inference (ms) | sub-volumes (median) "
+          "| ms per sub-volume (per case, then median) |")
+    print("|---|--:|--:|--:|--:|")
+    for machine, (bd, cases) in per_machine.items():
+        if not cases:
+            continue
+        pre = np.median([float(np.median(d["preprocess"])) for d in cases.values()]) / NS_MS
+        inf = np.median([float(np.median(d["inference"])) for d in cases.values()]) / NS_MS
+        ns = [d["n_sub"] for d in cases.values() if "n_sub" in d]
+        n = float(np.median(ns)) if ns else float("nan")
+        # Per case, then median -- not median(inference)/median(n), which pairs
+        # numbers from two different cases.
+        per_sub = [float(np.median(d["inference"])) / NS_MS / d["n_sub"]
+                   for d in cases.values() if d.get("n_sub")]
+        print(f"| {MACHINE_LABEL.get(machine, machine)} | {pre:.0f} | {inf:.0f} "
+              f"| {n:.0f} | {np.median(per_sub):.0f} |")
+    ms = [m for m in per_machine if per_machine[m][1]]
+    if len(ms) == 2:
+        a, b = ms
+        def med(m, k):
+            return np.median([float(np.median(d[k])) for d in per_machine[m][1].values()])
+        print(f"\nSpeedup from {a} to {b}: inference "
+              f"**{med(a, 'inference') / med(b, 'inference'):.1f}x**, preprocess "
+              f"**{med(a, 'preprocess') / med(b, 'preprocess'):.1f}x**. The share "
+              f"the boundary hides is larger wherever the accelerator pulls "
+              f"further ahead of the CPU — which is the honest framing. It is "
+              f"NOT a claim that the two machines have equal CPUs.")
+
+
+def print_size_relation(per_machine):
+    """The variable-size claim, fitted rather than asserted.
+
+    Preprocessing is roughly per-volume work and inference is roughly per
+    sub-volume, so the hidden share should behave like
+
+        frac(n) = P / (P + S*n)
+
+    with P the preprocessing cost and S the cost of one sliding-window pass.
+    Fitting it is what turns "the share varies" into a statement with a
+    mechanism, and the fitted S is checkable against the measured ms per
+    sub-volume in the table above.
+    """
+    print("\n### Hidden share against case size\n")
+    print("| machine | n range | share at min n | share at max n | Spearman rho "
+          "| fitted P (ms) | fitted S (ms/sub-volume) |")
+    print("|---|--:|--:|--:|--:|--:|--:|")
+    for machine, (bd, cases) in per_machine.items():
+        pts = [(d["n_sub"],
+                float(np.median(d["load"])) + float(np.median(d["preprocess"])),
+                sum(float(np.median(d[k])) for k in COMPONENTS))
+               for d in cases.values() if "n_sub" in d]
+        if len(pts) < 4:
+            continue
+        n = np.array([p[0] for p in pts], dtype=float)
+        hid = np.array([p[1] for p in pts]) / NS_MS
+        tot = np.array([p[2] for p in pts]) / NS_MS
+        frac = 100.0 * hid / tot
+        order = np.argsort(n)
+        # Spearman without scipy: Pearson on the ranks.
+        rn = np.argsort(np.argsort(n)).astype(float)
+        rf = np.argsort(np.argsort(frac)).astype(float)
+        rho = float(np.corrcoef(rn, rf)[0, 1])
+        # frac = P / (P + S*n)  =>  tot/hid = 1 + (S/P)*n, linear in n.
+        y = tot / hid
+        S_over_P, intercept = np.polyfit(n, y, 1)
+        P = float(np.median(hid))
+        print(f"| {MACHINE_LABEL.get(machine, machine)} | {n.min():.0f}–{n.max():.0f} "
+              f"| {frac[order][0]:.1f}% | {frac[order][-1]:.1f}% | {rho:+.2f} "
+              f"| {P:.0f} | {S_over_P * P:.0f} |")
+    print("\n(`share at min/max n` are the individual cases at the ends of the "
+          "size range, not a fit. rho is Spearman's rank correlation between "
+          "sub-volume count and hidden share — negative, because a bigger "
+          "volume means more inference passes over the same one-off "
+          "preprocessing. The fit is `share = P / (P + S*n)`, linearised as "
+          "`total/hidden = 1 + (S/P)*n`; the fitted S should agree with the "
+          "measured ms per sub-volume above, and if it does not, the model is "
+          "wrong and should be said to be.)")
 
 
 # ---------------------------------------------------------------------------
-# Figures (no titles — captions carry that in the paper)
+# Figures
 # ---------------------------------------------------------------------------
-def make_figures(per_device, fig_dir):
+def make_breakdown_figure(per_machine, fig_dir):
+    """Per-request latency, stacked, one bar per case, ordered by size.
+
+    This is the figure that makes the point: the inference band is what MLPerf
+    reports and the load+preprocess bands are what its boundary excludes, and
+    the excluded fraction visibly shrinks as the case gets bigger.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    devs = [d for d in ("mps", "cuda") if per_device.get(d)]
-    if not devs:
-        return []
-    # Fig 1: per-case stacked breakdown, one panel per device
-    fig, axes = plt.subplots(1, len(devs), figsize=(6.2 * len(devs), 4.4), squeeze=False)
-    for ax, dev in zip(axes[0], devs):
-        cases = per_device[dev]
-        x = range(len(cases))
-        load = [c["load"] for c in cases]
-        prep = [c["prep"] for c in cases]
-        inf = [c["infer"] for c in cases]
-        ax.bar(x, load, color="tab:green", label="load")
-        ax.bar(x, prep, bottom=load, color="tab:orange", label="preprocess")
-        ax.bar(x, inf, bottom=[a + b for a, b in zip(load, prep)],
-               color="tab:blue", label="inference (all MLPerf times)")
-        ax.set_xlabel(f"{DEV_LABEL.get(dev, dev)} — KiTS19 case (42, arrival order)")
-        ax.set_ylabel("per-request latency (ms)")
-        ax.grid(alpha=0.3, axis="y")
-        ax.legend(fontsize=8)
+    ms = [m for m in per_machine if per_machine[m][1]]
+    if not ms:
+        return None
+    parts = [("load", "tab:blue"), ("preprocess", "tab:orange"),
+             ("inference", "tab:green")]
+    fig, ax = plt.subplots(1, len(ms), figsize=(6.2 * len(ms), 4.2), squeeze=False)
+    ax = ax[0]
+    for i, machine in enumerate(ms):
+        cases = per_machine[machine][1]
+        items = sorted([(d.get("n_sub", 0), c, d) for c, d in cases.items()])
+        x = np.arange(len(items))
+        bottom = np.zeros(len(items))
+        for name, color in parts:
+            v = np.array([float(np.median(d[name])) / NS_MS for _, _, d in items])
+            ax[i].bar(x, v, bottom=bottom, color=color, width=0.9,
+                      label=name + (" (MLPerf-visible)" if name == "inference"
+                                    else " (hidden by MLPerf)"))
+            bottom += v
+        ax[i].set_xlabel(f"case, ordered by sub-volume count — "
+                         f"{MACHINE_LABEL.get(machine, machine)}")
+        ax[i].set_ylabel("per-request latency (ms)")
+        ax[i].set_xticks(x[::4])
+        ax[i].set_xticklabels([f"{items[j][0]}" for j in range(0, len(items), 4)],
+                              fontsize=7)
+        ax[i].grid(alpha=0.3, axis="y")
+        ax[i].legend(fontsize=8)
     fig.tight_layout()
-    f1 = os.path.join(fig_dir, "e3_request_breakdown.png")
-    fig.savefig(f1, dpi=140); plt.close(fig)
+    out = os.path.join(fig_dir, "e3_request_breakdown.png")
+    fig.savefig(out, dpi=140)
+    plt.close(fig)
+    return out
 
-    # Fig 2: preprocessing share per case, both devices
-    fig, ax = plt.subplots(figsize=(7.5, 4.4))
-    for dev, color in (("mps", "tab:blue"), ("cuda", "tab:orange")):
-        cases = per_device.get(dev)
-        if not cases:
+
+def make_share_figure(per_machine, fig_dir):
+    """Hidden share against case size, with the P/(P+S*n) fit drawn through it."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    style = {"m3pro": ("tab:blue", "o"), "gb10": ("tab:orange", "s")}
+    fig, ax = plt.subplots(figsize=(6.4, 4.4))
+    drew = False
+    for machine, (bd, cases) in per_machine.items():
+        pts = [(d["n_sub"],
+                float(np.median(d["load"])) + float(np.median(d["preprocess"])),
+                sum(float(np.median(d[k])) for k in COMPONENTS))
+               for d in cases.values() if "n_sub" in d]
+        if len(pts) < 4:
             continue
-        fr = sorted(c["pre_frac"] for c in cases)
-        ax.plot(range(len(fr)), fr, "o-", color=color, ms=4, lw=1.3,
-                label=f"{DEV_LABEL.get(dev, dev)} (median {st.median(fr):.1f}%)")
-    ax.set_xlabel("KiTS19 case (sorted by preprocessing share)")
-    ax.set_ylabel("load+preprocess share of per-request latency (%)")
-    ax.grid(alpha=0.3); ax.legend(fontsize=8)
+        drew = True
+        color, marker = style.get(machine, ("tab:green", "^"))
+        n = np.array([p[0] for p in pts], dtype=float)
+        frac = 100.0 * np.array([p[1] for p in pts]) / np.array([p[2] for p in pts])
+        ax.scatter(n, frac, s=26, color=color, marker=marker, alpha=0.75,
+                   label=MACHINE_LABEL.get(machine, machine))
+        y = np.array([p[2] for p in pts]) / np.array([p[1] for p in pts])
+        slope, icept = np.polyfit(n, y, 1)
+        xs = np.linspace(n.min(), n.max(), 100)
+        ax.plot(xs, 100.0 / (icept + slope * xs), color=color, lw=1.2, alpha=0.8)
+    if not drew:
+        plt.close(fig)
+        return None
+    ax.set_xlabel("sliding-window sub-volumes in the case")
+    ax.set_ylabel("share of per-request latency MLPerf's boundary hides (%)")
+    ax.grid(alpha=0.3)
+    ax.legend(fontsize=8)
     fig.tight_layout()
-    f2 = os.path.join(fig_dir, "e3_preprocessing_share.png")
-    fig.savefig(f2, dpi=140); plt.close(fig)
-    return [f1, f2]
-
-
+    out = os.path.join(fig_dir, "e3_preprocessing_share.png")
+    fig.savefig(out, dpi=140)
+    plt.close(fig)
+    return out
 
 
 # ---------------------------------------------------------------------------
-# Matched per-case parity (the correct comparison)
-# ---------------------------------------------------------------------------
-def matched_parity(cuda_runs, mlperf_dir, dice_csv, cases_json):
-    """Compare inference time CASE BY CASE, not in aggregate.
-
-    Aggregate means/percentiles are not comparable between the two harnesses:
-    loadgen issues its own multiset of samples (a bounded 43-query SingleStream
-    run touched only 16 DISTINCT cases, with repeats), while Choreo runs each of
-    the 42 cases once per repetition. KiTS19 volumes differ ~17x in cost
-    (8..144 sub-volumes), so a different sample mix moves the aggregate a lot
-    even when the per-case work is identical.
-
-    MLPerf prints a per-sample inner time ("... took X sec") covering
-    infer_single_query only — the same span Choreo's inference stage brackets —
-    so those are directly comparable once matched on (shape, sub-volume count).
-    Note loadgen's REPORTED latency additionally includes response
-    serialisation (final_result.tobytes() over a multi-MB volume) and
-    QuerySamplesComplete, which Choreo's stage marker excludes; that is part of
-    why the aggregate numbers differ."""
-    full_log = os.path.join(mlperf_dir, "mlperf_perf_full.log")
-    log = full_log if os.path.exists(full_log) else os.path.join(
-        mlperf_dir, "mlperf_perf_run.log")
-    if not (os.path.exists(log) and os.path.exists(dice_csv) and cuda_runs):
-        return
-    ml = []
-    for line in open(log, errors="replace"):
-        m = re.search(r"sample id\s+(\d+) with shape = \(1, ([\d, ]+)\),\s*(\d+) "
-                      r"sub-volumes took\s+([\d.]+) sec", line)
-        if m:
-            ml.append({"shape": "x".join(x.strip() for x in m.group(2).split(",")),
-                       "nsub": int(m.group(3)), "t": float(m.group(4))})
-    meta = {}
-    for r in csv.DictReader(open(dice_csv)):
-        if not r.get("error"):
-            meta[r["case"]] = (r["image_shape"], int(r["n_subvolumes"]))
-    key2case = {v: k for k, v in meta.items()}
-    cases = json.load(open(cases_json)) if os.path.exists(cases_json) else []
-    per = per_case_median(cuda_runs)
-    cho = {cases[i]: c["infer"] / 1000.0 for i, c in enumerate(per) if i < len(cases)}
-
-    seen, rows = set(), []
-    for s in ml:
-        case = key2case.get((s["shape"], s["nsub"]))
-        if case and case in cho and case not in seen:
-            seen.add(case)
-            rows.append((case, s["nsub"], s["t"], cho[case]))
-    if not rows:
-        return
-    rows.sort(key=lambda r: r[1])
-    diffs = [100.0 * (c - m) / m for _, _, m, c in rows]
-    print(f"\n### Matched per-case inference time (GB10) — {len(rows)} cases "
-          f"loadgen actually exercised\n")
-    print("| case | sub-volumes | MLPerf inner (s) | Choreo stage (s) | diff |")
-    print("|---|--:|--:|--:|--:|")
-    for (case, nsub, m, c), d in zip(rows, diffs):
-        print(f"| {case} | {nsub} | {m:.2f} | {c:.2f} | {d:+.1f}% |")
-    print(f"\n**Median per-case difference: {st.median(diffs):+.1f}%** — the same "
-          f"work, not a faster implementation. Cases within +/-1%: "
-          f"{sum(1 for d in diffs if abs(d) <= 1.0)}/{len(diffs)}. Larger outliers are "
-          f"first-touch effects (a shape loadgen saw once, before cuDNN/allocator "
-          f"warm-up) against a Choreo median over repetitions.")
-
-
 def main():
+    global DROP_RUNS
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--devices", nargs="+", default=["cuda", "mps"])
+    ap.add_argument("--machines", nargs="+", default=["m3pro", "gb10"])
+    ap.add_argument("--experiment", default=os.environ.get("E3_EXPERIMENT", "138"))
+    ap.add_argument("--tracking-uri", default=os.environ.get("MLFLOW_TRACKING_URI"))
+    ap.add_argument("--drop-runs", type=int, default=DROP_RUNS,
+                    help="discard the first N repetitions entirely. Defaults to "
+                         "1 and should stay there: the first repetition is "
+                         "slower for its WHOLE duration.")
+    ap.add_argument("--warmup", type=int, default=WARMUP)
     ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
-    ap.add_argument("--mlperf-dir", default=os.path.join(HERE, "mlperf_gb10"))
     args = ap.parse_args()
+    DROP_RUNS = args.drop_runs
+
     fig_dir = os.path.abspath(args.fig_dir)
     os.makedirs(fig_dir, exist_ok=True)
 
-    print("# E3 — MLPerf / 3D-UNet: reproduction + the measurement boundary\n")
-    print("Online serving regime: one request in flight (serialize_queries, "
-          "queue_depth 1, batch 1). Latencies from the monotonic perf clock; "
-          "per-case values are medians across repetitions.\n")
+    print("# E3 — MLPerf 3D-UNet / KiTS19\n")
+    print("Every Choreo number below comes from SPANS. The perf configs set "
+          "`disable_logs` on the pipeline and on all three stages, so nothing "
+          "is written per query and no serialisation sits inside the measured "
+          "graph.\n")
+    print(f"Repetitions dropped as system warm-up: {DROP_RUNS}. Queries dropped "
+          f"at the head of each run: {args.warmup} (there are only 42, and the "
+          f"case order is fixed, so dropping any would drop specific cases). "
+          f"CIs are a hierarchical bootstrap with the run as the unit of "
+          f"replication.\n")
+    print("**E3 runs UNPINNED on both machines**, unlike E1 and E2. Pinning "
+          "throttles CPU preprocessing while leaving GPU inference untouched, "
+          "which would inflate the very ratio this experiment reports. "
+          "`collect_e3.sh` refuses a `PIN`.\n")
 
-    raw = {d: load_device(d) for d in args.devices}
-    per_device = {d: per_case_median(r) for d, r in raw.items()}
-    for d in args.devices:
-        print(f"- {DEV_LABEL.get(d, d)}: {len(raw[d])} run(s), "
-              f"{len(per_device[d])} cases per run")
+    per_machine = {}
+    for machine in args.machines:
+        bd = breakdown_by_run(machine, args.tracking_uri, args.experiment,
+                              args.drop_runs, args.warmup)
+        cases = per_case(bd) if bd else {}
+        per_machine[machine] = (bd, cases)
+        print(f"\n# ===== {MACHINE_LABEL.get(machine, machine)} "
+              f"({len(bd)} run(s), {len(cases)} case(s)) =====")
+        if not bd:
+            print(f"\nNo perf runs found for {machine} in experiment "
+                  f"{args.experiment}.")
 
-    parity_table(raw.get("cuda", []), os.path.abspath(args.mlperf_dir))
-    matched_parity(raw.get("cuda", []), os.path.abspath(args.mlperf_dir),
-                   os.path.join(HERE, "results", "choreo_dice_cuda.csv"),
-                   os.path.join(HERE, "inference_cases.json"))
-    boundary_table(per_device)
-    figs = make_figures(per_device, fig_dir)
-    for f in figs:
-        print(f"\n**Figure:** `{f}`")
+    if PARITY_MACHINE in per_machine:
+        bd, cases = per_machine[PARITY_MACHINE]
+        print_parity(PARITY_MACHINE, bd, cases)
+
+    if any(bd for bd, _ in per_machine.values()):
+        print_boundary({m: v for m, v in per_machine.items() if v[0]})
+        print_size_relation({m: v for m, v in per_machine.items() if v[1]})
+        for f in (make_breakdown_figure(per_machine, fig_dir),
+                  make_share_figure(per_machine, fig_dir)):
+            if f:
+                print(f"\n**Figure:** `{f}`")
 
 
 if __name__ == "__main__":

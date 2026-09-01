@@ -1,4 +1,13 @@
-name: E3 3D-UNet KiTS19 42-case online (cuda)
+# E3 — MLPerf 3D-UNet / KiTS19, 42-case online serving.
+#
+# ACCURACY config: the same three stages plus KiTS19DiceScore, which writes
+# the per-case DICE the parity claim rests on. This config is NEVER timed -- MLPerf
+# separates AccuracyOnly from PerformanceOnly for the same reason. Logs are
+# left on here: nothing is being measured, and the rows help debugging.
+#
+# Generated shape, kept in the repo rather than generated at collection time:
+# there are only four of these and they are read by reviewers, not swept.
+name: E3 3D-UNet KiTS19 42-case online, acc (m3pro)
 pipelines:
 - name: 3D-UNet KiTS19
   inputs:
@@ -36,9 +45,11 @@ pipelines:
     component: stages.unet3d_kits19.UNet3DInference
     config:
       model_path: models/3dunet_kits19/3dunet_kits19_pytorch.ptc
-      device: cuda
-  - name: End stage
+      device: mps
+  - name: DICE scorer
     id: 3
-    component: stages.TerminalCapture
+    component: stages.unet3d_kits19.KiTS19DiceScore
+    config:
+      output_path: evaluation/unet3d/results/dice_m3pro.csv
   serialize_queries: true
 listeners: []

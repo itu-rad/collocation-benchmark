@@ -10,5 +10,7 @@ model + KiTS19 data acquisition and GPU verification.
 from .case_loader import KiTS19CaseLoader
 from .preprocess import KiTS19Preprocess
 from .inference import UNet3DInference
+from .score import KiTS19DiceScore
 
-__all__ = ["KiTS19CaseLoader", "KiTS19Preprocess", "UNet3DInference"]
+__all__ = ["KiTS19CaseLoader", "KiTS19Preprocess", "UNet3DInference",
+           "KiTS19DiceScore"]

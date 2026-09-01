@@ -1,4 +1,4 @@
-from stages.stage import Stage, log_phase
+from stages.stage import Stage, log_phase, marker_span
 from utils.schemas import Query
 
 from . import kits19_lib as kl
@@ -31,12 +31,29 @@ class KiTS19Preprocess(Stage):
         image, label, aux = kl.preprocess_volume(
             payload["image_path"], label_path)
 
+        n_sub = kl.count_subvolumes(image[None, ...] if image.ndim == 4 else image)
         query.data = {
             "case": payload["case"],
             "image": image,
             "label": label,
             "aux": aux,
-            "n_subvolumes": kl.count_subvolumes(image[None, ...]
-                                                if image.ndim == 4 else image),
+            "n_subvolumes": n_sub,
         }
+        # The independent variable of the whole experiment, recorded as a
+        # property of this query's own trace. KiTS19 volumes differ by ~18x in
+        # sliding-window count, which is what makes the preprocessing share
+        # vary case to case; without this the analysis has to join sizes in
+        # from a side file produced by a DIFFERENT run, which is how the
+        # previous version of E3 did it and is not defensible.
+        #
+        # Emitted unconditionally, exactly like the LLM token counts: the perf
+        # config sets `disable_logs` everywhere, and marker_span deliberately
+        # ignores that flag so the size survives with the CSV instrument off.
+        marker_span(self, "case_size", {
+            "case": payload["case"],
+            "n_subvolumes": n_sub,
+            # Post-resample shape -- what inference actually tiles over. The
+            # raw shape is a different number and the two must not be confused.
+            "image_shape": "x".join(str(d) for d in image.shape[-3:]),
+        })
         return {idx: query for idx in self.output_queues}
