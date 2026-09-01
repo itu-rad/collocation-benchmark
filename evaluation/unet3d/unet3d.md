@@ -261,13 +261,30 @@ earlier ad-hoc scoring of the same runs used a merged-kidney convention (kidney 
 
 **The gb10 TIMED pass of 2026-09-01 is contaminated and must not be used.** A MobileNetV2
 training job (`train_cloud.py`) started on the same machine 26 seconds after the collection
-began and held ~97 GB of GPU memory throughout. E3 measures the *ratio* of CPU preprocessing
-to GPU inference, so a co-resident GPU job inflates the inference stage specifically: it
-biases prong 2 conservatively (the hidden share looks smaller than it is) and breaks prong 1
-outright, since the reference it is compared against was measured on an idle machine. The
-foreign job was left running — it is not ours to kill — and a re-collection is queued to
-start once the machine goes idle, moving the contaminated runs aside rather than deleting
-them.
+began and held ~97 GB of GPU memory throughout.
+
+The wall-clock column shows it without any appeal to what was running:
+
+| run | seconds | spans |
+|---|--:|--:|
+| accuracy pass (before the foreign job started) | 425 | 547 |
+| perf r1 | **1404** | 463 |
+| perf r2 | **811** | 463 |
+
+Identical work, 42 cases each, and r1 takes 73% longer than r2 — while the span count is
+constant at 463, so nothing about the pipeline itself changed. The accuracy pass, which ran
+before the foreign job started and does strictly *more* work per case (it resamples the label
+too, and scores the result), finished in a third of r1's time.
+
+E3 measures the *ratio* of CPU preprocessing to GPU inference, so a co-resident GPU job
+inflates the inference stage specifically: it biases prong 2 conservatively — the hidden
+share looks smaller than it is — and it breaks prong 1 outright, since the reference it is
+compared against was measured on an idle machine. The foreign job was left running; it is not
+ours to kill. A re-collection is queued to start once the machine goes idle, moving the
+contaminated runs aside rather than deleting them.
+
+The DICE result above is unaffected and stands: it was collected before the foreign job
+started, and segmentation output is deterministic regardless of how long it takes.
 
 This is the second time a concurrent workload has silently corrupted a collection on a shared
 machine (the first was a Mac that slept mid-run). Neither was visible in the return code, the
