@@ -169,7 +169,17 @@ if [ -n "${PIN:-}" ] && command -v taskset >/dev/null 2>&1; then
   log "pinning workload to core(s) [$PIN]"
 fi
 
-CONFIGS=(monolith choreo choreo-traced)
+# Two configurations, not three. The untraced `choreo` arm is dropped: with the
+# pipeline's per-query CSV rows gated off (PipelineModel.disable_logs, which the
+# generated configs set), it has NO instrument at all -- no spans because
+# tracing is off, and no rows -- so it cannot be measured. Keeping the rows just
+# for that arm would price tracing by comparing two different instruments.
+#
+# Nothing is lost: E1 measures the cost of tracing directly and on a clean
+# microbenchmark (uninstrumented vs "+ tracing", 9.37 -> 25.31 us/stage on gb10,
+# 12.03 -> 42.14 on m3pro). E2's question is what DECOMPOSITION costs, which the
+# traced arm answers on its own from spans.
+CONFIGS=(${E2_CONFIGS:-monolith choreo-traced})
 NCONF=${#CONFIGS[@]}
 
 run_one() {
