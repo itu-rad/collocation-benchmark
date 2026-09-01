@@ -672,7 +672,8 @@ def make_instrument_figure(per_device, fig_dir):
         for arm, color in ARM_STYLE.items():
             if curves[arm]:
                 xs, ys = zip(*curves[arm])
-                ax.plot(xs, ys, "o-", color=color, ms=4, lw=1.4, label=arm)
+                ax.plot(xs, ys, "o-", color=color, ms=4, lw=1.4,
+                        label=ARM_LABEL.get(arm, arm))
         ax.set_xscale("log", base=2)
         ax.set_xlabel("pipeline depth (stages)")
         ax.set_ylabel(f"{dev}: per-stage cost O(d) = L_q/depth (us)")
@@ -719,7 +720,8 @@ def make_figures(per_device, fig_dir):
                     depths.append(d); meds.append(s["median"])
             if not depths:
                 continue
-            ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3, label=arm)
+            ax.plot(depths, meds, "o-", color=color, ms=4, lw=1.3,
+                    label=ARM_LABEL.get(arm, arm))
             lq_ns = [m * NS_PER_MS for m in meds]
             slope, icpt = ols_slope(depths, lq_ns)
             r2 = ols_r2(depths, lq_ns, slope, icpt)
