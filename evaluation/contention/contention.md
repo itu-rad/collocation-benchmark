@@ -81,6 +81,22 @@ So the bandwidth claim is directly measurable only on the Mac; on gb10 it is a s
 power/utilization proxy. Known caveat: under pure-GPU load roughly half the Mac's traffic lands
 in "other" AMC agents rather than the GPU bucket.
 
+## First data (2026-09-03)
+
+The harness is validated end-to-end on gb10. The **uncontended foreground baseline** — the
+reference every degradation number is measured against — is:
+
+| | gb10, foreground alone, 100 Poisson queries |
+|---|---|
+| p50 | 703 ms |
+| p95 | 2643 ms |
+| p99 / max | 5537 ms |
+| counters | DCGMI + TOP, 1.00 Hz, full run window |
+
+Per-query latencies come from the `pipeline - val` rows of the foreground trace (pipeline-level
+run start/end, one pair per query); the whole-run `pipeline` rows are the process bookends, not
+per-query, which is worth knowing before writing the analyzer.
+
 ## Prerequisites, per machine
 
 Checked 2026-09-02. Missing prerequisites are silent at run time -- a missing model surfaces
