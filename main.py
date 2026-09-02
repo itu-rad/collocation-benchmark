@@ -100,7 +100,23 @@ def radt_entrypoint(args):
     # Belt-and-braces for the prior "RadT killed the subprocess before MLflow
     # drained" issue: catch SIGTERM, flush spans, then re-raise so the
     # default handler still terminates us.
+    # Only the process that INSTALLED this handler may run it. radt's listeners
+    # are multiprocessing.Process children, forked after this point, and a fork
+    # inherits the parent's signal handlers -- so when the parent SIGTERMs the
+    # listeners at teardown, this ran inside each listener child, which then
+    # tried to join a trace exporter it is not the parent of:
+    #   AssertionError: can only join a child process   (radt/run/trace.py)
+    # and published a spurious second "spans emitted: 0". The run's data was
+    # already safe, but the teardown path is exactly the one we harden.
+    _owner_pid = os.getpid()
+
     def _on_sigterm(signum, frame):  # pylint: disable=unused-argument
+        if os.getpid() != _owner_pid:
+            # A forked child (listener/logger). Just die; the parent owns the
+            # flush, the span count and the mlflow run.
+            signal.signal(signum, signal.SIG_DFL)
+            os.kill(os.getpid(), signum)
+            return
         # Kill any local inference servers first so a RadT timeout/kill can't
         # leak a vLLM/Ollama subprocess holding the GPU. This is the path that
         # skips stage post_run(), so it must happen here.

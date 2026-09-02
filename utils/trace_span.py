@@ -106,6 +106,13 @@ def emitted_count():
 
 _reported = False
 
+# The pid that imported this module. Span counting is per-process state, and
+# radt's listeners are forked children: a child inherits the counter (empty) and
+# would publish "0" as the run's emitted-span count. utils.span_reader treats a
+# count below the artifact's start records as DROPPED EVENTS, so a stray 0 would
+# make a complete trace look totally lost.
+_owner_pid = os.getpid()
+
 
 def report_span_count():
     """Publish the emitted-span count so a reader can verify completeness.
@@ -130,7 +137,7 @@ def report_span_count():
     would look like.
     """
     global _reported
-    if MODE != "proc" or _reported:
+    if MODE != "proc" or _reported or os.getpid() != _owner_pid:
         return _final_count
     _reported = True
     n = emitted_count()
