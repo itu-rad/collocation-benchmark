@@ -85,10 +85,17 @@ a property of its own trace instead of a join against another experiment's CSV. 
 on both machines, unlike E1/E2: pinning throttles CPU preprocessing but not GPU inference, which
 would inflate the very ratio this experiment reports, so `collect_e3.sh` refuses a `PIN`.
 
-**Status/gap.** Reworked to the E1/E2 shape 2026-09-01; collection under way on both machines.
-**Missing:** a **VALID** MLPerf reference run on GB10 — the one on disk announces its own
-invalidity (`Result is : INVALID`, 43 queries against the 64 loadgen needs for early stopping), so
-the parity claim cannot rest on it. ResNet scenario-reduction: cut.
+**Status/gap.** **CLOSED 2026-09-02.** R=6 per machine (repetition 1 dropped, 5 usable), zero
+failures, 463 spans and 3 CSV rows per run, run times stable to 0.5%/0.7%. Prong 1 on GB10
+against a `VALID` reference run: DICE **0.86329** vs 0.86168 (gate 0.85308), median inference
+**5899 ms vs 5904 ms (−0.1%)**, matched per case median −0.2%. Prong 2: the hidden share is
+**6.3%** on m3pro and **15.8%** on gb10 — 2.5x larger on the faster device, because inference
+is 7.7x faster there while preprocessing is only 2.7x. Per case it ranges 1.7–27.1% and
+8.5–68.4%; **more sub-volumes means a smaller share** (rho −0.38/−0.56), and because both
+stages grow with n the share converges to a floor of 4.4%/7.8% rather than to zero. Known
+caveat, measured and bounded: a device warm-up transient inflates the first 4 gb10 queries by
+60–82%, is absent on m3pro, tracks run position rather than input shape, and leaves every
+median unmoved. ResNet scenario-reduction: cut.
 
 ## E4 — Self-RAG decomposition & prefill/decode split (cross-device)
 **Question.** What does decomposing agentic RAG cost vs a monolith, and *why*? The framework splits
