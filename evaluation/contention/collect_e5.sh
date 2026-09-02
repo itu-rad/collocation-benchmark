@@ -72,6 +72,22 @@ case "$MACHINE" in
   m3pro) WANT_LISTENERS="macmon" ;;
   gb10)  WANT_LISTENERS="dcgmi,top" ;;
 esac
+
+# radt spawns a listener ONLY if RADT_LISTENER_<NAME>=True is in the environment
+# (radt/run/benchmark.py). That variable is set by radt's schedule path, which a
+# direct `python main.py` invocation never goes through -- so the config's
+# `listeners:` key alone spawns nothing, and the run finishes clean with no
+# counters. Export one per wanted listener.
+export_listener_env() {
+  local IFS=,
+  for l in $1; do
+    [ -n "$l" ] || continue
+    export "RADT_LISTENER_$(echo "$l" | tr 'a-z' 'A-Z')=True"
+  done
+}
+
+export_listener_env "$WANT_LISTENERS"
+
 python scripts/radt_gate.py --listeners "$WANT_LISTENERS" || exit 3
 
 FG="$HERE/configs/fg_ragserve_${ENGINE}.yml"

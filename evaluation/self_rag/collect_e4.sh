@@ -85,6 +85,22 @@ else
   WANT_LISTENERS=""
 fi
 
+
+# radt spawns a listener ONLY if RADT_LISTENER_<NAME>=True is in the environment
+# (radt/run/benchmark.py). That variable is set by radt's schedule path, which a
+# direct `python main.py` invocation never goes through -- so the config's
+# `listeners:` key alone spawns nothing, and the run finishes clean with no
+# counters. Export one per wanted listener.
+export_listener_env() {
+  local IFS=,
+  for l in $1; do
+    [ -n "$l" ] || continue
+    export "RADT_LISTENER_$(echo "$l" | tr 'a-z' 'A-Z')=True"
+  done
+}
+
+export_listener_env "$WANT_LISTENERS"
+
 # radt must be the PATCHED checkout, and every listener the configs ask for must
 # actually be spawnable. Both are silent failures otherwise.
 python scripts/radt_gate.py ${WANT_LISTENERS:+--listeners "$WANT_LISTENERS"} || exit 3
