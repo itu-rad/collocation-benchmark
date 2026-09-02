@@ -1,0 +1,22 @@
+name: bg_stream_L50_mlx
+pipelines:
+- name: BG co-runner stream
+  dataset_stage_id: 0
+  inputs:
+  - 0
+  outputs:
+  - 0
+  loadgen:
+    component: loadgen.MultiStreamScheduler
+    queue_depth: 1000
+    max_queries: 1000
+    timeout: 3600
+    config:
+      interval: 0.11901
+  stages:
+  - name: CPU memory stream
+    id: 0
+    component: stages.evaluation.MemoryStream
+    config:
+      size_mb: 256
+      passes: 4

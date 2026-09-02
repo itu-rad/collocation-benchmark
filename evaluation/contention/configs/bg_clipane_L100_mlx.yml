@@ -1,0 +1,38 @@
+name: bg_clipane_L100_mlx
+pipelines:
+- name: BG co-runner clipane
+  dataset_stage_id: 0
+  inputs:
+  - 0
+  outputs:
+  - 1
+  loadgen:
+    component: loadgen.MultiStreamScheduler
+    queue_depth: 1000
+    max_queries: 1000
+    timeout: 3600
+    config:
+      interval: 0.0499
+  stages:
+  - name: VQA dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.multimodal_vqa.VQADataLoader
+    config:
+      dataset:
+        name: Multimodal-Fatima/OK-VQA_train
+        split: train
+        image_column: image
+        question_column: question
+        answers_column: answers
+        max_samples: 100
+      batch_size: 1
+  - name: CLIP vision encoder (CoreML)
+    id: 1
+    component: stages.multimodal_vqa.CLIPVisionEncoderCoreML
+    config:
+      model:
+        coreml_path: tmp/clip_vit_l14_vision.mlpackage
+        hf_name: openai/clip-vit-large-patch14
+      device: ane
