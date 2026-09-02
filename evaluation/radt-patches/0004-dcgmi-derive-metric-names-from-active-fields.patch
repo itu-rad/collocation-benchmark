@@ -1,5 +1,5 @@
 diff --git a/radt/radt/run/listeners/dcgmi_listener.py b/radt/radt/run/listeners/dcgmi_listener.py
-index 3cd7029..943a5f9 100644
+index 3cd7029..ba51a2e 100644
 --- a/radt/radt/run/listeners/dcgmi_listener.py
 +++ b/radt/radt/run/listeners/dcgmi_listener.py
 @@ -9,26 +9,34 @@ from multiprocessing import Process
@@ -57,17 +57,31 @@ index 3cd7029..943a5f9 100644
  
  
  class DCGMIThread(Process):
-@@ -97,7 +105,8 @@ class DCGMIThread(Process):
+@@ -97,9 +105,21 @@ class DCGMIThread(Process):
              mlflow.log_metrics(metrics)
  
      def _start_dcgm(self, idx):
 -        fields = ",".join(map(str, self.dcgm_fields[idx]))
 +        self._active_fields = self.dcgm_fields[idx]
 +        fields = ",".join(map(str, self._active_fields))
++        # Only pass -g when a group was actually created. radt's schedule path
++        # makes one and exports RADT_DCGMI_GROUP, but the direct (-p 0) path --
++        # which every collection harness uses -- does not, so this interpolated
++        # the string "None" and dcgmi rejected the whole watch:
++        #     Error setting watches. Result: -1: Bad parameter passed to function
++        # The listener then produced no metrics at all, silently. Verified on
++        # GB10: `dcgmi dmon -e 155,156,... -g 0` fails while the same command
++        # with no -g returns power and cumulative energy fine.
++        cmd = f"dcgmi dmon -e {fields}"
++        if DCGMI_GROUP_ID:
++            cmd += f" -g {DCGMI_GROUP_ID}"
          self.dcgm = subprocess.Popen(
-             f"dcgmi dmon -e {fields} -g {DCGMI_GROUP_ID}".split(),
+-            f"dcgmi dmon -e {fields} -g {DCGMI_GROUP_ID}".split(),
++            cmd.split(),
              stdout=subprocess.PIPE,
-@@ -127,8 +136,10 @@ class DCGMIThread(Process):
+             stderr=subprocess.PIPE,
+         )
+@@ -127,8 +147,10 @@ class DCGMIThread(Process):
  
              if line[0].lower().strip() not in ["#", "id"]:
                  m = {}
