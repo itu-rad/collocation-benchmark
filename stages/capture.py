@@ -23,7 +23,7 @@ from stages.stage import Stage
 from utils.schemas import Query
 
 
-_DEFAULT_OUTPUT_DIR = "evaluation/results"
+_DEFAULT_OUTPUT_DIR = os.environ.get("BENCH_OUTPUT_DIR", "evaluation/results")
 
 
 def _serializable(value):

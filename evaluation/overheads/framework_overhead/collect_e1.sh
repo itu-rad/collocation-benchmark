@@ -69,9 +69,9 @@ ROOT=$(cd "$HERE/../../.." && pwd)
 cd "$ROOT"
 
 CFG="$HERE/configs"
-SHARED="evaluation/results"          # main.py hardcodes its CSV here (staging only)
 OUT="$HERE/results/$DEVICE"          # results live beside the experiment, as in E2/E3;
                                      # analyze_e1.py globs one dir per machine
+export BENCH_OUTPUT_DIR="$OUT"       # main.py writes straight here -- no staging sweep
 mkdir -p "$OUT"
 
 export RADT_PRESENT=True             # end_run + drain on exit; no RADT_LISTENER_* -> no listeners
@@ -233,9 +233,6 @@ run_one() {
   rm -f "$outfile"
   unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
 
-  for ext in csv jsonl; do
-    [ -f "$SHARED/$lab.$ext" ] && mv "$SHARED/$lab.$ext" "$OUT/"
-  done
   rows=$( [ -f "$OUT/$lab.csv" ] && wc -l < "$OUT/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$depth" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rows" -eq 0 ] && { log "  !! $lab produced NO CSV (rc=$rc)"; return 1; }
@@ -259,9 +256,6 @@ run_payload_one() {
   rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
   spans=$(sed -n 's/^\[choreo\] spans emitted: //p' "$outfile" | tail -1)
   rm -f "$outfile"; unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
-  for ext in csv jsonl; do
-    [ -f "$SHARED/$lab.$ext" ] && mv "$SHARED/$lab.$ext" "$OUT/"
-  done
   rows=$( [ -f "$OUT/$lab.csv" ] && wc -l < "$OUT/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\tp%s_%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$size" "$mode" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rows" -eq 0 ] && { log "  !! $lab produced NO CSV (rc=$rc)"; return 1; }

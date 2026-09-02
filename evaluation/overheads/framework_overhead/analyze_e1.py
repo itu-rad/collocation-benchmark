@@ -209,9 +209,8 @@ def load_device(device, results_dir):
     """Return list[Run] for one device's NoOp CSVs under <results_dir>/<device>.
 
     Results live beside the experiment that produced them, as they do for E2/E3
-    -- `evaluation/overheads/framework_overhead/results/<machine>/`. The shared
-    `evaluation/results/` is only the staging directory main.py hardcodes; the
-    collection harness moves runs out of it and it is empty at rest.
+    -- `evaluation/overheads/framework_overhead/results/<machine>/`. collect_e1.sh
+    exports BENCH_OUTPUT_DIR so main.py writes them straight here.
     """
     runs = []
     d = os.path.join(results_dir, device)

@@ -31,9 +31,10 @@ Every experiment follows the same shape, so a reader who learns one can read the
 - **One analyzer** — `analyze_<experiment>.py`. Self-contained: parsing, statistics, tables,
   LaTeX and figures in a single file, so the write-up and the analyzer cannot disagree. It
   must reproduce every table and figure from a bare invocation.
-- **Results live beside the experiment** that produced them, in its own `results/`.
-  `evaluation/results/` is **staging only and empty at rest** — `main.py` hardcodes its output
-  there and each harness moves runs out. Anything left behind is a smoke test, not a result.
+- **Results live beside the experiment** that produced them, in its own `results/`. Each
+  harness exports `BENCH_OUTPUT_DIR`, so the run's CSV and JSONL are written straight there —
+  there is no shared staging directory and nothing to sweep afterwards. Running `main.py` by
+  hand without that variable falls back to `evaluation/results/`.
 - **Figures** go in each experiment's `paper_assets/`.
 - **Statistics.** The run is the unit of replication; confidence intervals are a hierarchical
   bootstrap that resamples runs first, then queries within a run. Repetition 1 is dropped as

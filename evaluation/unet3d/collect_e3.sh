@@ -68,7 +68,9 @@ if [ "$(uname)" = "Darwin" ] && [ -z "${E3_NO_CAFFEINATE:-}" ] \
 fi
 
 RESULTS="$HERE/results/$MACHINE"
-CHOREO_OUT="evaluation/results"      # main.py hardcodes its CSV here
+# main.py and TerminalCapture write straight into this experiment's
+# results/ dir; there is no shared staging directory to sweep.
+export BENCH_OUTPUT_DIR="$RESULTS"
 mkdir -p "$RESULTS"
 
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter, not auto-detection
@@ -219,7 +221,7 @@ run_one() {
   # Never append onto a stale CSV. main.py appends to an existing label's file,
   # so a run killed part-way leaves a partial session that the next run with the
   # same label concatenates onto -- which produced a 4.6-hour "interval" in E2.
-  rm -f "$RESULTS/$lab.csv" "$CHOREO_OUT/$lab.csv" "$CHOREO_OUT/${lab}_outputs.jsonl"
+  rm -f "$RESULTS/$lab.csv" "$RESULTS/${lab}_outputs.jsonl"
   python main.py "$CFG" -p 0 -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
   # rc from PIPESTATUS[0], not $? — after a pipeline $? is the LAST element's
   # status (tee, always 0), which would mark every failed run as successful.
@@ -227,9 +229,6 @@ run_one() {
   spans=$(sed -n 's/^\[choreo\] spans emitted: //p' "$outfile" | tail -1)
   rm -f "$outfile"
 
-  for ext in csv jsonl; do
-    [ -f "$CHOREO_OUT/$lab.$ext" ] && mv "$CHOREO_OUT/$lab.$ext" "$RESULTS/"
-  done
   rows=$( [ -f "$RESULTS/$lab.csv" ] && wc -l < "$RESULTS/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$MODE" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rc" -ne 0 ] && { log "  !! $lab FAILED rc=$rc"; return 1; }

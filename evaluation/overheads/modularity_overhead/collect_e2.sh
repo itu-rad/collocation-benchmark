@@ -71,7 +71,9 @@ if [ "$(uname)" = "Darwin" ] && [ -z "${E2_NO_CAFFEINATE:-}" ] \
 fi
 
 RESULTS="$HERE/results"
-CHOREO_OUT="evaluation/results"      # main.py hardcodes its CSV here
+# main.py and TerminalCapture write straight into this experiment's
+# results/ dir; there is no shared staging directory to sweep.
+export BENCH_OUTPUT_DIR="$RESULTS"
 mkdir -p "$RESULTS"
 
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter, not auto-detection
@@ -196,7 +198,7 @@ run_one() {
   # interval) and mod_meffv2s_b64_choreo_gb10_r1 (955 rows, a 4.6-hour one).
   # The skip-if-exists check above only looks in $RESULTS; the Choreo side
   # writes to $CHOREO_OUT first, which nothing was clearing.
-  rm -f "$RESULTS/$lab.csv" "$CHOREO_OUT/$lab.csv" "$CHOREO_OUT/$lab.jsonl"
+  rm -f "$RESULTS/$lab.csv" "$RESULTS/$lab.jsonl"
   if [ "$conf" = monolith ]; then
     ${PINCMD[@]+"${PINCMD[@]}"} python evaluation/overheads/modularity_overhead/baseline_finetune.py \
       --device "$TORCH_DEVICE" --model "$MODEL" --weights "$WEIGHTS" \
@@ -217,10 +219,6 @@ run_one() {
   rm -f "$outfile"
   unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
 
-  # main.py writes into evaluation/results/; the monolith writes here directly.
-  for ext in csv jsonl; do
-    [ -f "$CHOREO_OUT/$lab.$ext" ] && mv "$CHOREO_OUT/$lab.$ext" "$RESULTS/"
-  done
   rows=$( [ -f "$RESULTS/$lab.csv" ] && wc -l < "$RESULTS/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$conf" "$cell" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rows" -eq 0 ] && { log "  !! $lab produced NO CSV (rc=$rc)"; return 1; }

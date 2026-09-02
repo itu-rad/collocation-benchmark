@@ -142,7 +142,11 @@ def radt_entrypoint(args):
         # Configure logging
         default_label = pipeline_cfg.name.replace(" ", "_").lower()
         pipeline_name = args.label if args.label else default_label
-        log_dir = "evaluation/results"
+        # Where the per-run CSV/JSONL lands. Collection harnesses point this at
+        # their own experiment's results/ dir, so runs are written where they
+        # belong instead of into a shared staging directory that then has to be
+        # swept. Neutral env-var name: the project has no settled title.
+        log_dir = os.environ.get("BENCH_OUTPUT_DIR", "evaluation/results")
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, f"{pipeline_name}.csv")
         # Also expose the chosen label to TerminalCapture via env var so the
