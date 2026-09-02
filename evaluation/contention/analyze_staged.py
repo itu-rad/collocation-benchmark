@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """Post-collection analyzer for the staged contention experiment (Stages A-D).
 
-Design of record: CONTENTION_EXPERIMENTS_REDESIGN.md (E3'/E6' staged form).
-Consumes the curated collection outputs under evaluation/collect/results/
-(evaluation/collect/results/<dev>/<label>_r<r>.csv [+ _arrivals.csv sidecars,
-+ optional <label>_r<r>_bandwidth.csv AMC traces]) and emits:
+STATUS (2026-09-02): this analyzer implements the SUPERSEDED staged design. It
+discovers cells by globbing `stage_*`, but section 5.2 is now collected by
+collect_e5.sh, which runs the foreground and background as separate processes
+and labels them `e5_<cell>_{fg,bg}_<machine>_r<N>`. So it does not read the
+current data. It is kept -- not deleted -- because its statistics are what the
+dose-response exhibit needs and are shared with the rest of the paper via
+staged_lib: hierarchical run-then-query bootstrap CIs, dose-response slopes, and
+the matched-bytes/s slope-ratio comparison. Porting it to the new labels is the
+remaining section 5.2 analysis work. See contention.md.
+
+Consumes <results-dir>/<machine>/<label>_r<r>.csv [+ _arrivals.csv sidecars,
++ optional <label>_r<r>_bandwidth.csv AMC traces] and emits:
 
   staged_per_run.csv        one tidy row per (cell, run, pipeline-role)
   staged_cell_estimates.csv cell-level estimates + hierarchical 95% CIs,
@@ -16,7 +24,7 @@ Consumes the curated collection outputs under evaluation/collect/results/
 
     python evaluation/contention/analyze_staged.py --device mlx
     python evaluation/contention/analyze_staged.py --device cuda \\
-        --results-dir evaluation/collect/results/cuda --plots
+        --results-dir evaluation/contention/results/gb10 --plots
 
 Statistical conventions (shared with the rest of the paper via staged_lib, and
 matching the overhead analyzers): the RUN is the unit of replication; per-query quantiles get a
@@ -115,7 +123,7 @@ def discover(results_dir: Path, device: str) -> dict[str, dict[int, dict]]:
             pass
         elif p.suffix == ".csv":
             entry["traces"].append(p)
-    # AMC sidecars may still sit uncurated in evaluation/results/
+    # AMC sidecars may sit uncurated one level up from the machine's tree
     gdir = Path(sl.global_results_dir())
     for cell, runs in cells.items():
         for run, entry in runs.items():
@@ -506,7 +514,7 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", choices=["mlx", "cuda"], required=True)
     ap.add_argument("--results-dir", default=None,
-                    help="default: evaluation/collect/results/<device>")
+                    help="default: evaluation/contention/results/<device>")
     ap.add_argument("--out-dir", default=None,
                     help="default: evaluation/contention/analysis/<device>")
     ap.add_argument("--plots", action="store_true",

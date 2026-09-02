@@ -133,9 +133,15 @@ is true — that radt *supports* MPS and MIG configuration, which the section ex
 the AMC sampler under `../../scripts/`. The calibration record is in `AMC_CALIBRATION.md`; the hardware-attribution facts are
 consolidated above.
 
-**Note:** `analyze_staged.py`'s docstring still names `evaluation/collect/results/` as its
-default input. That tree was removed as superseded; the path is repointed when the §5.2 harness
-lands.
+**`analyze_staged.py` does not read the current data.** It implements the superseded staged
+design and discovers cells by globbing `stage_*`, whereas `collect_e5.sh` labels runs
+`e5_<cell>_{fg,bg}_<machine>_r<N>`. Its dangling paths (the removed `evaluation/collect/results/`
+and `evaluation/results/` trees) are repointed at `results/<machine>/`, but porting the discovery
+and the per-role split to the two-process labels is the remaining §5.2 analysis work.
+
+It is kept rather than deleted because its statistics are what exhibit 2 needs and are shared
+with the rest of the paper through `staged_lib`: hierarchical run-then-query bootstrap CIs,
+dose–response slopes, and the matched-bytes/s slope-ratio comparison.
 
 ## Blocking before collection
 

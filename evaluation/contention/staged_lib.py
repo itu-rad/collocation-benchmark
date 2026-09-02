@@ -488,8 +488,12 @@ def fmt(v, nd=4):
 
 
 def default_results_dir(device: str) -> str:
-    return str(REPO_ROOT / "evaluation" / "collect" / "results" / device)
+    # Results live beside the experiment that produced them; the old
+    # evaluation/collect/results tree was removed.
+    return str(REPO_ROOT / "evaluation" / "contention" / "results" / device)
 
 
 def global_results_dir() -> str:
-    return str(REPO_ROOT / "evaluation" / "results")
+    # Was evaluation/results, which was removed when results were moved to sit
+    # beside their experiment.
+    return str(REPO_ROOT / "evaluation" / "contention" / "results")
