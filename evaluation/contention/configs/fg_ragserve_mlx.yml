@@ -61,3 +61,5 @@ pipelines:
   - name: End stage
     id: 4
     component: stages.TerminalCapture
+listeners:
+- macmon

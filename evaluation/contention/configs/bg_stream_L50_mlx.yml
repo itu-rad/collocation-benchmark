@@ -1,4 +1,6 @@
 name: bg_stream_L50_mlx
+listeners:
+- macmon
 pipelines:
 - name: BG co-runner stream
   dataset_stage_id: 0

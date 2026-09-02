@@ -1,4 +1,6 @@
 name: bg_clipane_L25_mlx
+listeners:
+- macmon
 pipelines:
 - name: BG co-runner clipane
   dataset_stage_id: 0

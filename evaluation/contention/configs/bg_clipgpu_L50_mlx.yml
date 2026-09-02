@@ -1,4 +1,6 @@
 name: bg_clipgpu_L50_mlx
+listeners:
+- macmon
 pipelines:
 - name: BG co-runner clipgpu
   dataset_stage_id: 0

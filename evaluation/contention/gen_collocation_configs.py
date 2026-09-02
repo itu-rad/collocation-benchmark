@@ -50,6 +50,16 @@ BG_PREFIX = "BG "
 # corrupts the measurement.
 BG_MARGIN = 1.5
 
+# Section 5.2 is ABOUT the counters, so unlike 5.1 -- whose latency pass must stay
+# listener-free -- every config here declares listeners. Listeners are read from
+# the config's `listeners:` key (main.py); a config without it runs with no
+# counters at all, silently, which is the failure that once left the profiling
+# contribution with no supporting data.
+#
+# Both pipelines are instrumented because the point is per-pipeline attribution:
+# the background's own counters are what say it moved the bytes.
+LISTENERS = {"mlx": ["macmon"], "cuda": ["dcgmi", "top"]}
+
 
 def _fg_duration_s(fg_doc: dict) -> float:
     """Wall-clock the foreground is expected to occupy, from its loadgen."""
@@ -96,6 +106,7 @@ def split(device: str) -> int:
     fg_seconds = _fg_duration_s(fg)
     fg_name = f"fg_ragserve_{device}"
     fg["name"] = fg_name
+    fg["listeners"] = list(LISTENERS[device])
     _dump(CFG_DIR / f"{fg_name}.yml", fg)
     written = [f"{fg_name}.yml"]
 
@@ -117,7 +128,8 @@ def split(device: str) -> int:
         if out.exists():          # stage_c and stage_d share a background
             continue
         _size_background(bgs[0], fg_seconds)
-        _dump(out, {"name": out_name, "pipelines": bgs})
+        _dump(out, {"name": out_name, "listeners": list(LISTENERS[device]),
+                    "pipelines": bgs})
         written.append(out.name)
 
     print(f"gen_collocation_configs [{device}]: wrote {len(written)} config(s); "

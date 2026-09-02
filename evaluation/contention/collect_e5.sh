@@ -77,6 +77,25 @@ python scripts/radt_gate.py --listeners "$WANT_LISTENERS" || exit 3
 FG="$HERE/configs/fg_ragserve_${ENGINE}.yml"
 [ -f "$FG" ] || { echo "collect_e5: missing $FG -- run gen_collocation_configs.py --device $ENGINE" >&2; exit 3; }
 
+# Every 5.2 config must declare listeners. This section IS the counters, and a
+# config without a `listeners:` key runs with none -- silently, with a normal exit
+# code and the right row counts.
+check_listeners() {
+  python - "$1" "$WANT_LISTENERS" <<'PYCHK' || exit 3
+import sys, yaml
+cfg, want = sys.argv[1], [w for w in sys.argv[2].split(",") if w]
+d = yaml.safe_load(open(cfg))
+got = d.get("listeners")
+if not got:
+    sys.exit(f"collect_e5: {cfg} declares no listeners -- it would collect no "
+             f"counters at all. Run gen_collocation_configs.py to regenerate it.")
+missing = [w for w in want if w not in got]
+if missing:
+    sys.exit(f"collect_e5: {cfg} is missing listener(s) {missing} (has {got})")
+PYCHK
+}
+
+
 # Cells: "<cell name>|<background config or - >|<radt collocation or - >"
 cells=()
 case "$MODE" in
@@ -106,10 +125,12 @@ case "$MODE" in
     ;;
 esac
 
+check_listeners "$FG"
 for c in "${cells[@]}"; do
   bg=$(echo "$c" | cut -d'|' -f2)
   [ "$bg" = "-" ] && continue
   [ -f "$bg" ] || { echo "collect_e5: missing background config $bg" >&2; exit 3; }
+  check_listeners "$bg"
 done
 
 RUNSTAMP=$(date '+%Y%m%d-%H%M%S')

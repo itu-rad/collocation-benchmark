@@ -1,4 +1,7 @@
 name: bg_clipgpu_L50_cuda
+listeners:
+- dcgmi
+- top
 pipelines:
 - name: BG co-runner clipgpu
   dataset_stage_id: 0
