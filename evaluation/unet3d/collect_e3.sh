@@ -89,6 +89,10 @@ echo "E3: recording to ${MLFLOW_TRACKING_URI} (experiment $EXP)"
 CFG="$HERE/configs/unet3d_42_${MODE}_${MACHINE}.yml"
 [ -f "$CFG" ] || { echo "collect_e3: no config at $CFG" >&2; exit 1; }
 
+# The radt install must be the PATCHED checkout. A stale site-packages copy
+# shadowing it would silently reintroduce the teardown race and lose spans.
+python scripts/radt_gate.py || exit 3
+
 # Environment gate, and a gate on the config's own flags. A perf config that
 # lost one of its two disable_logs flags would collect a full CSV inside the
 # measured pipeline and nothing would say so until analysis.

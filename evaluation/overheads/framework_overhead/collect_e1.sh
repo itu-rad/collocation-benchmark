@@ -77,6 +77,10 @@ mkdir -p "$OUT"
 export RADT_PRESENT=True             # end_run + drain on exit; no RADT_LISTENER_* -> no listeners
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter rather than auto-detection
 
+# The radt install must be the PATCHED checkout. A stale site-packages copy
+# shadowing it would silently reintroduce the teardown race and lose spans.
+python scripts/radt_gate.py || exit 3
+
 # Tracking store: LOCAL, and deliberately so -- this exemption covers the
 # OVERHEAD experiments (E1, E2) only. Every other experiment records to res17.
 #

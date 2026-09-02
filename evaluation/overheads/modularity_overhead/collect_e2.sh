@@ -106,6 +106,10 @@ else
   echo "E2: local store $STORE_DB (overhead-experiment exemption; E2_STORE=res17 to override)"
 fi
 
+# The radt install must be the PATCHED checkout. A stale site-packages copy
+# shadowing it would silently reintroduce the teardown race and lose spans.
+python scripts/radt_gate.py || exit 3
+
 # Environment gate. The retired run_modularity.py had one and collect.sh lost
 # it, so a mismatched environment could burn a whole collection before anyone
 # noticed. Fail loudly here instead.
