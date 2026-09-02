@@ -35,13 +35,25 @@ from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 NS_MS = 1e6
-DEV_LABEL = {"mlx": "M2 Pro (mlx)", "cuda": "GB10 (cuda)"}
+# Machines, and the result directories each one's data lives in.
+#
+# Results were originally filed under the ENGINE token (mlx/cuda); they are now
+# filed under the MACHINE token, because the engine does not identify the
+# hardware and in one case actively misled: the `mlx` tree is 16 GB M2 Pro data,
+# collected before the current 24 GB m3pro existed. It is deliberately NOT read
+# here -- see the provenance note in self_rag.md. `cuda` is genuine gb10 and is
+# still read, since section 5.1 reuses those runs for latency and quality.
+DEV_LABEL = {"m3pro": "m3pro (Apple M3 Pro, 24 GB)",
+             "gb10": "gb10 (NVIDIA GB10, 120 GB)",
+             "mlx": "M2 Pro (mlx) -- superseded",
+             "cuda": "GB10 (cuda)"}
+MACHINE_DIRS = {"m3pro": ["m3pro"], "gb10": ["gb10", "cuda"]}
 ARM_ORDER = ["monolith", "monolith_4b", "decomposed", "decomposed_shared"]
 
 
 def parse_label(path):
     """e4_<task>_<arm>_<device>_r<N>.csv -> dict(task, arm, device, run)."""
-    m = re.match(r"^e4_(factoid|multihop)_(.+)_(mlx|cuda)_r(\d+)\.csv$",
+    m = re.match(r"^e4_(factoid|multihop)_(.+)_(m3pro|gb10|mlx|cuda)_r(\d+)\.csv$",
                  os.path.basename(path))
     if not m:
         return None
@@ -157,16 +169,19 @@ def parse_inflight(path):
             "span_s": span / 1e9}
 
 
-def load(results_dir, device):
+def load(results_dir, machine):
+    """Load every run for a machine, across each directory its data lives in."""
     runs = []
-    for p in sorted(glob.glob(os.path.join(results_dir, device, "e4_*.csv"))):
-        meta = parse_label(p)
-        if not meta:
-            continue
-        stages = parse_run(p)
-        if stages:
-            meta["inflight"] = parse_inflight(p)
-            runs.append((meta, stages))
+    for sub in MACHINE_DIRS.get(machine, [machine]):
+        for p in sorted(glob.glob(os.path.join(results_dir, sub, "e4_*.csv"))):
+            meta = parse_label(p)
+            if not meta:
+                continue
+            stages = parse_run(p)
+            if stages:
+                meta["inflight"] = parse_inflight(p)
+                meta["device"] = machine   # the file may carry the engine token
+                runs.append((meta, stages))
     return runs
 
 
@@ -238,7 +253,7 @@ def flip_table_ci(raw):
     The panel's standing objection to the previous version was that it reported
     point ratios with no uncertainty while replicates were sitting on disk. A
     ratio whose CI spans 1.0 is not evidence of a difference."""
-    devs = [d for d in ("mlx", "cuda") if raw.get(d)]
+    devs = [d for d in ("m3pro", "gb10") if raw.get(d)]
     if len(devs) < 2:
         print(f"\n_(cross-device CIs need both devices; have {devs})_\n")
         return
@@ -275,7 +290,7 @@ def flip_table_ci(raw):
 def flip_table(per_device):
     """The cross-device comparison: is the phase balance (and hence which arm
     wins) different on the two devices?"""
-    devs = [d for d in ("mlx", "cuda") if per_device.get(d)]
+    devs = [d for d in ("m3pro", "gb10") if per_device.get(d)]
     if len(devs) < 2:
         print("\n_(cross-device flip needs both devices; only "
               f"{devs} collected so far)_\n")
@@ -456,7 +471,7 @@ def make_figure(per_device, fig_dir):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    devs = [d for d in ("mlx", "cuda") if per_device.get(d)]
+    devs = [d for d in ("m3pro", "gb10") if per_device.get(d)]
     if not devs:
         return None
     fig, axes = plt.subplots(1, len(devs), figsize=(6.4 * len(devs), 4.4), squeeze=False)
@@ -484,7 +499,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
-    ap.add_argument("--devices", nargs="+", default=["mlx", "cuda"])
+    ap.add_argument("--devices", nargs="+", default=["m3pro", "gb10"],
+                    help="machines to analyse (m3pro, gb10)")
     ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
     args = ap.parse_args()
     fig_dir = os.path.abspath(args.fig_dir); os.makedirs(fig_dir, exist_ok=True)
