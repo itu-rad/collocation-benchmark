@@ -87,9 +87,49 @@ Collocation types at one calibrated intensity everywhere; dose–response on m3p
 counters carry the narrative; gb10 types-only, run overnight behind the occupancy gate with arm
 order rotated.
 
+## One process or two — and why it had to be two
+
+The staged configs declare the foreground and the background as two pipelines inside **one**
+config, which the framework runs as two pipelines in **one process**. That is fine for the CPU
+and same-engine cells, but it makes two of this section's claims unmeasurable:
+
+* **MPS and MIG partition GPU work between _processes_.** With both pipelines in one process
+  there is nothing for either mechanism to partition, so the gb10 axis (time-sliced / MPS / CPU)
+  collapses to a single point.
+* **One process is one radt run.** The section promises every number is attributed to the
+  pipeline that caused it — own run, own listeners, own spans. In one process that attribution
+  has to be reconstructed from spans rather than measured.
+
+`gen_collocation_configs.py` therefore splits them into `fg_ragserve_<engine>.yml` and
+`bg_<kind>_L<level>_<engine>.yml`, copying the stage lists verbatim from the committed staged
+configs — the pipelines already carry their own loadgen and `dataset_stage_id`, so the split is
+mechanical, not a redesign. `collect_e5.sh` runs the pair as two processes.
+
+The staged configs stay as they are: they remain the record of the single-diff discipline, and
+the fused form is still the right one for the modularity clause ("same stages, one YAML, two
+pipelines").
+
+### Open decision — who starts MPS
+
+The plan's wording is that *radt configures MPS automatically*, which answers by demonstration
+the manual-MPS/MIG-expertise gap named in related work. As built, radt configures MPS **only
+along its schedule path** — a workload CSV carrying a `Collocation` column. That path is not
+reachable from the direct `main.py` invocation the collection scripts use, and radt reads no
+environment variable for it (`RADT_COLLOCATION` does not exist).
+
+`collect_e5.sh` therefore starts the daemon itself, with exactly the call radt's `make_mps()`
+makes, and verifies it answered `get_server_list` before anything is measured under it — an
+unverified daemon is invisible at run time, and the MPS cell would otherwise collect a second
+time-sliced cell and report it as a partitioned one.
+
+**This weakens the "automatic" claim and needs an author decision:** either route the gb10 cells
+through radt's schedule path so the claim is literally demonstrated, or soften the claim to what
+is true — that radt *supports* MPS and MIG configuration, which the section exercises.
+
 ## Machinery
 
-`analyze_staged.py`, `staged_lib.py`, `generate_stage_configs.py`, `amc_calibration.py` here;
+`gen_collocation_configs.py` and `collect_e5.sh` here, alongside `analyze_staged.py`,
+`staged_lib.py`, `generate_stage_configs.py` and `amc_calibration.py`;
 the AMC sampler under `../../scripts/`. The calibration record is in `AMC_CALIBRATION.md`; the hardware-attribution facts are
 consolidated above.
 
