@@ -77,14 +77,32 @@ ACCURACY_GATE = 0.99 * MLPERF_REFERENCE_DICE
 # The first repetition of a cell is slower for its WHOLE duration, so per-query
 # warm-up dropping cannot remove it. Collect R+1 and drop it.
 DROP_RUNS = 1
-WARMUP = 0                       # 42 queries per run; there is nothing to spare
+# The perf configs run TWO passes over the case list (max_queries = 2 x 42) and
+# the first pass is dropped here. That is the whole warm-up handling: there is no
+# per-case correction and nothing to stitch together.
+#
+# Why it is needed. A single-pass collection on gb10 ran its first four queries
+# 60-82% above steady state -- reproducibly, in every repetition -- which put a
+# +82% outlier into the matched parity comparison and pulled its mean to +7.0%
+# against a median of -0.2%. m3pro showed no such transient (every position
+# within 0.4%), so it is device behaviour rather than anything in the pipeline;
+# the config is uniform anyway, so the method does not depend on which device it
+# lands on.
+#
+# Why a whole pass rather than the four queries measured. The transient was
+# measured at four on one device at one moment. Dropping a fixed small count
+# would encode that measurement as an assumption. Dropping a full pass costs 2x
+# runtime and encodes nothing -- and because the loader CYCLES the case list,
+# queries 42-83 still cover every case exactly once, so no case is lost. That
+# matters: the case is the independent variable of prong 2, and dropping the
+# head of a single-pass run would have dropped specific cases.
+WARMUP_PASSES = 1
 
-# Queries at the head of a run that show a device warm-up transient. Measured on
-# gb10: positions 0-3 run 60-82% above steady state, position 4 onward is within
-# 1%. Absent on m3pro. These are NOT dropped -- dropping them would drop specific
-# CASES, and the case is the independent variable of prong 2 -- they are reported
-# separately so the reader can see what they do and do not affect.
-WARMUP_QUERIES = 4
+# Only a DETECTOR for runs collected before the two-pass configs existed: the
+# head-of-run transient was measured at four queries on gb10. It is not part of
+# the method -- the method is dropping a whole pass -- and with two-pass configs
+# no case should ever land in this window.
+LEGACY_WARMUP_QUERIES = 4
 
 _BOOT_WORK_BUDGET = 5e7
 
@@ -181,7 +199,7 @@ def span_runs(machine, tracking_uri=None, experiment="138"):
 
 
 def breakdown_by_run(machine, tracking_uri=None, experiment="138",
-                     drop_runs=DROP_RUNS, warmup=WARMUP):
+                     drop_runs=DROP_RUNS, warmup_passes=WARMUP_PASSES):
     """Per-run, per-query component durations plus each query's case size.
 
     Returns {run_index: {"comp": {name: [ns per query]}, "case": [...],
@@ -224,7 +242,17 @@ def breakdown_by_run(machine, tracking_uri=None, experiment="138",
         size = t.by_query(SIZE_MARKER)
         tables = (pq, pqp, ldr, ldp, prr, prp, inr, inp)
         qs = sorted([q for q in pq if all(q in d for d in tables)],
-                    key=lambda q: pq[q].perf_start_ns)[warmup:]
+                    key=lambda q: pq[q].perf_start_ns)
+        # Drop whole warm-up passes. The case list length is recovered from the
+        # data rather than assumed, so this stays correct if the sweep changes.
+        n_cases = len({size[q].attributes.get("case") for q in qs if q in size})
+        if warmup_passes and n_cases and len(qs) > warmup_passes * n_cases:
+            qs = qs[warmup_passes * n_cases:]
+        elif warmup_passes and n_cases:
+            print(f"  !! {lab}: {len(qs)} queries for {n_cases} case(s) — too "
+                  f"few to drop {warmup_passes} warm-up pass(es). This run "
+                  f"predates the two-pass configs; its head-of-run queries are "
+                  f"NOT warm and it should be re-collected.")
         if not qs:
             continue
         P = lambda d, q: d[q].perf_start_ns
@@ -501,42 +529,21 @@ def print_parity(machine, bd, cases):
         ours = float(np.median(cases[c]["inference"])) / NS_MS
         d = 100.0 * (ours - ref_cases[c]) / ref_cases[c]
         diffs.append(d)
-        if order and c in order and order.index(c) < WARMUP_QUERIES:
+        if order and c in order and order.index(c) < LEGACY_WARMUP_QUERIES:
             warm.append((order.index(c), c, d))
     diffs = np.asarray(diffs)
     steady = np.asarray([d for c, d in zip(shared, diffs)
                          if not (order and c in order
-                                 and order.index(c) < WARMUP_QUERIES)])
+                                 and order.index(c) < LEGACY_WARMUP_QUERIES)])
     print(f"\n**Matched per case, all {len(shared)} cases both harnesses ran.** "
           f"Choreo vs the reference on the SAME case: median difference "
           f"**{np.median(diffs):+.1f}%**, mean {diffs.mean():+.1f}%, range "
           f"{diffs.min():+.1f}% to {diffs.max():+.1f}%.")
-    if len(warm) and len(steady):
-        warm.sort()
-        print(f"\nThe mean and the maximum are carried by the first "
-              f"{WARMUP_QUERIES} queries of the run, and ONLY those: "
-              + ", ".join(f"{c} (position {p}) {d:+.0f}%" for p, c, d in warm)
-              + f". Excluding them, over the remaining {len(steady)} cases: "
-              f"median **{np.median(steady):+.1f}%**, mean "
-              f"{steady.mean():+.1f}%, range {steady.min():+.1f}% to "
-              f"{steady.max():+.1f}%.")
-        print(f"\nThis is a device warm-up transient, not a framework cost. It is "
-              f"present on gb10 and ABSENT on m3pro (every position within 0.4% "
-              f"of steady state there), and the pipeline is identical on both. "
-              f"It tracks POSITION in the run, not input shape -- a repeated "
-              f"shape at position 1 is still slow while a brand-new shape at "
-              f"position 4 is already fast -- which rules out per-shape kernel "
-              f"autotuning. The mechanism is not otherwise characterised here.\n"
-              f"\nThe reference does not show it because loadgen issues far more "
-              f"queries than the QSL holds, so each case is sampled several "
-              f"times (4x in this run) and its own median discards the cold "
-              f"occurrence. That is a harness asymmetry, and the fix for a "
-              f"future collection is to do the same: two passes over the case "
-              f"list, per-case median. The MEDIAN statistic is unaffected either "
-              f"way, which is why it is the one of record.")
-    if len(shared) < len(cases):
-        print(f"\n({len(cases) - len(shared)} Choreo case(s) had no matching "
-              f"reference sample — the reference run is short.)")
+    if len(warm):
+        print(f"\n{len(warm)} case(s) came from the head of a run "
+              f"({', '.join(c for _, c, _ in sorted(warm))}). With the two-pass "
+              f"configs this list should be EMPTY; if it is not, the runs "
+              f"analysed predate them and carry a device warm-up transient.")
 
 
 # ---------------------------------------------------------------------------
@@ -606,13 +613,10 @@ def print_boundary(per_machine):
     print("\nThe MEDIAN is the number to quote. The maximum is the endpoint of a "
           "range, not a representative case, and quoting it alone is the "
           "objection this table exists to answer.")
-    print(f"\nThe first {WARMUP_QUERIES} queries of each run carry a device "
-          f"warm-up transient (see prong 1). It does NOT move these medians -- "
-          f"checked, and the shift is 0.0 pp on both machines -- because it "
-          f"inflates preprocessing and inference together at the head of a run, "
-          f"so the RATIO barely moves even though both terms do. Those cases are "
-          f"kept in: dropping them would drop specific cases, and the case is "
-          f"the independent variable here.")
+    print(f"\nIf any case above sat in the first {LEGACY_WARMUP_QUERIES} "
+          f"queries of a run, that run predates the two-pass configs and "
+          f"carries a device warm-up transient; re-collect rather than "
+          f"correcting after the fact.")
 
     print("\n### Why: the two stages scale with different things\n")
     print("| machine | preprocess (ms) | inference (ms) | sub-volumes (median) "
@@ -832,7 +836,9 @@ def main():
                     help="discard the first N repetitions entirely. Defaults to "
                          "1 and should stay there: the first repetition is "
                          "slower for its WHOLE duration.")
-    ap.add_argument("--warmup", type=int, default=WARMUP)
+    ap.add_argument("--warmup-passes", type=int, default=WARMUP_PASSES,
+                    help="whole passes over the case list dropped at the head of "
+                         "each run (default 1; the perf configs collect 2)")
     ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
     args = ap.parse_args()
     DROP_RUNS = args.drop_runs
@@ -845,11 +851,12 @@ def main():
           "`disable_logs` on the pipeline and on all three stages, so nothing "
           "is written per query and no serialisation sits inside the measured "
           "graph.\n")
-    print(f"Repetitions dropped as system warm-up: {DROP_RUNS}. Queries dropped "
-          f"at the head of each run: {args.warmup} (there are only 42, and the "
-          f"case order is fixed, so dropping any would drop specific cases). "
-          f"CIs are a hierarchical bootstrap with the run as the unit of "
-          f"replication.\n")
+    print(f"Repetitions dropped as system warm-up: {DROP_RUNS}. Whole passes "
+          f"over the case list dropped at the head of each run: "
+          f"{args.warmup_passes} — the perf configs collect two passes so every "
+          f"case is measured on a warm device, and the loader cycles, so the "
+          f"surviving pass still covers every case exactly once. CIs are a "
+          f"hierarchical bootstrap with the run as the unit of replication.\n")
     print("**E3 runs UNPINNED on both machines**, unlike E1 and E2. Pinning "
           "throttles CPU preprocessing while leaving GPU inference untouched, "
           "which would inflate the very ratio this experiment reports. "
@@ -858,7 +865,7 @@ def main():
     per_machine = {}
     for machine in args.machines:
         bd = breakdown_by_run(machine, args.tracking_uri, args.experiment,
-                              args.drop_runs, args.warmup)
+                              args.drop_runs, args.warmup_passes)
         cases = per_case(bd) if bd else {}
         per_machine[machine] = (bd, cases)
         print(f"\n# ===== {MACHINE_LABEL.get(machine, machine)} "

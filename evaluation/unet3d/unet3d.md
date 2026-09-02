@@ -23,10 +23,10 @@ on m3pro and 15.8% on gb10. See *Results*.
 
 Two configs per machine, and they are never mixed.
 
-| config | stages | writes per query | timed? |
-|---|---|---|---|
-| `perf` | loader → preprocess → inference | **nothing** | yes, R=6 (repetition 1 dropped) |
-| `acc` | the same three plus `KiTS19DiceScore` | one CSV row per case | **never**, R=1 |
+| config | stages | queries | writes per query | timed? |
+|---|---|--:|---|---|
+| `perf` | loader → preprocess → inference | **84** (2 passes) | **nothing** | yes, R=6 (repetition 1 dropped) |
+| `acc` | the same three plus `KiTS19DiceScore` | 42 | one CSV row per case | **never**, R=1 |
 
 **Why two.** Output handling does not belong in a timed pipeline. The previous end stage,
 `TerminalCapture`, `repr()`s whatever sits in `query.data` — here a multi-hundred-megabyte
@@ -120,9 +120,13 @@ server is there to carry.
 
 - **R = 6 collected, repetition 1 dropped → 5 usable.** The first repetition of a cell is
   measurably slower for its whole duration, so per-query warm-up dropping cannot remove it.
-- **No per-query warm-up drop.** There are only 42 queries and the case order is fixed, so
-  dropping the head would drop *specific cases* — and case identity is the independent
-  variable here. The whole run is kept.
+- **One whole pass dropped as warm-up, not a query count.** The perf configs run 84 queries
+  = two passes over the 42-case list, and the analyzer discards the first pass. The loader
+  cycles, so the surviving pass still covers every case exactly once — which is the point:
+  the case is the independent variable here, and dropping the head of a *single*-pass run
+  would have dropped specific cases. A whole pass is dropped rather than the four queries the
+  transient was measured at, because four was one measurement on one device and encoding it
+  would turn an observation into an assumption. Costs 2x runtime.
 - **CIs are a hierarchical bootstrap with the run as the unit of replication**, as in E1/E2:
   repetitions resampled with replacement, then queries within each chosen repetition.
 - **Per case first, aggregated after.** KiTS19 cases are not interchangeable. Every prong-2
@@ -200,6 +204,12 @@ is kept at `mlperf_reference/user_valid.conf`.
 
 ## Results
 
+> **These numbers predate the two-pass perf configs.** They come from a single-pass
+> collection, so on gb10 four of the 42 cases carry the head-of-run transient described
+> below. Its effect is measured and bounded — every median here is unaffected — but a
+> re-collection with the current configs supersedes them and removes the caveat. Cost:
+> ~83 min on gb10, ~8.6 h on m3pro.
+
 Collected 2026-09-02 against commit `bccefe8`. **R = 6 timed runs per machine, repetition 1
 dropped, 5 usable**, plus one accuracy pass each. Zero failures; every run emitted exactly
 463 spans and 3 CSV rows, and the run times were stable to 0.5% (m3pro 2577-2591 s) and 0.7%
@@ -236,42 +246,34 @@ cases both harnesses ran: median **−0.2%**, mean +7.0%, range −0.4% to +82.0
 correcting the four warm-up cases below, median **−0.2%**, mean **+0.5%**, range −0.8% to
 **+11.3%**.
 
-### A device warm-up transient, and what it does not affect
+### A device warm-up transient — measured once, then designed out
+
+**This is the reason the perf configs run two passes.** It is recorded here as a finding, not
+carried in the code as a correction.
 
 The mean and the maximum above are carried by the **first four queries of the run and only
 those** — case_00000 +82%, case_00003 +75%, case_00005 +61%, case_00006 +66%. Over the
-remaining 38 cases: median **−0.2%**, mean **+0.2%**, range −0.4% to +8.5%.
+remaining 38 cases: median −0.2%, mean +0.2%, range −0.4% to +8.5%.
 
 It is a device property, not a framework cost, and three things establish that:
 
-- it is **present on gb10 and absent on m3pro** — every position there is within 0.4% of
-  steady state — while the pipeline is byte-identical on both;
+- **present on gb10, absent on m3pro** — every position there is within 0.4% of steady
+  state — while the pipeline is byte-identical on both;
 - it tracks **position in the run, not input shape**: a repeated shape at position 1 is still
-  60-80% slow, and a brand-new shape at position 4 is already at steady state. That rules out
+  60–80% slow, and a brand-new shape at position 4 is already at steady state. That rules out
   per-shape kernel autotuning, which was the obvious first hypothesis and is wrong;
 - it reproduces in all five repetitions (case_00000: 10756, 10739, 10473, 10455, 10811 ms).
 
-The mechanism is **not otherwise characterised here**, and it should not be guessed at in the
-paper. What matters is bounded: it affects 4 of 42 cases, and the median statistics of both
-prongs are unmoved by it.
+The mechanism is **not otherwise characterised**, and should not be guessed at in the paper.
 
-The reference does not show it because loadgen issues more queries than the QSL holds, so
-each case is sampled several times (4x here) and its own median discards the cold occurrence.
-That is a **harness asymmetry**.
+**Confirmed by a one-off measurement** (2026-09-02, gb10, R=3): the four affected cases were
+run twice in one config — pass 1 reproducing the original head-of-run conditions exactly, pass
+2 measuring them warm, with two already-clean cases as controls. Pass 1 reproduced the
+transient (+79.7%, +69.5%, +61.5%, +61.9% against the originally measured +82%, +75%, +61%,
++66%) and the controls returned to within 1.1% of steady state, so the prefix did warm the
+device.
 
-**Corrected, without re-running the whole collection.** Only the first four queries are
-affected and everything after is flat, so the correction only needs those four. The config
-`warmup_cases.json` runs the four affected cases **twice**: pass 1 reproduces the original
-head-of-run conditions exactly (same cases, same order, so the warm-up is identical by
-construction rather than approximated), pass 2 measures them warm, and two already-clean
-cases follow as controls. R=3, ten queries per run, ~2.5 minutes each against ~7 for a full
-42-case run.
-
-It self-validates. Pass 1 reproduced the transient — +79.7%, +69.5%, +61.5%, +61.9% against
-the originally measured +82%, +75%, +61%, +66% — and the controls came back at −0.1% and
-−1.1% of steady state, so the prefix genuinely warmed the device.
-
-| case | n | as collected | warm-corrected |
+| case | n | single-pass | measured warm |
 |---|--:|--:|--:|
 | case_00000 | 50 | +82.0% | **−0.8%** |
 | case_00003 | 50 | +74.6% | **−0.6%** |
@@ -279,16 +281,23 @@ the originally measured +82%, +75%, +61%, +66% — and the controls came back at
 | case_00005 | 108 | +61.2% | **+11.3%** |
 
 Three of the four collapse to within 1% of the reference, which is what the warm-up
-explanation predicts.
+explanation predicts. Matched parity over all 42 with those four substituted: median −0.2%
+(unchanged), mean +7.0% → **+0.5%**, range +82.0% → **+11.3%**.
 
-**`case_00005` does not, and that residual is an open item.** It is +11.3% above the
-reference when measured warm, so it is not warm-up. It is also not volume size: across the
-38 steady-state cases, ms per sub-volume *falls* with volume (rho = **−0.75**, fixed per-case
-overhead amortising over more sub-volumes), and the largest volumes in the set — 320x448x448,
-64.2 Mvoxel, 144 sub-volumes — run at 116 ms/sub-volume, at steady state, while case_00005 at
-51.4 Mvoxel runs at 130. Two hypotheses tested and refuted; no third is asserted here. It is
-one case in 42, the median parity statistic is unaffected, and it is recorded rather than
-explained away.
+That measurement is **not** in the analyzer. Stitching per-case fixes in from side runs is
+exactly the join-against-another-experiment pattern this rework removed. The fix belongs in
+the collection: the perf configs now run **two passes over the case list** and the analyzer
+drops the first. Because the loader cycles, the surviving pass still covers every case exactly
+once, so nothing is lost — and a whole pass is dropped rather than the four queries measured,
+because four was a measurement on one device at one moment and encoding it would turn an
+observation into an assumption.
+
+**`case_00005` is an open item.** It is +11.3% above the reference *when measured warm*, so it
+is not warm-up. It is also not volume size: across the 38 steady-state cases, ms per
+sub-volume *falls* with volume (rho = **−0.75** — fixed per-case overhead amortising over more
+sub-volumes), and the largest volumes in the set (320x448x448, 64.2 Mvoxel, 144 sub-volumes)
+run at 116 ms/sub-volume while case_00005 at 51.4 Mvoxel runs at 130. Two hypotheses tested
+and refuted; no third is asserted. One case in 42, no median affected.
 
 ### Prong 2 — what the measurement boundary hides
 

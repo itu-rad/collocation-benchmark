@@ -1,6 +1,14 @@
 # E3 — MLPerf 3D-UNet / KiTS19, 42-case online serving.
 #
 # PERFORMANCE config: three stages, and NOTHING is written per query.
+#
+# TWO PASSES over the 42-case list (max_queries: 84). The first pass is warm-up
+# and is dropped at analysis; the loader cycles, so queries 42-83 cover every
+# case exactly once, all measured on a warm device. This is not belt-and-braces:
+# a single-pass collection on gb10 ran its first four queries 60-82% above
+# steady state, which put a +82% outlier into the parity comparison. m3pro shows
+# no such transient, but the config is uniform so the method does not depend on
+# which device it lands on.
 # `disable_logs` is set on the pipeline and on every stage, so all timing
 # comes from spans. TerminalCapture is deliberately absent -- it repr()s a
 # multi-MB numpy segmentation per query, and that serialisation would sit
@@ -20,7 +28,7 @@ pipelines:
   loadgen:
     component: loadgen.OfflineLoadScheduler
     queue_depth: 1
-    max_queries: 42
+    max_queries: 84
     timeout: 1800000
     config:
       rate: 1
