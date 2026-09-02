@@ -69,8 +69,9 @@ ROOT=$(cd "$HERE/../../.." && pwd)
 cd "$ROOT"
 
 CFG="$HERE/configs"
-SHARED="evaluation/results"          # main.py hardcodes its CSV here
-OUT="$SHARED/$DEVICE"                # analyze_e1.py globs one dir per device
+SHARED="evaluation/results"          # main.py hardcodes its CSV here (staging only)
+OUT="$HERE/results/$DEVICE"          # results live beside the experiment, as in E2/E3;
+                                     # analyze_e1.py globs one dir per machine
 mkdir -p "$OUT"
 
 export RADT_PRESENT=True             # end_run + drain on exit; no RADT_LISTENER_* -> no listeners

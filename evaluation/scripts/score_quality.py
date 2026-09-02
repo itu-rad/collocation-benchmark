@@ -43,7 +43,10 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-RESULTS_DIR = Path("evaluation/results")
+# Quality sidecars live beside the experiment that produced them (E2/E3/E4
+# pattern); evaluation/results/ is only main.py's staging dir. Override with
+# --results-dir for any other experiment.
+RESULTS_DIR = Path("evaluation/self_rag/results")
 REPORT_MD = RESULTS_DIR / "quality_report.md"
 REPORT_JSON = RESULTS_DIR / "quality_report.json"
 

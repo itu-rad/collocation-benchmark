@@ -4,7 +4,7 @@ lives in this one file (parsing, statistics, both metric tables, figures) — it
 imports nothing from the other framework_overhead modules.
 
 Reads the overnight collection layout
-``evaluation/results/<device>/noop_depth_D_size_S_mode_M_{proc|off}_{device}_rN.csv``
+``results/<machine>/noop_depth_D_size_S_mode_M_{proc|off}_{machine}_rN.csv``
 (``proc`` = tracing ON via the bulk+proc exporter, ``off`` = tracing disabled),
 for device in {mlx, cuda}. Emits Markdown tables to stdout and two figures.
 
@@ -53,9 +53,10 @@ WARMUP_K = 1                      # warm-up epochs dropped per run
 # indistinguishable in the run names. m2pro is kept in the list because E1's
 # Apple half was collected there before that box became a staging machine; it is
 # historical data, not a machine anything new runs on. A machine with no runs
-# under evaluation/results/<machine>/ is skipped with a notice, so listing all
+# under results/<machine>/ is skipped with a notice, so listing all
 # three is harmless.
-DEVICES = ("m2pro", "m3pro", "gb10")
+# m2pro is superseded (staging machine only); real collection is m3pro + gb10.
+DEVICES = ("m3pro", "gb10")
 
 # The four arms are the 2x2 of two INDEPENDENT instruments, and are named for
 # the role each one plays rather than for the switch that produces it:
@@ -204,10 +205,16 @@ def parse_run(path):
     return run
 
 
-def load_device(device, root):
-    """Return list[Run] for one device's NoOp CSVs under <root>/evaluation/results."""
+def load_device(device, results_dir):
+    """Return list[Run] for one device's NoOp CSVs under <results_dir>/<device>.
+
+    Results live beside the experiment that produced them, as they do for E2/E3
+    -- `evaluation/overheads/framework_overhead/results/<machine>/`. The shared
+    `evaluation/results/` is only the staging directory main.py hardcodes; the
+    collection harness moves runs out of it and it is empty at rest.
+    """
     runs = []
-    d = os.path.join(root, "evaluation", "results", device)
+    d = os.path.join(results_dir, device)
     for p in sorted(glob.glob(os.path.join(d, "noop_*.csv"))):
         if parse_filename(p):
             runs.append(parse_run(p))
@@ -785,7 +792,8 @@ def main():
     ap.add_argument("--fig-dir", default=os.path.join(here, "paper_assets"))
     ap.add_argument("--warmup", type=int, default=WARMUP_K,
                     help="warm-up epochs dropped per run")
-    ap.add_argument("--root", default=root, help="repo root (holds evaluation/results/)")
+    ap.add_argument("--results-dir", default=os.path.join(here, "results"),
+                    help="per-machine NoOp CSVs live in <results-dir>/<machine>/")
     ap.add_argument("--latex", metavar="DEVICE", nargs="?", const="m2pro", default=None,
                     help="emit the paper LaTeX tables for DEVICE (default mlx) to "
                          "stdout and exit; no Markdown/figures")
@@ -796,9 +804,9 @@ def main():
     # LaTeX mode: emit the two paper tables for one device and stop.
     if args.latex is not None:
         dev = args.latex
-        runs = load_device(dev, args.root)
+        runs = load_device(dev, args.results_dir)
         if not runs:
-            sys.exit(f"No NoOp CSVs for {dev} under {args.root}/evaluation/results/{dev}")
+            sys.exit(f"No NoOp CSVs for {dev} under {args.results_dir}/{dev}")
         latex_depth_table(runs, dev)
         latex_payload_table(runs, dev)
         return
@@ -809,9 +817,9 @@ def main():
           "monotonic perf clock. CIs are hierarchical (run = unit of replication).\n")
     per_device = {}
     for dev in DEVICES:
-        runs = load_device(dev, args.root)
+        runs = load_device(dev, args.results_dir)
         if not runs:
-            print(f"## {dev}: NO runs found under {args.root}/evaluation/results/{dev}\n")
+            print(f"## {dev}: NO runs found under {args.results_dir}/{dev}\n")
             continue
         per_device[dev] = runs
         print(f"\n# ===== {dev} ({len(runs)} run-files) =====")

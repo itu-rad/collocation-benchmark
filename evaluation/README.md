@@ -15,7 +15,7 @@ evaluation/
 ├── overheads/        # instrument-fidelity studies that bound the
 │   │                 # framework's own overhead
 │   ├── framework_overhead/   # noop sweep — self-contained: generator +
-│   │                         # analyzers + configs/ + results/
+│   │                         # analyzers + configs/ + results/<machine>/
 │   └── modularity_overhead/  # standalone PyTorch that re-implements a
 │                             # Choreo workload for an honest A/B
 ├── unet3d/           # E3 — MLPerf 3D-UNet / KiTS19: parity with MLPerf's
@@ -27,8 +27,9 @@ evaluation/
 ├── pilots/           # pre-registered knob derivation + warm-up convergence
 ├── scripts/          # analysis scripts for the case studies (no execution
 │                     # side effects beyond writing files into results/)
-└── results/          # all CSV/JSONL traces from runs + all Markdown/LaTeX
-                      # reports from analyzers. Gitignored — reproducible.
+└── results/          # STAGING ONLY, empty at rest. main.py hardcodes its
+                      # output here; each harness moves runs out into its own
+                      # experiment's results/ dir. Gitignored.
 ```
 
 The pipeline YAMLs for the complex cases live one level up in
