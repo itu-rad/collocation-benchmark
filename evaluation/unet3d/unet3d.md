@@ -15,7 +15,7 @@
 **Status.** Closed. Reworked to the E1/E2 shape 2026-09-01, collected 2026-09-02 on both
 machines. Prong 1 parity holds on accuracy (0.86329 vs 0.86168) and performance (−0.1% on
 median inference, against a `VALID` reference run); prong 2 measures a hidden share of 6.3%
-on m3pro and 15.8% on gb10. See *Results*.
+on m3pro and 16.0% on gb10. See *Results*.
 
 ---
 
@@ -204,11 +204,13 @@ is kept at `mlperf_reference/user_valid.conf`.
 
 ## Results
 
-> **These numbers predate the two-pass perf configs.** They come from a single-pass
-> collection, so on gb10 four of the 42 cases carry the head-of-run transient described
-> below. Its effect is measured and bounded — every median here is unaffected — but a
-> re-collection with the current configs supersedes them and removes the caveat. Cost:
-> ~83 min on gb10, ~8.6 h on m3pro.
+> **How this data was assembled.** The timed collection predates the two-pass perf configs,
+> so on gb10 four of the 42 cases came from the head of a run and carried the transient
+> described below. Rather than re-collect, those four cases were replaced with the warm
+> re-measurements from the correction runs — every component, not just inference, since the
+> head of a run inflates preprocessing too. The splice was done by a one-off script, not by
+> the analyzer: the repo's method is the two-pass config, and a re-collection with it
+> reproduces all of this in one command. m3pro needed no correction (no transient there).
 
 Collected 2026-09-02 against commit `bccefe8`. **R = 6 timed runs per machine, repetition 1
 dropped, 5 usable**, plus one accuracy pass each. Zero failures; every run emitted exactly
@@ -304,7 +306,7 @@ and refuted; no third is asserted. One case in 42, no median affected.
 | machine | R | end-to-end L_q | load | preprocess | inference | framework | **hidden share** |
 |---|--:|--:|--:|--:|--:|--:|--:|
 | M3 Pro (mps) | 5 | 50889 ms | 0 | 3990 | 45215 | 0.4 | **6.3%** [6.2, 6.5] |
-| GB10 (cuda) | 5 | 8950 ms | 0 | 1475 | 5899 | 1.5 | **15.8%** [14.8, 16.4] |
+| GB10 (cuda) | 5 | 8741 ms | 0 | 1475 | 5893 | 1.5 | **16.0%** [15.3, 16.8] |
 
 The framework's own scaffolding is **0.4-1.5 µs** against requests of 9-51 seconds — seven
 orders of magnitude down, and listed only so the components provably sum to L_q.
@@ -314,7 +316,7 @@ orders of magnitude down, and listed only so the components provably sum to L_q.
 | machine | median | p25 | p75 | min | max |
 |---|--:|--:|--:|--:|--:|
 | M3 Pro (mps) | 6.3% | 5.4% | 8.2% | 1.7% | 27.1% |
-| GB10 (cuda) | 15.7% | 13.0% | 20.8% | 8.5% | 68.4% |
+| GB10 (cuda) | 16.0% | 13.1% | 22.6% | 8.5% | 68.4% |
 
 Quote the median. The maximum is the endpoint of a range, and quoting it alone is exactly the
 objection this table exists to answer.
@@ -326,14 +328,14 @@ better. This is a mismatch in speedups, **not** a claim that the two machines ha
 | machine | preprocess | inference | sub-volumes (median) | ms per sub-volume |
 |---|--:|--:|--:|--:|
 | M3 Pro (mps) | 3986 ms | 45206 ms | 50 | 905 |
-| GB10 (cuda) | 1470 ms | 5894 ms | 50 | 118 |
+| GB10 (cuda) | 1470 ms | 5892 ms | 50 | 118 |
 
 ### The share against case size, and a model that had to be replaced
 
 | machine | n range | share at min n | share at max n | Spearman rho | preprocess | inference | asymptote |
 |---|--:|--:|--:|--:|---|---|--:|
 | M3 Pro (mps) | 8-144 | 27.1% | 4.5% | **−0.38** | 41.9n + 1344 | 914n − 390 | **4.4%** |
-| GB10 (cuda) | 8-144 | 68.4% | 9.9% | **−0.56** | 10.3n + 1031 | 122n + 256 | **7.8%** |
+| GB10 (cuda) | 8-144 | 68.4% | 9.9% | **−0.51** | 10.3n + 1028 | 119n − 40 | **8.0%** |
 
 **More sub-volumes means a SMALLER share**, not a larger one. The independent pre-rework
 dataset agrees (rho = −0.50, 66.3% at n=8 falling to 11.5% at n=144, median 16.6% against
@@ -348,12 +350,12 @@ P constant made the fit absorb that growth into S, which came out **4.8x below**
 measured cost per sub-volume. That disagreement is what exposed it.
 
 Both terms are affine in n, so the share does not decay to zero. It falls towards
-**P₁/(P₁+S₁)** — the ratio of the two slopes — which is **4.4%** on m3pro and **7.8%** on
+**P₁/(P₁+S₁)** — the ratio of the two slopes — which is **4.4%** on m3pro and **8.0%** on
 gb10, and the largest cases measure 4.5% and 9.9%. That is a stronger claim than the wrong
 model made: **the cost MLPerf's boundary excludes does not amortise away on large inputs; it
 converges to a fixed fraction of every request.**
 
-`rho` is −0.38/−0.56, not −0.95: case size explains the trend, not the scatter. At a fixed n
+`rho` is −0.38/−0.51, not −0.95: case size explains the trend, not the scatter. At a fixed n
 the share still varies (17.6-30.0% across four n=16 cases in the older data), because raw
 file size and slice count differ independently of the post-resample tile count. The
 defensible statement is "the share varies strongly across cases and part of that variation
