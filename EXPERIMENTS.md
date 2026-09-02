@@ -127,12 +127,11 @@ Calls-per-request variability on the cyclic graph reported alongside. **No predi
 and no unit-of-measurement critique — that register belongs to §4/E3.
 
 **Data protocol.** Latency/quality from listener-off serial runs — reused on gb10 (**R=4**, drop
-r1 →
-R=3). Power/energy/memory from **new R=2 listener-on passes**; one paired on/off cell bounds the
+r1 → R=3), collected fresh on m3pro (**R=6**). Power/energy/memory from **new R=2 listener-on passes**; one paired on/off cell bounds the
 observer cost. Poisson/throughput cells re-collected under the derived-λ rule.
 
-**Status/gap.** Quality matrix validated (16 cells, judge overturn=0) but the **judge runner is not
-committed** — it must be, for reproducibility. Serial R=4 exists on gb10 only: the runs tagged
+**Status/gap.** Quality matrix validated (16 cells, judge overturn=0); the judge runner is
+committed (`evaluation/self_rag/run_judge.py`). Serial R=4 exists on gb10 only: the runs tagged
 `mlx` were collected on the 16 GB M2 Pro, not the M3 Pro the paper reports, so m3pro's serial
 pass is being collected fresh (see `evaluation/self_rag/self_rag.md` for the provenance checks
 and the verified machine inventory). **Missing:** strategy
