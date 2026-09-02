@@ -232,7 +232,9 @@ prong 2 is not confounded by numerics.
 | Choreo (inference stage) | 5899 | 7923 | 14558 |
 
 **Median inference latency differs by −0.1%**, p90 by −0.2%. Matched per case over all 42
-cases both harnesses ran: median **−0.2%**, mean +7.0%, range −0.4% to +82.0%.
+cases both harnesses ran: median **−0.2%**, mean +7.0%, range −0.4% to +82.0% — and after
+correcting the four warm-up cases below, median **−0.2%**, mean **+0.5%**, range −0.8% to
+**+11.3%**.
 
 ### A device warm-up transient, and what it does not affect
 
@@ -255,8 +257,38 @@ prongs are unmoved by it.
 
 The reference does not show it because loadgen issues more queries than the QSL holds, so
 each case is sampled several times (4x here) and its own median discards the cold occurrence.
-That is a **harness asymmetry**, and the fix for a future collection is to do the same — two
-passes over the case list, per-case median. It costs 2x runtime and removes the difference.
+That is a **harness asymmetry**.
+
+**Corrected, without re-running the whole collection.** Only the first four queries are
+affected and everything after is flat, so the correction only needs those four. The config
+`warmup_cases.json` runs the four affected cases **twice**: pass 1 reproduces the original
+head-of-run conditions exactly (same cases, same order, so the warm-up is identical by
+construction rather than approximated), pass 2 measures them warm, and two already-clean
+cases follow as controls. R=3, ten queries per run, ~2.5 minutes each against ~7 for a full
+42-case run.
+
+It self-validates. Pass 1 reproduced the transient — +79.7%, +69.5%, +61.5%, +61.9% against
+the originally measured +82%, +75%, +61%, +66% — and the controls came back at −0.1% and
+−1.1% of steady state, so the prefix genuinely warmed the device.
+
+| case | n | as collected | warm-corrected |
+|---|--:|--:|--:|
+| case_00000 | 50 | +82.0% | **−0.8%** |
+| case_00003 | 50 | +74.6% | **−0.6%** |
+| case_00006 | 64 | +65.7% | **−0.3%** |
+| case_00005 | 108 | +61.2% | **+11.3%** |
+
+Three of the four collapse to within 1% of the reference, which is what the warm-up
+explanation predicts.
+
+**`case_00005` does not, and that residual is an open item.** It is +11.3% above the
+reference when measured warm, so it is not warm-up. It is also not volume size: across the
+38 steady-state cases, ms per sub-volume *falls* with volume (rho = **−0.75**, fixed per-case
+overhead amortising over more sub-volumes), and the largest volumes in the set — 320x448x448,
+64.2 Mvoxel, 144 sub-volumes — run at 116 ms/sub-volume, at steady state, while case_00005 at
+51.4 Mvoxel runs at 130. Two hypotheses tested and refuted; no third is asserted here. It is
+one case in 42, the median parity statistic is unaffected, and it is recorded rather than
+explained away.
 
 ### Prong 2 — what the measurement boundary hides
 
