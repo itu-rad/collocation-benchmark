@@ -41,6 +41,42 @@ CFG_DIR = HERE / "configs"
 BG_PREFIX = "BG "
 
 
+# The background must outlast the foreground. In the fused configs both pipelines
+# ran in one process and the background's own query budget ended the cell; split
+# apart, a background that finishes early leaves the rest of the foreground
+# running UNCONTENDED and silently dilutes every degradation number. So the
+# background is sized to cover the foreground's whole run with margin, and the
+# harness stops it when the foreground ends -- overshooting is free, undershooting
+# corrupts the measurement.
+BG_MARGIN = 1.5
+
+
+def _fg_duration_s(fg_doc: dict) -> float:
+    """Wall-clock the foreground is expected to occupy, from its loadgen."""
+    lg = fg_doc["pipelines"][0].get("loadgen", {})
+    n = float(lg.get("max_queries") or 0)
+    cfg = lg.get("config") or {}
+    rate = float(cfg.get("rate") or 0)           # Poisson: queries per second
+    interval = float(cfg.get("interval") or 0)   # fixed-interval: seconds per query
+    if rate > 0:
+        return n / rate
+    if interval > 0:
+        return n * interval
+    return 0.0
+
+
+def _size_background(bg_pipe: dict, fg_seconds: float, warmup_s: float = 20.0) -> None:
+    """Give the background enough queries to cover the foreground, in place."""
+    lg = bg_pipe.get("loadgen") or {}
+    cfg = lg.get("config") or {}
+    interval = float(cfg.get("interval") or 0)
+    if interval <= 0 or fg_seconds <= 0:
+        return
+    need_s = (fg_seconds + warmup_s) * BG_MARGIN
+    lg["max_queries"] = int(-(-need_s // interval))   # ceil
+    lg["timeout"] = int(need_s * 2)
+
+
 def _dump(path: Path, doc: dict) -> None:
     path.write_text(yaml.safe_dump(doc, sort_keys=False, width=100))
 
@@ -57,6 +93,7 @@ def split(device: str) -> int:
         print(f"gen_collocation_configs: missing {b0.name}", file=sys.stderr)
         return 1
     fg = yaml.safe_load(b0.read_text())
+    fg_seconds = _fg_duration_s(fg)
     fg_name = f"fg_ragserve_{device}"
     fg["name"] = fg_name
     _dump(CFG_DIR / f"{fg_name}.yml", fg)
@@ -79,10 +116,13 @@ def split(device: str) -> int:
         out = CFG_DIR / f"{out_name}.yml"
         if out.exists():          # stage_c and stage_d share a background
             continue
+        _size_background(bgs[0], fg_seconds)
         _dump(out, {"name": out_name, "pipelines": bgs})
         written.append(out.name)
 
-    print(f"gen_collocation_configs [{device}]: wrote {len(written)} config(s)")
+    print(f"gen_collocation_configs [{device}]: wrote {len(written)} config(s); "
+          f"foreground runs ~{fg_seconds:.0f}s, backgrounds sized to "
+          f"{BG_MARGIN:g}x that plus warm-up")
     for w in written:
         print(f"  {w}")
     return 0

@@ -218,8 +218,20 @@ run_cell() {
 
   if [ -n "$bgpid" ]; then
     # The foreground defines the measurement window; stop the background with it.
-    kill -TERM "$bgpid" 2>/dev/null
-    wait "$bgpid" 2>/dev/null; bg_rc=$?
+    # The background is deliberately sized to outlast the foreground, so being
+    # terminated here is the NORMAL outcome -- 143 (128+SIGTERM) is success, and
+    # reporting it as a failure would flag every healthy cell. A background that
+    # exited on its own before this point ran dry and left the tail of the
+    # foreground uncontended: that is the case worth seeing.
+    if ! kill -0 "$bgpid" 2>/dev/null; then
+      wait "$bgpid" 2>/dev/null; bg_rc=$?
+      log "  !! background exited before the foreground (rc=$bg_rc) -- part of this"
+      log "     cell ran UNCONTENDED; check the background's query budget"
+    else
+      kill -TERM "$bgpid" 2>/dev/null
+      wait "$bgpid" 2>/dev/null; bg_rc=$?
+      [ "$bg_rc" -eq 143 ] && bg_rc=0
+    fi
   fi
 
   [ "$coll" = mps ] && mps_down
