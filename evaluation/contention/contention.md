@@ -81,6 +81,29 @@ So the bandwidth claim is directly measurable only on the Mac; on gb10 it is a s
 power/utilization proxy. Known caveat: under pure-GPU load roughly half the Mac's traffic lands
 in "other" AMC agents rather than the GPU bucket.
 
+## Prerequisites, per machine
+
+Checked 2026-09-02. Missing prerequisites are silent at run time -- a missing model surfaces
+as a failed import several minutes into a run, which is how the m3pro half of §5.1 went a month
+without anyone noticing it had never run there.
+
+| | m3pro | gb10 |
+|---|---|---|
+| foreground generator (Qwen3.5-4B) | present | present |
+| `openai/clip-vit-large-patch14` | **missing** — downloads on first use | present |
+| `tmp/clip_vit_l14_vision.mlpackage` (ANE arm) | **missing** — must be exported | n/a |
+| `coremltools` | 9.0 | n/a |
+
+The CoreML package is a hard prerequisite for the ANE cell, which carries exhibit 2. Build it
+with:
+
+    python stages/multimodal_vqa/export_clip_coreml.py \
+        --model openai/clip-vit-large-patch14 \
+        --output tmp/clip_vit_l14_vision.mlpackage
+
+Do not run the export while a collection is in flight: it is CPU/ANE-heavy and would contend
+with exactly what the collection measures.
+
 ## Grid
 
 Collocation types at one calibrated intensity everywhere; dose–response on m3pro only, where the
