@@ -126,12 +126,16 @@ dropped. If D fails, the text scopes to three strategies explicitly, never silen
 Calls-per-request variability on the cyclic graph reported alongside. **No predictive cost law**
 and no unit-of-measurement critique — that register belongs to §4/E3.
 
-**Data protocol.** Latency/quality from the existing **R=4 listener-off serial runs** (drop r1 →
+**Data protocol.** Latency/quality from listener-off serial runs — reused on gb10 (**R=4**, drop
+r1 →
 R=3). Power/energy/memory from **new R=2 listener-on passes**; one paired on/off cell bounds the
 observer cost. Poisson/throughput cells re-collected under the derived-λ rule.
 
 **Status/gap.** Quality matrix validated (16 cells, judge overturn=0) but the **judge runner is not
-committed** — it must be, for reproducibility. Serial R=4 exists both devices. **Missing:** strategy
+committed** — it must be, for reproducibility. Serial R=4 exists on gb10 only: the runs tagged
+`mlx` were collected on the 16 GB M2 Pro, not the M3 Pro the paper reports, so m3pro's serial
+pass is being collected fresh (see `evaluation/self_rag/self_rag.md` for the provenance checks
+and the verified machine inventory). **Missing:** strategy
 D has never run; listeners are off on every serial config (so C3 has no data); peak memory unrecorded.
 
 ## E5 / §5.2 — Collocation types with per-pipeline attribution (build-up on §5.1)
