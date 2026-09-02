@@ -79,6 +79,13 @@ ACCURACY_GATE = 0.99 * MLPERF_REFERENCE_DICE
 DROP_RUNS = 1
 WARMUP = 0                       # 42 queries per run; there is nothing to spare
 
+# Queries at the head of a run that show a device warm-up transient. Measured on
+# gb10: positions 0-3 run 60-82% above steady state, position 4 onward is within
+# 1%. Absent on m3pro. These are NOT dropped -- dropping them would drop specific
+# CASES, and the case is the independent variable of prong 2 -- they are reported
+# separately so the reader can see what they do and do not affect.
+WARMUP_QUERIES = 4
+
 _BOOT_WORK_BUDGET = 5e7
 
 
@@ -322,7 +329,14 @@ def read_mlperf_per_sample(trace_path, qsl_pkl):
         return {}
     with open(qsl_pkl, "rb") as f:
         files = pickle.load(f)["file_list"]
-    out = {}
+    # A valid SingleStream run issues more queries than the QSL has samples, so
+    # loadgen cycles it and every case appears several times (4x in the 172-query
+    # reference run). Collect ALL occurrences and take the median, the same
+    # statistic Choreo's side uses across its repetitions. Keeping one arbitrary
+    # occurrence made the matched comparison read mean +7.1% with a +82% outlier
+    # against a median of -0.1%: within-case spread is usually 0.3% but reaches
+    # 70%, so the pick, not the framework, was the difference.
+    occurrences = {}
     with open(trace_path, encoding="utf-8", errors="replace") as f:
         for line in f:
             line = line.strip().rstrip(",")
@@ -338,8 +352,8 @@ def read_mlperf_per_sample(trace_path, qsl_pkl):
             idx, comp = a.get("sample_idx"), a.get("complete_ns")
             if idx is None or comp is None or idx >= len(files):
                 continue
-            out[files[idx]] = comp / NS_MS
-    return out
+            occurrences.setdefault(files[idx], []).append(comp / NS_MS)
+    return {case: float(np.median(v)) for case, v in occurrences.items()}
 
 
 def read_mlperf_dice(path):
@@ -373,10 +387,41 @@ def read_choreo_dice(machine):
 # ---------------------------------------------------------------------------
 # Prong 1 — parity
 # ---------------------------------------------------------------------------
+def reference_log_dir():
+    """The reference run to compare against, valid-first.
+
+    `logs_perf/` is the original bounded run and announces itself INVALID:
+    user_e3.conf capped max_query_count at the QSL size, so loadgen never
+    reached early stopping. `logs_perf_valid/` is the re-run with that cap
+    lifted and a realistic target_latency. Prefer the valid one, and name which
+    was used rather than leaving the reader to guess.
+    """
+    ref = os.path.join(HERE, "mlperf_reference")
+    for name in ("logs_perf_valid", "logs_perf"):
+        d = os.path.join(ref, name)
+        if os.path.exists(os.path.join(d, "mlperf_log_summary.txt")):
+            return d, name
+    return os.path.join(ref, "logs_perf"), "logs_perf"
+
+
+def case_order():
+    """The fixed order the loader serves cases in, or [] if unavailable.
+
+    Position in this list is what the warm-up transient tracks, so it is the
+    only way to identify the affected cases after the fact.
+    """
+    path = os.path.join(HERE, "inference_cases.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return []
+
+
 def print_parity(machine, bd, cases):
     ref_dir = os.path.join(HERE, "mlperf_reference")
-    summary = read_mlperf_summary(os.path.join(ref_dir, "logs_perf",
-                                               "mlperf_log_summary.txt"))
+    log_dir, log_name = reference_log_dir()
+    summary = read_mlperf_summary(os.path.join(log_dir, "mlperf_log_summary.txt"))
     ref_dice = read_mlperf_dice(os.path.join(ref_dir, "mlperf_accuracy_dice.txt"))
     our_dice = read_choreo_dice(machine)
 
@@ -413,6 +458,8 @@ def print_parity(machine, bd, cases):
 
     # --- performance ---
     print("\n### Performance (inference only, the part MLPerf times)\n")
+    print(f"Reference run: `mlperf_reference/{log_name}/` "
+          f"({summary['validity'] if summary else 'not found'}).\n")
     if not summary:
         print("No MLPerf summary found; the parity table cannot be built.")
         return
@@ -439,7 +486,7 @@ def print_parity(machine, bd, cases):
 
     # --- matched, per case ---
     ref_cases = read_mlperf_per_sample(
-        os.path.join(ref_dir, "logs_perf", "mlperf_log_trace.json"),
+        os.path.join(log_dir, "mlperf_log_trace.json"),
         os.path.join(ROOT, "data", "kits19", "preprocessed_mlperf",
                      "preprocessed_files.pkl"))
     shared = sorted(set(ref_cases) & set(cases))
@@ -448,15 +495,45 @@ def print_parity(machine, bd, cases):
               "file list is missing), so only the pooled percentiles above are "
               "comparable.")
         return
-    diffs = []
+    diffs, warm = [], []
+    order = case_order()
     for c in shared:
         ours = float(np.median(cases[c]["inference"])) / NS_MS
-        diffs.append(100.0 * (ours - ref_cases[c]) / ref_cases[c])
+        d = 100.0 * (ours - ref_cases[c]) / ref_cases[c]
+        diffs.append(d)
+        if order and c in order and order.index(c) < WARMUP_QUERIES:
+            warm.append((order.index(c), c, d))
     diffs = np.asarray(diffs)
+    steady = np.asarray([d for c, d in zip(shared, diffs)
+                         if not (order and c in order
+                                 and order.index(c) < WARMUP_QUERIES)])
     print(f"\n**Matched per case, all {len(shared)} cases both harnesses ran.** "
           f"Choreo vs the reference on the SAME case: median difference "
           f"**{np.median(diffs):+.1f}%**, mean {diffs.mean():+.1f}%, range "
           f"{diffs.min():+.1f}% to {diffs.max():+.1f}%.")
+    if len(warm) and len(steady):
+        warm.sort()
+        print(f"\nThe mean and the maximum are carried by the first "
+              f"{WARMUP_QUERIES} queries of the run, and ONLY those: "
+              + ", ".join(f"{c} (position {p}) {d:+.0f}%" for p, c, d in warm)
+              + f". Excluding them, over the remaining {len(steady)} cases: "
+              f"median **{np.median(steady):+.1f}%**, mean "
+              f"{steady.mean():+.1f}%, range {steady.min():+.1f}% to "
+              f"{steady.max():+.1f}%.")
+        print(f"\nThis is a device warm-up transient, not a framework cost. It is "
+              f"present on gb10 and ABSENT on m3pro (every position within 0.4% "
+              f"of steady state there), and the pipeline is identical on both. "
+              f"It tracks POSITION in the run, not input shape -- a repeated "
+              f"shape at position 1 is still slow while a brand-new shape at "
+              f"position 4 is already fast -- which rules out per-shape kernel "
+              f"autotuning. The mechanism is not otherwise characterised here.\n"
+              f"\nThe reference does not show it because loadgen issues far more "
+              f"queries than the QSL holds, so each case is sampled several "
+              f"times (4x in this run) and its own median discards the cold "
+              f"occurrence. That is a harness asymmetry, and the fix for a "
+              f"future collection is to do the same: two passes over the case "
+              f"list, per-case median. The MEDIAN statistic is unaffected either "
+              f"way, which is why it is the one of record.")
     if len(shared) < len(cases):
         print(f"\n({len(cases) - len(shared)} Choreo case(s) had no matching "
               f"reference sample — the reference run is short.)")
@@ -529,6 +606,13 @@ def print_boundary(per_machine):
     print("\nThe MEDIAN is the number to quote. The maximum is the endpoint of a "
           "range, not a representative case, and quoting it alone is the "
           "objection this table exists to answer.")
+    print(f"\nThe first {WARMUP_QUERIES} queries of each run carry a device "
+          f"warm-up transient (see prong 1). It does NOT move these medians -- "
+          f"checked, and the shift is 0.0 pp on both machines -- because it "
+          f"inflates preprocessing and inference together at the head of a run, "
+          f"so the RATIO barely moves even though both terms do. Those cases are "
+          f"kept in: dropping them would drop specific cases, and the case is "
+          f"the independent variable here.")
 
     print("\n### Why: the two stages scale with different things\n")
     print("| machine | preprocess (ms) | inference (ms) | sub-volumes (median) "
@@ -561,53 +645,72 @@ def print_boundary(per_machine):
 
 
 def print_size_relation(per_machine):
-    """The variable-size claim, fitted rather than asserted.
+    """The variable-size claim, with a model the data actually supports.
 
-    Preprocessing is roughly per-volume work and inference is roughly per
-    sub-volume, so the hidden share should behave like
+    The obvious model is `share = P / (P + S*n)` -- preprocessing a fixed
+    per-volume cost, inference proportional to the sub-volume count. It is
+    WRONG here, and it was worth finding out why rather than reporting its fit.
 
-        frac(n) = P / (P + S*n)
+    Inference is proportional, cleanly: rho = +0.99/+0.98 against n, and a
+    straight-line fit recovers a slope that matches the directly measured cost
+    per sub-volume. But preprocessing is NOT constant. It rises with n too
+    (rho = +0.77 on m3pro, +0.60 on gb10, over a 15x and 11x range), because a
+    volume with more sub-volumes is a physically bigger volume and takes longer
+    to read, resample and pad. Forcing P constant made the linearised fit
+    absorb that growth into S, which came out 4.8x below the measured value.
 
-    with P the preprocessing cost and S the cost of one sliding-window pass.
-    Fitting it is what turns "the share varies" into a statement with a
-    mechanism, and the fitted S is checkable against the measured ms per
-    sub-volume in the table above.
+    So both terms are affine in n:
+
+        share(n) = (P0 + P1*n) / (P0 + P1*n + S0 + S1*n)
+
+    which does not decay to zero. It falls towards **P1 / (P1 + S1)**, a floor
+    set by the ratio of the two slopes. That is a stronger claim than the one
+    the wrong model made: the cost MLPerf's boundary hides does not amortise
+    away on large inputs, it converges to a fixed share of every request.
     """
     print("\n### Hidden share against case size\n")
     print("| machine | n range | share at min n | share at max n | Spearman rho "
-          "| fitted P (ms) | fitted S (ms/sub-volume) |")
-    print("|---|--:|--:|--:|--:|--:|--:|")
+          "| preprocess (ms) | inference (ms) | asymptotic share |")
+    print("|---|--:|--:|--:|--:|---|---|--:|")
     for machine, (bd, cases) in per_machine.items():
         pts = [(d["n_sub"],
                 float(np.median(d["load"])) + float(np.median(d["preprocess"])),
+                float(np.median(d["inference"])),
                 sum(float(np.median(d[k])) for k in COMPONENTS))
                for d in cases.values() if "n_sub" in d]
         if len(pts) < 4:
             continue
         n = np.array([p[0] for p in pts], dtype=float)
         hid = np.array([p[1] for p in pts]) / NS_MS
-        tot = np.array([p[2] for p in pts]) / NS_MS
+        inf = np.array([p[2] for p in pts]) / NS_MS
+        tot = np.array([p[3] for p in pts]) / NS_MS
         frac = 100.0 * hid / tot
         order = np.argsort(n)
-        # Spearman without scipy: Pearson on the ranks.
         rn = np.argsort(np.argsort(n)).astype(float)
         rf = np.argsort(np.argsort(frac)).astype(float)
         rho = float(np.corrcoef(rn, rf)[0, 1])
-        # frac = P / (P + S*n)  =>  tot/hid = 1 + (S/P)*n, linear in n.
-        y = tot / hid
-        S_over_P, intercept = np.polyfit(n, y, 1)
-        P = float(np.median(hid))
+        P1, P0 = np.polyfit(n, hid, 1)
+        S1, S0 = np.polyfit(n, inf, 1)
+        asym = 100.0 * P1 / (P1 + S1)
         print(f"| {MACHINE_LABEL.get(machine, machine)} | {n.min():.0f}–{n.max():.0f} "
               f"| {frac[order][0]:.1f}% | {frac[order][-1]:.1f}% | {rho:+.2f} "
-              f"| {P:.0f} | {S_over_P * P:.0f} |")
-    print("\n(`share at min/max n` are the individual cases at the ends of the "
-          "size range, not a fit. rho is Spearman's rank correlation between "
-          "sub-volume count and hidden share — negative, because a bigger "
-          "volume means more inference passes over the same one-off "
-          "preprocessing. The fit is `share = P / (P + S*n)`, linearised as "
-          "`total/hidden = 1 + (S/P)*n`; the fitted S should agree with the "
-          "measured ms per sub-volume above, and if it does not, the model is "
-          "wrong and should be said to be.)")
+              f"| {P1:.1f}n + {P0:.0f} | {S1:.0f}n + {S0:+.0f} "
+              f"| **{asym:.1f}%** |")
+    print("\n(`share at min/max n` are the individual cases at the ends of the size "
+          "range, not a fit. rho is Spearman's rank correlation between sub-volume "
+          "count and hidden share. The two rightmost columns are straight-line fits "
+          "in n, in milliseconds.\n"
+          "\nBOTH stages grow with n. Inference is proportional and its fitted slope "
+          "matches the directly measured cost per sub-volume. Preprocessing also "
+          "rises -- a volume with more sub-volumes is a bigger volume, and reading, "
+          "resampling and padding it costs more -- so the share does NOT decay to "
+          "zero. It falls towards `P1 / (P1 + S1)`, the ratio of the two slopes, "
+          "which is the `asymptotic share` column. The hidden cost does not amortise "
+          "away on large inputs; it converges to a fixed fraction of every request.\n"
+          "\nAn earlier version of this table fitted `share = P / (P + S*n)` with P "
+          "constant. That model is refuted by the data -- preprocessing correlates "
+          "with n at rho = +0.77 (m3pro) and +0.60 (gb10) -- and its fitted S came "
+          "out 4.8x below the measured cost per sub-volume, which is what exposed it.)")
 
 
 # ---------------------------------------------------------------------------
@@ -658,37 +761,57 @@ def make_breakdown_figure(per_machine, fig_dir):
 
 
 def make_share_figure(per_machine, fig_dir):
-    """Hidden share against case size, with the P/(P+S*n) fit drawn through it."""
+    """The hidden share per case, grouped by machine.
+
+    Same shape as the request-breakdown figure: one column position per case,
+    ordered by sub-volume count, with the machines side by side so a reader can
+    read one case across both.
+
+    The asymptotic share each machine tends to -- P1/(P1+S1), the ratio of the
+    two stages' slopes in n -- is reported in the size-relation TABLE rather
+    than drawn here, so the figure shows measurements and nothing fitted.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    style = {"m3pro": ("tab:blue", "o"), "gb10": ("tab:orange", "s")}
-    fig, ax = plt.subplots(figsize=(6.4, 4.4))
-    drew = False
-    for machine, (bd, cases) in per_machine.items():
-        pts = [(d["n_sub"],
-                float(np.median(d["load"])) + float(np.median(d["preprocess"])),
-                sum(float(np.median(d[k])) for k in COMPONENTS))
-               for d in cases.values() if "n_sub" in d]
-        if len(pts) < 4:
-            continue
-        drew = True
-        color, marker = style.get(machine, ("tab:green", "^"))
-        n = np.array([p[0] for p in pts], dtype=float)
-        frac = 100.0 * np.array([p[1] for p in pts]) / np.array([p[2] for p in pts])
-        ax.scatter(n, frac, s=26, color=color, marker=marker, alpha=0.75,
-                   label=MACHINE_LABEL.get(machine, machine))
-        y = np.array([p[2] for p in pts]) / np.array([p[1] for p in pts])
-        slope, icept = np.polyfit(n, y, 1)
-        xs = np.linspace(n.min(), n.max(), 100)
-        ax.plot(xs, 100.0 / (icept + slope * xs), color=color, lw=1.2, alpha=0.8)
-    if not drew:
-        plt.close(fig)
+    style = {"m3pro": "tab:blue", "gb10": "tab:orange"}
+    machines = [m for m in per_machine if per_machine[m][1]]
+    if not machines:
         return None
-    ax.set_xlabel("sliding-window sub-volumes in the case")
-    ax.set_ylabel("share of per-request latency MLPerf's boundary hides (%)")
-    ax.grid(alpha=0.3)
+
+    # Order cases by sub-volume count, using whichever machine has them. The
+    # count is a property of the case, not of the machine, so the two agree.
+    order, seen = [], {}
+    for m in machines:
+        for case, d in per_machine[m][1].items():
+            if "n_sub" in d:
+                seen[case] = d["n_sub"]
+    order = sorted(seen, key=lambda c: (seen[c], c))
+    if not order:
+        return None
+
+    def share_of(d):
+        tot = sum(float(np.median(d[k])) for k in COMPONENTS)
+        hid = float(np.median(d["load"])) + float(np.median(d["preprocess"]))
+        return 100.0 * hid / tot if tot else float("nan")
+
+    x = np.arange(len(order))
+    width = 0.8 / len(machines)
+    fig, ax = plt.subplots(figsize=(max(9.0, 0.28 * len(order)), 4.4))
+    for i, m in enumerate(machines):
+        cases = per_machine[m][1]
+        vals = [share_of(cases[c]) if c in cases else np.nan for c in order]
+        ax.bar(x + (i - (len(machines) - 1) / 2) * width, vals, width,
+               color=style.get(m, "tab:green"),
+               label=MACHINE_LABEL.get(m, m))
+    ax.set_xlabel("case, ordered by sub-volume count (label = sub-volumes)")
+    ax.set_ylabel("share of per-request latency\nMLPerf's boundary hides (%)")
+    ax.set_xticks(x[::2])
+    ax.set_xticklabels([str(seen[order[j]]) for j in range(0, len(order), 2)],
+                       fontsize=7)
+    ax.set_ylim(bottom=0)
+    ax.grid(alpha=0.3, axis="y")
     ax.legend(fontsize=8)
     fig.tight_layout()
     out = os.path.join(fig_dir, "e3_preprocessing_share.png")

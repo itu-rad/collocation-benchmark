@@ -12,7 +12,10 @@
    prefetch, so load and preprocess sit unavoidably on the per-request critical path. Choreo
    times the whole graph and reports the share MLPerf reports as zero.
 
-**Status.** Reworked to the E1/E2 shape 2026-09-01. Collection pending.
+**Status.** Closed. Reworked to the E1/E2 shape 2026-09-01, collected 2026-09-02 on both
+machines. Prong 1 parity holds on accuracy (0.86329 vs 0.86168) and performance (−0.1% on
+median inference, against a `VALID` reference run); prong 2 measures a hidden share of 6.3%
+on m3pro and 15.8% on gb10. See *Results*.
 
 ---
 
@@ -182,29 +185,147 @@ rsync -a itu-mac:collocation-benchmark/evaluation/unet3d/results/dice_m3pro.csv 
 Without them the accuracy row reads `—` and the analyzer says so rather than skipping the
 table.
 
-**Still needed before prong 1 closes:** a **valid** MLPerf reference run on GB10. The one on
-disk announces its own invalidity — `logs_perf/mlperf_log_summary.txt` says `Result is :
-INVALID`, 43 queries processed against the 64 loadgen needs for early stopping. The parity
-claim cannot rest on it.
+**The valid reference run took two attempts, and the second trap is worth recording.**
+`logs_perf/` is the original and says `Result is : INVALID` — `user_e3.conf` capped
+`max_query_count` at 43, the size of the QSL, so loadgen never reached early stopping.
+Lifting the cap was not enough: `min_query_count` is a **floor, not a cap**, and loadgen
+computes `effective_min_query_count` from `min_duration / expected-per-query-latency`, taking
+whichever is larger. With no `target_latency` set it assumed a tiny query and demanded
+**120013** of them to fill 600 s; the run was still going 8.5 hours and 4087 queries later,
+with a 1.8 GB trace. Setting `*.SingleStream.target_latency = 8000` (3D-UNet runs ~7.5 s/case
+on gb10) brings the effective minimum to 172 and the run to ~20 minutes. The working config
+is kept at `mlperf_reference/user_valid.conf`.
 
 ---
 
 ## Results
 
-Not collected yet. `analyze_e3.py` produces, from spans alone:
+Collected 2026-09-02 against commit `bccefe8`. **R = 6 timed runs per machine, repetition 1
+dropped, 5 usable**, plus one accuracy pass each. Zero failures; every run emitted exactly
+463 spans and 3 CSV rows, and the run times were stable to 0.5% (m3pro 2577-2591 s) and 0.7%
+(gb10 414-417 s).
 
-- **Prong 1**: DICE against the reference and against MLPerf's 99%-of-0.86170 gate; pooled
-  inference-latency percentiles against the reference summary; and a **matched per-case**
-  comparison over all 42 cases, mapping the reference's `sample_idx` to a case through the
-  QSL file list the harness itself loads.
-- **Prong 2**: the per-request breakdown with the hidden share, the distribution of that
-  share across cases, the two stages' scaling (ms per sub-volume against per-volume
-  preprocessing), and the share against case size with a `share = P / (P + S·n)` fit whose
-  fitted `S` is checkable against the measured ms per sub-volume.
-- **Figures**: `e3_request_breakdown.png` (per-case stacked latency, ordered by size) and
-  `e3_preprocessing_share.png` (hidden share against sub-volume count, with the fit).
+`analyze_e3.py` regenerates every number and both figures from spans; the tables below are
+its output, kept here so the write-up and the analyzer cannot disagree.
 
----
+### Prong 1 — parity with the MLPerf reference, on GB10
+
+**Accuracy.** The reference run is `mlperf_reference/logs_perf_valid/`, and it reports
+`Result is : VALID` — 172 queries, min duration, min queries and early stopping all
+satisfied.
+
+| harness | cases | mean DICE | kidney | tumor |
+|---|--:|--:|--:|--:|
+| MLPerf reference | 43 | 0.86168 | 0.9347 | 0.7887 |
+| Choreo, gb10 | 42 | **0.86329** | 0.93418 | 0.79241 |
+| Choreo, m3pro | 42 | **0.86330** | 0.93418 | 0.79242 |
+
+MLPerf's gate is 99% of 0.86170 = **0.85308**; Choreo clears it. The two devices agree to
+five decimal places and differ by at most 7e-5 per case, so the cross-device comparison in
+prong 2 is not confounded by numerics.
+
+**Performance**, inference only — the part MLPerf times:
+
+| harness | median (ms) | mean (ms) | p90 (ms) |
+|---|--:|--:|--:|
+| MLPerf reference | 5904 | 7669 | 14581 |
+| Choreo (inference stage) | 5899 | 7923 | 14558 |
+
+**Median inference latency differs by −0.1%**, p90 by −0.2%. Matched per case over all 42
+cases both harnesses ran: median **−0.2%**, mean +7.0%, range −0.4% to +82.0%.
+
+### A device warm-up transient, and what it does not affect
+
+The mean and the maximum above are carried by the **first four queries of the run and only
+those** — case_00000 +82%, case_00003 +75%, case_00005 +61%, case_00006 +66%. Over the
+remaining 38 cases: median **−0.2%**, mean **+0.2%**, range −0.4% to +8.5%.
+
+It is a device property, not a framework cost, and three things establish that:
+
+- it is **present on gb10 and absent on m3pro** — every position there is within 0.4% of
+  steady state — while the pipeline is byte-identical on both;
+- it tracks **position in the run, not input shape**: a repeated shape at position 1 is still
+  60-80% slow, and a brand-new shape at position 4 is already at steady state. That rules out
+  per-shape kernel autotuning, which was the obvious first hypothesis and is wrong;
+- it reproduces in all five repetitions (case_00000: 10756, 10739, 10473, 10455, 10811 ms).
+
+The mechanism is **not otherwise characterised here**, and it should not be guessed at in the
+paper. What matters is bounded: it affects 4 of 42 cases, and the median statistics of both
+prongs are unmoved by it.
+
+The reference does not show it because loadgen issues more queries than the QSL holds, so
+each case is sampled several times (4x here) and its own median discards the cold occurrence.
+That is a **harness asymmetry**, and the fix for a future collection is to do the same — two
+passes over the case list, per-case median. It costs 2x runtime and removes the difference.
+
+### Prong 2 — what the measurement boundary hides
+
+| machine | R | end-to-end L_q | load | preprocess | inference | framework | **hidden share** |
+|---|--:|--:|--:|--:|--:|--:|--:|
+| M3 Pro (mps) | 5 | 50889 ms | 0 | 3990 | 45215 | 0.4 | **6.3%** [6.2, 6.5] |
+| GB10 (cuda) | 5 | 8950 ms | 0 | 1475 | 5899 | 1.5 | **15.8%** [14.8, 16.4] |
+
+The framework's own scaffolding is **0.4-1.5 µs** against requests of 9-51 seconds — seven
+orders of magnitude down, and listed only so the components provably sum to L_q.
+
+**The share is not one number.** Per case:
+
+| machine | median | p25 | p75 | min | max |
+|---|--:|--:|--:|--:|--:|
+| M3 Pro (mps) | 6.3% | 5.4% | 8.2% | 1.7% | 27.1% |
+| GB10 (cuda) | 15.7% | 13.0% | 20.8% | 8.5% | 68.4% |
+
+Quote the median. The maximum is the endpoint of a range, and quoting it alone is exactly the
+objection this table exists to answer.
+
+**Why it is larger on the faster device.** Inference is **7.7x** faster on gb10; preprocessing
+only **2.7x**. The un-accelerated stage dominates more precisely where the accelerator is
+better. This is a mismatch in speedups, **not** a claim that the two machines have equal CPUs.
+
+| machine | preprocess | inference | sub-volumes (median) | ms per sub-volume |
+|---|--:|--:|--:|--:|
+| M3 Pro (mps) | 3986 ms | 45206 ms | 50 | 905 |
+| GB10 (cuda) | 1470 ms | 5894 ms | 50 | 118 |
+
+### The share against case size, and a model that had to be replaced
+
+| machine | n range | share at min n | share at max n | Spearman rho | preprocess | inference | asymptote |
+|---|--:|--:|--:|--:|---|---|--:|
+| M3 Pro (mps) | 8-144 | 27.1% | 4.5% | **−0.38** | 41.9n + 1344 | 914n − 390 | **4.4%** |
+| GB10 (cuda) | 8-144 | 68.4% | 9.9% | **−0.56** | 10.3n + 1031 | 122n + 256 | **7.8%** |
+
+**More sub-volumes means a SMALLER share**, not a larger one. The independent pre-rework
+dataset agrees (rho = −0.50, 66.3% at n=8 falling to 11.5% at n=144, median 16.6% against
+15.7% here). What *is* positive is absolute preprocessing **seconds** (rho ≈ +0.6): bigger
+cases do preprocess for longer, just not as a larger fraction.
+
+The obvious model, `share = P / (P + S·n)` with P a fixed per-volume cost, is **refuted by
+this data** and was reported before it was checked. Preprocessing is not constant — it
+correlates with n at +0.77 (m3pro) and +0.60 (gb10) over a 15x and 11x range, because a
+volume with more sub-volumes is a physically bigger volume to read, resample and pad. Forcing
+P constant made the fit absorb that growth into S, which came out **4.8x below** the directly
+measured cost per sub-volume. That disagreement is what exposed it.
+
+Both terms are affine in n, so the share does not decay to zero. It falls towards
+**P₁/(P₁+S₁)** — the ratio of the two slopes — which is **4.4%** on m3pro and **7.8%** on
+gb10, and the largest cases measure 4.5% and 9.9%. That is a stronger claim than the wrong
+model made: **the cost MLPerf's boundary excludes does not amortise away on large inputs; it
+converges to a fixed fraction of every request.**
+
+`rho` is −0.38/−0.56, not −0.95: case size explains the trend, not the scatter. At a fixed n
+the share still varies (17.6-30.0% across four n=16 cases in the older data), because raw
+file size and slice count differ independently of the post-resample tile count. The
+defensible statement is "the share varies strongly across cases and part of that variation
+tracks case size", not "the share is a function of n".
+
+### Figures
+
+- `paper_assets/e3_request_breakdown.png` — per-case latency, `preprocess` + `inference`
+  stacked, one panel per machine, cases ordered by sub-volume count. The four warm-up cases
+  are visible on the gb10 panel as taller inference bars among their size peers.
+- `paper_assets/e3_preprocessing_share.png` — the hidden share per case, machines grouped
+  side by side. gb10 is above m3pro at **every one of the 42 cases**, which is the
+  cross-device claim shown per case rather than as a difference of medians.
 
 ## What was removed in the rework
 
