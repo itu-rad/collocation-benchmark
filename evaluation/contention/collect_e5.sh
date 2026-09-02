@@ -125,6 +125,33 @@ case "$MODE" in
     ;;
 esac
 
+# The AMC per-engine DRAM counters are the evidence for "separation is not
+# isolation": they are what show the background still moving bytes after it has
+# been pushed off the GPU. They come from a sampler of ours, not from radt, so
+# they need starting per cell -- and its default output path points at a results
+# tree that no longer exists, hence the explicit --out below.
+#
+# Apple only. Prove it runs now rather than discovering at analysis time that the
+# flagship exhibit has no data.
+AMC="$ROOT/scripts/amc_bandwidth_sampler.py"
+USE_AMC=0
+if [ "$(uname)" = "Darwin" ] && [ -z "${E5_NO_AMC:-}" ]; then
+  if [ ! -f "$AMC" ]; then
+    echo "collect_e5: $AMC not found (set E5_NO_AMC=1 to collect without bandwidth counters)" >&2
+    exit 3
+  fi
+  if python "$AMC" --duration 2 --interval 0.5 --out /tmp/e5_amc_preflight.csv >/dev/null 2>&1 \
+     && [ -s /tmp/e5_amc_preflight.csv ]; then
+    USE_AMC=1
+    rm -f /tmp/e5_amc_preflight.csv
+  else
+    echo "collect_e5: the AMC bandwidth sampler did not produce output. Exhibit 2" >&2
+    echo "            rests on these counters, so this is refused rather than" >&2
+    echo "            collected blind. Set E5_NO_AMC=1 to override." >&2
+    exit 3
+  fi
+fi
+
 check_listeners "$FG"
 for c in "${cells[@]}"; do
   bg=$(echo "$c" | cut -d'|' -f2)
@@ -152,6 +179,7 @@ log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG";
   echo "# radt         : $(python -c 'import radt,os;print(os.path.dirname(radt.__file__))' 2>/dev/null || echo n/a)"
   echo "# store        : $MLFLOW_TRACKING_URI (experiment $EXP)"
   echo "# listeners    : $WANT_LISTENERS"
+  echo "# amc_sampler  : $([ "$USE_AMC" = 1 ] && echo "on (per-engine DRAM bytes)" || echo off)"
   echo "# foreground   : $(basename "$FG")"
   echo "# runs         : $RUNS"
   echo "# load         : $(uptime | sed 's/.*load average[s]*: //')"
@@ -232,10 +260,24 @@ run_cell() {
     fi
   fi
 
+  amcpid=""
+  if [ "$USE_AMC" = 1 ]; then
+    python "$AMC" --interval 0.5 --out "$RESULTS/${fg_lab}_bandwidth.csv" \
+      > "$LOGDIR/${fg_lab}_amc.log" 2>&1 &
+    amcpid=$!
+  fi
+
   outfile=$(mktemp)
   python main.py "$FG" -p 0 -e "$EXP" --label "$fg_lab" 2>&1 | tee "$outfile"
   fg_rc=${PIPESTATUS[0]}
   secs=$(( $(date +%s) - start ))
+
+  if [ -n "$amcpid" ]; then
+    kill -TERM "$amcpid" 2>/dev/null; wait "$amcpid" 2>/dev/null
+    if [ ! -s "$RESULTS/${fg_lab}_bandwidth.csv" ]; then
+      log "  !! $fg_lab produced no bandwidth trace -- see ${fg_lab}_amc.log"
+    fi
+  fi
 
   if [ -n "$bgpid" ]; then
     # The foreground defines the measurement window; stop the background with it.
