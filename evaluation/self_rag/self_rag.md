@@ -62,3 +62,26 @@ vLLM · MIG beyond a one-line verification.
 
 This is **not** Asai's reflection-token Self-RAG, which amortizes critique into one decoding pass;
 ours issues separate LLM calls.
+
+## Known objections, and where each is answered
+
+Carried over from the three-round mock review of the earlier draft of this section. The
+framing has changed but these objections still land, and each must stay answered:
+
+- **"This is not Self-RAG."** Correct. Asai's reflection-token Self-RAG amortizes critique into
+  one decoding pass; ours issues **separate LLM calls** per role — the pattern deployed agentic
+  frameworks use (cf. CRAG, Adaptive-RAG). Say it plainly and early.
+- **"Your grader cost is an equal-size-grader artifact."** Fair. The auxiliary calls are
+  call-count-driven with same-size graders; lightweight graders, prefix caching or continuous
+  batching would shrink them. Scope the claim to the configuration measured.
+- **"You compare arms on latency without controlling quality."** Fatal if unreported, trivial if
+  reported. Quality goes beside **every** latency or throughput ranking — never a table without
+  it.
+- **"Retry-vs-correctness is selection-confounded."** It is: the graders trigger retries
+  precisely on hard queries, so a retried-vs-never-retried score gap is descriptive of
+  selection, not causal evidence of waste. Report it as descriptive.
+- **"The scheduler gap is mischaracterised."** Per-request engines treat a retry as a fresh
+  request; the invisibility lives at the **orchestration layer**, not in the engine. State it
+  that way.
+- **"n=1 workload, n=2 devices."** Answered by claim discipline: an existence proof that an
+  abstraction fails needs one counterexample, not a population. Write every claim that way.
