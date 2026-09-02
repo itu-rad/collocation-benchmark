@@ -67,7 +67,12 @@ from dataclasses import dataclass, field
 
 SCHEMA_VERSION = 1
 PERF_ATTR = "perf_start_ns"
-COUNT_TAG = "choreo.spans_emitted"
+# Working-title namespace; see utils.trace_span.NAMESPACE. Readers accept BOTH
+# the current spelling and any historical one, because this string is already
+# written into every trace collected so far -- a rename must not orphan data.
+_NAMESPACES = ("choreo",)
+COUNT_TAG = f"{_NAMESPACES[0]}.spans_emitted"
+COUNT_TAGS = tuple(f"{n}.spans_emitted" for n in _NAMESPACES)
 
 
 class IncompleteTrace(RuntimeError):
@@ -236,7 +241,8 @@ def emitted_from_csv(csv_path):
         with open(csv_path, "r", encoding="utf-8") as f:
             for line in f:
                 parts = [p.strip() for p in line.split(",")]
-                if len(parts) >= 5 and parts[1:4] == ["choreo", "spans", "emitted"]:
+                if (len(parts) >= 5 and parts[2:4] == ["spans", "emitted"]
+                        and parts[1] in _NAMESPACES):
                     return int(parts[4])
     except (OSError, ValueError):
         return None
@@ -344,5 +350,6 @@ def read_run(run_id, tracking_uri=None, dest_dir=None, strict=True):
         mlflow.set_tracking_uri(tracking_uri)
     client = mlflow.MlflowClient()
     local = client.download_artifacts(run_id, "radt-trace", dest_dir)
-    tag = client.get_run(run_id).data.tags.get(COUNT_TAG)
+    tags = client.get_run(run_id).data.tags
+    tag = next((tags[t] for t in COUNT_TAGS if t in tags), None)
     return read_dir(local, emitted=int(tag) if tag else None, strict=strict)

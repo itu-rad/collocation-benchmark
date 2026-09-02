@@ -1,8 +1,8 @@
-# E2 — the cost of decomposition: EfficientNetV2 monolith vs Choreo
+# E2 — the cost of decomposition: EfficientNetV2 monolith vs the framework
 
 **Question.** Empty stages being cheap (the NoOp microbenchmark, `../framework_overhead/`)
-does not prove that wrapping a *real* workload in Choreo's graph/queue/thread structure is
-cheap. Does expressing an EfficientNetV2 Imagenette fine-tune as a Choreo pipeline cost
+does not prove that wrapping a *real* workload in the framework's graph/queue/thread structure is
+cheap. Does expressing an EfficientNetV2 Imagenette fine-tune as a framework pipeline cost
 throughput against a hand-written, monolithic PyTorch implementation — and where does the
 cost land? This is the real-workload counterpart to E1, and the one measured against an
 external baseline rather than against the framework's own configurations.
@@ -20,7 +20,7 @@ read out of the same YAML and handed to both sides, so the only difference is th
 | configuration | what it is | how |
 |---|---|---|
 | `monolith` | a bare PyTorch loop, no framework at all, no tracing | `baseline_finetune.py --no-radt` |
-| `choreo-traced` | the same workload as a Choreo pipeline, tracing on | `main.py`, `CHOREO_PROC_TRACE=1` |
+| `choreo-traced` | the same workload as a framework pipeline, tracing on | `main.py`, `CHOREO_PROC_TRACE=1` |
 
     cost of decomposition = choreo-traced − monolith
 
@@ -28,7 +28,7 @@ Their order is rotated by repetition index so neither always absorbs the warm-up
 order systematically penalises whichever runs first, which is where an earlier cell's
 impossible reading of "the wrapper makes work faster" came from.
 
-**Why there is no third, untraced Choreo configuration.** An earlier version ran one, to
+**Why there is no third, untraced the framework configuration.** An earlier version ran one, to
 split the cost into "decomposition" and "tracing". It was dropped, and the reason is worth
 stating because a reviewer will ask. The split was measured across all nine cells on both
 machines and **the tracing term straddled zero at every one of them** — from −245 to +289 µs
@@ -66,15 +66,15 @@ apparent cost of decomposition by a term the reference can never pay. It is repo
 separately as `scheduling` and is a near-constant 58-106 µs/query on gb10 and 132-152 µs on
 m3pro, essentially independent of cell.
 
-**Choreo is measured from spans; the monolith from its own per-step log.** That asymmetry is
+**the framework is measured from spans; the monolith from its own per-step log.** That asymmetry is
 deliberate and unavoidable: the monolith runs `--no-radt` precisely so the control does not
-carry the framework's instrument, and it therefore emits no spans. The Choreo side's L_q comes
+carry the framework's instrument, and it therefore emits no spans. The framework side's L_q comes
 from the traced runs, so the reported cost is the cost of the framework **with tracing on**,
 which is how it is deployed.
 
 ## Co-headline: the query latency breakdown
 
-From the spans of the `choreo-traced` runs — which is now the only place any Choreo number
+From the spans of the `choreo-traced` runs — which is now the only place any framework number
 in E2 comes from: per-stage latency (**dataloader**, **training**)
 plus the auxiliary framework overheads (**entry**, **handoff**, **exit**, **turnaround**).
 Those four are distinct intervals and the names are load-bearing: `entry` is pipeline ->
@@ -105,9 +105,9 @@ E1's finding was that a log row is not free — 7.7 µs single-threaded, far mor
 stage-thread contention on the logging handler lock — so an experiment that measures the
 framework through its own CSV logger measures the logger too.
 
-- **Choreo writes no per-query CSV rows at all.** There are now two independent flags —
+- **the framework writes no per-query CSV rows at all.** There are now two independent flags —
   `disable_logs` on the pipeline (the per-query rows) and on each stage (the per-stage rows)
-  — and E2 sets both. Every Choreo number in this experiment therefore comes from spans.
+  — and E2 sets both. Every framework number in this experiment therefore comes from spans.
 
   This is not cosmetic. Gating only the stage rows still left `pipeline.py` emitting two
   rows per query unconditionally, and the second of those lands *between* the last stage
@@ -176,7 +176,7 @@ deploy, not a slow query.
 
 - `serialize_queries: true` means E2 measures the framework with **pipelining disabled** —
   the configuration where it can only lose.
-- Choreo runs **6 threads to the monolith's 1**. That is genuine modularity cost, and it
+- the framework runs **6 threads to the monolith's 1**. That is genuine modularity cost, and it
   should be named rather than left implicit.
 - The `-p 0` and radt-orchestrated paths install *different* logging instruments
   (`main.py` vs `utils/logger.py`). Nothing may be compared across them.
@@ -198,8 +198,8 @@ a timestamped log and summary TSV to `collect_logs/`, headed by a provenance blo
 commit and dirty flag, host, platform, python/torch/radt/mlflow versions, pinning, run and
 step counts). Figures go to `paper_assets/`.
 
-The Choreo CSVs are near-empty by design — a handful of `prepare` rows and nothing per query.
-That is the check that the CSV instrument really is off: a Choreo CSV with hundreds of rows
+The framework CSVs are near-empty by design — a handful of `prepare` rows and nothing per query.
+That is the check that the CSV instrument really is off: a framework CSV with hundreds of rows
 means a config lost one of its two `disable_logs` flags.
 
 ---
@@ -250,7 +250,7 @@ zero-copy result reproduced on a real workload, and the reason the total does no
 
 ### Cross-checked against the monolith
 
-The same quantity as a difference against the external baseline — Choreo's `L_q` from spans,
+The same quantity as a difference against the external baseline — the framework's `L_q` from spans,
 the monolith from its own per-step log, paired by repetition:
 
 | cell | m3pro cost | 95% CI | gb10 cost | 95% CI |
@@ -279,7 +279,7 @@ its own ruler. Both are published.
 
 Two cells deserve a note rather than a silent pass. **m3pro S b32 and b64** show
 +3.9 ms costs, an order above the framework term. The identity below attributes them to
-`dl − gap`, not to scaffolding: the Choreo dataloader at those batch sizes is slower than
+`dl − gap`, not to scaffolding: the framework dataloader at those batch sizes is slower than
 the monolith's own inter-step loading on this machine. Both cells' dataloader time also
 grows super-linearly in batch (52 → 140 → 313 ms across b16/b32/b64, against a 2x step),
 which is a memory-pressure effect on a 18 GB machine and not something the framework does.
@@ -334,7 +334,7 @@ above are from the post-gate collection; everything collected before it is super
 |---|---|
 | 11 repetitions per cell per configuration, zero failures, no truncated CSVs | **pass**, verified from disk on both machines (198 runs each) |
 | span count constant per run, independent of query latency | **pass** — exactly 2401 on all 99 traced runs on *both* machines |
-| Choreo CSVs carry no per-query rows | **pass** — 3 rows per file, all `prepare` |
+| the framework CSVs carry no per-query rows | **pass** — 3 rows per file, all `prepare` |
 | no negative intervals in the breakdown | **pass**, no run excluded |
 | framework term positive and tight at every cell | **pass** — 194–562 µs, intervals ±1–3 µs |
 | cross-process cost reported with CIs, negatives not clipped | **pass** — 10 of 18 cells n.s., stated as such |

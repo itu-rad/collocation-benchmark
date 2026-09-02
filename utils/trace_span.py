@@ -55,8 +55,18 @@ _TRUTHY = ("1", "true", "yes")
 #: Span-attribute key carrying ``time.perf_counter_ns()`` at span start.
 PERF_ATTR = "perf_start_ns"
 
+# The project has no settled name -- "choreo" here is a working title, and the
+# on-disk spelling is an ARBITRARY NAMESPACE, not a product name. It is defined
+# once, here, so a rename is a one-line change rather than a grep.
+#
+# It cannot be changed casually: this string is already written into every
+# collected trace (the CSV marker row) and onto every mlflow run on res17 (the
+# tag), for E1-E4. utils.span_reader accepts both this value and the historical
+# spelling when reading, so old data stays readable across a rename.
+NAMESPACE = "choreo"
+
 #: Tag / CSV marker under which the emitted-span count is reported.
-COUNT_KEY = "choreo.spans_emitted"
+COUNT_KEY = f"{NAMESPACE}.spans_emitted"
 
 # The backend drops span events on queue overflow (put_nowait) and only WARNS
 # at shutdown. We do not change that -- radt stays as it is -- so completeness
@@ -124,7 +134,7 @@ def report_span_count():
         return _final_count
     _reported = True
     n = emitted_count()
-    logging.getLogger("benchmark").info("choreo, spans, emitted, %d", n)
+    logging.getLogger("benchmark").info("%s, spans, emitted, %d", NAMESPACE, n)
     try:
         import mlflow
 
@@ -132,7 +142,7 @@ def report_span_count():
             mlflow.set_tag(COUNT_KEY, str(n))
     except Exception:
         pass          # tagging is the redundant path; the CSV row is the record
-    print(f"[choreo] spans emitted: {n}", flush=True)
+    print(f"[{NAMESPACE}] spans emitted: {n}", flush=True)
     return n
 
 

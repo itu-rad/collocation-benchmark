@@ -30,7 +30,7 @@ Already running the **bulk radt** (editable install from `/home/roba/radt-bulk`)
   replacing the old `@9dda7b8`. It pulls `mlflow>=3.15`.
 - Do **not** use the older radt (`@9dda7b8` async-tracing, or the proc-only PR fork at
   `~/Documents/work/research/radt`) — superseded.
-- Choreo switches it on with `CHOREO_PROC_TRACE=1` (set in each `collect.sh`).
+- the framework switches it on with `CHOREO_PROC_TRACE=1` (set in each `collect.sh`).
 - Carried local patch: `evaluation/radt-patches/0001-amc-bandwidth-listener.patch` (Apple AMC
   per-engine bandwidth listener — needed for E5 attribution on the M2). Apply it to the radt checkout
   before installing on macOS.
@@ -60,5 +60,5 @@ from the YAML — never trust a pre-existing env.
 ## Notes
 
 - Retired: `benchmark_macos_overhead` (old workaround env; do not use).
-- The GB10 bulk-radt checkout lives at `/home/roba/radt-bulk`; the Choreo repo on GB10 is
+- The GB10 bulk-radt checkout lives at `/home/roba/radt-bulk`; the the repo on GB10 is
   `/home/roba/collocation-benchmark`.

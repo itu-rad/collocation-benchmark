@@ -1,4 +1,4 @@
-# Self-RAG — What Choreo Surfaces About Agentic-RAG Cost and Control Flow
+# Self-RAG — What the framework Surfaces About Agentic-RAG Cost and Control Flow
 
 > **E4/E5 FRAMING SUPERSEDED (2026-09-02).** This document predates the agreed §5 case-study
 > plan. Where it describes E4 as a "prefill/decode flip" or E5 as an indexer study, it is stale:
@@ -9,7 +9,7 @@
 > `EXPERIMENTS.md` (E4/E5 sections). Everything else in this file still applies.
 
 
-*Choreo evaluation. All numbers below are from the **strengthened-retriever re-run** (2026-07-23):
+*the framework evaluation. All numbers below are from the **strengthened-retriever re-run** (2026-07-23):
 retriever = `intfloat/e5-base-v2` (MLPerf `e2e-rag`'s embedder) at top_k=5, replacing ChromaDB's weak
 default (`all-MiniLM-L6-v2`, top_k=3) which had capped accuracy by mis-ranking supporting passages
 (see §R). Accuracy is scored three ways — exact-match and token-F1 (project scorer, `_best_answer`)
@@ -34,7 +34,7 @@ across runs, so R=1 quality is exact. MiniLM-retriever baseline preserved in `_b
 
 **Framing.** MLPerf recently standardized this workload (`e2e-rag`: iterative multi-hop retrieval +
 LLM grading/decomposition), but benchmarks it **at the OpenAI-API boundary** (the LLM behind a
-vLLM/OpenRouter endpoint), so its unit is request→response. Choreo runs the same structure
+vLLM/OpenRouter endpoint), so its unit is request→response. the framework runs the same structure
 **in-process** and dissects it per-stage (prefill/decode at `first_token`) and per-attempt (the retry
 trajectory). Everything below is what that dissection surfaces beneath the API boundary — stated as
 tool capability, never as a critique of a benchmark that is correctly backend-agnostic.
@@ -44,7 +44,7 @@ tool capability, never as a critique of a benchmark that is correctly backend-ag
 ## §0 Baseline — are the arms comparable, and how do they perform?
 
 Before any per-stage number means anything, the arms must be **quality-comparable** and their
-**end-to-end** cost established. Choreo gives all of this from the same runs (accuracy via the scorer;
+**end-to-end** cost established. the framework gives all of this from the same runs (accuracy via the scorer;
 latency/throughput from the per-query trace).
 
 ### Accuracy — and why exact-match alone is the wrong instrument here
@@ -97,7 +97,7 @@ quality-equivalent systems — which is the only footing on which a cost compari
 - **The performance winner is now `monolith_4b`, not `decomposed`** — at equal quality it has the lowest
   latency/highest throughput on 3 of 4 cells. With a *realistic* retriever (top_k=5, vs the old weak
   top_k=3), decomposition re-encodes 5 documents through each of its 3 roles, and that prefill cost
-  erased the latency edge it showed under the weak retriever. **This is a case of Choreo's own
+  erased the latency edge it showed under the weak retriever. **This is a case of the framework's own
   measurement overturning a conclusion once the confound (a toy retriever) was removed** — the kind of
   correction the per-stage view makes visible.
 - **`decomposed` still wins one thing on GB10: the multihop tail** (p90 4.2 s vs 7.1–10.4 s) — its short,
@@ -111,10 +111,10 @@ quality-equivalent systems — which is the only footing on which a cost compari
 
 ---
 
-## §R — The accuracy ceiling is *retrieval*, not the generator (and Choreo localizes it)
+## §R — The accuracy ceiling is *retrieval*, not the generator (and the framework localizes it)
 
-### 1) What Choreo offers
-Choreo records the **retriever stage's output separately** from the LLM stage. So for every question it
+### 1) What the framework offers
+the framework records the **retriever stage's output separately** from the LLM stage. So for every question it
 can attribute a wrong answer to **retrieval** (the gold passage was not in what was retrieved) vs
 **generation** (it was retrieved, the model still missed) — a decomposition a black-box QA score, or an
 API-boundary RAG harness, structurally cannot make.
@@ -139,15 +139,15 @@ ceiling moved up, but the arms stayed comparable and the 9B still did not pull a
 questions.** So "capacity doesn't help here" holds at *two* retriever strengths — it is a property of
 the task, not an artifact of a toy retriever. And even the residual misses are mostly *ranking* failures
 (the gold passage is in the corpus, just not top-k), which points the optimization at the **retriever**
-(a reranker / stronger embedder), not a bigger LLM. That is the actionable, per-stage conclusion Choreo
+(a reranker / stronger embedder), not a bigger LLM. That is the actionable, per-stage conclusion the framework
 delivers and a monolithic accuracy number cannot.
 
 ---
 
 ## Finding 1 — The compute in RAG is context re-encoding (prefill), most of it redundant
 
-### 1) What Choreo offers
-Because Choreo executes the pipeline as a **stage graph of independent threads**, we express the same
+### 1) What the framework offers
+Because the framework executes the pipeline as a **stage graph of independent threads**, we express the same
 workload as four arms **by editing a YAML topology, not the code**. Every LLM stage is traced with a
 **prefill/decode split at `first_token`**, giving per-role prefill time, decode time, and output-token
 count automatically. And the **graph knows the grader/generator roles are siblings of one retrieval
@@ -190,16 +190,16 @@ that a property of the model or of the topology?"
   the report's open B.2: the decomposition gain does not survive prefix caching — the cache can't see
   the redundancy.)*
 
-*Choreo capabilities used: graph modularity (sibling attribution), per-stage prefill/decode tracing,
+*the framework capabilities used: graph modularity (sibling attribution), per-stage prefill/decode tracing,
 in-process execution, residency (the shared-model arm).*
 
 ---
 
 ## Finding 2 — A 4B role-graph matches a 9B model at a fraction of the tokens — but "fewer tokens" ≠ "less energy"
 
-### 1) What Choreo offers
+### 1) What the framework offers
 The one-line topology switch gives `monolith` (9B), `monolith_4b` (4B) and `decomposed` (4B) at matched
-work, and Choreo records — for free on every run — per-stage **generated tokens** (decode work), the
+work, and the framework records — for free on every run — per-stage **generated tokens** (decode work), the
 **prefill/decode split** (where the compute is), and, via the radt power listeners (`nvidia-smi` on
 GB10, `macmon` on M2), **actual power/energy**. Joined to the answer scorer, these give *cost per
 correct answer* in three currencies (tokens, wall-seconds, joules), decomposed into prefill vs decode
@@ -253,16 +253,16 @@ judge-defined correct):
 macmon total-SoC — the two are different bases, comparable only within a device; judge run-to-run noise
 ≈±1–2/120 propagates ~1–2% into per-correct figures — small vs the effects.)*
 
-*Choreo capabilities used: graph modularity (matched arms), per-stage token + prefill/decode tracing,
+*the framework capabilities used: graph modularity (matched arms), per-stage token + prefill/decode tracing,
 power listeners.*
 
 ---
 
 ## Finding 3 — The retry loop is a retrieval-refusal mechanism, not answer self-correction
 
-### 1) What Choreo offers
+### 1) What the framework offers
 The retry loop is **data-dependent control flow** — a cyclic edge firing only when a grader rejects an
-attempt. Choreo executes and traces it **natively, per attempt**, recording for a single query the
+attempt. the framework executes and traces it **natively, per attempt**, recording for a single query the
 sequence of attempts, which grader fired, and the answer at each. A per-request LLM server (Orca/vLLM)
 sees each retry as an unrelated fresh request; a stock profiler cannot express same-query evolution
 across attempts.
@@ -296,14 +296,14 @@ do across attempts, and is its eventual success predictable before the budget is
   *raised* cuda-factoid rescue from ~22% under the old MiniLM run to ~70% — better retrieval makes the
   retry loop more, not less, worthwhile there.)*
 
-*Choreo capabilities used: native data-dependent control-flow tracing, graph modularity, per-stage
+*the framework capabilities used: native data-dependent control-flow tracing, graph modularity, per-stage
 tracing.*
 
 ---
 
-## Synthesis — three signals a request→response harness reads, each corrected by Choreo
+## Synthesis — three signals a request→response harness reads, each corrected by the framework
 
-| Signal it sees | What it implies | What Choreo surfaces |
+| Signal it sees | What it implies | What the framework surfaces |
 |---|---|---|
 | output-token count | more tokens = more cost | prefill dominates — a 4-tok grader is 80–96% of the generator; 62% of prefill is redundant re-encode (F1) |
 | model size | scale up to buy accuracy | quality is **retrieval-bound**: a 2.25×-larger 9B ties the 4B even when retrieval hits, and stays tied after the retriever is strengthened (§R). A 4B role-graph matches the 9B at 2.3–5.7× fewer tokens/correct and 1.2–1.8× less energy (F2) |
@@ -312,11 +312,11 @@ tracing.*
 
 **Through-line:** the internal cost and control structure of an agentic-RAG pipeline is exactly what a
 request→response benchmark — including MLPerf's own `e2e-rag` at its API boundary — cannot see, and
-Choreo's in-process, per-stage, per-attempt lens is what surfaces it.
+the framework's in-process, per-stage, per-attempt lens is what surfaces it.
 
 **Open items:** (i) F3's *dynamic* early-exit discriminator (answer stationarity across attempts) is
 proposed but not built/measured — the per-attempt data to do it is now joined (question-text match), so
-this is buildable; (ii) F1's ~62% hoist saving is a *ceiling* Choreo prices, not an implemented
+this is buildable; (ii) F1's ~62% hoist saving is a *ceiling* the framework prices, not an implemented
 optimization (and "lossless" assumes position-canonical / PromptCache-style reuse under RoPE);
 (iii) prior art to out-distance, not restate:
 PromptCache / vLLM APC / RadixAttention (F1), FrugalGPT / cost-per-accuracy (F2), CRAG / Adaptive-RAG /

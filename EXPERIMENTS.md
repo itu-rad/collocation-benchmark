@@ -1,4 +1,4 @@
-# Choreo — Experiment Definitions (source of truth)
+# Experiment Definitions (source of truth)
 
 **Authoritative, current description of the paper's experiments.** Where this disagrees with
 any older draft or status snapshot, **this document
@@ -20,7 +20,7 @@ prefill/decode split). A 6th, the **capacity/size sweep, is a stretch goal** (on
 ---
 
 ## E1 — NoOp / framework overhead
-**Question.** What does Choreo's machinery cost, independent of any real work? Bounds per-stage
+**Question.** What does the framework's machinery cost, independent of any real work? Bounds per-stage
 dispatch and the payload-passing model, so later overhead is attributable to the workload.
 **Shows.** (1) per-stage dispatch small + **flat** vs depth (11.8 µs/stage on m2pro, 15.2 on gb10);
 (2) context passing **zero-copy** by reference — flat at ~16 µs/stage from 0 to 10 MiB (0.033 µs/MB)
@@ -40,14 +40,14 @@ verified by an interleaved same-session A/B on pinned GB10 (paired delta −1.55
 ## E2 — Modularity overhead (real workload, model × batch sweep)
 **Question.** When the wrapped stage does *real* GPU work, is the decomposition overhead negligible,
 and how does it behave as the work scales (model S/M/L, batch 1→64)?
-**Shows.** EfficientNet fine-tune, monolith vs the same work as a Choreo pipeline: core wrapper
+**Shows.** EfficientNet fine-tune, monolith vs the same work as a framework pipeline: core wrapper
 ≈ **+49 µs/step (+0.13%)** at the canonical point; across the sweep the **relative** overhead (% of
 step) shrinks toward zero as the step grows while the **absolute** cost (µs/step) stays ~fixed — a
 small O(1) tax, not a scaling one. Measured with the *correct* (bulk+proc) tracing, the tracing
 layer is also negligible. (The old "+4.5% in-process tracing" was a bug in the instrument, not a
 property of the framework — see Infrastructure; we do not report it.)
 **Artifacts.** `evaluation/overheads/modularity_overhead/` — `configs/torchvision_training.yml`
-+ `gen_configs.py` (the Choreo side) and `baseline_finetune.py` (the monolith); `scale_sweep.yml`;
++ `gen_configs.py` (the framework side) and `baseline_finetune.py` (the monolith); `scale_sweep.yml`;
 `collect_e2.sh` (three configurations: monolith / choreo / choreo-traced) + `analyze_e2.py`;
 `modularity_overhead.md`.
 **Status/gap.** Re-collecting on both machines (2026-08-27) against the current tracing, with time
@@ -55,15 +55,15 @@ per query as the metric of record — the earlier in-step metric sat below its o
 
 ## E3 — MLPerf / 3D-UNet: reproduction + closing the measurement gap
 **Question.** Two prongs: (1) **reproduce MLPerf's setup on our hardware** — run MLPerf's *own
-reference harness* and Choreo's port of the same 3D-UNet/KiTS19 workload **both on GB10**, and show
-Choreo matches the reference on **accuracy (Dice) AND performance (latency/throughput) on the same
-device**. Because both run on GB10, performance parity is a clean apples-to-apples check that Choreo
+reference harness* and our port of the same 3D-UNet/KiTS19 workload **both on GB10**, and show
+our implementation matches the reference on **accuracy (Dice) AND performance (latency/throughput) on the same
+device**. Because both run on GB10, performance parity is a clean apples-to-apples check that the framework
 faithfully reproduces the MLPerf experimental setup (not a bespoke harness). **GB10 only** — a
 same-device faithfulness check, not a cross-device claim. (2) **the measurement boundary misleads
 online** (both devices) — MLPerf preprocesses the
 dataset **offline** (its QSL preload) and times only inference. That is valid for offline batch, but
 in **online serving** a request arrives with its own raw data, so there is **nothing to preload** and
-the preprocessing/loading sits **unavoidably on the per-request critical path**. Choreo measures true
+the preprocessing/loading sits **unavoidably on the per-request critical path**. the framework measures true
 end-to-end *per request* and reveals the preprocessing/loading portion MLPerf hides: it is
 **variable across samples** and a **larger fraction on the faster device** (Amdahl: GB10's fast GPU
 shrinks the inference denominator so preprocessing dominates more — inference ~95% of end-to-end on
@@ -184,7 +184,7 @@ child process + one gzipped span artifact per run: negligible workload overhead,
 radt versions; **all experiments are recollected with the new tracing.** So E1/E2's "tracing overhead"
 is simply "negligible," measured correctly.
 
-- Choreo proc wiring: `utils/trace_span.py` + `main.py` hooks + span sites (uncommitted on
+- framework proc wiring: `utils/trace_span.py` + `main.py` hooks + span sites (uncommitted on
   `proto/proc-owned-tracing`). radt: **bulk** branch `itu-rad/radt @ feat/proc-owned-bulk-tracing`
   (to be tagged/pinned; supersedes the earlier proc-only PR fork). Runtime switch:
   `CHOREO_PROC_TRACE=1`. res17 experiment: **138** (real); **142** was throwaway.

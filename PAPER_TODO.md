@@ -1,6 +1,6 @@
 # Path to a Publishable Paper — Master Checklist
 
-Target: a submission-ready systems paper on **\sysname{} (Choreo)** —
+Target: a submission-ready systems paper on **the framework** —
 a collocation-aware, end-to-end, graph-structured ML-pipeline benchmarking
 framework for unified-memory devices (Apple M2 Pro + NVIDIA DGX Spark GB10).
 
@@ -21,9 +21,9 @@ conditional on collection*) **and the full repo/code/data audit of 2026-07-12**
 > - **E1 — CLOSED.** Two configurations (`uninstrumented`, `+ tracing`), both machines,
 >   figures regenerated. See `evaluation/overheads/framework_overhead/`.
 > - **E2 — CLOSED** (2026-08-31 collection, 198 runs per machine, zero failures). It now
->   runs **two** configurations, not three: the untraced Choreo arm was dropped because the
+>   runs **two** configurations, not three: the untraced framework arm was dropped because the
 >   cost of tracing straddled zero at every cell, and because gating the per-query CSV write
->   left that arm with no instrument at all. Every Choreo number comes from spans. Headline:
+>   left that arm with no instrument at all. Every framework number comes from spans. Headline:
 >   the framework costs **194–562 µs per query**, fixed rather than proportional, so its
 >   share falls 0.66% → 0.03% (m3pro) and 1.92% → 0.10% (gb10) across the batch sweep. The
 >   cross-process monolith comparison is published alongside and is **n.s. at 10 of 18
@@ -32,7 +32,7 @@ conditional on collection*) **and the full repo/code/data audit of 2026-07-12**
 >   The July finding below about "the E2 mps tracing-off arm is contaminated" is moot: that
 >   arm no longer exists.
 > - **E3 — REWORKED, collecting.** Cut to the E1/E2 shape (one launch script, one analyzer,
->   spans only, no CSV). **Prong 1 accuracy is closed on gb10**: Choreo 0.86329 mean DICE
+>   spans only, no CSV). **Prong 1 accuracy is closed on gb10**: the framework 0.86329 mean DICE
 >   against the reference's 0.86168, clearing MLPerf's 0.85308 gate. Outstanding: a **VALID**
 >   MLPerf reference *performance* run (the one on disk announces `Result is : INVALID`), and
 >   a **clean** gb10 timed pass — the 2026-09-01 one was contaminated by a concurrent
@@ -210,8 +210,8 @@ optional 27B ceiling rung, Stage B intensity sweep (core to the staged design).
 
 ## 1. Author decisions — RESOLVED (updated 2026-07-12)
 
-- [x] **Framework name → Choreo.** Keep `\sysname{}=Choreo`, sweep prose
-  McBenchface→Choreo, fix methodology Table 2. → §6.2
+- [x] **Framework name → the framework.** Keep `\sysname{}=the framework`, sweep prose
+  the framework→the framework, fix methodology Table 2. → §6.2
 - [x] **Setup text → a "third edition" (final)** merging `methodology.tex` (richer
   DUT/metrics prose) + `experimental_setup.tex` (7-experiment structure,
   collect-vs-report). Produce it → §5.1.
@@ -473,7 +473,7 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
   drivers now hard-abort on env mismatch, so this can't silently recur).
   Treat the current numbers as preliminary until then.
 - [ ] `[?]` Small quirk to check: fresh baseline arms logged ~1450 steps/run vs
-  Choreo's 900 post-warmup (baseline_finetune may ignore --max-batches and run
+  the framework's 900 post-warmup (baseline_finetune may ignore --max-batches and run
   the full epoch) — medians are steady-state so the verdict stands, but fix for
   the "identical N" claim before the GB10 cuda half.
 - [ ] **[GB10, Ties] Re-run the cuda half** in the main collection pass (prior numbers:
@@ -567,12 +567,12 @@ both serial/concurrent to measure the concurrency knob's latency delta.
 
 ### 3.5 E5 — MLPerf reduction + "isolated inference misleads" — **P0 [M2] + [GB10]**
 > **E5 has TWO jobs (framing locked 2026-07-13):** (1) *positioning* — MLPerf's scenarios
-> are recoverable as Choreo scheduler configs (the superset); (2) *substantive critique* —
+> are recoverable as framework scheduler configs (the superset); (2) *substantive critique* —
 > MLPerf's **isolated single-model** number can **mislead** as a proxy for real
 > performance, because it excludes the surrounding pipeline (retrieval, pre/post-process,
 > data movement, cross-stage handoff). The evidence is a **contrast**, not a scenario
 > matrix: same ResNet-50, measured the MLPerf way (Offline, model in isolation → throughput
-> X) vs the Choreo way (full end-to-end pipeline with per-stage occupancy → effective
+> X) vs the framework way (full end-to-end pipeline with per-stage occupancy → effective
 > Y, inference is only a fraction). E2's breakdown already supports this (dataloader ~34 ms
 > vs model ~39 ms). **Keep E5's core the end-to-end / whole-pipeline critique so it stays
 > distinct from E6 (inter-pipeline collocation) — E6 is the amplifier, not a duplicate.**
@@ -583,7 +583,7 @@ both serial/concurrent to measure the concurrency knob's latency delta.
   (`SaturatingOfflineScheduler`). The committed resnet config is the Server-like Poisson
   cell; add the SingleStream + Offline `loadgen` variants.
 - [ ] **Isolated-vs-end-to-end contrast run:** ResNet-50 Offline in isolation (throughput
-  X) vs the same model in a full Choreo pipeline with per-stage occupancy (effective Y).
+  X) vs the same model in a full framework pipeline with per-stage occupancy (effective Y).
 - [ ] Enforce the `queue_depth` never-blocks rule (§2.6) so the arrival-trace
   verification is honest (Offline: depth ≥ total samples).
 - [ ] Collect each scenario on both DUTs (R=5) and confirm the arrival process matches the
@@ -658,7 +658,7 @@ both serial/concurrent to measure the concurrency knob's latency delta.
   it); adopt *"contention on unified-memory SoCs is engine-specific, not a fungible
   bytes/s tax — and the framework's per-engine attribution + phase split is what tells the
   regimes apart."* Everything downstream (intro/abstract/§4) follows from this.
-- [ ] Framing rule (unchanged): Choreo **measures and attributes** interference, never
+- [ ] Framing rule (unchanged): the framework **measures and attributes** interference, never
   **manages** it (no cross-pipeline resource control).
 
 ### 3.7 E7 — Capacity/size sweep — **MERGED INTO E4 (Self-RAG)** — **P1**
@@ -858,7 +858,7 @@ sensitivity column (§3.4); stale result-doc regeneration (§4.1); artifact land
 
 ## Appendix B — Status snapshot (post-audit, 2026-07-12)
 
-- **Decisions locked:** name = **Choreo**; setup text = third edition; scope = E1–E5
+- **Decisions locked:** name = **the framework**; setup text = third edition; scope = E1–E5
   core, **E6 minimal NON-NEGOTIABLE**, E7→merged into E4; **GB10 = full re-collection
   by Ties** (old "data exists, just analyze" superseded pending §1.5); venue = ASPLOS
   stretch with MLSys/EuroSys/ATC/ISPASS-IISWC ladder.

@@ -67,7 +67,7 @@ this workload; not required for the overhead/decomposition timing study.
 - DONE (2026-07-20, END-TO-END VALIDATED ON MPS / M2 Pro): `nibabel` installed;
   model `3dunet_kits19_pytorch.ptc` fetched from Zenodo (124 MB); cases
   case_00000 + case_00003 staged (imaging from HF, segmentation from the repo);
-  `unet3d_kits19_mlx.yml` ran through Choreo (loader→preprocess→inference→capture)
+  `unet3d_kits19_mlx.yml` ran through the framework (loader→preprocess→inference→capture)
   online to res17 in 69.5 s for case_00000. Direct verification on case_00000:
   * MPS 3D-conv WORKS — 128³ forward pass 2.4 s on Metal (vs 21 s CPU), numerical
     parity to CPU (max|Δ| 4e-5);

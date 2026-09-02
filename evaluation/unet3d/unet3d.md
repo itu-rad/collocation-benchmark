@@ -2,14 +2,14 @@
 
 **Question.** Two prongs, and the order is the point.
 
-1. **Parity, on GB10 only.** Run MLPerf's *own reference harness* and Choreo's port of the
-   same 3D-UNet/KiTS19 workload on the same machine, and show Choreo matches it on
+1. **Parity, on GB10 only.** Run MLPerf's *own reference harness* and our port of the
+   same 3D-UNet/KiTS19 workload on the same machine, and show our implementation matches it on
    **accuracy (DICE) and performance**. This is a same-device faithfulness check. It earns
    the right to criticise the standard; without it, prong 2 reads as a strawman.
 2. **The measurement boundary, on both machines.** MLPerf preprocesses the dataset
    **offline** — its QSL preloads `.pkl` volumes — and times only inference. That is valid
    for offline batch. Online, a request arrives with its own raw volume: there is nothing to
-   prefetch, so load and preprocess sit unavoidably on the per-request critical path. Choreo
+   prefetch, so load and preprocess sit unavoidably on the per-request critical path. the framework
    times the whole graph and reports the share MLPerf reports as zero.
 
 **Status.** Closed. Reworked to the E1/E2 shape 2026-09-01, collected 2026-09-02 on both
@@ -74,7 +74,7 @@ E3's claim is the *ratio* of CPU preprocessing to GPU inference. Pinning to one 
 untouched. That inflates the preprocessing share, which is the number we are arguing is
 larger than MLPerf admits. **Pinning would manufacture our own result.**
 
-Choreo and the MLPerf reference must therefore see identical CPU conditions, and that
+the framework and the MLPerf reference must therefore see identical CPU conditions, and that
 condition is unpinned. `collect_e3.sh` refuses a `PIN` rather than honouring it. A reader
 comparing E2 and E3 will notice the inconsistency; it is explained here so they find the
 answer before they have to ask.
@@ -229,10 +229,10 @@ satisfied.
 | harness | cases | mean DICE | kidney | tumor |
 |---|--:|--:|--:|--:|
 | MLPerf reference | 43 | 0.86168 | 0.9347 | 0.7887 |
-| Choreo, gb10 | 42 | **0.86329** | 0.93418 | 0.79241 |
-| Choreo, m3pro | 42 | **0.86330** | 0.93418 | 0.79242 |
+| the framework, gb10 | 42 | **0.86329** | 0.93418 | 0.79241 |
+| the framework, m3pro | 42 | **0.86330** | 0.93418 | 0.79242 |
 
-MLPerf's gate is 99% of 0.86170 = **0.85308**; Choreo clears it. The two devices agree to
+MLPerf's gate is 99% of 0.86170 = **0.85308**; the framework clears it. The two devices agree to
 five decimal places and differ by at most 7e-5 per case, so the cross-device comparison in
 prong 2 is not confounded by numerics.
 
@@ -241,7 +241,7 @@ prong 2 is not confounded by numerics.
 | harness | median (ms) | mean (ms) | p90 (ms) |
 |---|--:|--:|--:|
 | MLPerf reference | 5904 | 7669 | 14581 |
-| Choreo (inference stage) | 5899 | 7923 | 14558 |
+| the framework (inference stage) | 5899 | 7923 | 14558 |
 
 **Median inference latency differs by −0.1%**, p90 by −0.2%. Matched per case over all 42
 cases both harnesses ran: median **−0.2%**, mean +7.0%, range −0.4% to +82.0% — and after
@@ -416,8 +416,8 @@ accuracy**:
 | harness | cases | mean DICE | kidney | tumor |
 |---|--:|--:|--:|--:|
 | MLPerf reference | 43 | 0.86168 | 0.9347 | 0.7887 |
-| Choreo, gb10 | 42 | **0.86329** | 0.93418 | 0.79241 |
-| Choreo, m3pro | 42 | **0.86330** | 0.93418 | 0.79242 |
+| the framework, gb10 | 42 | **0.86329** | 0.93418 | 0.79241 |
+| the framework, m3pro | 42 | **0.86330** | 0.93418 | 0.79242 |
 
 Kidney agrees to 0.0005 and tumor to 0.004; the mean clears MLPerf's gate (0.85308) with
 room. That agreement is also what validates `KiTS19DiceScore` as the reference formula — an

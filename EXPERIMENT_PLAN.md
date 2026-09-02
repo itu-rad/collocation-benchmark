@@ -1,4 +1,4 @@
-# Choreo — Experiment Execution Plan (path to full collection)
+# Experiment Execution Plan (path to full collection)
 
 > **E4/E5 FRAMING SUPERSEDED (2026-09-02).** This document predates the agreed §5 case-study
 > plan. Where it describes E4 as a "prefill/decode flip" or E5 as an indexer study, it is stale:
@@ -125,7 +125,7 @@ counters and made the centerpiece.
 1. Vendor/pin **bulk radt** (`itu-rad/radt @ feat/proc-owned-bulk-tracing`) at a fixed tag; install
    into **both** envs (`benchmark_macos`, `benchmark_nvidia`), replacing `@9dda7b8`; update
    `environments/{macos,nvidia}.yaml` + the pin the drivers assert.
-2. **Commit** the Choreo proc wiring (`utils/trace_span.py`, `main.py` hooks, 12 span sites) on the
+2. **Commit** the framework proc wiring (`utils/trace_span.py`, `main.py` hooks, 12 span sites) on the
    collection branch (else a dirty tree blocks nothing now, but keeps churning).
 3. Fix the **listener/SIGTERM** interaction (add a main-PID guard in `_on_sigterm` so forked listeners
    don't try to join the trace-exporter child).
@@ -238,7 +238,7 @@ counters and made the centerpiece.
 - **In flight.** Collection on both machines, started 2026-08-27.
 - **Metric of record: TIME PER QUERY** — start-to-start between consecutive queries, i.e.
   1/throughput, covering the whole cycle including data loading. Anchor-invariant in steady state,
-  which is what makes the monolith and Choreo comparable although they emit different markers. It
+  which is what makes the monolith and the framework comparable although they emit different markers. It
   replaces the in-step training-marker comparison, which excluded by construction the between-step
   interval where the framework's cost actually lands, and so measured a near-zero difference
   against ±600 µs of run-to-run noise.
@@ -251,7 +251,7 @@ counters and made the centerpiece.
   system warm-up → 10 usable**; the paired statistic bootstraps over runs, so repetitions buy more
   than steps. *Fixed:* batch {1,2,4,8,16,32,64} at EfficientNetV2-S, plus M and L at b8 (ConvNeXt-L
   dropped); fine-tune head; **`num_workers=0`** — a control (not a tuned knob) that removes the
-  concurrent-prefetch data path, applied identically on both sides. Both Choreo configurations run
+  concurrent-prefetch data path, applied identically on both sides. Both the framework configurations run
   `disable_logs: true` so no synchronous write+flush sits inside the measured interval on one side
   only.
 - **Data points.** `{monolith, choreo, choreo-traced}` × 9 cells × `{m2pro, gb10}` × **R=11**.
@@ -263,7 +263,7 @@ counters and made the centerpiece.
   python evaluation/overheads/modularity_overhead/analyze_e2.py
   ```
 - **Caveats to state in the paper.** `serialize_queries: true` means E2 measures the framework with
-  pipelining disabled — the configuration where it can only lose. Choreo runs 6 threads to the
+  pipelining disabled — the configuration where it can only lose. the framework runs 6 threads to the
   monolith's 1; that is genuine modularity cost and should be named rather than left implicit.
 
 ### E2 — OPEN (deferred, not blocking)
@@ -282,7 +282,7 @@ counters and made the centerpiece.
 
 ## E3 — MLPerf / 3D-UNet
 - **Thesis.** (1) **match MLPerf's own reference harness on GB10** — accuracy (Dice) AND performance
-  (latency/throughput), *same device* → clean parity, proves Choreo reproduces the MLPerf setup
+  (latency/throughput), *same device* → clean parity, proves the framework reproduces the MLPerf setup
   (GB10 only). (2) its **offline-preload boundary misleads online** (both devices): preprocessing/
   loading is on the per-request critical path (nothing to prefetch for a fresh request), a real,
   sample-variable, device-dependent share of latency. **Not** a hiding story.
@@ -290,26 +290,26 @@ counters and made the centerpiece.
   devices; `analyze_preprocessing.py`, `FINDING_A.md`; MPS-validated. (`run_pipelined.py` is the old
   hiding analysis — out of scope.)
 - **Gap.** (a) **run the MLPerf reference harness on GB10** for the ground-truth numbers + build the
-  Choreo-vs-reference **parity** (accuracy + performance, same device); (b) R=5; (c) new tracing;
-  (d) bring the Choreo run onto `main.py + collect.sh` (the 42 cases are iterated by the pipeline's
+  the framework-vs-reference **parity** (accuracy + performance, same device); (b) R=5; (c) new tracing;
+  (d) bring the framework run onto `main.py + collect.sh` (the 42 cases are iterated by the pipeline's
   case-loader, so `python main.py <unet3d_cfg>` collects them all).
 - **Code TODOs.** stand up the **MLPerf reference harness on GB10** (`scratchpad/mlperf-inference`) and
-  record its accuracy + latency/throughput; a **Dice scorer** for the Choreo outputs; `collect.sh`;
-  `analyze.py` = the **parity table** (Choreo vs reference on GB10 — accuracy + performance) + the
+  record its accuracy + latency/throughput; a **Dice scorer** for the framework outputs; `collect.sh`;
+  `analyze.py` = the **parity table** (the framework vs reference on GB10 — accuracy + performance) + the
   **preprocessing/loading fraction of per-request latency** (per sample, per device).
 - **Hyperparameters (pilot-tune).** R; the **serving scenario** — SingleStream / online, one request
   at a time (the regime where preprocessing is exposed on the critical path; NOT offline batch);
   batch = 1. *Fixed by MLPerf (must match to reproduce):* ROI 128³ + 50% sliding-window overlap,
   preprocessing (resample [1.6,1.2,1.2], HU clip [-79,304], normalization), the 42-case set, the Dice
   accuracy gate.
-- **Data points.** *Prong 1 (parity):* MLPerf reference + Choreo, **GB10 only**, R=5. *Prong 2
-  (boundary):* Choreo 3D-UNet 42 cases × `{mps, cuda}` × R=5. (ResNet scenario-reduction: **cut**.)
+- **Data points.** *Prong 1 (parity):* MLPerf reference + the framework, **GB10 only**, R=5. *Prong 2
+  (boundary):* the framework 3D-UNet 42 cases × `{mps, cuda}` × R=5. (ResNet scenario-reduction: **cut**.)
 - **Commands.**
   ```
-  # prong 1 (GB10): run the MLPerf reference harness for ground-truth, then Choreo on the same box
+  # prong 1 (GB10): run the MLPerf reference harness for ground-truth, then the framework on the same box
   ( cd scratchpad/mlperf-inference/... && <mlperf reference run on GB10> )   # accuracy + perf
-  bash   evaluation/unet3d/collect.sh cuda        # Choreo, GB10
-  bash   evaluation/unet3d/collect.sh mps         # Choreo, M2 (prong 2 cross-device only)
+  bash   evaluation/unet3d/collect.sh cuda        # the framework, GB10
+  bash   evaluation/unet3d/collect.sh mps         # the framework, M2 (prong 2 cross-device only)
   python evaluation/unet3d/analyze.py results/{mps,cuda}   # parity (GB10) + preprocessing-fraction of latency
   ```
 
@@ -322,7 +322,7 @@ counters and made the centerpiece.
   MLPerf cases + `preprocessed_files.pkl` present, model present. Prior GB10 logs were **Server**
   scenario (from the old scheduling work); E3 uses **SingleStream**.
 - **Sequenced GB10 run** (`scratchpad/overnight/e3_gb10.sh`, GPU is exclusive so never overlapped):
-  MLPerf perf → MLPerf accuracy (+`accuracy_kits.py` Dice) → Choreo 42-case R=5 → Choreo stage-code
+  MLPerf perf → MLPerf accuracy (+`accuracy_kits.py` Dice) → the framework 42-case R=5 → the framework stage-code
   Dice (`run_full_experiment.py`, same code path as the pipeline stages).
 - **CAVEAT to state in the paper:** the reference run uses `min_query_count = 43` (one QSL pass)
   instead of the 1024 an official SingleStream submission requires — at ~8 s/query that would be ~3 h.
@@ -365,7 +365,7 @@ counters and made the centerpiece.
   started 15 min later). The two contended for the GPU and wrote the same log, so **their
   latency numbers are meaningless** — quarantined as `DISCARDED_contended_perf_full.log`.
 - **What is unaffected:** the bounded 43-query reference run (04:33–04:39, sole GPU user)
-  and therefore every E3 number currently reported; and the Choreo Dice values, which are
+  and therefore every E3 number currently reported; and the framework Dice values, which are
   accuracy, not timing.
 - **Still to do:** one clean compliant run (~2 h on an idle GPU) to replace the
   `INVALID`-flagged bounded reference latency. `analyze_e3.py` already prefers
@@ -550,7 +550,7 @@ gate. No separate PASS/FAIL machinery.
 ## Sequencing
 1. **P0** (tracing + harness) — gates everything.
 2. **E1, E2** — fidelity; both devices (idle M2 + quiesced GB10); the corrected overhead numbers.
-3. **E3** — MLPerf reference + Choreo on GB10 (parity, accuracy+perf) + Choreo 3D-UNet both devices
+3. **E3** — MLPerf reference + the framework on GB10 (parity, accuracy+perf) + the framework 3D-UNet both devices
    (measurement boundary), R=5; ResNet cut.
 4. **E4** — re-collect timing R=5 both devices + build the prefill/decode flip.
 5. **E5** — Phase-0 fixes → AMC calibration → staged full-R (radt-orchestrated).
@@ -558,7 +558,7 @@ gate. No separate PASS/FAIL machinery.
 
 ## Decisions (2026-08-17) — all resolved
 - **R:** E1, E2 = **R=10**; **E3, E4, E5 = R=5**. Quality cells R=1 (greedy).
-- **E3 prong 1 = same-device parity on GB10:** run MLPerf's **reference harness** + Choreo on GB10 and
+- **E3 prong 1 = same-device parity on GB10:** run MLPerf's **reference harness** + the framework on GB10 and
   match **accuracy AND performance** (same box → clean parity). Prong 2 (measurement boundary) uses
   both devices. **ResNet scenario-reduction: CUT.**
 - **E5 Phase-0 signed off:** dose ladder B=4 + **stacked STREAM (no ceiling)** + fg 0.7–0.8×; GB10
