@@ -1,0 +1,81 @@
+diff --git a/radt/radt/run/listeners/dcgmi_listener.py b/radt/radt/run/listeners/dcgmi_listener.py
+index 3cd7029..943a5f9 100644
+--- a/radt/radt/run/listeners/dcgmi_listener.py
++++ b/radt/radt/run/listeners/dcgmi_listener.py
+@@ -9,26 +9,34 @@ from multiprocessing import Process
+ 
+ DCGMI_GROUP_ID = os.getenv("RADT_DCGMI_GROUP")
+ 
+-METRIC_NAMES = [
+-    "Power Usage",
+-    "Total Energy Consumption",
+-    "PCIE TX Throughput",
+-    "PCIE RX Throughput",
+-    "GPU Utilization",
+-    "Memory Copy Utilization",
+-    "GR Engine Active",
+-    "SM Active",
+-    "SM Occupancy",
+-    "Tensor Active",
+-    "DRAM Active",
+-    "FP64 Active",
+-    "FP32 Active",
+-    "FP16 Active",
+-    "PCIE TX Bytes",
+-    "PCIE RX Bytes",
+-    "NVlink TX Bytes",
+-    "NVlink RX Bytes",
+-]
++# Map DCGM field id -> metric name, so names are derived from the fields
++# ACTUALLY requested rather than from a fixed list.
++#
++# The previous code zipped values against a flat 18-name list regardless of
++# which fallback field set was in use. The A10 set omits 1006 (FP64 Active),
++# so on that path every metric after "DRAM Active" was labelled with its
++# neighbour's name -- FP32 reported as FP64, FP16 as FP32, and so on. The
++# 18-field and 6-field sets happened to line up, which is why it went unseen.
++FIELD_NAMES = {
++    155: "Power Usage",
++    156: "Total Energy Consumption",
++    200: "PCIE TX Throughput",
++    201: "PCIE RX Throughput",
++    203: "GPU Utilization",
++    204: "Memory Copy Utilization",
++    1001: "GR Engine Active",
++    1002: "SM Active",
++    1003: "SM Occupancy",
++    1004: "Tensor Active",
++    1005: "DRAM Active",
++    1006: "FP64 Active",
++    1007: "FP32 Active",
++    1008: "FP16 Active",
++    1009: "PCIE TX Bytes",
++    1010: "PCIE RX Bytes",
++    1011: "NVlink TX Bytes",
++    1012: "NVlink RX Bytes",
++}
+ 
+ 
+ class DCGMIThread(Process):
+@@ -97,7 +105,8 @@ class DCGMIThread(Process):
+             mlflow.log_metrics(metrics)
+ 
+     def _start_dcgm(self, idx):
+-        fields = ",".join(map(str, self.dcgm_fields[idx]))
++        self._active_fields = self.dcgm_fields[idx]
++        fields = ",".join(map(str, self._active_fields))
+         self.dcgm = subprocess.Popen(
+             f"dcgmi dmon -e {fields} -g {DCGMI_GROUP_ID}".split(),
+             stdout=subprocess.PIPE,
+@@ -127,8 +136,10 @@ class DCGMIThread(Process):
+ 
+             if line[0].lower().strip() not in ["#", "id"]:
+                 m = {}
++                names = [FIELD_NAMES.get(f, f"field {f}")
++                         for f in getattr(self, "_active_fields", [])]
+                 for value, name in zip(
+-                    line[2:], METRIC_NAMES
++                    line[2:], names
+                 ):  # [2:] to get rid of gpu name
+                     if value.strip() == "N/A":
+                         value = 0

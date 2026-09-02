@@ -1,0 +1,67 @@
+diff --git a/radt/radt/run/listeners/macmon_listener.py b/radt/radt/run/listeners/macmon_listener.py
+index 19f3004..e1382a6 100644
+--- a/radt/radt/run/listeners/macmon_listener.py
++++ b/radt/radt/run/listeners/macmon_listener.py
+@@ -2,16 +2,39 @@ import ast
+ import io
+ import mlflow
+ import subprocess
++import time
+ 
+ from multiprocessing import Process
+ 
+ 
+ class MacmonThread(Process):
+-    def __init__(self, run_id, experiment_id=88):
++    def __init__(self, run_id, mlflow_buffer=None, experiment_id=88):
++        # `mlflow_buffer` was missing here while benchmark.py constructs EVERY
++        # listener as listener_class(run_id, self._buffer_listeners) -- so the
++        # queue was landing in `experiment_id` and this listener fell through to
++        # a synchronous mlflow.log_metrics() per sample. It was the only
++        # listener off the batched path, and the default one on Apple silicon,
++        # i.e. exactly where a per-sample network round-trip could perturb the
++        # workload it is measuring.
+         super(MacmonThread, self).__init__()
+         self.run_id = run_id
++        self.mlflow_buffer = mlflow_buffer
+         self.experiment_id = experiment_id
+ 
++    def _enqueue_metrics(self, metrics, timestamp_ms=None):
++        """Hand samples to the batched logger; fall back to a direct write."""
++        if self.mlflow_buffer:
++            ts = int(timestamp_ms) if timestamp_ms is not None else int(time.time() * 1000)
++            entries = [{"key": k, "value": v, "timestamp": ts, "step": 0}
++                       for k, v in metrics.items()]
++            try:
++                for e in entries:
++                    self.mlflow_buffer.put(e)
++                return
++            except Exception:
++                pass
++        mlflow.log_metrics(metrics)
++
+     def run(self):
+         mlflow.start_run(run_id=self.run_id).__enter__()  # attach to run
+ 
+@@ -24,6 +47,15 @@ class MacmonThread(Process):
+                 json = ast.literal_eval(line)
+ 
+                 m = {}
++                # Prefer macmon's own sample timestamp over our parse time: the
++                # pipe is line-buffered, so read time lags the measurement by an
++                # unknown amount, and these samples are joined to spans on wall
++                # clock. Accepts seconds or milliseconds.
++                sample_ts = json.get("timestamp")
++                if isinstance(sample_ts, (int, float)):
++                    sample_ts = sample_ts * 1000 if sample_ts < 1e12 else sample_ts
++                else:
++                    sample_ts = None
+                 for k, v in json.items():
+                     if k == "timestamp":
+                         continue
+@@ -37,4 +69,4 @@ class MacmonThread(Process):
+                     else:
+                         m[f"system/macmon - {k.replace('_',' ').title()}"] = float(v)
+ 
+-                mlflow.log_metrics(m)
++                self._enqueue_metrics(m, timestamp_ms=sample_ts)
