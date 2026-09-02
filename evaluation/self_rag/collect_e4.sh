@@ -7,10 +7,16 @@
 #
 # TWO PASSES, and they are not interchangeable:
 #
-#   serial   the latency/quality pass. Already collected at R=4 on both
-#            devices with listeners OFF; those runs are REUSED. Do not
-#            re-collect them under listeners: it would discard good data and
-#            fold an observer cost into the headline table.
+#   serial   the latency/quality pass, listeners OFF. Do not re-collect it
+#            under listeners: that would fold an observer cost into the
+#            headline table.
+#            gb10 is already collected at R=4 and those runs are REUSED.
+#            m3pro is NOT: the pre-existing "mlx" serial runs were collected on
+#            the older 16 GB Mac, not on this 24 GB one (that machine had
+#            neither sentence-transformers nor the embedding model cached, so
+#            the pipeline had never run there). Reusing them would have put a
+#            16 GB machine's latencies in a table whose memory column claims
+#            24 GB, so m3pro's serial pass is collected fresh.
 #   obs      the counter pass. Listener-ON twins of the same configs, shorter
 #            (R=2), sourcing only the power/energy/memory columns. One paired
 #            on/off cell bounds what the listeners themselves cost.
