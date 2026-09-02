@@ -1,7 +1,7 @@
 # Choreo — Experiment Definitions (source of truth)
 
 **Authoritative, current description of the paper's experiments.** Where this disagrees with
-`experimental_setup.tex` (the older 7-experiment draft) or any status snapshot, **this document
+any older draft or status snapshot, **this document
 wins**. Companion: `EXPERIMENT_PLAN.md` (path to full collection). Last aligned: 2026-08-17.
 
 **Five core experiments.** E1–E2 are instrument-fidelity; E3–E5 are application/capability studies
@@ -168,7 +168,7 @@ order rotated.
 
 **Artifacts.** `evaluation/contention/` (`analyze_staged.py`, `staged_lib.py`,
 `generate_stage_configs.py`, `amc_calibration.py`); AMC sampler under `scripts/`; hardware facts in
-`CONTENTION_EXPERIMENTS_REDESIGN.md`.
+`evaluation/contention/contention.md` (hardware-attribution facts consolidated there).
 
 **Status/gap.** All §5.2 cells are new. Blocking: listeners on both devices, MPS path verified.
 

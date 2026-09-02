@@ -89,7 +89,7 @@ the old `benchmark_macos_overhead` workaround env is retired).
   `OfflineLoadScheduler` (one query in flight = serial service time) and run
   with `CHOREO_DISABLE_TRACING=1` (core dispatch only).
 - Cells marked `BLOCKED` by `--list` need apparatus from
-  `CONTENTION_EXPERIMENTS_REDESIGN.md` (C3 memory-streaming stage,
+  `evaluation/contention/contention.md` (C3 memory-streaming stage,
   EmbedStage/ChromaIndexer) and are excluded from the session.
 - Open-loop collection runs now emit an `<label>_arrivals.csv` sidecar
   (intended vs actual submit time + put-block seconds) — `verify_knobs.py`

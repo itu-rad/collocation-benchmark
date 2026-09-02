@@ -6,7 +6,7 @@ framework for unified-memory devices (Apple M2 Pro + NVIDIA DGX Spark GB10).
 
 This checklist is the single source of truth for what remains between "well-designed
 plan" (where we are) and "publishable" (where we're going). It folds in the three
-ASPLOS-style review rounds on `experimental_setup.tex` (all ended at *Accept on design,
+ASPLOS-style review rounds on the setup text (all ended at *Accept on design,
 conditional on collection*) **and the full repo/code/data audit of 2026-07-12**
 (advisor review: framework code, evaluation artifacts, statistics, and paper docs).
 
@@ -312,7 +312,7 @@ monolith pass vs many short decomposed calls burn the shared budget differently)
   fiddliest to get faithful. In the E5 table it is marked "expressible (constant-offset
   special case of the Poisson generator)" without an instantiated arm.
 - [ ] **N-in-flight closed-loop scheduler** — **still pending, contingent on the E3′/E6′
-  redesign** (`CONTENTION_EXPERIMENTS_REDESIGN.md`): it's the recommended E3 stationary
+  redesign** (`evaluation/contention/contention.md`): it's the recommended E3 stationary
   contended operating point, but E3′ may replace the VQA 2×2 with a bandwidth
   dose–response experiment. Build once that decision lands.
 - [ ] **E6 B-sweep config generator — still pending, contingent on E6′** (the redesign may
@@ -485,7 +485,7 @@ confirms the rule held. The paper's setup section gets a **per-experiment knob t
   committed table is mps) — §4.1.
 
 ### 3.3 E3 — VQA bandwidth contention — **P0 [M2]** — ⚠️ REDESIGN PROPOSED
-> **See `CONTENTION_EXPERIMENTS_REDESIGN.md` (E3′).** The 2×2 as designed cannot
+> **See `evaluation/contention/contention.md` (E3′).** The 2×2 as designed cannot
 > attribute the collapse (queueing-dilution confound) and is mis-proportioned
 > (co-runner demands ~2–5 GB/s against an LLM already streaming ~110–170 GB/s).
 > Proposal: replace with a cross-device bandwidth dose–response experiment
@@ -596,7 +596,7 @@ both serial/concurrent to measure the concurrency knob's latency delta.
 
 ### 3.6 §4 Contention — Staged descent (A→B→C→D) — **P0, DESIGN SOLID / EXECUTION GAPPED — REVISIT**
 > **Design APPROVED (2026-07-13), structure BUILT & R=1-collected.** Staged
-> system→mechanism descent (`CONTENTION_EXPERIMENTS_REDESIGN.md`), single config diff
+> system→mechanism descent (`evaluation/contention/contention.md`), single config diff
 > per step, diffs shown in paper: Stage A (Self-RAG "RAG serve plain" foreground vs
 > B∈{0,1,2} corpus-indexer bg pipelines, per-process + M2 per-engine AMC attribution) →
 > B (intensity sweep {25,50,75,100}% R_max, bg loadgen diff) → C (single-resource
