@@ -44,6 +44,22 @@ resident weights, retry control flow), and does the causal picture shift across 
   config as an exact twin of its listener-off counterpart (verified: the two differ only in `name`
   and `listeners`), so every config is run both ways and the on/off comparison is available for
   all of them, not just one paired cell.
+
+  **Measured on gb10** (dcgmi+top, all 8 configs both ways, 2026-09-03): the listener-on medians
+  sit **−0.7%** from listener-off across 16 prefill/decode cells, range −3.4% to +1.4%, signed in
+  both directions — i.e. within run-to-run noise rather than a cost. Reproduce with
+  `analyze_e4.py --devices gb10 --pass serial` against `--pass obs`.
+
+  | | prefill Δ | decode Δ |
+  |---|--:|--:|
+  | factoid / decomposed | −2.0% | −1.7% |
+  | factoid / decomposed_shared | −0.3% | −1.0% |
+  | factoid / monolith | −1.3% | +1.2% |
+  | factoid / monolith_4b | −1.3% | −1.0% |
+  | multihop / decomposed | −0.3% | −0.5% |
+  | multihop / decomposed_shared | +0.2% | +1.4% |
+  | multihop / monolith | −3.4% | +1.4% |
+  | multihop / monolith_4b | +0.1% | −1.0% |
 - **Throughput** — Poisson cells re-collected under the derived-λ rule (the existing ones are
   R=1/truncated).
 
