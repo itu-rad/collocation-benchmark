@@ -13,8 +13,8 @@ prefill/decode split). A 6th, the **capacity/size sweep, is a stretch goal** (on
 | **E1** | NoOp overhead | fidelity | M2, GB10 | framework machinery (dispatch/queue/thread + zero-copy) is small, flat, O(1)-copy |
 | **E2** | Modularity overhead | fidelity | M2, GB10 | wrapping *real* work (EfficientNet) in the graph ≪ the work itself; across model size × batch the **relative** overhead amortizes to ~0, absolute is ~fixed |
 | **E3** | MLPerf / 3D-UNet | capability | GB10 (repro) · M2+GB10 (boundary) | we match MLPerf's **own reference harness** (accuracy + performance) on GB10, **and** show its offline-preload boundary hides the preprocessing online serving can't — a real, device-dependent share of per-request latency |
-| **E4** | Self-RAG decomposition | application | M2, GB10 | decomposition cost = a prefill(compute)/decode(memory) rebalance whose optimum **flips across devices** |
-| **E5** | Collocation | application | M2, GB10 | co-running CPU/GPU/ANE-bound work taxes the foreground **engine-specifically**, not as a fungible bytes/s tax |
+| **E4** | Self-RAG execution strategies | case study | m3pro, gb10 | what decomposition *causes* — phase mix, lock serialization, resident weights, retry control flow — narrowed down per-stage/per-phase, and how the causal picture shifts across hardware |
+| **E5** | Collocation types | case study | m3pro, gb10 | what the foreground actually contends on per collocation type, attributed per-pipeline; engine separation ≠ isolation on unified memory, counter-confirmed |
 | *(str)* | *Capacity sweep* | *stretch* | *M2, GB10* | *no-code size ladder (0.8B→27B); 16 GB M2 saturates (27B OOM), 128 GB GB10 has headroom* |
 
 ---
@@ -97,43 +97,80 @@ caveat, measured and bounded: a device warm-up transient inflates the first 4 gb
 60–82%, is absent on m3pro, tracks run position rather than input shape, and leaves every
 median unmoved. ResNet scenario-reduction: cut.
 
-## E4 — Self-RAG decomposition & prefill/decode split (cross-device)
-**Question.** What does decomposing agentic RAG cost vs a monolith, and *why*? The framework splits
-each stage into **prefill (TTFT, compute-bound)** vs **decode (memory-bandwidth-bound)**.
-**The point.** The DUTs have **similar memory bandwidth** but a **huge compute gap** (GB10 GPU ≫ M2
-GPU; CPUs much closer). Since prefill is compute and decode is memory, the memory-bound decode is
-~device-invariant while the compute-bound prefill is not → **the optimal prefill/decode balance, and
-thus the decomposition recommendation, flips across devices.** A throughput-only serving benchmark
-can't see this.
-**Arms.** monolith-9B · monolith-4B · decomposed (4B, per role) · decomposed_shared (1×4B + mutex);
-factoid + multihop; cuda (bf16) + mlx (4-bit); retriever `e5-base-v2` top_k=5; quality on a Haiku
-judge (EM/F1 as guard).
-**Artifacts.** `evaluation/self_rag/` — configs, `stage_latency.py`, `retry_analysis.py`,
-`CHOREO_FINDINGS.md`, Haiku `judge/`; prefill/decode markers in the framework
-(`log_first_token`/`log_generated_tokens`, `stages/stage.py`).
-**Status/gap.** Quality matrix **validated** (16 cells both devices, greedy→exact, judge overturn=0).
-**Missing:** the per-device prefill/decode **flip** figure (markers are recorded; the analysis isn't
-built). Timing needs full-R with the new tracing (quality does not — greedy).
+## E4 / §5.1 — Self-RAG execution strategies (case study)
 
-## E5 — Collocation (extension on Self-RAG)
-**Question.** On a unified-memory SoC every engine (GPU/ANE/CPU) draws on one memory + its bandwidth.
-Is an "idle" engine free, or does work on it tax the bandwidth-bound decode on the GPU — and **does it
-depend on *which* engine** (CPU / GPU / ANE co-runner)?
-**Thesis (reframed after the mock PC).** Contention is **engine-specific, not a fungible bytes/s tax.**
-Negative control **H2 (phase split):** compute-bound prefill degrades far less than memory-bound
-decode under the same co-runner — held vs the pure-bandwidth **STREAM** (CPU) co-runner, falsified vs
-engine-sharing **CLIP**, same direction both devices. **H1:** decode tok/s vs co-runner GB/s.
-**Design.** Foreground (RAG-serve / bare decode) + co-runner pipelines each in **its own process**,
-sweeping the engine (CPU-stream / GPU-CLIP / ANE-CLIP) and intensity; staged single-diff A→B→C→D
-(system → intensity → purify co-runner → purify foreground = the law). Orchestrated by **radt**
-(multi-pipeline configs). MPS-off/on lever on GB10 separates scheduling- from resource-contention.
-**Attribution.** M2 **counter-backed** — IOReport AMC per-requestor DRAM bytes
-(`scripts/amc_bandwidth_sampler.{c,py}`). GB10 **proxy-backed** — `nvidia-smi utilization.memory`.
-**Artifacts.** Design of record `CONTENTION_EXPERIMENTS_REDESIGN.md`; code `evaluation/contention/`
-(`analyze_staged.py`, `staged_lib.py`, `generate_stage_configs.py`, `amc_calibration.py`, staged
-configs); AMC sampler under `scripts/`.
-**Status/gap.** R=1 done; thesis reframed. **Phase-0 apparatus fixes before full-R** (extended dose
-ladder / B=4 + fg 0.7–0.8×, GB10 staged→bf16, AMC calibration closure, thermal gate, verdict hygiene).
+**Register: investigative, not consumer.** A consumer benchmark outputs a verdict (this is faster).
+This is a *causal account*: where the time and memory go, and which explanation survives isolation.
+Rankings appear only as the observation that demands explanation, never as the deliverable.
+
+**Question.** What does decomposing an agentic pipeline actually change — where do time and memory
+go under each execution strategy, what *causes* the differences (phase mix, lock serialization,
+resident weights, retry control flow), and does the causal picture itself shift across hardware?
+
+**Arms — the four execution strategies, differing only in YAML.**
+A monolithic prompt · B one model shared + locked (`depends_on_id`) · C per-role copies ·
+D one model behind a server with continuous batching (`llm_server`). × {factoid, multihop} ×
+{m3pro 24 GB MLX 4-bit, gb10 120 GB HF NF4}. Qwen3.5 4B/9B; 27B as the OOM-ceiling one-liner.
+**Strategy D is Ollama-only and runs FIRST as a go/no-go** (configs exist, never run); vLLM is
+dropped. If D fails, the text scopes to three strategies explicitly, never silently.
+
+**Exhibits, in order** (question → manipulation → answer → mechanism):
+1. Auto-generated pipeline graph + YAML-diff strip (13 stages, retry back-edge; the few declared
+   lines separating the arms). Stage-reuse count across §4/§5 stated here, once. [C2]
+2. The interplay table — quality × latency × throughput × peak memory × power/energy per strategy ×
+   task × device, including the memory-budget answer (per-role copies comfortable at 120 GB,
+   pressured/infeasible at 24 GB). Quality column non-negotiable. [C4]
+3. Phase-breakdown figure **with a hardware track overlaid** — the unified profiler showing why.
+   [C3, C4]
+
+Calls-per-request variability on the cyclic graph reported alongside. **No predictive cost law**
+and no unit-of-measurement critique — that register belongs to §4/E3.
+
+**Data protocol.** Latency/quality from the existing **R=4 listener-off serial runs** (drop r1 →
+R=3). Power/energy/memory from **new R=2 listener-on passes**; one paired on/off cell bounds the
+observer cost. Poisson/throughput cells re-collected under the derived-λ rule.
+
+**Status/gap.** Quality matrix validated (16 cells, judge overturn=0) but the **judge runner is not
+committed** — it must be, for reproducibility. Serial R=4 exists both devices. **Missing:** strategy
+D has never run; listeners are off on every serial config (so C3 has no data); peak memory unrecorded.
+
+## E5 / §5.2 — Collocation types with per-pipeline attribution (build-up on §5.1)
+
+**Question.** When two pipelines share the node, what is the foreground *actually contending on*
+under each collocation type — the compute engine, the shared memory bandwidth, or nothing the
+partitioning mechanism can reach — and can interference be attributed to the pipeline and resource
+causing it? Degradation numbers are the symptom; the attribution is the deliverable.
+
+**Subject: the collocation TYPE, not the background workload** (indexer / MemoryStream are props).
+Capability shown: every number attributed to its pipeline — own process, own radt run, own listeners.
+Foreground is the same Self-RAG serving pipeline as §5.1.
+
+**Collocation axis.** m3pro — background on GPU / **ANE** / CPU (three engines, one unified-memory
+pool). gb10 — time-sliced GPU / **MPS** / CPU. **MPS-only in the text**; MIG gets a half-day
+verification and, as expected on this part, one line: "MIG is not supported on this device." radt
+configures MPS automatically — answering by demonstration the gap the paper's own related work names
+(manual MPS/MIG configuration expertise). [C3, C4]
+
+**Exhibits.**
+1. Per-pipeline attribution table — foreground p50/p95 + throughput per collocation type, background
+   throughput alongside. [C2, C4]
+2. **Separation ≠ isolation, counter-confirmed** (claim and proof merged): moving the background to
+   ANE/CPU removes compute contention; degradation persists → unified-memory bandwidth is the shared
+   resource. Proof by dose–response (MemoryStream at stepped intensities) with **AMC per-engine DRAM
+   counters confirming the dose on m3pro**; on gb10 no DRAM counter exists (DCGM profiling dead on
+   this stack) and the power/utilization proxy is stated in one sentence. [C3 — the flagship
+   counter-explains-symptom exhibit]
+3. What MPS partitioning buys vs time-slicing when the memory system stays shared. [C4]
+
+**Grid.** Collocation types at one calibrated intensity everywhere; dose–response on m3pro only
+(where the counters carry the narrative); gb10 types-only, overnight behind the occupancy gate, arm
+order rotated.
+
+**Artifacts.** `evaluation/contention/` (`analyze_staged.py`, `staged_lib.py`,
+`generate_stage_configs.py`, `amc_calibration.py`); AMC sampler under `scripts/`; hardware facts in
+`CONTENTION_EXPERIMENTS_REDESIGN.md`.
+
+**Status/gap.** All §5.2 cells are new. Blocking: listeners on both devices, MPS path verified.
 
 ---
 

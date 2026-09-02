@@ -22,6 +22,9 @@ evaluation/
 │                     # own reference harness, then the share its offline
 │                     # measurement boundary hides. Self-contained:
 │                     # collect_e3.sh + analyze_e3.py + configs/ + results/
+├── self_rag/         # §5.1 — Self-RAG execution strategies (case study)
+├── contention/       # §5.2 — collocation types, per-pipeline attribution
+├── pilots/           # pre-registered knob derivation + warm-up convergence
 ├── scripts/          # analysis scripts for the case studies (no execution
 │                     # side effects beyond writing files into results/)
 └── results/          # all CSV/JSONL traces from runs + all Markdown/LaTeX
@@ -193,82 +196,30 @@ python evaluation/unet3d/analyze_e3.py --machines m3pro gb10
 Records to res17 (experiment 138), not a local store — the local-store exemption
 covers the overhead experiments only.
 
-### 4. Multimodal VQA — unified-memory bandwidth contention (Apple Silicon)
+### 4. Self-RAG — execution strategies (§5.1 case study)
 
-**What:** image-grounded VQA pipeline (CLIP-Large vision encode →
-FAISS over 10 k COCO captions → Qwen 3.5-9B answer) run under two
-accelerator mappings and two scheduling regimes, yielding a 2×2 cell
-that isolates the bandwidth-contention effect.
+**What:** the same agentic Self-RAG job (grade → answer → hallucination-check, with a
+retry back-edge) executed four ways, differing **only in YAML**: a monolithic prompt; one
+model shared behind a lock (`depends_on_id`); per-role copies; and one model behind a
+server with continuous batching. Two tasks (factoid, multi-hop) × two devices.
 
-| Cell | Mapping | Schedule |
-|---|---|---|
-| `vqa_a_pipe` | A: CLIP on MPS, LLM on MPS | pipelined (multiple queries in flight) |
-| `vqa_a_serial` | A | `--serialize true` (one query end-to-end at a time) |
-| `vqa_b_pipe` | B: CLIP on ANE via CoreML, LLM on MPS | pipelined |
-| `vqa_b_serial` | B | `--serialize true` |
+Register is **investigative, not consumer** — the deliverable is a causal account of where
+time and memory go under each strategy, not a verdict on which is fastest. See
+[`self_rag/README.md`](self_rag/README.md) for the arms, exhibits and data protocol, and
+`../EXPERIMENTS.md` (E4 / §5.1) for the authoritative framing.
 
-The heterogeneity advantage (B vs A) under contention vs without it
-exposes whether the unified-memory bandwidth is the binding constraint.
+**Note:** the run commands that used to live here were stale. The collection harness is
+being reworked to the `collect_e3.sh` pattern (`collect_e4.sh`); until it lands, see
+`self_rag/collect.sh`.
 
-**Prerequisites:**
+### 5. Collocation types (§5.2 case study)
 
-```bash
-# CoreML vision tower export (one-shot, ~3 min)
-python stages/multimodal_vqa/export_clip_coreml.py \
-  --model openai/clip-vit-large-patch14 \
-  --output tmp/clip_vit_l14_vision.mlpackage
-```
-
-**Run the 2×2:**
-```bash
-for cfg in multimodal_vqa_mapping_a multimodal_vqa_mapping_b; do
-  for sched in false true; do
-    label="vqa_${cfg##*_}_$( [ "$sched" = "true" ] && echo serial || echo pipe )"
-    python main.py pipeline_configs/${cfg}.yml -p 0 \
-      --label "$label" --serialize "$sched"
-  done
-done
-```
-
-Each run produces `<label>.csv` (timing) and `<label>_outputs.jsonl`
-(per-query answer capture from `TerminalCapture`).
-
-**Analyze:**
-```bash
-# Semantic verification: did the pipeline produce sensible answers?
-python evaluation/scripts/verify_complex_cases.py
-
-# Bandwidth analysis: 2×2 latency / throughput / device-busy report
-python evaluation/scripts/bandwidth_analysis.py --cells
-```
-
-Reports land at `results/verification_report.md` and
-`results/bandwidth_report.md`.
-
-### 5. Self-RAG — topology comparison (monolith vs decomposed)
-
-**What:** two Self-RAG pipelines that do the same job with different
-decompositions:
-
-- **Monolith:** one large model (9B) does grade + answer +
-  hallucination-check in a single JSON pass. `MonolithRouter` validates
-  the JSON and optionally loops through a query rewriter.
-- **Decomposed:** three distinct 4B instances split the same job into
-  separate stages (grader / generator / hallucination-grader, with the
-  rewriter sharing the grader), overlapping under load.
-
-The comparison is whether decomposition gives or costs anything, on both
-an easy (factoid) and a hard (multi-hop HotpotQA) task. Configs, run
-commands, and the results report all live in
-[`self_rag/`](self_rag/README.md).
-
-**Run:** see [`self_rag/README.md`](self_rag/README.md) for the full
-per-experiment commands. In brief, from the repo root:
-```bash
-python main.py evaluation/self_rag/configs/factoid_monolith_cuda.yml   -p 0 --label self_rag_monolith
-python main.py evaluation/self_rag/configs/factoid_decomposed_cuda.yml -p 0 --label self_rag_decomposed
-python evaluation/scripts/verify_complex_cases.py
-```
+**What:** the §5.1 Self-RAG serving pipeline as foreground, plus a background pipeline,
+sweeping the **collocation type** — same engine / ANE / CPU on m3pro; time-sliced GPU /
+MPS / CPU on gb10. The background workload is a prop; the subject is what the foreground
+actually contends on, and whether interference can be **attributed per pipeline** (each
+pipeline is its own process with its own radt run and listeners). Code in
+[`contention/`](contention/); hardware facts in `../CONTENTION_EXPERIMENTS_REDESIGN.md`.
 
 ## How runs work in general
 
@@ -298,8 +249,8 @@ same directory. No execution side effects beyond the report file.
 
 | Script | Reads | Writes |
 |---|---|---|
-| `verify_complex_cases.py` | `<pipeline>_outputs.jsonl` (VQA, Self-RAG) | `verification_report.md` |
-| `bandwidth_analysis.py` | timing CSVs (default `vqa_a/b_pipe/serial`) | `bandwidth_report.md` |
+| `verify_complex_cases.py` | `<pipeline>_outputs.jsonl` (Self-RAG) | `verification_report.md` |
+| `score_quality.py` | `<label>_outputs.jsonl` | `quality_report.{md,json}` — EM/F1, the §5.1 quality column |
 
 The overhead experiments are self-contained under `overheads/`, each with its
 own analyzers + `results/`:
@@ -372,12 +323,7 @@ retry-exhausted paths).
 conda env create -f environments/macos.yaml
 conda activate benchmark_macos
 
-# 2. one-off CoreML export (for VQA mapping B)
-python stages/multimodal_vqa/export_clip_coreml.py \
-  --model openai/clip-vit-large-patch14 \
-  --output tmp/clip_vit_l14_vision.mlpackage
-
-# 3. pick the experiment of interest and follow its section above
+# 2. pick the experiment of interest and follow its section above
 ```
 
 First runs of any pipeline will download HF datasets and model weights

@@ -1,5 +1,14 @@
 # Self-RAG — What Choreo Surfaces About Agentic-RAG Cost and Control Flow
 
+> **E4/E5 FRAMING SUPERSEDED (2026-09-02).** This document predates the agreed §5 case-study
+> plan. Where it describes E4 as a "prefill/decode flip" or E5 as an indexer study, it is stale:
+> **§5.1 is Self-RAG execution strategies** (monolithic prompt / shared+locked / per-role copies /
+> server continuous-batching) framed *investigatively* — narrowing down what decomposition causes —
+> and **§5.2 is collocation TYPES with per-pipeline attribution**, where the background workload is
+> a prop. The predictive cost law and the flip thesis are NOT carried forward. Authoritative:
+> `EXPERIMENTS.md` (E4/E5 sections). Everything else in this file still applies.
+
+
 *Choreo evaluation. All numbers below are from the **strengthened-retriever re-run** (2026-07-23):
 retriever = `intfloat/e5-base-v2` (MLPerf `e2e-rag`'s embedder) at top_k=5, replacing ChromaDB's weak
 default (`all-MiniLM-L6-v2`, top_k=3) which had capped accuracy by mis-ranking supporting passages

@@ -37,6 +37,14 @@ conditional on collection*) **and the full repo/code/data audit of 2026-07-12**
 >   MLPerf reference *performance* run (the one on disk announces `Result is : INVALID`), and
 >   a **clean** gb10 timed pass — the 2026-09-01 one was contaminated by a concurrent
 >   training job and is queued to be re-collected. See `evaluation/unet3d/unet3d.md`.
+> - **E4/E5 — REFRAMED as §5 case studies (2026-09-02).** The paper is a TOOL paper: §4 validates
+>   the instrument (E1/E2/E3), §5 demonstrates utility. **§5.1 = Self-RAG execution strategies**
+>   (monolithic prompt / shared+locked / per-role copies / server continuous-batching), framed
+>   *investigatively* — what decomposition causes, narrowed per-stage/per-phase — not "which is
+>   faster". **§5.2 = collocation TYPES with per-pipeline attribution** (engine sharing / ANE /
+>   MPS / CPU); the background workload is a prop. **Dropped:** the prefill/decode "flip" thesis,
+>   the predictive cost law, and any knob sweep. **Blocking gate:** listeners are off on every
+>   serial config, so contribution C3 (unified profiling) currently has ZERO supporting data.
 > - **Statistics.** All three closed/reworked analyzers use a hierarchical bootstrap with the
 >   run as the unit of replication; E3's analyzer now has CIs, which item 3 below lists as
 >   outstanding.

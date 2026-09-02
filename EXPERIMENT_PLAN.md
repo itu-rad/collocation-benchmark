@@ -1,5 +1,14 @@
 # Choreo — Experiment Execution Plan (path to full collection)
 
+> **E4/E5 FRAMING SUPERSEDED (2026-09-02).** This document predates the agreed §5 case-study
+> plan. Where it describes E4 as a "prefill/decode flip" or E5 as an indexer study, it is stale:
+> **§5.1 is Self-RAG execution strategies** (monolithic prompt / shared+locked / per-role copies /
+> server continuous-batching) framed *investigatively* — narrowing down what decomposition causes —
+> and **§5.2 is collocation TYPES with per-pipeline attribution**, where the background workload is
+> a prop. The predictive cost law and the flip thesis are NOT carried forward. Authoritative:
+> `EXPERIMENTS.md` (E4/E5 sections). Everything else in this file still applies.
+
+
 **PLAN FOR REVIEW. No implementation or collection until approved.** Companion to `EXPERIMENTS.md`
 (definitions). Per experiment: **thesis · done · gap · code TODOs · data points · commands.**
 
@@ -437,7 +446,15 @@ inference.py:131`). But **bitsandbytes NF4 is known to pay a per-token dequantis
 that hurts decode**, while MLX's 4-bit path is natively optimised. So "decode is
 device-invariant" may partly be "bitsandbytes decode is slow", i.e. kernel quality rather
 than memory bandwidth. A reviewer will raise this.
-**RESOLVED 2026-08-20 — the confound is dead, and the test CONFIRMS the mechanism.**
+> **RETRACTED 2026-09-02.** The conclusion below ("CONFIRMS the mechanism") is WRONG and is
+> superseded by the 2026-08-22 review findings above. The same bf16 test, fitted as
+> `t = F + w*bytes`, gives `w = 5.18 ms/GB, F = 33.8 ms/token` — decode on GB10 is ~24% weight
+> streaming and ~76% FIXED per-token software cost, which REFUTES "decode is
+> memory-bandwidth-bound". The measurement table below is retained because the numbers are
+> correct; only the interpretation was wrong. Neither the refuted mechanism nor the derived
+> "flip" thesis is carried into §5.1 — see EXPERIMENTS.md for the current framing.
+
+**RESOLVED 2026-08-20 — the confound is dead, and the test CONFIRMS the mechanism.** *(retracted; see above)*
 Re-ran `factoid_monolith_4b_cuda` with `quantize: false` (bf16 weights, 4x the weight
 traffic per token, no dequant), everything else identical:
 

@@ -1,5 +1,14 @@
 # Paper-ready sections — 3-round review→rewrite trace
 
+> **E4/E5 FRAMING SUPERSEDED (2026-09-02).** This document predates the agreed §5 case-study
+> plan. Where it describes E4 as a "prefill/decode flip" or E5 as an indexer study, it is stale:
+> **§5.1 is Self-RAG execution strategies** (monolithic prompt / shared+locked / per-role copies /
+> server continuous-batching) framed *investigatively* — narrowing down what decomposition causes —
+> and **§5.2 is collocation TYPES with per-pipeline attribution**, where the background workload is
+> a prop. The predictive cost law and the flip thesis are NOT carried forward. Authoritative:
+> `EXPERIMENTS.md` (E4/E5 sections). Everything else in this file still applies.
+
+
 This document records the full trace the author requested: the draft paper-ready sections
 (A = 3D-UNet/MLPerf, B = Self-RAG), then three rounds of ASPLOS-reviewer critique and
 rewrite. Reviewer lenses each round: (1) systems/architecture, (2) benchmarking-methodology,
