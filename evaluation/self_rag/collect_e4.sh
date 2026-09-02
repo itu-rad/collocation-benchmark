@@ -189,6 +189,22 @@ run_one() {
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$MODE" "$cell" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rc" -ne 0 ] && { log "  !! $lab FAILED rc=$rc"; return 1; }
   log "  $lab rc=$rc ${secs}s rows=$rows spans=${spans:-n/a}"
+
+  # After the FIRST obs run, prove the counters actually reached the tracking
+  # server. A listener that never spawned is otherwise invisible: exit code 0,
+  # correct row counts, correct span counts, and no metrics at all -- which is
+  # how a whole obs pass once completed with nothing to show for it.
+  if [ "$MODE" = obs ] && [ -z "${_E4_COUNTERS_VERIFIED:-}" ]; then
+    export _E4_COUNTERS_VERIFIED=1
+    log "  verifying counters reached $MLFLOW_TRACKING_URI ..."
+    if python scripts/check_listener_metrics.py "$lab" >> "$LOG" 2>&1; then
+      log "  counters OK for $lab"
+    else
+      log "  !! $lab recorded NO system/* metrics -- the listeners did not run."
+      log "     Collecting further would waste the pass; stopping. See $LOG."
+      return 2
+    fi
+  fi
 }
 
 shopt -s nullglob
@@ -205,7 +221,12 @@ for r in $(seq 1 "$RUNS"); do
   for i in $(seq 0 $(( n - 1 ))); do
     cfg="${cfgs[$(( (off + i) % n ))]}"
     cell=$(basename "$cfg" .yml); cell=${cell%_$ENGINE}; cell=${cell%_obs}; cell=${cell%_serial}
-    run_one "$cfg" "$cell" "$r" || fail=$((fail+1))
+    run_one "$cfg" "$cell" "$r"; rc_one=$?
+    if [ "$rc_one" -eq 2 ]; then
+      log "5.1 collection ABORTED on $MACHINE [$MODE]: counters are not being recorded."
+      exit 5
+    fi
+    [ "$rc_one" -ne 0 ] && fail=$((fail+1))
   done
 done
 

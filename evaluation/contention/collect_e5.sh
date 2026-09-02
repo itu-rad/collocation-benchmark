@@ -322,6 +322,20 @@ run_cell() {
     "$MODE" "$cell" "$r" "$fg_rc" "$bg_rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$fg_rc" -ne 0 ] && { log "  !! $fg_lab FAILED rc=$fg_rc"; return 1; }
   log "  $fg_lab rc=$fg_rc bg_rc=$bg_rc ${secs}s rows=$rows spans=${spans:-n/a}"
+
+  # Prove the counters reached the tracking server after the first cell. A
+  # listener that never spawned is invisible otherwise -- clean exit, right row
+  # counts, no metrics -- and this whole section is the counters.
+  if [ -z "${_E5_COUNTERS_VERIFIED:-}" ]; then
+    export _E5_COUNTERS_VERIFIED=1
+    log "  verifying counters reached $MLFLOW_TRACKING_URI ..."
+    if python scripts/check_listener_metrics.py "$fg_lab" >> "$LOG" 2>&1; then
+      log "  counters OK for $fg_lab"
+    else
+      log "  !! $fg_lab recorded NO system/* metrics -- the listeners did not run."
+      return 2
+    fi
+  fi
   return 0
 }
 
@@ -332,7 +346,12 @@ for r in $(seq 1 "$RUNS"); do
   n=${#cells[@]}; off=$(( (r - 1) % n ))
   for i in $(seq 0 $(( n - 1 ))); do
     IFS='|' read -r cell bg coll <<< "${cells[$(( (off + i) % n ))]}"
-    run_cell "$cell" "$bg" "$coll" "$r" || fail=$((fail+1))
+    run_cell "$cell" "$bg" "$coll" "$r"; rc_one=$?
+    if [ "$rc_one" -eq 2 ]; then
+      log "5.2 collection ABORTED on $MACHINE [$MODE]: counters are not being recorded."
+      exit 5
+    fi
+    [ "$rc_one" -ne 0 ] && fail=$((fail+1))
   done
 done
 
