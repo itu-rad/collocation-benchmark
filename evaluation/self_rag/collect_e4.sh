@@ -12,11 +12,11 @@
 #            headline table.
 #            gb10 is already collected at R=4 and those runs are REUSED.
 #            m3pro is NOT: the pre-existing "mlx" serial runs were collected on
-#            the older 16 GB Mac, not on this 24 GB one (that machine had
+#            the older 16 GB M2 Pro, not on this 18 GB M3 Pro (that machine had
 #            neither sentence-transformers nor the embedding model cached, so
 #            the pipeline had never run there). Reusing them would have put a
 #            16 GB machine's latencies in a table whose memory column claims
-#            24 GB, so m3pro's serial pass is collected fresh.
+#            18 GB, so m3pro's serial pass is collected fresh.
 #   obs      the counter pass. Listener-ON twins of the same configs, shorter
 #            (R=2), sourcing only the power/energy/memory columns. One paired
 #            on/off cell bounds what the listeners themselves cost.

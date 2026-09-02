@@ -24,7 +24,7 @@ resident weights, retry control flow), and does the causal picture shift across 
 | C | per-role copies | independent instances per role |
 | D | server, continuous batching | `llm_server` (Ollama) — **never run yet; go/no-go** |
 
-× {factoid, multihop} × {m3pro 24 GB MLX 4-bit, gb10 120 GB HF NF4}. Qwen3.5 4B/9B.
+× {factoid, multihop} × {m3pro 18 GB MLX 4-bit, gb10 120 GB HF NF4}. Qwen3.5 4B/9B.
 
 ## Exhibits (in order)
 
@@ -50,14 +50,25 @@ resident weights, retry control flow), and does the causal picture shift across 
 ### Provenance — the `mlx` runs predate the current Mac
 
 The serial runs tagged `mlx` (last collected 2026-08-23) came from the older **16 GB M2 Pro**, not
-from the 24 GB m3pro the paper reports. Three independent checks agree:
+from the 18 GB m3pro the paper reports. Three independent checks agree:
 
 1. m3pro had **no `sentence_transformers` installed** and **no `e5-base-v2` cached** — the retriever
    could not have run there, and a smoke run failed on exactly that import.
 2. The M2 Pro has both, plus the model in its HuggingFace cache.
 3. `CHOREO_FINDINGS.md`'s own setup table says it outright: *"mlx = M2 Pro (4-bit OptiQ)"*.
 
-Reusing them would have paired a 16 GB machine's latencies with a memory column claiming 24 GB —
+**The three Apple machines, verified 2026-09-02** (`sysctl machdep.cpu.brand_string`):
+
+| token | host | chip | RAM | role |
+|---|---|---|---|---|
+| `m2pro` / `mlx` | mac623807 | Apple M2 Pro | 16 GB | staging; produced the superseded `mlx` runs |
+| `m3pro` | mac624090 (`itu-mac`) | Apple M3 Pro | **18 GB** | the Apple machine the paper reports |
+| `gb10` | spark-cc0d (`babyxena`) | NVIDIA GB10 | 120 GB | the accelerator machine |
+
+E1, E2 and E3 all carry m3pro results, so m3pro is the paper's Apple machine and the `mlx` E4
+runs are the outlier — not the other way round.
+
+Reusing them would have paired the M2 Pro's latencies with a memory column describing a different machine —
 and the memory-budget question (what a 5× larger budget buys) is one of the section's exhibits, so
 the error would have landed directly in a headline claim. **Every `mlx` number in
 `CHOREO_FINDINGS.md` is therefore M2 Pro data**; the `cuda` numbers there are genuine gb10.

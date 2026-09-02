@@ -40,10 +40,10 @@ NS_MS = 1e6
 # Results were originally filed under the ENGINE token (mlx/cuda); they are now
 # filed under the MACHINE token, because the engine does not identify the
 # hardware and in one case actively misled: the `mlx` tree is 16 GB M2 Pro data,
-# collected before the current 24 GB m3pro existed. It is deliberately NOT read
+# collected on a different machine from the m3pro the paper reports. It is NOT read
 # here -- see the provenance note in self_rag.md. `cuda` is genuine gb10 and is
 # still read, since section 5.1 reuses those runs for latency and quality.
-DEV_LABEL = {"m3pro": "m3pro (Apple M3 Pro, 24 GB)",
+DEV_LABEL = {"m3pro": "m3pro (Apple M3 Pro, 18 GB)",
              "gb10": "gb10 (NVIDIA GB10, 120 GB)",
              "mlx": "M2 Pro (mlx) -- superseded",
              "cuda": "GB10 (cuda)"}
