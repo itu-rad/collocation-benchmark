@@ -52,13 +52,26 @@ ARM_ORDER = ["monolith", "monolith_4b", "decomposed", "decomposed_shared"]
 
 
 def parse_label(path):
-    """e4_<task>_<arm>_<device>_r<N>.csv -> dict(task, arm, device, run)."""
-    m = re.match(r"^e4_(factoid|multihop)_(.+)_(m3pro|gb10|mlx|cuda)_r(\d+)\.csv$",
+    """e4_<task>_<arm>_<machine>[_obs]_r<N>.csv -> dict(task, arm, device, pass, run).
+
+    The trailing `_obs` marks the listener-ON counter pass. It is a PASS, not an
+    arm: the same four execution strategies are run both ways, and folding it into
+    the arm name would list eight phantom strategies instead of four and hide the
+    listener-on/off comparison the observer-cost bound comes from. The older
+    engine-token files carry `_serial` in the arm position for the same reason and
+    are normalised here too.
+    """
+    m = re.match(r"^e4_(factoid|multihop)_(.+?)(_obs)?_(m3pro|gb10|mlx|cuda)(_obs)?_r(\d+)\.csv$",
                  os.path.basename(path))
     if not m:
         return None
-    return {"task": m.group(1), "arm": m.group(2), "device": m.group(3),
-            "run": int(m.group(4)), "path": path}
+    arm = m.group(2)
+    is_obs = bool(m.group(3) or m.group(5))
+    if arm.endswith("_serial"):
+        arm = arm[: -len("_serial")]
+    return {"task": m.group(1), "arm": arm, "device": m.group(4),
+            "pass": "obs" if is_obs else "serial",
+            "run": int(m.group(6)), "path": path}
 
 
 def parse_run(path):
@@ -169,13 +182,21 @@ def parse_inflight(path):
             "span_s": span / 1e9}
 
 
-def load(results_dir, machine):
-    """Load every run for a machine, across each directory its data lives in."""
+def load(results_dir, machine, want_pass="serial"):
+    """Load a machine's runs for one pass, across each directory its data lives in.
+
+    Defaults to the SERIAL pass. The latency tables must not mix in the
+    listener-on runs: those carry the observer's cost, which is a thing to
+    measure separately, not to average into the headline numbers. Pass
+    want_pass=None to load both.
+    """
     runs = []
     for sub in MACHINE_DIRS.get(machine, [machine]):
         for p in sorted(glob.glob(os.path.join(results_dir, sub, "e4_*.csv"))):
             meta = parse_label(p)
             if not meta:
+                continue
+            if want_pass is not None and meta["pass"] != want_pass:
                 continue
             stages = parse_run(p)
             if stages:
@@ -501,6 +522,10 @@ def main():
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
     ap.add_argument("--devices", nargs="+", default=["m3pro", "gb10"],
                     help="machines to analyse (m3pro, gb10)")
+    ap.add_argument("--pass", dest="which_pass", default="serial",
+                    choices=["serial", "obs", "both"],
+                    help="serial = listener-off latency/quality pass (default); "
+                         "obs = listener-on counter pass")
     ap.add_argument("--fig-dir", default=os.path.join(HERE, "paper_assets"))
     args = ap.parse_args()
     fig_dir = os.path.abspath(args.fig_dir); os.makedirs(fig_dir, exist_ok=True)
@@ -510,9 +535,11 @@ def main():
           "decode = run_end - first_token_end (memory-bandwidth-bound). "
           "Pooled over LLM stages and repetitions; medians.\n")
     per_device, raw = {}, {}
+    want = None if args.which_pass == "both" else args.which_pass
     for dev in args.devices:
-        runs = load(args.results_dir, dev)
-        print(f"- {DEV_LABEL.get(dev, dev)}: {len(runs)} run-file(s)")
+        runs = load(args.results_dir, dev, want)
+        print(f"- {DEV_LABEL.get(dev, dev)}: {len(runs)} run-file(s) "
+              f"[{args.which_pass} pass]")
         raw[dev] = runs
         per_device[dev] = agg_by_arm(runs) if runs else {}
     print("\nmax/mean in flight = queries simultaneously inside the pipeline, "

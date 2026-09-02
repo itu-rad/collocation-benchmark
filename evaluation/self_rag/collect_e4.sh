@@ -174,7 +174,12 @@ fi
 
 run_one() {
   local cfg=$1 cell=$2 r=$3 lab outfile start rc secs rows spans
-  lab="e4_${cell}_${MACHINE}_r${r}"
+  # The two passes must not share a label. The cell name has both `_obs` and
+  # `_serial` stripped from it, so without this suffix the counter pass produces
+  # exactly the filenames the latency pass already wrote -- and the "skip if it
+  # exists" guard below would skip every counter run, silently collecting
+  # nothing. It also keeps the two passes distinguishable on the tracking server.
+  lab="e4_${cell}_${MACHINE}$([ "$MODE" = obs ] && echo _obs)_r${r}"
   [ -f "$RESULTS/$lab.csv" ] && { log "  [skip] $lab (exists)"; return 0; }
   outfile=$(mktemp); start=$(date +%s)
   # main.py appends to an existing label's file, so a run killed part-way leaves
