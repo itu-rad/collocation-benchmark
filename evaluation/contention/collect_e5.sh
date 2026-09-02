@@ -315,6 +315,34 @@ run_cell() {
 
   [ "$coll" = mps ] && mps_down
 
+  # Was the foreground actually contended for its whole run? The fixed warm-up
+  # only proves the background PROCESS started, not that it was producing load --
+  # a background still loading its model contends with nothing. The two traces
+  # answer it directly, so check rather than assume: the answer depends on which
+  # side loads slower, which differs per cell and per machine.
+  if [ "$bg" != "-" ] && [ -s "$RESULTS/$bg_lab.csv" ] && [ -s "$RESULTS/$fg_lab.csv" ]; then
+    gapmsg=$(python - "$RESULTS/$bg_lab.csv" "$RESULTS/$fg_lab.csv" <<'PYGAP' 2>&1
+import csv, sys
+def first_run(path):
+    with open(path) as f:
+        for row in csv.reader(f):
+            if len(row) >= 5 and row[3].strip() == "run" and row[4].strip() == "start":
+                return float(row[0])
+bg, fg = first_run(sys.argv[1]), first_run(sys.argv[2])
+if bg is None or fg is None:
+    print("  warm-up check: could not read first query from both traces")
+elif bg > fg:
+    print(f"  !! WARM-UP: the foreground ran {bg-fg:.0f}s before the background "
+          f"produced any load -- that much of this cell is UNCONTENDED. "
+          f"Raise E5_BG_WARMUP.")
+else:
+    print(f"  warm-up ok: background was loaded {fg-bg:.0f}s before the "
+          f"foreground's first query")
+PYGAP
+)
+    log "$gapmsg"
+  fi
+
   spans=$(sed -n 's/^\[[a-z]*\] spans emitted: //p' "$outfile" | tail -1)
   rm -f "$outfile"
   rows=$( [ -f "$RESULTS/$fg_lab.csv" ] && wc -l < "$RESULTS/$fg_lab.csv" | tr -d ' ' || echo 0 )
