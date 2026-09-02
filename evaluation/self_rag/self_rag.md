@@ -39,8 +39,11 @@ resident weights, retry control flow), and does the causal picture shift across 
   - **gb10**: the existing **R=4** runs in `results/cuda/` are reused (drop r1 → R=3).
   - **m3pro**: collected fresh at **R=6**. The pre-existing runs in `results/mlx/` are **M2 Pro
     data, not m3pro** — see the provenance note below.
-- **Power/energy/memory** — from **new R=2 listener-on passes**; one paired on/off cell bounds the
-  observer cost. The split is stated in methods.
+- **Power/energy/memory** — from **new R=2 listener-on passes**; the split is stated in methods.
+- **Observer cost** — needs no extra collection. `gen_listener_configs.py` builds each `_obs_`
+  config as an exact twin of its listener-off counterpart (verified: the two differ only in `name`
+  and `listeners`), so every config is run both ways and the on/off comparison is available for
+  all of them, not just one paired cell.
 - **Throughput** — Poisson cells re-collected under the derived-λ rule (the existing ones are
   R=1/truncated).
 
