@@ -34,22 +34,43 @@ resident weights, retry control flow), and does the causal picture shift across 
 
 ## Data protocol
 
-- **Latency/quality** — from the existing **R=4 listener-off serial runs** in `results/{cuda,mlx}/`
-  (drop r1 → R=3). Do **not** re-collect these under listeners.
+- **Latency/quality** — listener-off serial runs; do **not** re-collect these under listeners,
+  which would fold an observer cost into the headline table.
+  - **gb10**: the existing **R=4** runs in `results/cuda/` are reused (drop r1 → R=3).
+  - **m3pro**: collected fresh at **R=6**. The pre-existing runs in `results/mlx/` are **M2 Pro
+    data, not m3pro** — see the provenance note below.
 - **Power/energy/memory** — from **new R=2 listener-on passes**; one paired on/off cell bounds the
   observer cost. The split is stated in methods.
 - **Throughput** — Poisson cells re-collected under the derived-λ rule (the existing ones are
   R=1/truncated).
 
+### Provenance — the `mlx` runs predate the current Mac
+
+The serial runs tagged `mlx` (last collected 2026-08-23) came from the older **16 GB M2 Pro**, not
+from the 24 GB m3pro the paper reports. Three independent checks agree:
+
+1. m3pro had **no `sentence_transformers` installed** and **no `e5-base-v2` cached** — the retriever
+   could not have run there, and a smoke run failed on exactly that import.
+2. The M2 Pro has both, plus the model in its HuggingFace cache.
+3. `CHOREO_FINDINGS.md`'s own setup table says it outright: *"mlx = M2 Pro (4-bit OptiQ)"*.
+
+Reusing them would have paired a 16 GB machine's latencies with a memory column claiming 24 GB —
+and the memory-budget question (what a 5× larger budget buys) is one of the section's exhibits, so
+the error would have landed directly in a headline claim. **Every `mlx` number in
+`CHOREO_FINDINGS.md` is therefore M2 Pro data**; the `cuda` numbers there are genuine gb10.
+
 ## Layout
 
     configs/                 the arms (YAML-only differences)
-    results/{cuda,mlx}/      R=4 serial runs, reusable for latency/quality
+    results/cuda/            R=4 serial runs (gb10), reusable for latency/quality
+    results/mlx/             M2 Pro runs -- NOT m3pro; superseded by results/m3pro/
+    results/m3pro/           R=6 serial runs collected on the current Mac
     results/quantest/        bf16 datum from the retired cost-law work; orphaned, kept as data
     judge/                   Haiku LLM-judge inputs + verdicts (quality column)
     analyze_e4.py            analyzer (CSV path carries §5.1; spans migration is not blocking)
     gen_serialized_configs.py
-    collect.sh               to be replaced by collect_e4.sh (collect_e3.sh pattern)
+    collect_e4.sh            the two passes (serial = latency/quality, obs = counters)
+    collect.sh               superseded by collect_e4.sh
     stage_latency.py · retry_analysis.py · retry_tail.py   to be folded into the analyzer
 
 ## Not doing

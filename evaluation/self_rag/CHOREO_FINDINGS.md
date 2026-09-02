@@ -1,5 +1,11 @@
 # Self-RAG — What the framework Surfaces About Agentic-RAG Cost and Control Flow
 
+> **PROVENANCE (2026-09-02): every `mlx` number in this file is M2 Pro data, not m3pro.** The
+> setup table below says so itself ("mlx = M2 Pro"), and it is confirmed independently: the m3pro
+> machine had neither `sentence_transformers` installed nor `e5-base-v2` cached, so this pipeline
+> had never run there. The `cuda` numbers are genuine gb10. The Mac half of §5.1 is being
+> re-collected on m3pro; do not carry any `mlx` figure here into the paper.
+
 > **E4/E5 FRAMING SUPERSEDED (2026-09-02).** This document predates the agreed §5 case-study
 > plan. Where it describes E4 as a "prefill/decode flip" or E5 as an indexer study, it is stale:
 > **§5.1 is Self-RAG execution strategies** (monolithic prompt / shared+locked / per-role copies /
