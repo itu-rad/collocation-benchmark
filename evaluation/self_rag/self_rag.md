@@ -100,6 +100,35 @@ the error would have landed directly in a headline claim. **Every `mlx` number i
     collect.sh               superseded by collect_e4.sh
     stage_latency.py · retry_analysis.py · retry_tail.py   to be folded into the analyzer
 
+## Carried over from the retired findings document
+
+`CHOREO_FINDINGS.md` was removed (superseded framing, working title in the name, and every `mlx`
+number in it was M2 Pro data). Two things in it are method, not superseded results, and are kept
+here.
+
+### Why the retriever is `e5-base-v2` at top_k=5
+
+The first pass used ChromaDB's default `all-MiniLM-L6-v2` at top_k=3, which capped accuracy by
+mis-ranking supporting passages. It was rebuilt with **`e5-base-v2` at top_k=5** — the embedder
+MLPerf's `e2e-rag` uses — and everything re-run. Retrieval-hit rose 0.62 → 0.705 (factoid) and
+0.43 → 0.50 (multihop); judge accuracy rose 8–11 pp on factoid.
+
+This matters for how the strategies are read: splitting questions by whether the gold answer was
+retrieved at all, a 4B extracts as well as the 9B when retrieval succeeds and neither recovers when
+it fails (≈88% of shared factoid failures are retrieval misses). So the quality column is
+**retrieval-bound**, and the strategies are quality-comparable by construction rather than by luck —
+which is why the section can compare them on latency, memory and power without a quality confound.
+The conclusion held at both retriever strengths, so it is a property of the task, not of a weak
+retriever.
+
+### Why quality is scored by LLM judge, not exact match
+
+Exact match materially mis-ranks these strategies (it penalises correct answers phrased differently),
+so quality is scored three ways — exact match, token-F1, and a **Haiku LLM judge** for semantic
+equivalence. The judge is the one the section reports; `run_judge.py` reproduces it, and its
+`score` subcommand re-derives every cell from the stored verdicts with no API calls. Greedy decoding
+makes answers byte-identical across repetitions, so R=1 is exact for quality.
+
 ## Not doing
 
 Predictive cost law · unit-of-measurement critique (that is §4/E3's register) · knob sweeps
