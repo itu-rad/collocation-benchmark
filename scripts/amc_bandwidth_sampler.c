@@ -112,6 +112,18 @@ int main(int argc, char** argv) {
 
     CFMutableDictionaryRef sub_chans = NULL;
     void* sub = CreateSub(NULL, chans, &sub_chans, 0, NULL);
+    // On some machines the group-scoped copy returns a dictionary the
+    // subscription will not accept (observed on M3 Pro: "AMC Stats" copies
+    // non-NULL, CreateSubscription then fails, while the very same AMC DCS
+    // channels are present in the all-channel copy). Retry unscoped rather than
+    // reporting a machine has no counters when it does.
+    if (!sub && CopyAll) {
+        CFMutableDictionaryRef all = CopyAll(0, 0);
+        if (all) {
+            chans = all;
+            sub = CreateSub(NULL, chans, &sub_chans, 0, NULL);
+        }
+    }
     if (!sub) { fprintf(stderr, "IOReportCreateSubscription failed\n"); return 1; }
 
     // Verify AMC DCS channels actually exist before promising data.
@@ -143,6 +155,32 @@ int main(int argc, char** argv) {
             n_dcs, interval_ms, out_path ? out_path : "stdout");
 
     CFDictionaryRef prev = CreateSamples(sub, sub_chans, NULL);
+
+    // Channels existing is not the same as the machine populating them. On M3
+    // Pro every AMC DCS RD/WR channel is present and permanently reads zero, so
+    // without this the sampler runs happily and writes an all-zero CSV --
+    // downstream, indistinguishable from a machine that moved no memory. These
+    // are monotonic byte counters, so on a machine that populates them at least
+    // one is non-zero in the very first sample.
+    __block int64_t n_live = 0;
+    Iterate(prev, ^int(CFDictionaryRef ch) {
+        char g2[128], nm[256];
+        cstr(GetGroup(ch), g2, sizeof g2); cstr(GetChannelName(ch), nm, sizeof nm);
+        if (strstr(g2, "AMC") && (strstr(nm, "DCS RD") || strstr(nm, "DCS WR"))) {
+            if (GetInt(ch, NULL) > 0) n_live++;
+        }
+        return 0;
+    });
+    if (n_live == 0) {
+        fprintf(stderr,
+            "amc_bandwidth_sampler: %d AMC DCS RD/WR channels are present but ALL "
+            "read zero -- this machine does not populate the per-requestor DRAM "
+            "byte counters (observed on M3 Pro; they work on M2 Pro). Refusing to "
+            "emit an all-zero trace. 'Energy Model / AMCC' does respond here; see "
+            "contention.md.\n", n_dcs);
+        return 3;
+    }
+
     double t_prev = now_mono();
     struct timespec sleep_ts = { interval_ms / 1000, (interval_ms % 1000) * 1000000L };
 
@@ -173,13 +211,25 @@ int main(int argc, char** argv) {
             // channels ("DIE0 ECPU0 DCS RD", "DIE0 GFX DCS RD", ...) are the
             // attribution breakdown. Summing the aggregate AND its components
             // double-counts (the calibration bug: reported total = 2x real).
-            if (!strstr(name, "DIE")) {
+            // Aggregate vs per-requestor is decided by whether the channel
+            // carries a REQUESTOR TOKEN, not by a "DIE" prefix. M2 names them
+            // "DIE0 GFX DCS RD"; M3 names the same channel "GFX DCS RD". Keying
+            // on "DIE" therefore read every M3 per-requestor channel as the
+            // aggregate, leaving cpu/gpu/ane at zero on the machine the paper
+            // reports while looking like a working sampler.
+            int b = -1;
+            if (strstr(name, "PCPU") || strstr(name, "ECPU")) b = B_CPU;
+            else if (strstr(name, "GFX")) b = B_GPU;
+            else if (strstr(name, "ANE") || strstr(name, "ANS")) b = B_ANE;
+            else if (strstr(name, "AVD") || strstr(name, "ISP") ||
+                     strstr(name, "JPEG") || strstr(name, "DISP") ||
+                     strstr(name, "SIO") || strstr(name, "PMP")) b = B_OTHER;
+            if (b < 0) {
+                // No requestor token: the memory-controller aggregate. Summing
+                // it AND its components double-counts (the calibration bug that
+                // once reported 2x the real total).
                 if (is_rd) s_agg_rd += v; else s_agg_wr += v;
             } else {
-                int b = B_OTHER;
-                if (strstr(name, "PCPU") || strstr(name, "ECPU")) b = B_CPU;
-                else if (strstr(name, "GFX")) b = B_GPU;
-                else if (strstr(name, "ANE") || strstr(name, "ANS")) b = B_ANE;
                 if (is_rd) s_rd[b] += v; else s_wr[b] += v;
             }
             if (s_rawout && v > 0) fprintf(s_rawout, "# %s = %lld\n", name, (long long)v);

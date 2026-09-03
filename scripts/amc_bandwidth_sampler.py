@@ -90,14 +90,30 @@ class AMCBandwidthSampler:
         return self
 
     def stop(self) -> Path:
+        """Stop the sampler. Raises if it had already refused to sample.
+
+        The 0.2s liveness poll in start() only catches an immediate failure. The
+        sampler can also bail a moment later -- notably exit 3, "the AMC channels
+        are present but all read zero" on machines that do not populate them --
+        and without checking here the caller sees a clean return and an empty
+        trace, which is the failure this whole sampler exists to avoid.
+        """
+        rc = None
         if self._proc is not None:
             self._proc.send_signal(signal.SIGTERM)
             try:
-                self._proc.wait(timeout=5)
+                rc = self._proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 self._proc.kill()
-                self._proc.wait()
+                rc = self._proc.wait()
             self._proc = None
+        # SIGTERM is how we normally stop it: -15/143 are expected.
+        if rc not in (None, 0, -signal.SIGTERM, 128 + signal.SIGTERM):
+            raise RuntimeError(
+                f"AMC sampler exited {rc} rather than being stopped. rc=3 means "
+                f"this machine does not populate the per-requestor DRAM byte "
+                f"counters; run the binary directly for the full message: "
+                f"{BIN} -i 500 -n 2")
         return self.out
 
     def __enter__(self) -> "AMCBandwidthSampler":
