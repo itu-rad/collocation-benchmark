@@ -1,0 +1,115 @@
+# E4 — Self-RAG decomposition: the prefill/decode split
+
+prefill = first_token(start->end) (TTFT, compute-bound); decode = run_end - first_token_end (memory-bandwidth-bound). Pooled over LLM stages and repetitions; medians.
+
+- m3pro (Apple M3 Pro, 18 GB): 48 run-file(s) [serial pass]
+- gb10 (NVIDIA GB10, 120 GB): 32 run-file(s) [serial pass]
+
+max/mean in flight = queries simultaneously inside the pipeline, from the pipeline start/end markers: the max is over the cell's runs, the mean is time-weighted within a run then averaged over them. Serialized collection must show max in flight = 1.
+
+## Measured concurrency check
+
+All runs show max in flight = 1: exactly one query was in flight at every instant, so prefill is a per-query measurement in every cell reported below.
+
+## m3pro (Apple M3 Pro, 18 GB) — prefill vs decode per arm
+
+| task | arm | LLM calls | prefill median (ms) | decode median (ms) | unaccounted (ms) | prefill share of p+d | decode tok/s | max in flight | mean in flight |
+|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| factoid | decomposed | 564 | 1660 | 51 | 2 | 97.0% | 19.8 | 1 | 1.00 |
+| factoid | decomposed_shared | 564 | 1655 | 50 | 1 | 97.0% | 20.0 | 1 | 1.00 |
+| factoid | monolith | 204 | 3457 | 1625 | 2 | 68.0% | 20.9 | 1 | 1.00 |
+| factoid | monolith_4b | 192 | 1902 | 695 | 2 | 73.2% | 35.9 | 1 | 1.00 |
+| multihop | decomposed | 612 | 1360 | 51 | 1 | 96.4% | 19.7 | 1 | 1.00 |
+| multihop | decomposed_shared | 612 | 1339 | 51 | 1 | 96.3% | 19.8 | 1 | 1.00 |
+| multihop | monolith | 516 | 2925 | 1439 | 1 | 67.0% | 20.8 | 1 | 1.00 |
+| multihop | monolith_4b | 420 | 1655 | 590 | 1 | 73.7% | 35.6 | 1 | 1.00 |
+
+## gb10 (NVIDIA GB10, 120 GB) — prefill vs decode per arm
+
+| task | arm | LLM calls | prefill median (ms) | decode median (ms) | unaccounted (ms) | prefill share of p+d | decode tok/s | max in flight | mean in flight |
+|---|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| factoid | decomposed | 376 | 480 | 142 | 3 | 77.2% | 22.0 | 1 | 1.00 |
+| factoid | decomposed_shared | 376 | 473 | 142 | 3 | 76.9% | 21.8 | 1 | 1.00 |
+| factoid | monolith | 120 | 724 | 1916 | 3 | 27.4% | 16.9 | 1 | 1.00 |
+| factoid | monolith_4b | 136 | 551 | 1192 | 3 | 31.6% | 22.1 | 1 | 1.00 |
+| multihop | decomposed | 464 | 401 | 145 | 3 | 73.5% | 22.0 | 1 | 1.00 |
+| multihop | decomposed_shared | 464 | 398 | 142 | 3 | 73.6% | 22.3 | 1 | 1.00 |
+| multihop | monolith | 288 | 630 | 1649 | 3 | 27.7% | 17.5 | 1 | 1.00 |
+| multihop | monolith_4b | 296 | 477 | 1034 | 3 | 31.6% | 22.2 | 1 | 1.00 |
+
+### m3pro (Apple M3 Pro, 18 GB) — per-role phase shape
+
+| arm | LLM role | calls | prefill median (ms) | decode median (ms) | prefill share | decode tok/s |
+|---|---|--:|--:|--:|--:|--:|
+| decomposed | Generator LLM | 336 | 1513 | 105 | 93.5% | 28.7 |
+| decomposed | Grader LLM | 432 | 1607 | 51 | 96.9% | 19.6 |
+| decomposed | Hallucination LLM | 336 | 1461 | 51 | 96.6% | 19.6 |
+| decomposed | Query rewrite LLM | 72 | 1168 | 226 | 83.8% | 33.2 |
+| decomposed_shared | Shared LLM (generate) | 336 | 1508 | 104 | 93.5% | 28.8 |
+| decomposed_shared | Shared LLM (grade) | 432 | 1507 | 50 | 96.8% | 19.8 |
+| decomposed_shared | Shared LLM (hallucination) | 336 | 1460 | 51 | 96.7% | 19.8 |
+| decomposed_shared | Shared LLM (rewrite) | 72 | 1166 | 230 | 83.5% | 33.3 |
+| monolith | Monolith LLM | 540 | 3455 | 1501 | 69.7% | 20.9 |
+| monolith | Query rewrite LLM | 180 | 2082 | 499 | 80.7% | 20.0 |
+| monolith_4b | Monolith LLM | 486 | 1947 | 645 | 75.1% | 35.9 |
+| monolith_4b | Query rewrite LLM | 126 | 1171 | 185 | 86.4% | 32.6 |
+
+### gb10 (NVIDIA GB10, 120 GB) — per-role phase shape
+
+| arm | LLM role | calls | prefill median (ms) | decode median (ms) | prefill share | decode tok/s |
+|---|---|--:|--:|--:|--:|--:|
+| decomposed | Generator LLM | 212 | 443 | 237 | 65.1% | 22.2 |
+| decomposed | Grader LLM | 328 | 478 | 137 | 77.8% | 22.0 |
+| decomposed | Hallucination LLM | 212 | 422 | 137 | 75.5% | 21.9 |
+| decomposed | Query rewrite LLM | 88 | 352 | 408 | 46.3% | 22.1 |
+| decomposed_shared | Shared LLM (generate) | 212 | 443 | 239 | 65.0% | 22.1 |
+| decomposed_shared | Shared LLM (grade) | 328 | 471 | 136 | 77.6% | 22.0 |
+| decomposed_shared | Shared LLM (hallucination) | 212 | 423 | 136 | 75.7% | 22.0 |
+| decomposed_shared | Shared LLM (rewrite) | 88 | 370 | 377 | 49.6% | 22.9 |
+| monolith | Monolith LLM | 324 | 718 | 1835 | 28.1% | 17.3 |
+| monolith | Query rewrite LLM | 84 | 500 | 563 | 47.0% | 17.3 |
+| monolith_4b | Monolith LLM | 336 | 543 | 1145 | 32.2% | 22.2 |
+| monolith_4b | Query rewrite LLM | 96 | 348 | 351 | 49.8% | 22.3 |
+
+## Cross-device: prefill/decode balance (m3pro (Apple M3 Pro, 18 GB) vs gb10 (NVIDIA GB10, 120 GB))
+
+| task | arm | prefill m3pro | prefill gb10 | prefill speedup | tok/s m3pro | tok/s gb10 | decode speedup (per token) | decode ratio (per call) |
+|---|---|--:|--:|--:|--:|--:|--:|--:|
+| factoid | decomposed | 1660 | 480 | **3.46x** | 19.8 | 22.0 | **1.11x** | 0.36x |
+| factoid | decomposed_shared | 1655 | 473 | **3.50x** | 20.0 | 21.8 | **1.09x** | 0.35x |
+| factoid | monolith | 3457 | 724 | **4.77x** | 20.9 | 16.9 | **0.81x** | 0.85x |
+| factoid | monolith_4b | 1902 | 551 | **3.45x** | 35.9 | 22.1 | **0.62x** | 0.58x |
+| multihop | decomposed | 1360 | 401 | **3.39x** | 19.7 | 22.0 | **1.12x** | 0.35x |
+| multihop | decomposed_shared | 1339 | 398 | **3.37x** | 19.8 | 22.3 | **1.13x** | 0.36x |
+| multihop | monolith | 2925 | 630 | **4.64x** | 20.8 | 17.5 | **0.84x** | 0.87x |
+| multihop | monolith_4b | 1655 | 477 | **3.47x** | 35.6 | 22.2 | **0.62x** | 0.57x |
+
+**Read the per-TOKEN column, not the per-call one.** Decode duration is
+(tokens x time-per-token), and the two backends do NOT emit the same number of
+tokens for the same prompt under greedy decoding — MLX 4-bit and BitsAndBytes NF4
+produce different outputs, e.g. decomposed_shared emits ~2.0 tokens/call on mlx
+against ~4.0 on cuda. A per-call decode ratio therefore mixes decode SPEED with
+how long the model chose to talk, and understates cuda by up to 2x. tok/s is the
+speed measure; the per-call column is retained only to show the size of that
+distortion.
+
+If the compute-bound prefill speeds up much more than the memory-bound decode
+across devices, the phase balance shifts — which is what moves the optimal
+decomposition and can flip which arm wins.
+
+## Cross-device with 95% CIs — m3pro (Apple M3 Pro, 18 GB) vs gb10 (NVIDIA GB10, 120 GB) (run 1 dropped as warm-up)
+
+| task | arm | prefill speedup [95% CI] | decode speedup [95% CI] | runs |
+|---|---|--:|--:|--:|
+| factoid | decomposed | **3.45x** [3.45, 3.60] | 0.36x [0.35, 0.37] | 3 |
+| factoid | decomposed_shared | **3.50x** [3.44, 3.57] | 0.36x [0.35, 0.37] | 3 |
+| factoid | monolith | **4.75x** [4.65, 4.85] | 0.85x [0.82, 0.86] | 3 |
+| factoid | monolith_4b | **3.45x** [3.44, 3.69] | 0.58x [0.56, 0.59] | 3 |
+| multihop | decomposed | **3.37x** [3.31, 3.39] | 0.35x [0.34, 0.36] | 3 |
+| multihop | decomposed_shared | **3.37x** [3.26, 3.41] | 0.35x [0.34, 0.36] | 3 |
+| multihop | monolith | **4.67x** [4.59, 4.77] | 0.87x [0.85, 0.88] | 3 |
+| multihop | monolith_4b | **3.46x** [3.40, 3.54] | 0.57x [0.55, 0.59] | 3 |
+
+Decode here is a per-CALL duration ratio; see the tok/s columns for the per-token rate, which is the speed measure.
+
+**Figure:** `/Users/roba/Documents/work/research/collocation-benchmark/evaluation/self_rag/paper_assets/e4_prefill_decode.png`
