@@ -126,49 +126,44 @@ Collocation types at one calibrated intensity everywhere; dose–response on m3p
 counters carry the narrative; gb10 types-only, run overnight behind the occupancy gate with arm
 order rotated.
 
-## One process or two — and why it had to be two
+## One YAML, one run, one process per pipeline
 
-The staged configs declare the foreground and the background as two pipelines inside **one**
-config, which the framework runs as two pipelines in **one process**. That is fine for the CPU
-and same-engine cells, but it makes two of this section's claims unmeasurable:
+A cell is a single config passed to `main.py`. The config declares both pipelines — the RAG-serve
+foreground from §5.1 and a single-resource background co-runner — and `main.py`'s orchestrator
+mode (no `-p`) builds radt's schedule in memory with **one row per pipeline**, which radt then
+launches as **separate processes** (`main.py <cfg> -p <n>`).
 
-* **MPS and MIG partition GPU work between _processes_.** With both pipelines in one process
-  there is nothing for either mechanism to partition, so the gb10 axis (time-sliced / MPS / CPU)
-  collapses to a single point.
-* **One process is one radt run.** The section promises every number is attributed to the
-  pipeline that caused it — own run, own listeners, own spans. In one process that attribution
-  has to be reconstructed from spans rather than measured.
+That process separation is what the section needs, and it was there all along: each pipeline gets
+its own radt run, its own listeners and its own spans, so every number is attributed to the
+pipeline that caused it — and MPS, which partitions between processes rather than threads, has
+something to partition. Verified on gb10: two GPU contexts, 8192 MiB foreground and 1913 MiB
+background, from one config.
 
-`gen_collocation_configs.py` therefore splits them into `fg_ragserve_<engine>.yml` and
-`bg_<kind>_L<level>_<engine>.yml`, copying the stage lists verbatim from the committed staged
-configs — the pipelines already carry their own loadgen and `dataset_stage_id`, so the split is
-mechanical, not a redesign. `collect_e5.sh` runs the pair as two processes.
+*(An earlier note here claimed the fused configs ran in one process and had to be split. That was
+wrong — it was an artefact of the harnesses invoking `main.py ... -p 0`, which selects a single
+pipeline and bypasses the schedule entirely. The split configs and their generator were removed.)*
 
-The staged configs stay as they are: they remain the record of the single-diff discipline, and
-the fused form is still the right one for the modularity clause ("same stages, one YAML, two
-pipelines").
+## Asking for a collocation mechanism
 
-### Open decision — who starts MPS
+`collocation:` is a key in the same pipeline YAML as `listeners:`:
 
-The plan's wording is that *radt configures MPS automatically*, which answers by demonstration
-the manual-MPS/MIG-expertise gap named in related work. As built, radt configures MPS **only
-along its schedule path** — a workload CSV carrying a `Collocation` column. That path is not
-reachable from the direct `main.py` invocation the collection scripts use, and radt reads no
-environment variable for it (`RADT_COLLOCATION` does not exist).
+| value | meaning |
+|---|---|
+| `""` (default) | time-sliced — the processes share the GPU as usual |
+| `"mps"` | radt brings up the CUDA MPS control daemon for the group |
+| `"1g.10gb"` etc. | a MIG profile string |
 
-`collect_e5.sh` therefore starts the daemon itself, with exactly the call radt's `make_mps()`
-makes, and verifies it answered `get_server_list` before anything is measured under it — an
-unverified daemon is invisible at run time, and the MPS cell would otherwise collect a second
-time-sliced cell and report it as a partitioned one.
-
-**This weakens the "automatic" claim and needs an author decision:** either route the gb10 cells
-through radt's schedule path so the claim is literally demonstrated, or soften the claim to what
-is true — that radt *supports* MPS and MIG configuration, which the section exercises.
+`main.py` forwards it into the schedule row radt already builds, and radt's own `make_mps()` does
+the setup. So **the claim that radt configures MPS is demonstrated literally**, no CSV and no
+second mechanism — and the time-sliced and MPS cells are the same config differing in one line,
+which is the point the section makes. `generate_stage_configs.py` emits the MPS twin alongside
+each GPU cell.
 
 ## Machinery
 
-`gen_collocation_configs.py` and `collect_e5.sh` here, alongside `analyze_staged.py`,
-`staged_lib.py`, `generate_stage_configs.py` and `amc_calibration.py`;
+`collect_e5.sh` here, alongside `analyze_staged.py`, `staged_lib.py`,
+`generate_stage_configs.py` (which now also writes each device's listeners into every config,
+sizes each background to outlast the foreground, and emits the MPS twins) and `amc_calibration.py`;
 the AMC sampler under `../../scripts/`. The calibration record is in `AMC_CALIBRATION.md`; the hardware-attribution facts are
 consolidated above.
 
@@ -184,5 +179,11 @@ dose–response slopes, and the matched-bytes/s slope-ratio comparison.
 
 ## Blocking before collection
 
-Listeners are off on every serial config, so the profiling contribution has no supporting data
-at all. That is the gate — see the §5 plan.
+**Cleared (2026-09-03).** Listeners record on both machines, and the harness proves it per pass
+rather than assuming: `collect_e5.sh` aborts if the first cell lands no `system/*` series on the
+tracking server. Observer cost is measured, not feared — +0.0% on m3pro (macmon), −0.7% on gb10
+(dcgmi+top); see `../self_rag/self_rag.md`.
+
+Two prerequisites bit here and are now checked by `scripts/radt_gate.py`: radt **patch 0002**
+(without it the multi-pipeline schedule path hangs before any workload starts — no children, no
+GPU work, no output) and a stale `radtlock` left by a killed schedule.
