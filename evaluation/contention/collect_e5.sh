@@ -307,9 +307,24 @@ run_cell() {
       log "  !! background exited before the foreground (rc=$bg_rc) -- part of this"
       log "     cell ran UNCONTENDED; check the background's query budget"
     else
+      # Sizing the background to outlast the foreground means it is always killed
+      # mid-stream, with thousands of queries still queued -- and main.py does not
+      # reliably exit on SIGTERM from there (observed: a background ignored it for
+      # 11 hours while `wait` blocked the whole collection). Give it a real grace
+      # period so it can flush its spans, then stop waiting and force it.
       kill -TERM "$bgpid" 2>/dev/null
+      for _ in $(seq 1 "${E5_BG_TERM_GRACE:-45}"); do
+        kill -0 "$bgpid" 2>/dev/null || break
+        sleep 1
+      done
+      if kill -0 "$bgpid" 2>/dev/null; then
+        log "  background ignored SIGTERM for ${E5_BG_TERM_GRACE:-45}s; sending SIGKILL"
+        kill -9 "$bgpid" 2>/dev/null
+      fi
       wait "$bgpid" 2>/dev/null; bg_rc=$?
-      [ "$bg_rc" -eq 143 ] && bg_rc=0
+      # 143 = SIGTERM, 137 = SIGKILL. Both are the intended end of a background
+      # that was built to outlast the run.
+      case "$bg_rc" in 143|137) bg_rc=0 ;; esac
     fi
   fi
 
