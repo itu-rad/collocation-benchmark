@@ -63,6 +63,30 @@ def main() -> int:
             "queue). The multi-threaded LLM workload will lose spans at "
             "teardown. Applied checkout: evaluation/radt-patches/"
             "0003-trace-emit-never-raises-on-closed-queue.patch")
+    # Patch 0002: the multi-pipeline schedule path. main.py's orchestrator mode
+    # (one run = one YAML, one process per pipeline) goes through it, and
+    # unpatched it hangs forever BEFORE any workload starts -- workers sit in
+    # select() with no children, no GPU work, no output, and a radtlock left
+    # behind. Nothing about that says "missing patch", so check for it.
+    try:
+        import radt.schedule.schedule as sched
+        ssrc = inspect.getsource(sched)
+        if "param_def, filepath, _ in defs:" not in ssrc:
+            problems.append(
+                "radt patch 0002 is NOT applied (the schedule path reuses the "
+                "last param_def for every run). Multi-pipeline configs -- every "
+                "collocation cell -- hang before starting. Apply: "
+                "evaluation/radt-patches/0002-schedule-fix-multi-run-param_def-"
+                "reuse-deadlock-on-p.patch")
+    except Exception as e:  # noqa: BLE001
+        problems.append(f"cannot inspect radt.schedule.schedule: {e}")
+
+    # A radtlock left by a killed schedule blocks the next one silently.
+    lock = os.path.join(os.getcwd(), "radtlock")
+    if os.path.exists(lock):
+        problems.append(f"a stale {lock} is present -- a previous schedule was "
+                        f"killed. Remove it or the next run blocks.")
+
     if problems:
         print("radt-gate FAILED:", file=sys.stderr)
         for p in problems:
