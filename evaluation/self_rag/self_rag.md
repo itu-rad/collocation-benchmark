@@ -45,21 +45,18 @@ resident weights, retry control flow), and does the causal picture shift across 
   and `listeners`), so every config is run both ways and the on/off comparison is available for
   all of them, not just one paired cell.
 
-  **Measured on gb10** (dcgmi+top, all 8 configs both ways, 2026-09-03): the listener-on medians
-  sit **−0.7%** from listener-off across 16 prefill/decode cells, range −3.4% to +1.4%, signed in
-  both directions — i.e. within run-to-run noise rather than a cost. Reproduce with
-  `analyze_e4.py --devices gb10 --pass serial` against `--pass obs`.
+  **Measured on both machines** (all 8 configs run both ways; 2026-09-03). The listeners cost
+  nothing detectable at this granularity — the shifts are scattered in both directions and sit
+  inside run-to-run noise. Reproduce with `analyze_e4.py --pass serial` against `--pass obs`.
 
-  | | prefill Δ | decode Δ |
-  |---|--:|--:|
-  | factoid / decomposed | −2.0% | −1.7% |
-  | factoid / decomposed_shared | −0.3% | −1.0% |
-  | factoid / monolith | −1.3% | +1.2% |
-  | factoid / monolith_4b | −1.3% | −1.0% |
-  | multihop / decomposed | −0.3% | −0.5% |
-  | multihop / decomposed_shared | +0.2% | +1.4% |
-  | multihop / monolith | −3.4% | +1.4% |
-  | multihop / monolith_4b | +0.1% | −1.0% |
+  | | listeners | median shift | range |
+  |---|---|--:|---|
+  | **m3pro** | macmon | **+0.0%** | −0.2% .. +0.2% |
+  | **gb10** | dcgmi + top | **−0.7%** | −3.4% .. +1.4% |
+
+  The m3pro figure settles a specific worry in the plan — that macmon logs synchronously and its
+  cost had to be bounded. With the batched-logger patch (`0005-macmon-use-batched-logger`) it is
+  unmeasurable: no cell moves more than 0.2% in either phase.
 - **Throughput** — Poisson cells re-collected under the derived-λ rule (the existing ones are
   R=1/truncated).
 
