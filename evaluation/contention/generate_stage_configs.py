@@ -206,6 +206,14 @@ def _size_backgrounds(doc: dict) -> None:
         # the background. The foreground defines the measurement window; the
         # background is stopped just past it.
         lg["timeout"] = int(fg_s * 1.2)
+        # A deep queue defeats the timeout. The generator paces at `interval`,
+        # but under contention the co-runner sustains far less, so a 1000-deep
+        # queue saturates and the pipeline is still draining that backlog long
+        # after generation has stopped -- which is how a bounded cell still
+        # outlived its foreground by 12 minutes and counting. A background is
+        # meant to apply steady pressure, not a burst with a long tail, so keep
+        # its backlog shallow and the timeout means what it says.
+        lg["queue_depth"] = 16
 
 
 def _dump(doc: dict, name: str) -> Path:
