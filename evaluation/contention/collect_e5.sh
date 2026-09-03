@@ -64,6 +64,17 @@ export RADT_TRACE_BACKEND=radt
 export RADT_PRESENT=True
 export CHOREO_PROC_TRACE=1
 
+# Bound the span batch uploaded to the tracking server. radt batches spans into
+# gzipped artifacts, rolling at RADT_TRACE_BATCH_EVENTS (default 200000) or
+# RADT_TRACE_BATCH_SECONDS. Batches spooled before the mlflow run id arrives are
+# held and uploaded together, so batch 1 can carry most of a run -- and res17
+# rejects an oversized upload with "413 Request Entity Too Large", which kills
+# the exporter thread and leaves the workload process wedged in teardown. radt
+# then waits for it and the whole cell hangs. Smaller batches, more of them.
+export RADT_TRACE_BATCH_EVENTS=${RADT_TRACE_BATCH_EVENTS:-20000}
+export RADT_TRACE_BATCH_SECONDS=${RADT_TRACE_BATCH_SECONDS:-30}
+
+
 : "${MLFLOW_TRACKING_URI:?collect_e5: MLFLOW_TRACKING_URI is unset. Activate the conda env rather than invoking the python binary directly; the credentials are env config vars.}"
 EXP=${E5_EXPERIMENT:-138}
 echo "5.2: recording to ${MLFLOW_TRACKING_URI} (experiment $EXP)"
