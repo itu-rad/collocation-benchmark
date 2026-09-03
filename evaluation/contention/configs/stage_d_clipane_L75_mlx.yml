@@ -46,9 +46,9 @@ pipelines:
   - 1
   loadgen:
     component: loadgen.MultiStreamScheduler
-    queue_depth: 1000
-    max_queries: 1000
-    timeout: 3600
+    queue_depth: 16
+    max_queries: 10052
+    timeout: 534
     config:
       interval: 0.06653
   stages:
@@ -74,3 +74,5 @@ pipelines:
         coreml_path: tmp/clip_vit_l14_vision.mlpackage
         hf_name: openai/clip-vit-large-patch14
       device: ane
+listeners:
+- macmon
