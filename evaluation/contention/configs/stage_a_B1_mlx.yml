@@ -105,3 +105,5 @@ pipelines:
     component: stages.rag_indexing.ChromaIndexer
     config:
       collection_name: bg_index_shard0
+listeners:
+- macmon

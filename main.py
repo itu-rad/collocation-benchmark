@@ -64,6 +64,11 @@ def parse_args():
     return parser.parse_args()
 
 
+def _slug(name: str) -> str:
+    """Pipeline name -> filename-safe token, matching the default label style."""
+    return "".join(c if c.isalnum() else "_" for c in name).strip("_").lower()
+
+
 def convert_listeners(listeners: list[Literal[listeners.keys()]]) -> str:
     return "+".join(listeners)
 
@@ -334,15 +339,20 @@ def main(args):
                 "Status": "",
                 "Run": "",
                 "Devices": 0,
-                "Collocation": "",
+                "Collocation": benchmark_config.collocation,
                 "Listeners": convert_listeners(benchmark_config.listeners).lower(),
                 "File": "main.py",
                 # Forward the per-run flags to the inner invocation: radt
                 # re-execs main.py from this Params string, so anything not
                 # carried here (label, serialize override) is silently lost
                 # and the run/CSV falls back to default naming.
+                # Each pipeline is its own process writing its own CSV, so the
+                # label must be per-pipeline: a single shared label would make
+                # both write the same file and destroy the per-pipeline
+                # attribution this arrangement exists to provide.
                 "Params": f"{args.config_file_path} -p {pipeline_id}"
-                          + (f" --label {args.label}" if args.label else "")
+                          + (f" --label {args.label}_{_slug(benchmark_config.pipelines[pipeline_id].name)}"
+                             if args.label else "")
                           + (f" --serialize {args.serialize_override}"
                              if args.serialize_override else ""),
             }

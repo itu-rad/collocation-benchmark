@@ -74,8 +74,8 @@ pipelines:
   loadgen:
     component: loadgen.MultiStreamScheduler
     queue_depth: 100
-    max_queries: 100
-    timeout: 3600
+    max_queries: 8811
+    timeout: 1337
     config:
       interval: 0.0759
   stages:
@@ -109,3 +109,6 @@ pipelines:
     component: stages.rag_indexing.ChromaIndexer
     config:
       collection_name: bg_index_shard0
+listeners:
+- dcgmi
+- top

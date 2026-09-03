@@ -153,8 +153,58 @@ def _corunner_dataset_stage_meta(kind: str) -> dict:
     return {"dataset_stage_id": 0, "inputs": [0], "outputs": [1]}
 
 
+# Section 5.2 IS the counters, so every config it generates declares listeners.
+# radt reads them from this key; a config without it runs with none, silently.
+LISTENERS = {"mlx": ["macmon"], "cuda": ["dcgmi", "top"]}
+
+# The background must outlast the foreground. Its own query budget used to end
+# the cell, but it is sized independently of the foreground's, and at L50 the
+# co-runner ran ~119s against a ~446s foreground -- so most of the cell would be
+# measured UNCONTENDED and every degradation number quietly diluted. Size it from
+# the foreground's own loadgen instead; overshooting is free, the run ends with
+# the foreground.
+BG_MARGIN = 1.5
+
+
+def _pipeline_seconds(pipe: dict) -> float:
+    """Wall-clock a pipeline's loadgen is expected to occupy."""
+    lg = pipe.get("loadgen") or {}
+    n = float(lg.get("max_queries") or 0)
+    cfg = lg.get("config") or {}
+    rate = float(cfg.get("rate") or 0)
+    interval = float(cfg.get("interval") or 0)
+    if rate > 0:
+        return n / rate
+    if interval > 0:
+        return n * interval
+    return 0.0
+
+
+def _size_backgrounds(doc: dict) -> None:
+    """Give every background pipeline enough queries to cover the foreground."""
+    pipes = doc.get("pipelines") or []
+    if len(pipes) < 2:
+        return
+    fg_s = _pipeline_seconds(pipes[0])
+    if fg_s <= 0:
+        return
+    for bg in pipes[1:]:
+        lg = bg.get("loadgen") or {}
+        cfg = lg.get("config") or {}
+        interval = float(cfg.get("interval") or 0)
+        if interval <= 0:
+            continue
+        need = fg_s * BG_MARGIN
+        lg["max_queries"] = int(-(-need // interval))
+        lg["timeout"] = int(need * 2)
+
+
 def _dump(doc: dict, name: str) -> Path:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    dev = name.rsplit("_", 1)[-1].removesuffix(".yml").removesuffix("_mps")
+    if dev in LISTENERS:
+        doc.setdefault("listeners", list(LISTENERS[dev]))
+    _size_backgrounds(doc)
     path = OUT_DIR / name
     path.write_text(yaml.safe_dump(doc, sort_keys=False, width=100),
                     encoding="utf-8")
@@ -276,6 +326,16 @@ def main() -> int:
             doc["pipelines"][1] = bg
             files.append((f"C {kind} L={lvl}%",
                           _dump(doc, f"stage_c_{kind}_L{lvl}_{dev}.yml")))
+            # The MPS twin: the SAME config, differing in one key. radt launches
+            # each pipeline as its own process, so MPS has two processes to
+            # partition; `collocation` is what tells radt to bring the daemon up.
+            # Time-sliced vs MPS is then a one-line diff, which is the claim.
+            if dev == "cuda" and kind == "clipgpu":
+                mps_doc = copy.deepcopy(doc)
+                mps_doc["name"] = f"stage_c_{kind}_L{lvl}_{dev}_mps"
+                mps_doc["collocation"] = "mps"
+                files.append((f"C {kind} L={lvl}% (mps)",
+                              _dump(mps_doc, f"stage_c_{kind}_L{lvl}_{dev}_mps.yml")))
 
     # ---- Stage D: = C, ONLY the fg pipeline changes ----------------------
     fg_decode = _load_pipeline(FG_DECODE[dev])

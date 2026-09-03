@@ -1,4 +1,4 @@
-name: stage_c_stream_L50_cuda
+name: stage_c_clipgpu_L50_cuda_mps
 pipelines:
 - name: RAG serve plain
   inputs:
@@ -65,26 +65,42 @@ pipelines:
   - name: End stage
     id: 4
     component: stages.TerminalCapture
-- name: BG co-runner stream
+- name: BG co-runner clipgpu
   dataset_stage_id: 0
   inputs:
   - 0
   outputs:
-  - 0
+  - 1
   loadgen:
     component: loadgen.MultiStreamScheduler
     queue_depth: 1000
-    max_queries: 3257
+    max_queries: 9393
     timeout: 1337
     config:
-      interval: 0.20538
+      interval: 0.0712
   stages:
-  - name: CPU memory stream
+  - name: VQA dataloader
     id: 0
-    component: stages.evaluation.MemoryStream
+    outputs:
+    - 1
+    component: stages.multimodal_vqa.VQADataLoader
     config:
-      size_mb: 256
-      passes: 4
+      dataset:
+        name: Multimodal-Fatima/OK-VQA_train
+        split: train
+        image_column: image
+        question_column: question
+        answers_column: answers
+        max_samples: 100
+      batch_size: 1
+  - name: CLIP vision encoder
+    id: 1
+    component: stages.multimodal_vqa.CLIPVisionEncoder
+    config:
+      model:
+        name: openai/clip-vit-large-patch14
+      device: cuda
 listeners:
 - dcgmi
 - top
+collocation: mps

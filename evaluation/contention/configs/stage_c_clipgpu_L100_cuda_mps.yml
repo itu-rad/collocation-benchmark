@@ -1,4 +1,4 @@
-name: fg_ragserve_mlx
+name: stage_c_clipgpu_L100_cuda_mps
 pipelines:
 - name: RAG serve plain
   inputs:
@@ -40,7 +40,7 @@ pipelines:
         text_column: passage
         max_docs: 3200
       top_k: 3
-      collection_name: rag_serve_plain_corpus
+      collection_name: rag_serve_plain_corpus_cuda
   - name: Answer formatter
     id: 2
     outputs:
@@ -52,14 +52,55 @@ pipelines:
     id: 3
     outputs:
     - 4
-    component: stages.llm_mlx.Inference
+    component: stages.llm_huggingface.Inference
     config:
+      dtype: torch.bfloat16
+      device: cuda
       model:
-        name: mlx-community/Qwen3.5-4B-OptiQ-4bit
+        name: Qwen/Qwen3.5-4B
+        quantize: false
         gen_kwargs:
-          max_tokens: 128
+          do_sample: false
+          max_new_tokens: 128
   - name: End stage
     id: 4
     component: stages.TerminalCapture
+- name: BG co-runner clipgpu
+  dataset_stage_id: 0
+  inputs:
+  - 0
+  outputs:
+  - 1
+  loadgen:
+    component: loadgen.MultiStreamScheduler
+    queue_depth: 1000
+    max_queries: 18786
+    timeout: 1337
+    config:
+      interval: 0.0356
+  stages:
+  - name: VQA dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.multimodal_vqa.VQADataLoader
+    config:
+      dataset:
+        name: Multimodal-Fatima/OK-VQA_train
+        split: train
+        image_column: image
+        question_column: question
+        answers_column: answers
+        max_samples: 100
+      batch_size: 1
+  - name: CLIP vision encoder
+    id: 1
+    component: stages.multimodal_vqa.CLIPVisionEncoder
+    config:
+      model:
+        name: openai/clip-vit-large-patch14
+      device: cuda
 listeners:
-- macmon
+- dcgmi
+- top
+collocation: mps
