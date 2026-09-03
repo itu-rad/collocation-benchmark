@@ -183,8 +183,23 @@ if [ -z "${E5_ALLOW_BUSY:-}" ] && command -v nvidia-smi >/dev/null 2>&1; then
   fi
 fi
 
+# Wall-clock cap for one cell, from the foreground's own declared loadgen.
+CELL_CAP_S=$(python - "${cells[0]#*|}" <<'PYCAP'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1]))
+lg = d["pipelines"][0].get("loadgen", {})
+n = float(lg.get("max_queries") or 0); cfg = lg.get("config") or {}
+rate = float(cfg.get("rate") or 0); iv = float(cfg.get("interval") or 0)
+secs = n / rate if rate > 0 else (n * iv if iv > 0 else 0)
+# 4x the foreground plus model-load headroom.
+print(int(secs * 4 + 600) if secs > 0 else 5400)
+PYCAP
+)
+[ -n "$CELL_CAP_S" ] || CELL_CAP_S=5400
+CELL_CAP_S=${E5_CELL_CAP_S:-$CELL_CAP_S}
+
 run_cell() {
-  local cell=$1 cfg=$2 r=$3 lab start rc secs outfile amcpid fg_rows bg_rows spans
+  local cell=$1 cfg=$2 r=$3 lab start rc secs outfile amcpid fg_rows bg_rows spans runpid waited
   lab="e5_${cell}_${MACHINE}_r${r}"
   ls "$RESULTS/${lab}"*.csv >/dev/null 2>&1 && { log "  [skip] $lab (exists)"; return 0; }
   rm -f "$RESULTS/${lab}"*.csv "$RESULTS/${lab}"*_outputs.jsonl
@@ -198,8 +213,27 @@ run_cell() {
 
   start=$(date +%s); outfile=$(mktemp)
   # No -p: orchestrator mode, so radt launches one process per pipeline.
-  python main.py "$cfg" -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
-  rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
+  #
+  # Bounded by wall clock. radt waits for EVERY pipeline in the config, so one
+  # workload that will not finish holds the whole collection: an MPS cell once
+  # ran 92 minutes against a 12-minute foreground, with the machine idle-ish and
+  # nothing in the log to say so. The cap is generous -- it is a runaway
+  # detector, not a schedule.
+  python main.py "$cfg" -e "$EXP" --label "$lab" 2>&1 | tee "$outfile" &
+  local runpid=$! waited=0
+  while kill -0 "$runpid" 2>/dev/null; do
+    sleep 10; waited=$(( waited + 10 ))
+    if [ "$waited" -gt "$CELL_CAP_S" ]; then
+      log "  !! $lab exceeded ${CELL_CAP_S}s (cap) -- killing; the cell is a runaway"
+      pkill -P "$runpid" 2>/dev/null; kill -9 "$runpid" 2>/dev/null
+      for pat in "radt[ ]run" "main[.]py"; do
+        p2=$(pgrep -f "$pat"); [ -n "$p2" ] && kill -9 $p2 2>/dev/null
+      done
+      rm -f "$ROOT/radtlock"
+      break
+    fi
+  done
+  wait "$runpid" 2>/dev/null; rc=$?; secs=$(( $(date +%s) - start ))
 
   if [ -n "$amcpid" ]; then
     kill -TERM "$amcpid" 2>/dev/null; wait "$amcpid" 2>/dev/null

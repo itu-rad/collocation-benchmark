@@ -194,9 +194,18 @@ def _size_backgrounds(doc: dict) -> None:
         interval = float(cfg.get("interval") or 0)
         if interval <= 0:
             continue
+        # Query budget covers the foreground with margin, so the background never
+        # runs dry mid-cell...
         need = fg_s * BG_MARGIN
         lg["max_queries"] = int(-(-need // interval))
-        lg["timeout"] = int(need * 2)
+        # ...and the TIMEOUT is what actually ends it, tied to the foreground
+        # rather than to the background's own budget. Under contention the
+        # background does not achieve its nominal rate, so a budget-derived
+        # timeout does not bound the cell at all: one MPS cell ran 92 minutes
+        # instead of 12, with the foreground long finished and radt waiting on
+        # the background. The foreground defines the measurement window; the
+        # background is stopped just past it.
+        lg["timeout"] = int(fg_s * 1.2)
 
 
 def _dump(doc: dict, name: str) -> Path:
