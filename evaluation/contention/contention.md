@@ -70,12 +70,47 @@ a systemd service but its Profiling module reports "Failed to load" on this GB10
 2026-07-14; not a privileges issue — closed). No usable Grace uncore events via unprivileged
 `perf` either. DCGM power and cumulative energy *do* work and are what gb10 contributes.
 
+## The M3 Pro does not populate the per-engine DRAM counters (2026-09-03)
+
+The per-requestor AMC byte counters that exhibit 2 rests on **work on the M2 Pro and not on the
+M3 Pro** — the machine §5.1 and the rest of the paper report. On m3pro all 48
+`AMC Stats / Perf Counters / * DCS RD|WR` channels are present and every one reads **zero**, under
+heavy memory load as well as idle. (Two sampler bugs had to be fixed before this was visible at
+all: an M3-only subscription failure, and aggregate-vs-requestor being keyed on a `DIE` prefix
+that M3 does not use. Both are fixed; the counters are still dead.)
+
+What *does* respond on m3pro is the memory-controller energy channel,
+`Energy Model / AMCC`, and it responds strongly and repeatably:
+
+| m3pro | AMCC energy |
+|---|---|
+| idle | 153, 151, 155 mJ/s |
+| heavy memory traffic | 1553, 1528, 1527 mJ/s |
+
+≈10× dynamic range, tight across repeats. It is a real hardware counter reacting to the memory
+system — but it is a **single aggregate**, so it can confirm a dose without attributing it to an
+engine.
+
+**Author decision needed.** Three ways to keep exhibit 2 honest:
+
+1. **Dose-response on the M2 Pro**, where per-engine bytes work. Keeps full attribution
+   (cpu/gpu/**ane** read+write); costs a third machine in the paper, stated plainly. The exhibit is
+   a mechanism demonstration, so the machine may differ from §5.1's as long as it is named.
+2. **AMCC energy on m3pro.** Stays on the paper's machine and still counter-explains the symptom,
+   but in energy rather than bytes, and without the per-engine split that made the claim
+   distinctive.
+3. **Both** — AMCC for the dose on m3pro, per-engine bytes on the M2 Pro for the attribution.
+
+Recommendation: **(1)**, because "separation is not isolation" needs the per-engine split to be
+more than an assertion — showing the ANE background still moving DRAM bytes *is* the finding, and
+an aggregate energy curve cannot show it.
+
 ## Device asymmetry — state it, do not paper over it
 
 | | gb10 | m3pro |
 |---|---|---|
 | power / energy | DCGM power + cumulative energy | macmon power / thermals |
-| DRAM bandwidth | **none** — DCGM profiling fields confirmed unavailable on this stack | **AMC per-engine rd/wr bytes** (real counters, 2 Hz) |
+| DRAM bandwidth | **none** — DCGM profiling fields confirmed unavailable on this stack | **none on M3 Pro** — the AMC channels exist but read zero; per-engine rd/wr bytes work on the M2 Pro only. `Energy Model / AMCC` responds on M3 (aggregate, ~10x range) |
 
 So the bandwidth claim is directly measurable only on the Mac; on gb10 it is a stated
 power/utilization proxy. Known caveat: under pure-GPU load roughly half the Mac's traffic lands
