@@ -96,7 +96,7 @@ class Logger:
         # wrote to tmp/ while main.py wrote to evaluation/results/ -- which meant
         # radt-orchestrated multi-pipeline runs (the collocation configs) put
         # their traces somewhere different from every other experiment.
-        log_dir = os.environ.get("BENCH_OUTPUT_DIR") or os.path.join(os.getcwd(), "tmp")
+        log_dir = os.environ.get("SUITE_OUTPUT_DIR") or os.path.join(os.getcwd(), "tmp")
         os.makedirs(log_dir, exist_ok=True)
         file_handler = logging.FileHandler(
             filename=os.path.join(log_dir, f"{benchmark_name}.csv")

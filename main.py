@@ -21,7 +21,7 @@ from utils.orchestrator_watchdog import OrchestratorWatchdog
 from utils.schemas import BenchmarkModel
 from utils.server_manager import kill_all as kill_all_servers
 from utils.tracing import configure_async_export, flush_traces
-from utils.trace_span import report_span_count
+from utils.trace_span import NAMESPACE as TRACE_NAMESPACE, report_span_count
 
 
 def parse_args():
@@ -86,7 +86,7 @@ def radt_entrypoint(args):
     # not dominate the measured cost. This isolates the framework's CORE dispatch
     # (thread wake + queue hand-off + CSV log) from the optional profiling layer.
     # Unset in all normal runs, so it has no effect on the case studies.
-    if os.environ.get("CHOREO_DISABLE_TRACING", "").lower() in ("1", "true", "yes"):
+    if os.environ.get("SUITE_DISABLE_TRACING", "").lower() in ("1", "true", "yes"):
         mlflow.tracing.disable()
 
     # Prototype (radt-owned tracing): when enabled, every span site routes to
@@ -99,7 +99,7 @@ def radt_entrypoint(args):
     # would inherit the disabled tracer and drop every reconstructed span; the
     # parent simply never calls mlflow.start_span (all sites route to radt.trace),
     # so no in-process span machinery spins up regardless.
-    if os.environ.get("CHOREO_PROC_TRACE", "").lower() in ("1", "true", "yes"):
+    if os.environ.get("SUITE_PROC_TRACE", "").lower() in ("1", "true", "yes"):
         radt.trace.start(experiment_id=args.experiment_id)
 
     # Belt-and-braces for the prior "RadT killed the subprocess before MLflow
@@ -167,12 +167,12 @@ def radt_entrypoint(args):
         # their own experiment's results/ dir, so runs are written where they
         # belong instead of into a shared staging directory that then has to be
         # swept. Neutral env-var name: the project has no settled title.
-        log_dir = os.environ.get("BENCH_OUTPUT_DIR", "evaluation/results")
+        log_dir = os.environ.get("SUITE_OUTPUT_DIR", "evaluation/results")
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, f"{pipeline_name}.csv")
         # Also expose the chosen label to TerminalCapture via env var so the
         # JSONL filename matches the CSV filename.
-        os.environ["CHOREO_OUTPUT_LABEL"] = pipeline_name
+        os.environ["SUITE_OUTPUT_LABEL"] = pipeline_name
 
         install_perf_clock()
         formatter = logging.Formatter(PERF_FORMAT)
@@ -245,12 +245,12 @@ def radt_entrypoint(args):
         # Tag the run with the per-run output label so post-hoc validation can
         # match mlflow runs by tag instead of wall clock. The active run exists
         # by now (mlflow.log_params above auto-starts one even without radt).
-        label = os.environ.get("CHOREO_OUTPUT_LABEL", "")
-        mlflow.set_tag("choreo.label", label)
+        label = os.environ.get("SUITE_OUTPUT_LABEL", "")
+        mlflow.set_tag(f"{TRACE_NAMESPACE}.label", label)
         # Proc-trace: hand the active run id to the radt-owned exporter so it nests
         # the reconstructed spans under this run (mlflow.sourceRun), matching the
         # in-process arm. Emitted before run_loadgen, so it precedes every span.
-        if os.environ.get("CHOREO_PROC_TRACE", "").lower() in ("1", "true", "yes"):
+        if os.environ.get("SUITE_PROC_TRACE", "").lower() in ("1", "true", "yes"):
             _ar = mlflow.active_run()
             if _ar is not None:
                 radt.trace.set_run(_ar.info.run_id)

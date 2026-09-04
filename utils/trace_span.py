@@ -3,9 +3,9 @@
 Every ``with mlflow.start_span(name, attributes)`` site in the pipeline goes
 through :func:`trace_span` so the tracing backend is a single env switch:
 
-  * ``proc``   (``CHOREO_PROC_TRACE`` truthy)   -> ``radt.trace.span`` — radt owns
+  * ``proc``   (``SUITE_PROC_TRACE`` truthy)   -> ``radt.trace.span`` — radt owns
     mlflow in a separate process; the workload only emits a lightweight event.
-  * ``off``    (``CHOREO_DISABLE_TRACING``)     -> ``nullcontext`` — no spans (the
+  * ``off``    (``SUITE_DISABLE_TRACING``)     -> ``nullcontext`` — no spans (the
     tracing-off "core" arm).
   * ``mlflow`` (default)                        -> ``mlflow.start_span`` — the
     current in-process path (kept for A/B comparison).
@@ -55,7 +55,7 @@ _TRUTHY = ("1", "true", "yes")
 #: Span-attribute key carrying ``time.perf_counter_ns()`` at span start.
 PERF_ATTR = "perf_start_ns"
 
-# The project has no settled name -- "choreo" here is a working title, and the
+# The project has no settled name -- "suite" here is a neutral placeholder, and the
 # on-disk spelling is an ARBITRARY NAMESPACE, not a product name. It is defined
 # once, here, so a rename is a one-line change rather than a grep.
 #
@@ -63,7 +63,7 @@ PERF_ATTR = "perf_start_ns"
 # collected trace (the CSV marker row) and onto every mlflow run on res17 (the
 # tag), for E1-E4. utils.span_reader accepts both this value and the historical
 # spelling when reading, so old data stays readable across a rename.
-NAMESPACE = "choreo"
+NAMESPACE = "suite"
 
 #: Tag / CSV marker under which the emitted-span count is reported.
 COUNT_KEY = f"{NAMESPACE}.spans_emitted"
@@ -154,9 +154,9 @@ def report_span_count():
 
 
 def _resolve_mode():
-    if os.environ.get("CHOREO_PROC_TRACE", "").lower() in _TRUTHY:
+    if os.environ.get("SUITE_PROC_TRACE", "").lower() in _TRUTHY:
         return "proc"
-    if os.environ.get("CHOREO_DISABLE_TRACING", "").lower() in _TRUTHY:
+    if os.environ.get("SUITE_DISABLE_TRACING", "").lower() in _TRUTHY:
         return "off"
     return "mlflow"
 

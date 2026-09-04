@@ -260,7 +260,7 @@ def run_cell(cell: PilotCell, device: str, force: bool,
             print(f"[skip] {label} (exists)")
             continue
         tmp = make_pilot_config(base, n_q, cell.timeout_s, device)
-        env = dict(os.environ, CHOREO_DISABLE_TRACING="1")
+        env = dict(os.environ, SUITE_DISABLE_TRACING="1")
         print(f"[run ] {label}  (config {cfg_rel}, N={n_q})")
         t0 = time.time()
         try:

@@ -33,11 +33,11 @@ class ArrivalLog:
 
     def write(self, results_dir: str = os.path.join("evaluation", "results"),
               label: str | None = None) -> str | None:
-        """Write the sidecar CSV; label defaults to CHOREO_OUTPUT_LABEL (the
+        """Write the sidecar CSV; label defaults to SUITE_OUTPUT_LABEL (the
         same env var main.py uses to name the trace CSV). Returns the path."""
         if not self.rows:
             return None
-        label = label or os.environ.get("CHOREO_OUTPUT_LABEL")
+        label = label or os.environ.get("SUITE_OUTPUT_LABEL")
         if not label:
             return None
         try:

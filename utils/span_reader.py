@@ -34,7 +34,7 @@ Completeness
 radt drops events on queue overflow and only warns; that is left as it is, so
 this module verifies from our side instead, against the count
 :func:`utils.trace_span.report_span_count` publishes as an mlflow tag, a
-``choreo, spans, emitted, N`` CSV row, and a stdout line.
+``<namespace>, spans, emitted, N`` CSV row, and a stdout line.
 
 The tempting invariant ``event_count == 2 * emitted`` is WRONG, and a real
 self-RAG run is what showed it. Two things break it, both benign:
@@ -70,7 +70,10 @@ PERF_ATTR = "perf_start_ns"
 # Working-title namespace; see utils.trace_span.NAMESPACE. Readers accept BOTH
 # the current spelling and any historical one, because this string is already
 # written into every trace collected so far -- a rename must not orphan data.
-_NAMESPACES = ("choreo",)
+# Live namespace first, then every historical one. Runs already on the tracking
+# server carry the old tag, and a rename must not orphan them -- this is a tuple
+# precisely so reading old data stays a one-line change.
+_NAMESPACES = ("suite", "choreo")
 COUNT_TAG = f"{_NAMESPACES[0]}.spans_emitted"
 COUNT_TAGS = tuple(f"{n}.spans_emitted" for n in _NAMESPACES)
 
@@ -236,7 +239,7 @@ class SpanTrace:
 # Reading
 # ---------------------------------------------------------------------------
 def emitted_from_csv(csv_path):
-    """The `choreo, spans, emitted, N` row a run writes, or None."""
+    """The `<namespace>, spans, emitted, N` row a run writes, or None."""
     try:
         with open(csv_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -341,7 +344,7 @@ def read_dir(trace_dir, emitted=None, strict=True):
 def read_run(run_id, tracking_uri=None, dest_dir=None, strict=True):
     """Download a run's ``radt-trace/`` artifacts and read them.
 
-    The emitted-span count is taken from the run's ``choreo.spans_emitted``
+    The emitted-span count is taken from the run's ``<namespace>.spans_emitted``
     tag, so the drop check runs without the caller supplying anything.
     """
     import mlflow

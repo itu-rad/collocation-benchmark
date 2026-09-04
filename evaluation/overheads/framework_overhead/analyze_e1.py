@@ -210,7 +210,7 @@ def load_device(device, results_dir):
 
     Results live beside the experiment that produced them, as they do for E2/E3
     -- `evaluation/overheads/framework_overhead/results/<machine>/`. collect_e1.sh
-    exports BENCH_OUTPUT_DIR so main.py writes them straight here.
+    exports SUITE_OUTPUT_DIR so main.py writes them straight here.
     """
     runs = []
     d = os.path.join(results_dir, device)

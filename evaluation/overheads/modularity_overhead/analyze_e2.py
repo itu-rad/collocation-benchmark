@@ -75,8 +75,8 @@ DATALOADER_STAGE = "Load Imagenette samples from TorchVision Dataset"
 TRAIN_STAGE = "EfficientNet training"
 
 # The three things run per cell, named for what they are.
-MONOLITH, CHOREO_TRACED = "monolith", "choreo-traced"
-CONFIGS = (MONOLITH, CHOREO_TRACED)
+MONOLITH, SUITE_TRACED = "monolith", "choreo-traced"
+CONFIGS = (MONOLITH, SUITE_TRACED)
 # The untraced `choreo` arm is gone. With the pipeline's per-query CSV rows
 # gated off it has no instrument at all -- no spans (tracing off) and no rows --
 # so it cannot be measured, and keeping the rows on for it alone would price
@@ -86,7 +86,7 @@ CHOREO = "choreo"                      # historical token, for reading old data
 CONFIG_DESC = {
     MONOLITH:      "bare PyTorch loop, no framework",
     CHOREO:        "the framework, tracing off",
-    CHOREO_TRACED: "the framework, tracing on",
+    SUITE_TRACED: "the framework, tracing on",
 }
 
 # The model sweep is a SIZE ladder within one architecture family (S -> M -> L),
@@ -577,7 +577,7 @@ def breakdown_by_run(machine, model, batch, runs, warmup, store=None):
         return {}
     out = {}
     for r in runs:
-        lab = f"mod_m{model}_b{batch}_{CHOREO_TRACED}_{machine}_r{r}"
+        lab = f"mod_m{model}_b{batch}_{SUITE_TRACED}_{machine}_r{r}"
         rid = labels.get(lab)
         if rid is None:
             continue
@@ -624,7 +624,7 @@ def attach_breakdown(machine, cells, metas, warmup, store=None):
     carries a bootstrap CI rather than a bare median difference.
     """
     for c in cells:
-        runs = sorted({m["run"] for m in select(metas, config=CHOREO_TRACED,
+        runs = sorted({m["run"] for m in select(metas, config=SUITE_TRACED,
                                                 model=c["model"], batch=c["batch"])})
         if DROP_RUNS:
             runs = runs[DROP_RUNS:]

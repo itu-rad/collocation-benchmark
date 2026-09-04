@@ -59,10 +59,10 @@ fi
 
 RESULTS="$HERE/results/$MACHINE"
 mkdir -p "$RESULTS"
-export BENCH_OUTPUT_DIR="$RESULTS"
+export SUITE_OUTPUT_DIR="$RESULTS"
 export RADT_TRACE_BACKEND=radt
 export RADT_PRESENT=True
-export CHOREO_PROC_TRACE=1
+export SUITE_PROC_TRACE=1
 
 # Bound the span batch uploaded to the tracking server. radt batches spans into
 # gzipped artifacts, rolling at RADT_TRACE_BATCH_EVENTS (default 200000) or

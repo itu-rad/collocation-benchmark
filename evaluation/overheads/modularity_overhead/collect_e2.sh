@@ -6,8 +6,8 @@
 # are rather than for the switch that produces them:
 #
 #   monolith        baseline_finetune.py, no framework at all
-#   choreo          main.py, CHOREO_DISABLE_TRACING=1
-#   choreo-traced   main.py, CHOREO_PROC_TRACE=1
+#   choreo          main.py, SUITE_DISABLE_TRACING=1
+#   choreo-traced   main.py, SUITE_PROC_TRACE=1
 #
 # METRIC OF RECORD: TIME PER QUERY (equivalently per batch — one query is one
 # batch here), measured start-of-step to start-of-next-step. It covers the whole
@@ -73,7 +73,7 @@ fi
 RESULTS="$HERE/results"
 # main.py and TerminalCapture write straight into this experiment's
 # results/ dir; there is no shared staging directory to sweep.
-export BENCH_OUTPUT_DIR="$RESULTS"
+export SUITE_OUTPUT_DIR="$RESULTS"
 mkdir -p "$RESULTS"
 
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter, not auto-detection
@@ -201,7 +201,7 @@ run_one() {
   # twice: mod_meffv2l_b8_choreo-traced_m2pro_r7 (655 rows, a 57-minute
   # interval) and mod_meffv2s_b64_choreo_gb10_r1 (955 rows, a 4.6-hour one).
   # The skip-if-exists check above only looks in $RESULTS; the Choreo side
-  # writes to $CHOREO_OUT first, which nothing was clearing.
+  # writes to $SUITE_OUT first, which nothing was clearing.
   rm -f "$RESULTS/$lab.csv" "$RESULTS/$lab.jsonl"
   if [ "$conf" = monolith ]; then
     ${PINCMD[@]+"${PINCMD[@]}"} python evaluation/overheads/modularity_overhead/baseline_finetune.py \
@@ -209,10 +209,10 @@ run_one() {
       --batch-size "$BATCH" --num-workers 0 --max-batches "$MAXB" \
       --label "$lab" --no-radt 2>&1 | tee "$outfile"
   else
-    unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+    unset SUITE_DISABLE_TRACING SUITE_PROC_TRACE
     case $conf in
-      choreo)        export CHOREO_DISABLE_TRACING=1 ;;
-      choreo-traced) export CHOREO_PROC_TRACE=1 ;;
+      choreo)        export SUITE_DISABLE_TRACING=1 ;;
+      choreo-traced) export SUITE_PROC_TRACE=1 ;;
     esac
     ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
   fi
@@ -221,7 +221,7 @@ run_one() {
   rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
   spans=$(sed -n 's/^\[choreo\] spans emitted: //p' "$outfile" | tail -1)
   rm -f "$outfile"
-  unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  unset SUITE_DISABLE_TRACING SUITE_PROC_TRACE
 
   rows=$( [ -f "$RESULTS/$lab.csv" ] && wc -l < "$RESULTS/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$conf" "$cell" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"

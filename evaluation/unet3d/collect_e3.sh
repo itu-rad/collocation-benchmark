@@ -70,12 +70,12 @@ fi
 RESULTS="$HERE/results/$MACHINE"
 # main.py and TerminalCapture write straight into this experiment's
 # results/ dir; there is no shared staging directory to sweep.
-export BENCH_OUTPUT_DIR="$RESULTS"
+export SUITE_OUTPUT_DIR="$RESULTS"
 mkdir -p "$RESULTS"
 
 export RADT_TRACE_BACKEND=radt       # force the BULK exporter, not auto-detection
 export RADT_PRESENT=True
-export CHOREO_PROC_TRACE=1
+export SUITE_PROC_TRACE=1
 
 # Tracking store: res17, NOT a local sqlite file. The local-store exemption
 # covers the OVERHEAD experiments (E1, E2) only -- they emit spans at a rate no

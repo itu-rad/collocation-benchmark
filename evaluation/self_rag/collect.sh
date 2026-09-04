@@ -16,7 +16,7 @@ DEVICE=${1:?device (mlx|cuda)}; RUNS=${2:-3}; EXP=${3:-138}; GLOB=${4:-*}
 HERE=$(cd "$(dirname "$0")" && pwd); ROOT=$(cd "$HERE/../.." && pwd); cd "$ROOT"
 
 OUT="$HERE/results/$DEVICE"; mkdir -p "$OUT"
-export CHOREO_PROC_TRACE=1 RADT_TRACE_BACKEND=radt   # bulk (batch) span export
+export SUITE_PROC_TRACE=1 RADT_TRACE_BACKEND=radt   # bulk (batch) span export
 export RADT_PRESENT=True                              # no RADT_LISTENER_* -> no listeners
 
 SUM="$HERE/collect_summary_${DEVICE}.tsv"

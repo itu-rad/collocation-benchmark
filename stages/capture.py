@@ -23,7 +23,7 @@ from stages.stage import Stage
 from utils.schemas import Query
 
 
-_DEFAULT_OUTPUT_DIR = os.environ.get("BENCH_OUTPUT_DIR", "evaluation/results")
+_DEFAULT_OUTPUT_DIR = os.environ.get("SUITE_OUTPUT_DIR", "evaluation/results")
 
 
 def _serializable(value):
@@ -46,7 +46,7 @@ class TerminalCapture(Stage):
         default_label = pipeline_config.name.replace(" ", "_").lower()
         # Honour an env var so a CLI --label override on main.py keeps the
         # JSONL filename in sync with the timing CSV.
-        pipeline_name = os.environ.get("CHOREO_OUTPUT_LABEL", default_label)
+        pipeline_name = os.environ.get("SUITE_OUTPUT_LABEL", default_label)
         output_dir = self.extra_config.get("output_dir", _DEFAULT_OUTPUT_DIR)
         self._output_path = os.path.join(
             output_dir, f"{pipeline_name}_outputs.jsonl"

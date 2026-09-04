@@ -215,7 +215,7 @@ def _run_radt_mode(config_path: str, experiment_id: int) -> list[str]:
     env = os.environ.copy()
     # Mark the experiment timestamp so we can find the new runs after the fact.
     marker = f"verify_tracing_{int(time.time())}"
-    env["CHOREO_VERIFY_MARKER"] = marker
+    env["SUITE_VERIFY_MARKER"] = marker
 
     cmd = [
         sys.executable,

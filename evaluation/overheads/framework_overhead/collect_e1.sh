@@ -71,7 +71,7 @@ cd "$ROOT"
 CFG="$HERE/configs"
 OUT="$HERE/results/$DEVICE"          # results live beside the experiment, as in E2/E3;
                                      # analyze_e1.py globs one dir per machine
-export BENCH_OUTPUT_DIR="$OUT"       # main.py writes straight here -- no staging sweep
+export SUITE_OUTPUT_DIR="$OUT"       # main.py writes straight here -- no staging sweep
 mkdir -p "$OUT"
 
 export RADT_PRESENT=True             # end_run + drain on exit; no RADT_LISTENER_* -> no listeners
@@ -220,10 +220,10 @@ run_one() {
   lab="noop_depth_${depth}_size_0_mode_ref_${arm}_${DEVICE}_r${r}"
   [ -f "$OUT/$lab.csv" ] && { log "  [skip] $lab (exists)"; return 0; }
 
-  unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  unset SUITE_DISABLE_TRACING SUITE_PROC_TRACE
   case $arm in
-    uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
-    traced)     export CHOREO_PROC_TRACE=1 ;;
+    uninstrumented) export SUITE_DISABLE_TRACING=1 ;;
+    traced)     export SUITE_PROC_TRACE=1 ;;
   esac
 
   # Capture through a file, not a pipe: `rc=$?` after a pipeline reports the
@@ -233,9 +233,9 @@ run_one() {
   start=$(date +%s)
   ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
   rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
-  spans=$(sed -n 's/^\[choreo\] spans emitted: //p' "$outfile" | tail -1)
+  spans=$(sed -n 's/^\[[a-z]*\] spans emitted: //p' "$outfile" | tail -1)
   rm -f "$outfile"
-  unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  unset SUITE_DISABLE_TRACING SUITE_PROC_TRACE
 
   rows=$( [ -f "$OUT/$lab.csv" ] && wc -l < "$OUT/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$depth" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
@@ -249,17 +249,17 @@ run_payload_one() {
   [ -f "$cfg" ] || { log "  !! missing config $cfg"; return 1; }
   lab="noop_depth_${PAYLOAD_DEPTH}_size_${size}_mode_${mode}_${arm}_${DEVICE}_r${r}"
   [ -f "$OUT/$lab.csv" ] && { log "  [skip] $lab (exists)"; return 0; }
-  unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  unset SUITE_DISABLE_TRACING SUITE_PROC_TRACE
   case $arm in
-    uninstrumented) export CHOREO_DISABLE_TRACING=1 ;;
-    traced)     export CHOREO_PROC_TRACE=1 ;;
+    uninstrumented) export SUITE_DISABLE_TRACING=1 ;;
+    traced)     export SUITE_PROC_TRACE=1 ;;
   esac
   local outfile; outfile=$(mktemp)
   start=$(date +%s)
   ${PINCMD[@]+"${PINCMD[@]}"} python main.py "$cfg" -p 0 -e "$EXP" --label "$lab" 2>&1 | tee "$outfile"
   rc=${PIPESTATUS[0]}; secs=$(( $(date +%s) - start ))
-  spans=$(sed -n 's/^\[choreo\] spans emitted: //p' "$outfile" | tail -1)
-  rm -f "$outfile"; unset CHOREO_DISABLE_TRACING CHOREO_PROC_TRACE
+  spans=$(sed -n 's/^\[[a-z]*\] spans emitted: //p' "$outfile" | tail -1)
+  rm -f "$outfile"; unset SUITE_DISABLE_TRACING SUITE_PROC_TRACE
   rows=$( [ -f "$OUT/$lab.csv" ] && wc -l < "$OUT/$lab.csv" | tr -d ' ' || echo 0 )
   printf '%s\tp%s_%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$size" "$mode" "$r" "$rc" "$secs" "$rows" "${spans:-}" >> "$SUM"
   [ "$rows" -eq 0 ] && { log "  !! $lab produced NO CSV (rc=$rc)"; return 1; }

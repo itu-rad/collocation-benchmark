@@ -5,7 +5,7 @@ loop both used to wake every 100 ms, which cost measurable time inside E2's
 dataloader stage, and because the last shutdown bug of this class was found only
 by noticing 80 s of dead time on a live run rather than by a test.
 
-CHOREO_DISABLE_TRACING is set before importing anything that pulls in
+SUITE_DISABLE_TRACING is set before importing anything that pulls in
 utils.trace_span -- its MODE is resolved at import.
 """
 
@@ -16,7 +16,7 @@ import time
 import unittest
 from queue import Queue
 
-os.environ.setdefault("CHOREO_DISABLE_TRACING", "1")
+os.environ.setdefault("SUITE_DISABLE_TRACING", "1")
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
