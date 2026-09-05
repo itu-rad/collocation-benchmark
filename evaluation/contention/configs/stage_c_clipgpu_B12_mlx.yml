@@ -1,0 +1,100 @@
+name: stage_c_clipgpu_B12_mlx
+pipelines:
+- name: RAG serve plain
+  inputs:
+  - 0
+  outputs:
+  - 4
+  dataset_stage_id: 0
+  loadgen:
+    component: loadgen.PoissonLoadScheduler
+    queue_depth: 100
+    max_queries: 80
+    timeout: 2256
+    config:
+      rate: 0.11
+  stages:
+  - name: Question dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.self_rag.SelfRAGDataLoader
+    config:
+      batch_size: 1
+      dataset:
+        name: rag-datasets/rag-mini-wikipedia
+        subset: question-answer
+        split: test
+        question_column: question
+        answers_column: answer
+  - name: Document retriever
+    id: 1
+    outputs:
+    - 2
+    component: stages.self_rag.ChromaRetriever
+    config:
+      corpus_dataset:
+        name: rag-datasets/rag-mini-wikipedia
+        subset: text-corpus
+        split: passages
+        text_column: passage
+        max_docs: 3200
+      top_k: 3
+      collection_name: rag_serve_plain_corpus
+  - name: Answer formatter
+    id: 2
+    outputs:
+    - 3
+    component: stages.self_rag.AnswerGeneratorFormatter
+    config:
+      tokenizer_stage_id: 3
+  - name: Generator LLM
+    id: 3
+    outputs:
+    - 4
+    component: stages.llm_mlx.Inference
+    config:
+      model:
+        name: mlx-community/Qwen3.5-4B-OptiQ-4bit
+        gen_kwargs:
+          max_tokens: 128
+  - name: End stage
+    id: 4
+    component: stages.TerminalCapture
+- name: BG co-runner clipgpu
+  dataset_stage_id: 0
+  inputs:
+  - 0
+  outputs:
+  - 1
+  loadgen:
+    component: loadgen.MultiStreamScheduler
+    queue_depth: 16
+    max_queries: 3779
+    timeout: 872
+    config:
+      interval: 0.28869
+  stages:
+  - name: VQA dataloader
+    id: 0
+    outputs:
+    - 1
+    component: stages.multimodal_vqa.VQADataLoader
+    config:
+      dataset:
+        name: Multimodal-Fatima/OK-VQA_train
+        split: train
+        image_column: image
+        question_column: question
+        answers_column: answers
+        max_samples: 100
+      batch_size: 1
+  - name: CLIP vision encoder
+    id: 1
+    component: stages.multimodal_vqa.CLIPVisionEncoder
+    config:
+      model:
+        name: openai/clip-vit-large-patch14
+      device: mps
+listeners:
+- macmon

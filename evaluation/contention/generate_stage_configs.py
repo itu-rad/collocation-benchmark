@@ -187,6 +187,37 @@ def _corunner_dataset_stage_meta(kind: str) -> dict:
 # radt reads them from this key; a config without it runs with none, silently.
 LISTENERS = {"mlx": ["macmon"], "cuda": ["dcgmi", "top"]}
 
+# ---- Matched-bytes intensity (the collocation axis) -------------------------
+# The L25..L100 ladder is a fraction of each co-runner's OWN saturating rate, so
+# "L50" means 8.4 q/s of memory-stream against 9.2 q/s of GPU encode against
+# 10.0 q/s of ANE encode. Measured, that is 51 / 32 / 13 GB/s -- a 4x spread in
+# pressure on the very resource this section says they share. The types cells are
+# therefore matched on BYTES/S instead, with per-co-runner rates derived from
+# measured bytes/query (calibrate_bytes.py, run on the M2 Pro because the M3 Pro
+# does not populate the AMC counters).
+#
+# The target is bounded by the ANE, which tops out around 20 GB/s -- that ceiling
+# is what caps a bytes-matched comparison, and is worth stating in the paper. 12
+# GB/s keeps every co-runner well inside its solo capacity (13% / 27% / 59%), so
+# the offered rate is actually delivered and the match holds. That matters here
+# because delivered bytes CANNOT be verified after the fact on m3pro.
+MATCHED_GBPS = 12.0
+BYTES_CALIBRATION = HERE / "bytes_calibration.json"
+
+
+def _matched_interval(kind: str) -> float | None:
+    """Seconds between queries for `kind` to deliver MATCHED_GBPS, or None."""
+    import json
+    try:
+        cal = json.loads(BYTES_CALIBRATION.read_text())
+    except FileNotFoundError:
+        return None
+    entry = (cal.get("corunners") or {}).get(kind)
+    if not entry or not entry.get("bytes_per_query"):
+        return None
+    qps = MATCHED_GBPS * 1e9 / entry["bytes_per_query"]
+    return round(1.0 / qps, 5)
+
 # The background must outlast the foreground. Its own query budget used to end
 # the cell, but it is sized independently of the foreground's, and at L50 the
 # co-runner ran ~119s against a ~446s foreground -- so most of the cell would be
@@ -377,6 +408,15 @@ def main() -> int:
             # each pipeline as its own process, so MPS has two processes to
             # partition; `collocation` is what tells radt to bring the daemon up.
             # Time-sliced vs MPS is then a one-line diff, which is the claim.
+            if lvl == INTENSITY_LEVELS[0] and dev == "mlx":
+                iv = _matched_interval(kind)
+                if iv:
+                    b_doc = copy.deepcopy(doc)
+                    tag = f"B{int(MATCHED_GBPS)}"
+                    b_doc["name"] = f"stage_c_{kind}_{tag}_{dev}"
+                    b_doc["pipelines"][1]["loadgen"]["config"]["interval"] = iv
+                    files.append((f"C {kind} {tag} (matched bytes)",
+                                  _dump(b_doc, f"stage_c_{kind}_{tag}_{dev}.yml")))
             if dev == "cuda" and kind == "clipgpu":
                 mps_doc = copy.deepcopy(doc)
                 mps_doc["name"] = f"stage_c_{kind}_L{lvl}_{dev}_mps"

@@ -30,6 +30,8 @@ set -uo pipefail
 
 usage() { sed -n '2,28p' "$0" >&2; exit 2; }
 MACHINE=${1:-}; RUNS=${2:-6}; MODE=${3:-types}; LEVEL=${4:-${E5_LEVEL:-L50}}
+# The matched-bytes level used by the m3pro types cells (see generate_stage_configs).
+MLEVEL=${E5_MATCHED_LEVEL:-B12}
 [ -n "$MACHINE" ] || usage
 case "$MACHINE" in m3pro|gb10) ;; *) echo "collect_e5: machine must be m3pro or gb10" >&2; exit 2 ;; esac
 case "$MODE" in types|baseline|dose) ;; *) echo "collect_e5: mode must be types, baseline or dose" >&2; exit 2 ;; esac
@@ -105,9 +107,12 @@ case "$MODE" in
   types)
     case "$MACHINE" in
       m3pro)
-        cells=( "bg_gpu|$HERE/configs/stage_c_clipgpu_${LEVEL}_mlx.yml"
-                "bg_ane|$HERE/configs/stage_c_clipane_${LEVEL}_mlx.yml"
-                "bg_cpu|$HERE/configs/stage_c_stream_${LEVEL}_mlx.yml" ) ;;
+        # Matched on BYTES/S, not on each engine's own capacity: the L-ladder put
+        # 51 / 32 / 13 GB/s on the three engines at "L50", which is not one
+        # intensity. B12 = 12 GB/s from each, from measured bytes/query.
+        cells=( "bg_gpu|$HERE/configs/stage_c_clipgpu_${MLEVEL}_mlx.yml"
+                "bg_ane|$HERE/configs/stage_c_clipane_${MLEVEL}_mlx.yml"
+                "bg_cpu|$HERE/configs/stage_c_stream_${MLEVEL}_mlx.yml" ) ;;
       gb10)
         # The first two are the SAME config bar one line: `collocation: mps`.
         cells=( "bg_gpu_timesliced|$HERE/configs/stage_c_clipgpu_${LEVEL}_cuda.yml"

@@ -1,0 +1,31 @@
+{
+  "device": "mlx",
+  "idle_gbps": 2.0585,
+  "corunners": {
+    "stream": {
+      "gbps_total": 93.1955,
+      "gbps_over_idle": 91.137,
+      "queries": 2016,
+      "seconds": 134.56962513923645,
+      "delivered_qps": 14.9810924858718,
+      "bytes_per_query": 6083468217.417953
+    },
+    "clipgpu": {
+      "gbps_total": 46.868,
+      "gbps_over_idle": 44.8095,
+      "queries": 2209,
+      "seconds": 170.77806305885315,
+      "delivered_qps": 12.93491658374612,
+      "bytes_per_query": 3464227983.9908013
+    },
+    "clipane": {
+      "gbps_total": 22.4175,
+      "gbps_over_idle": 20.359,
+      "queries": 2404,
+      "seconds": 152.68273615837097,
+      "delivered_qps": 15.745067585810345,
+      "bytes_per_query": 1293039860.835389
+    }
+  },
+  "stream_analytic_bytes_per_query": 3221225472
+}
