@@ -184,6 +184,14 @@ log(){ local m="[$(date '+%m-%d %H:%M:%S')] $*"; echo "$m"; echo "$m" >> "$LOG";
   echo "# store        : $MLFLOW_TRACKING_URI (experiment $EXP)"
   echo "# listeners    : $WANT_LISTENERS"
   echo "# amc_sampler  : $([ "$USE_AMC" = 1 ] && echo "on (per-engine DRAM bytes)" || echo off)"
+  # How the co-runners were made comparable. Recorded per run because it differs
+  # by machine and is not recoverable from the configs alone.
+  case "$MACHINE" in
+    m3pro) echo "# matching     : bytes/s ($MLEVEL), from measured bytes/query (bytes_calibration.json)" ;;
+    gb10)  echo "# matching     : time-sliced vs MPS matched BY CONSTRUCTION (same config, collocation: differs)."
+           echo "#                the CPU cell is capacity-matched at $LEVEL and is NOT bytes-matched --"
+           echo "#                gb10 has no DRAM counter, and its GPU-side proxy reads 0% under CPU traffic." ;;
+  esac
   echo "# runs         : $RUNS"
   echo "# load         : $(uptime | sed 's/.*load average[s]*: //')"
   if command -v nvidia-smi >/dev/null 2>&1; then
