@@ -105,6 +105,29 @@ Recommendation: **(1)**, because "separation is not isolation" needs the per-eng
 more than an assertion — showing the ANE background still moving DRAM bytes *is* the finding, and
 an aggregate energy curve cannot show it.
 
+## Which machine carries which claim
+
+The intensity axis is matched on **bytes/s**, which m3pro can calibrate and gb10 cannot — gb10 has
+no DRAM counter at all. Rather than fake a match there, each machine carries the claim its
+instruments support.
+
+| | m3pro | gb10 |
+|---|---|---|
+| cross-engine (GPU / ANE / CPU) | **matched at 12 GB/s**, per-engine power from macmon | not instrumentable |
+| partitioning (time-sliced vs MPS) | n/a (no MPS) | **matched by construction** — same config, one line differs |
+| dose–response | GB4/8/12/16 ladder | n/a |
+
+**Why gb10 is not proxy-matched.** The only candidate was DCGM's memory-copy utilization, and it
+is GPU-side: measured 2026-09-05, a CPU-side memory stream moving heavy DRAM traffic registers
+**0%** on it, against 0% idle. A proxy blind to one of the two co-runners cannot match them.
+Borrowing the Apple bytes/query would be worse still — different framework, precision and memory
+architecture.
+
+So gb10's contribution is the partitioning comparison, which needs no intensity decision because
+both cells run the *same* config and differ only in `collocation:`. Its CPU cell is kept as a
+supporting datum at a capacity-matched level and is **labelled as not bytes-matched**: it can show
+whether degradation survives moving the background off the GPU, not why.
+
 ## Device asymmetry — state it, do not paper over it
 
 | | gb10 | m3pro |
