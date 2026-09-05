@@ -159,6 +159,21 @@ workload from a killed collection was still running at 122% CPU. Check `ps -eo p
 before trusting any bandwidth baseline on this machine — and note it runs a GUI session, so
 `WindowServer` is a permanent ~40% background load that a headless DUT would not have.
 
+## Engine attribution is not pipeline attribution
+
+The AMC/PMP sampler is machine-wide: it says which ENGINE moved bytes, not which pipeline. On
+m3pro the foreground is an MLX model that also runs on the GPU, so in the GPU cell the `gpu`
+bucket mixes foreground and background traffic (measured r1: gpu 9.7, cpu 2.4, ane 0.00, total
+14.6 GB/s).
+
+Pipeline attribution comes from the other half of the design — each pipeline is its own process,
+its own radt run, its own listeners and spans. The two are combined, not conflated.
+
+**This is why the ANE cell carries exhibit 2.** With the background on the ANE and the foreground
+on the GPU, the two attributions coincide: `ane_rd + ane_wr` is unambiguously the background, and
+nothing else on the machine is using that engine. The `ane = 0.00` reading in the GPU cell above
+is the control that makes it readable.
+
 ## Which machine carries which claim
 
 The intensity axis is matched on **bytes/s**, which m3pro can calibrate and gb10 cannot — gb10 has
