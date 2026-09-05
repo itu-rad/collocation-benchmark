@@ -43,16 +43,24 @@ significant manual effort and expertise".
 *(Consolidated from the retired `CONTENTION_EXPERIMENTS_REDESIGN.md`; verified 2026-07-13/14.)*
 
 **m3pro — counter-backed.** `powermetrics` has no bandwidth sampler on this build and `macmon`
-exposes only `ram_power`. The decisive channel is IOReport's **"AMC Stats / Perf Counters"**:
-per-requestor DRAM *byte* counters with separate RD/WR channels for PCPU/ECPU, **GFX (GPU)**,
-**ANE**, AVD, DISP — readable **without root** at ≥1 Hz. So we get not just total bandwidth but
-**per-engine attribution**, i.e. we can report *who* moved the bytes.
+exposes only `ram_power`. The decisive channels are IOReport's, read **without root** at ≥1 Hz,
+and which family works depends on the SoC generation (see "resolved" below):
+
+- **M2-family:** **"AMC Stats / Perf Counters"** — per-requestor DRAM *byte* counters with
+  separate RD/WR channels for PCPU/ECPU, **GFX (GPU)**, **ANE**, AVD, DISP. Exact.
+- **M3-family (m3pro, the reported machine):** **"PMP / DCS BW"** — per-requestor DRAM
+  *bandwidth histograms* for EACC0/PACC0, **AGX (GPU)**, **ANE0**, ISP, DISP. Bytes are derived.
+  The AMC group exists here but its driver refuses the subscription.
+
+Either way we get not just total bandwidth but **per-engine attribution**, i.e. we can report
+*who* moved the bytes.
 
 Sampler: `scripts/amc_bandwidth_sampler.c` (+ `.py` wrapper, auto-compiles, writes
 `<label>_bandwidth.csv` and offers an `AMCBandwidthSampler` context manager). Timestamps are
-wall-clock, matching the trace's `%(created)f` for joins. Validated: CPU bucket 1.8 → 24.7 GB/s
-under a ~19.5 GB/s induced stream; GPU bucket 0.8 → 70 GB/s under an MPS matmul loop (total
-~146 GB/s against a ~200 GB/s roof); idle ≈7 GB/s aggregate DCS.
+wall-clock, matching the trace's `%(created)f` for joins. Validated **on the M2 Pro** (amc
+backend): CPU bucket 1.8 → 24.7 GB/s under a ~19.5 GB/s induced stream; GPU bucket 0.8 →
+70 GB/s under an MPS matmul loop (total ~146 GB/s against a ~200 GB/s roof); idle ≈7 GB/s
+aggregate DCS. Validated **on m3pro** (pmp backend) separately — see "resolved" below.
 
 Three calibration facts that must survive into the analysis:
 1. **Sum only per-requestor DCS RD/WR channels.** Summing all AMC agents double-counts fabric
@@ -70,40 +78,59 @@ a systemd service but its Profiling module reports "Failed to load" on this GB10
 2026-07-14; not a privileges issue — closed). No usable Grace uncore events via unprivileged
 `perf` either. DCGM power and cumulative energy *do* work and are what gb10 contributes.
 
-## The M3 Pro does not populate the per-engine DRAM counters (2026-09-03)
+## Per-engine DRAM counters on the M3 Pro: resolved (2026-09-05)
 
-The per-requestor AMC byte counters that exhibit 2 rests on **work on the M2 Pro and not on the
-M3 Pro** — the machine §5.1 and the rest of the paper report. On m3pro all 48
-`AMC Stats / Perf Counters / * DCS RD|WR` channels are present and every one reads **zero**, under
-heavy memory load as well as idle. (Two sampler bugs had to be fixed before this was visible at
-all: an M3-only subscription failure, and aggregate-vs-requestor being keyed on a `DIE` prefix
-that M3 does not use. Both are fixed; the counters are still dead.)
+An earlier version of this section (2026-09-03) concluded that m3pro "does not populate" the
+per-requestor DRAM counters, and asked for an author decision between running exhibit 2 on the
+M2 Pro, falling back to aggregate `Energy Model / AMCC`, or both. **That diagnosis was wrong and
+the decision is moot: per-engine DRAM attribution works on m3pro, unprivileged, at ≥1 Hz —
+including the ANE.** Exhibit 2 stays on the machine the rest of the paper reports.
 
-What *does* respond on m3pro is the memory-controller energy channel,
-`Energy Model / AMCC`, and it responds strongly and repeatably:
+**What was actually wrong.** The AMC channels do not "read zero" — they never reach a sample at
+all. On m3pro `AppleH15MemCacheController` refuses the IOReport subscription outright (a single
+channel fails, so it is not a size or naming problem), and when the request is built from the
+all-channel dictionary the library returns success and drops the AMC channels silently. A
+per-group census settles it: AMC Stats is the **only** group on the machine that is copied and
+subscribed but never sampled.
 
-| m3pro | AMCC energy |
-|---|---|
-| idle | 153, 151, 155 mJ/s |
-| heavy memory traffic | 1553, 1528, 1527 mJ/s |
+| stage | M2 Pro | m3pro |
+|---|--:|--:|
+| copied by `IOReportCopyAllChannels` | 117 | 128 |
+| present in `subbedChannels` | 117 | 128 |
+| **present in a sample** | **117** | **0** |
 
-≈10× dynamic range, tight across repeats. It is a real hardware counter reacting to the memory
-system — but it is a **single aggregate**, so it can confirm a dose without attributing it to an
-engine.
+The sampler's guard iterated the *sample* looking for AMC channels and found none, then reported
+"present but all read zero" — which is what the earlier reading rested on.
 
-**Author decision needed.** Three ways to keep exhibit 2 honest:
+**The replacement.** m3pro publishes per-requestor DRAM bandwidth under the **PMP** group instead:
+`PMP / DCS BW / {EACC0, PACC0, AGX, ANE0, ISP, DISP, ...} {RD, WR, RD+WR}`, from
+`RTBuddyIOReportingEndpoint`, which subscribes and samples normally. `DCS` is the same
+DRAM-command-scheduler layer the M2's counters measure. These are `kIOReportFormatState` 32-bin
+*bandwidth histograms*, not byte counters, which is why tools reading them with
+`IOReportSimpleGetIntegerValue` saw nothing. `scripts/amc_bandwidth_sampler.c` now selects the
+backend automatically from what actually samples, and emits the same byte-valued CSV either way.
 
-1. **Dose-response on the M2 Pro**, where per-engine bytes work. Keeps full attribution
-   (cpu/gpu/**ane** read+write); costs a third machine in the paper, stated plainly. The exhibit is
-   a mechanism demonstration, so the machine may differ from §5.1's as long as it is named.
-2. **AMCC energy on m3pro.** Stays on the paper's machine and still counter-explains the symptom,
-   but in energy rather than bytes, and without the per-engine split that made the claim
-   distinctive.
-3. **Both** — AMCC for the dose on m3pro, per-engine bytes on the M2 Pro for the attribution.
+**Validated on m3pro** (2026-09-05, full tables in `AMC_CALIBRATION.md`): a paced known-byte CPU
+read stream reads back at 0.94–1.04× of delivered across 3–30 GB/s; an ANE workload puts
+**19.9 GB/s** on the `ane` bucket with the GPU provably idle, corroborated by `ANE / IOP State`
+(Running 100%) and `Energy Model / ANE` (6591 mJ vs 0 at idle). Attribution is clean in every
+case: the loaded engine moves, the others sit at their idle baseline.
 
-Recommendation: **(1)**, because "separation is not isolation" needs the per-engine split to be
-more than an assertion — showing the ANE background still moving DRAM bytes *is* the finding, and
-an aggregate energy curve cannot show it.
+**Two limits that must be stated wherever an m3pro bytes/s number appears.** Per-requestor
+histograms saturate above **32 GB/s** and the aggregate above **64 GB/s** (the top bin is a
+catch-all), so a saturating foreground pegs its bucket — the CSV's `saturated` column flags any
+such row, and those rows are lower bounds. And bin 0 is a `<1 GB/s` catch-all, so sub-1 GB/s
+traffic is indistinguishable from idle. Neither binds the flagship claim: the ANE sits at
+~20 GB/s, comfortably inside the range.
+
+**Collection consequence — the ANE needs warming up.** CoreML does not engage the ANE for the
+first **~8 s** of a run; it serves early predictions on the CPU while compiling for the ANE, and
+`ANE0` reports *no ticks at all* during that window even though throughput looks healthy. An ANE
+background sampled cold reads as "the ANE moved nothing" — the exact false negative that would
+sink the exhibit. Allow ≥10 s of warm-up before the measurement window opens. Relatedly, the
+repo's exported `tmp/clip_vit_l14_vision.mlpackage` never reaches the ANE at all (`IOP State` =
+Off throughout); it is currently a CPU workload and must be fixed before it can serve as the ANE
+background.
 
 ## Which machine carries which claim
 
@@ -133,7 +160,7 @@ whether degradation survives moving the background off the GPU, not why.
 | | gb10 | m3pro |
 |---|---|---|
 | power / energy | DCGM power + cumulative energy | macmon power / thermals |
-| DRAM bandwidth | **none** — DCGM profiling fields confirmed unavailable on this stack | **none on M3 Pro** — the AMC channels exist but read zero; per-engine rd/wr bytes work on the M2 Pro only. `Energy Model / AMCC` responds on M3 (aggregate, ~10x range) |
+| DRAM bandwidth | **none** — DCGM profiling fields confirmed unavailable on this stack | **per-engine rd/wr, no root** — via `PMP / DCS BW` bandwidth histograms (the AMC byte counters are unsubscribable on M3-family; the sampler switches backend automatically). Derived bytes, accurate below a 32 GB/s per-requestor ceiling |
 
 So the bandwidth claim is directly measurable only on the Mac; on gb10 it is a stated
 power/utilization proxy. Known caveat: under pure-GPU load roughly half the Mac's traffic lands
@@ -224,6 +251,13 @@ each GPU cell.
 sizes each background to outlast the foreground, and emits the MPS twins) and `amc_calibration.py`;
 the AMC sampler under `../../scripts/`. The calibration record is in `AMC_CALIBRATION.md`; the hardware-attribution facts are
 consolidated above.
+
+**`analyze_e5.py` is the section's analyzer.** It reads what `collect_e5.sh` writes — one file
+per pipeline per run — and produces the per-pipeline attribution table: foreground p50/p95 with a
+hierarchical (run-then-query) bootstrap CI, degradation against the uncontended baseline, and the
+background's own delivered throughput from its own run. Per-query latency comes from the
+`pipeline - <split>` rows; the bare `pipeline` rows are process bookends and using them yields two
+"latencies" per run.
 
 **`analyze_staged.py` does not read the current data.** It implements the superseded staged
 design and discovers cells by globbing `stage_*`, whereas `collect_e5.sh` labels runs
