@@ -147,6 +147,32 @@ Two consequences:
 The divergences are not cosmetic — one flips a wrong answer to a right one (*"George Meade"* →
 *"George McClellan"* for the general at Antietam).
 
+### The quality column: same questions, both machines
+
+Scored 2026-09-05 from the counter-pass outputs, which cover the same 30 questions on both
+machines. Judge = Claude Haiku via the CLI, one judge per cell.
+
+| task | strategy | m3pro | gb10 |
+|---|---|--:|--:|
+| factoid | monolith (9B) | 0.867 | 0.933 |
+| factoid | monolith_4b | 0.933 | 0.900 |
+| factoid | decomposed | 0.867 | 0.867 |
+| factoid | decomposed_shared | 0.867 | 0.867 |
+| multihop | monolith (9B) | 0.433 | 0.300 |
+| multihop | monolith_4b | 0.333 | 0.433 |
+| multihop | decomposed | 0.433 | 0.433 |
+| multihop | decomposed_shared | 0.433 | 0.433 |
+
+The strategies are quality-comparable, which is what lets the section compare them on latency,
+memory and power without a quality confound. The 9B never pulls clear of the 4B — consistent with
+the retrieval-bound ceiling above.
+
+**Why this was re-derived.** gb10's published quality came from a dedicated `_quality_` collection
+of 120 questions, whose configs lived in the removed `evaluation/collect/` tree and no longer exist
+— so that column was **not reproducible from this repo**, and it rested on a different question set
+from m3pro's. Both machines are now scored from committed configs on the same 30 questions. The
+older 120-question `cuda_*` verdicts are kept as `cuda_*` and are not the reported column.
+
 ### Why quality is scored by LLM judge, not exact match
 
 Exact match materially mis-ranks these strategies (it penalises correct answers phrased differently),

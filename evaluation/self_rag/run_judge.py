@@ -89,10 +89,52 @@ def cmd_extract(args):
     print(f"wrote {out}  ({len(items)} items from {len(paths)} run file(s))")
 
 
+def _judge_via_cli(items, cell):
+    """Grade a cell with the Claude Code CLI (subscription, no API key).
+
+    This is how the published verdicts were actually produced -- judge/README.md
+    records "one judge per cell" -- and the project has a subscription rather
+    than pay-per-use, so the API path below cannot run here. One call grades the
+    whole cell, which is also what "one judge per cell" means.
+    """
+    import subprocess, textwrap
+    lines = [f'{it["i"]}\tQ: {it["q"]}\tGOLD: {"; ".join(map(str, it["gold"]))}'
+             f'\tCANDIDATE: {it["ans"]}' for it in items if it.get("ans")]
+    blank = [it["i"] for it in items if not it.get("ans")]
+    prompt = (
+        SYSTEM_PROMPT + "\n\n"
+        "Grade every numbered item below. Reply with ONLY a JSON array, one object "
+        'per item, of the form {"i": <number>, "correct": true|false}. No prose, no '
+        "code fence.\n\n" + "\n".join(lines))
+    proc = subprocess.run(["claude", "-p", prompt],
+                          capture_output=True, text=True, timeout=900)
+    if proc.returncode != 0:
+        sys.exit(f"claude CLI failed rc={proc.returncode}: {proc.stderr[-400:]}")
+    txt = proc.stdout.strip()
+    start, end = txt.find("["), txt.rfind("]")
+    if start < 0 or end < 0:
+        sys.exit(f"judge did not return a JSON array for {cell}:\n{txt[:400]}")
+    got = {int(v["i"]): bool(v["correct"]) for v in json.loads(txt[start:end + 1])}
+    # An item the judge skipped is not silently a pass.
+    missing = [it["i"] for it in items if it["i"] not in got and it["i"] not in blank]
+    if missing:
+        sys.exit(f"judge omitted items {missing[:10]} for {cell}; refusing partial verdicts")
+    return [{"i": it["i"], "correct": (False if it["i"] in blank else got[it["i"]])}
+            for it in items]
+
+
 def cmd_judge(args):
     inp = os.path.join(JUDGE_DIR, f"{args.cell}_input.json")
     if not os.path.exists(inp):
         sys.exit(f"missing {inp} -- run `extract` first")
+    if args.via == "cli":
+        items = json.load(open(inp))
+        verdicts = _judge_via_cli(items, args.cell)
+        out = os.path.join(JUDGE_DIR, f"verdicts_{args.cell}.json")
+        json.dump(verdicts, open(out, "w"), indent=1)
+        n = sum(v["correct"] for v in verdicts)
+        print(f"wrote {out}  ({n}/{len(verdicts)} judged correct)")
+        return
     if not os.environ.get("ANTHROPIC_API_KEY"):
         sys.exit("ANTHROPIC_API_KEY is unset; judging needs it. "
                  "`score` re-derives the published numbers without it.")
@@ -172,6 +214,10 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     e = sub.add_parser("extract"); e.add_argument("--arm", required=True); e.add_argument("--runs", required=True)
     j = sub.add_parser("judge");   j.add_argument("--cell", required=True)
+    j.add_argument("--via", choices=["cli", "api"], default="cli",
+                   help="cli = Claude Code CLI on the project's subscription "
+                        "(default, and how the published verdicts were made); "
+                        "api = anthropic SDK, needs ANTHROPIC_API_KEY")
     sub.add_parser("score")
     args = ap.parse_args()
     {"extract": cmd_extract, "judge": cmd_judge, "score": cmd_score}[args.cmd](args)
