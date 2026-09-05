@@ -174,6 +174,18 @@ def main() -> int:
         ap.error("pass --label or --out")
     sampler = AMCBandwidthSampler(label=args.label, out=args.out,
                                   interval=args.interval, raw=args.raw)
+
+    # SIGTERM must unwind through the finally below, not kill the interpreter
+    # outright. Python's default SIGTERM disposition terminates immediately,
+    # skipping cleanup -- which orphaned the compiled sampler (the process that
+    # actually writes the CSV) every time a harness stopped a run. Those orphans
+    # went on sampling through every later cell, so each cell's trace accumulated
+    # rows from cells that came after it: a 1100s cell held 29737 rows instead of
+    # ~2200, and its per-engine medians described the wrong workload.
+    def _on_term(signum, frame):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, _on_term)
+
     sampler.start()
     print(f"sampling -> {sampler.out} (Ctrl-C to stop)", file=sys.stderr)
     try:

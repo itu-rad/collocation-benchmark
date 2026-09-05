@@ -183,6 +183,35 @@ baseline's), against +46-49% for a GPU background. On gb10 the compute engine, n
 system, dominates — which is the opposite of what the unified-memory Apple part is expected to
 show, and is why the m3pro half carries the memory argument.
 
+## m3pro result: separation is not isolation (types R=6, r1 dropped)
+
+Foreground latency, and the per-engine DRAM traffic measured during the same runs:
+
+| background on | fg p50 | 95% CI | fg p95 | bg delivered | cpu | gpu | **ane** | total GB/s |
+|---|--:|---|--:|--:|--:|--:|--:|--:|
+| ANE | 1021 ms | [991, 1052] | 1759 | 9.19 q/s | 3.03 | 0.07 | **7.58** | 13.28 |
+| CPU | 1015 ms | [972, 1053] | 1779 | 1.97 q/s | **9.51** | 0.08 | 0.00 | 12.04 |
+| GPU | 1101 ms | [1068, 1135] | 2093 | 3.45 q/s | 2.95 | **8.95** | 0.00 | 15.19 |
+
+Every background delivered essentially its offered rate (9.19 vs 9.28 target, 1.97 vs 1.97, 3.45
+vs 3.46), so the bytes-matching held; each is attributed to its own engine, with the other two
+buckets at or near zero.
+
+**Moving the background off the GPU does not remove the interference.** An ANE background and a
+CPU background — two engines that share nothing with the foreground's GPU except the memory system
+— produce statistically identical foreground latency (1021 vs 1015 ms, intervals almost entirely
+overlapping), and a GPU background is only about 8% worse. If contention were a compute-engine
+property, moving off the GPU should have recovered the baseline; it does not.
+
+**The ANE is not a free engine.** It moves 7.58 GB/s of DRAM traffic while it works, which is what
+makes the point measurable rather than inferred: the interference follows the bytes, not the
+engine.
+
+Caveat to state: the three backgrounds were matched at 12 GB/s from the M2 Pro calibration but
+land at 7.6, 9.5 and 9.0 GB/s on their own engine buckets here — a ~25% spread, and some traffic
+falls in `other` or is served by cache before reaching DCS. The comparison is close-matched, not
+exactly matched.
+
 ## Engine attribution is not pipeline attribution
 
 The AMC/PMP sampler is machine-wide: it says which ENGINE moved bytes, not which pipeline. On
