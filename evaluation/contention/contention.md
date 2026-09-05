@@ -132,6 +132,33 @@ repo's exported `tmp/clip_vit_l14_vision.mlpackage` never reaches the ANE at all
 Off throughout); it is currently a CPU workload and must be fixed before it can serve as the ANE
 background.
 
+## Cross-validating the M3 backend (2026-09-05)
+
+The M3 Pro reads per-engine DRAM traffic through the PMP histogram backend rather than the M2's
+exact byte counters. Checked independently before trusting it for the section:
+
+| check | result |
+|---|---|
+| idle, machine clear | 4.97 GB/s total, 3.06 CPU — comparable to the M2 Pro's 2–4 |
+| unthrottled memory copy | CPU 3.06 → 43.4 GB/s — attribution tracks |
+| **at the GB12 operating point** | **CPU 11.82 GB/s against the 12.0 target** derived from the M2 Pro's exact counters |
+
+That last row is the one that matters: a different machine, through a different instrument, agrees
+within 1.5% with a rate derived from a different machine's exact byte counters. The matched-bytes
+axis holds across both.
+
+**The `saturated` column means peaks, not a bad average.** 30 of 39 rows flag saturated at the
+GB12 point, because the memory-stream co-runner is bursty at fine grain — a 256 MB sweep at full
+memory speed, then idle until the next arrival — so instantaneous ticks land in the top bin while
+the interval average is 12 GB/s. Discarding saturated rows, as a literal reading of the flag would
+have you do, throws away nearly all valid data. Treat it as "this row contains peaks above the
+bin range", and judge the average on whether it matches the offered dose, which here it does.
+
+**A caveat that cost an hour.** The first idle reading was 40 GB/s, which is not idle. An orphaned
+workload from a killed collection was still running at 122% CPU. Check `ps -eo pcpu,etime,args -r`
+before trusting any bandwidth baseline on this machine — and note it runs a GUI session, so
+`WindowServer` is a permanent ~40% background load that a headless DUT would not have.
+
 ## Which machine carries which claim
 
 The intensity axis is matched on **bytes/s**, which m3pro can calibrate and gb10 cannot — gb10 has
