@@ -159,6 +159,30 @@ workload from a killed collection was still running at 122% CPU. Check `ps -eo p
 before trusting any bandwidth baseline on this machine — and note it runs a GUI session, so
 `WindowServer` is a permanent ~40% background load that a headless DUT would not have.
 
+## gb10 result (R=6, repetition 1 dropped; complete 2026-09-05)
+
+| cell | fg p50 | 95% CI | fg p95 | vs baseline p50 | bg throughput |
+|---|--:|---|--:|--:|--:|
+| baseline (alone) | 673 ms | [638, 706] | 2241 ms | — | — |
+| CPU background | 701 ms | [666, 732] | 2281 ms | +4% | 4.87 q/s |
+| GPU, MPS | 979 ms | [895, 1059] | 3849 ms | +46% | 13.80 q/s |
+| GPU, time-sliced | 1005 ms | [952, 1055] | 3724 ms | +49% | 13.80 q/s |
+
+**MPS does not measurably beat time-slicing here.** The p50 confidence intervals overlap across
+almost their whole range ([895, 1059] against [952, 1055]), and at p95 MPS is nominally *worse*
+(3849 vs 3724) with intervals overlapping even more. The background delivers the same 13.80 q/s
+either way, so this is not MPS buying foreground latency at the background's expense — it is
+partitioning making no difference to a workload pair this size.
+
+That is a negative result and the section should report it as one. It is also a caution about
+reading early data: at R=3 the same cells read 948 vs 1017 ms and looked like a 7% MPS win, which
+did not survive to R=5.
+
+**A CPU background costs the GPU foreground almost nothing** (+4%, and its interval overlaps the
+baseline's), against +46-49% for a GPU background. On gb10 the compute engine, not the memory
+system, dominates — which is the opposite of what the unified-memory Apple part is expected to
+show, and is why the m3pro half carries the memory argument.
+
 ## Engine attribution is not pipeline attribution
 
 The AMC/PMP sampler is machine-wide: it says which ENGINE moved bytes, not which pipeline. On
