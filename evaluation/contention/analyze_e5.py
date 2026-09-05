@@ -120,6 +120,49 @@ def load(results_dir, machine, keep_first):
     return cells, tput
 
 
+def _figure(cells, base_pooled, machine, fig_dir, baseline_name):
+    """Foreground latency per collocation type, against the uncontended baseline."""
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("  (matplotlib unavailable -- figure skipped)")
+        return
+    names, p50s, p95s = [], [], []
+    for cell in sorted(cells):
+        if cell == baseline_name:
+            continue
+        fg = cells[cell].get("fg", [])
+        if not fg:
+            continue
+        pooled = sorted(x for r in fg for x in r)
+        names.append(cell.replace("bg_", ""))
+        p50s.append(q(pooled, 50) * 1000)
+        p95s.append(q(pooled, 95) * 1000)
+    if not names:
+        return
+    os.makedirs(fig_dir, exist_ok=True)
+    x = range(len(names))
+    fig, ax = plt.subplots(figsize=(1.6 * len(names) + 2.5, 3.4))
+    ax.bar([i - 0.19 for i in x], p50s, 0.38, label="p50", color="#5b8bd0")
+    ax.bar([i + 0.19 for i in x], p95s, 0.38, label="p95", color="#d98b5b")
+    if base_pooled:
+        # The reference the degradation is measured against, drawn not implied.
+        ax.axhline(q(base_pooled, 50) * 1000, ls="--", lw=1, color="#5b8bd0")
+        ax.axhline(q(base_pooled, 95) * 1000, ls="--", lw=1, color="#d98b5b")
+        ax.text(len(names) - 0.5, q(base_pooled, 95) * 1000, " alone",
+                va="bottom", ha="right", fontsize=8, color="#666666")
+    ax.set_xticks(list(x)); ax.set_xticklabels(names)
+    ax.set_ylabel("foreground latency (ms)")
+    ax.legend(frameon=False, fontsize=9)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    out = os.path.join(fig_dir, f"e5_{machine}_degradation.png")
+    fig.savefig(out, dpi=200)
+    print(f"\n**Figure:** `{out}`")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -127,6 +170,8 @@ def main() -> int:
     ap.add_argument("--results-dir", default=os.path.join(HERE, "results"))
     ap.add_argument("--baseline", default="baseline",
                     help="cell name of the uncontended reference")
+    ap.add_argument("--fig-dir", default=None,
+                    help="write the degradation figure here (omit for tables only)")
     ap.add_argument("--keep-first", action="store_true",
                     help="keep repetition 1 (dropped as warm-up by default)")
     args = ap.parse_args()
@@ -168,6 +213,9 @@ def main() -> int:
         print(f"| {cell} | {len(fg)} | {p50:.0f} | [{lo*1000:.0f}, {hi*1000:.0f}] | "
               f"{p95:.0f} | {deg} | {ft:.2f} | "
               + (f"{bt:.2f} |" if bt == bt else "— |"))
+
+    if args.fig_dir:
+        _figure(cells, base_pooled, args.machine, args.fig_dir, args.baseline)
 
     print("\nbg tput is the background pipeline's own delivered rate, from its own run —")
     print("the attribution this arrangement exists to provide. '—' means the cell has")
