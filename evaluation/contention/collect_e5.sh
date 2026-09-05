@@ -31,7 +31,7 @@ set -uo pipefail
 usage() { sed -n '2,28p' "$0" >&2; exit 2; }
 MACHINE=${1:-}; RUNS=${2:-6}; MODE=${3:-types}; LEVEL=${4:-${E5_LEVEL:-L50}}
 # The matched-bytes level used by the m3pro types cells (see generate_stage_configs).
-MLEVEL=${E5_MATCHED_LEVEL:-B12}
+MLEVEL=${E5_MATCHED_LEVEL:-GB12}
 [ -n "$MACHINE" ] || usage
 case "$MACHINE" in m3pro|gb10) ;; *) echo "collect_e5: machine must be m3pro or gb10" >&2; exit 2 ;; esac
 case "$MODE" in types|baseline|dose) ;; *) echo "collect_e5: mode must be types, baseline or dose" >&2; exit 2 ;; esac
@@ -120,7 +120,9 @@ case "$MODE" in
                 "bg_cpu|$HERE/configs/stage_c_stream_${LEVEL}_cuda.yml" ) ;;
     esac ;;
   dose)
-    for lv in L25 L50 L75 L100; do
+    # The ladder is in GB/s, the same unit the types cells are matched on, so the
+    # dose curve and the matched point are the same axis.
+    for lv in GB4 GB8 GB12 GB16; do
       cells+=( "dose_${lv}|$HERE/configs/stage_c_stream_${lv}_mlx.yml" )
     done ;;
 esac

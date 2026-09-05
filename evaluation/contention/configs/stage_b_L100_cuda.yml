@@ -12,7 +12,7 @@ pipelines:
     max_queries: 100
     timeout: 2256
     config:
-      rate: 0.2243
+      rate: 0.2
   stages:
   - name: Question dataloader
     id: 0
@@ -74,8 +74,8 @@ pipelines:
   loadgen:
     component: loadgen.MultiStreamScheduler
     queue_depth: 16
-    max_queries: 11754
-    timeout: 534
+    max_queries: 13182
+    timeout: 600
     config:
       interval: 0.0569
   stages:

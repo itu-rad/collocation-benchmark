@@ -1,4 +1,4 @@
-name: stage_c_clipane_B12_mlx
+name: stage_c_stream_GB12_mlx
 pipelines:
 - name: RAG serve plain
   inputs:
@@ -12,7 +12,7 @@ pipelines:
     max_queries: 80
     timeout: 2256
     config:
-      rate: 0.11
+      rate: 0.1
   stages:
   - name: Question dataloader
     id: 0
@@ -61,41 +61,25 @@ pipelines:
   - name: End stage
     id: 4
     component: stages.TerminalCapture
-- name: BG co-runner clipane
+- name: BG co-runner stream
   dataset_stage_id: 0
   inputs:
   - 0
   outputs:
-  - 1
+  - 0
   loadgen:
     component: loadgen.MultiStreamScheduler
     queue_depth: 16
-    max_queries: 10125
-    timeout: 872
+    max_queries: 2368
+    timeout: 960
     config:
-      interval: 0.10775
+      interval: 0.50696
   stages:
-  - name: VQA dataloader
+  - name: CPU memory stream
     id: 0
-    outputs:
-    - 1
-    component: stages.multimodal_vqa.VQADataLoader
+    component: stages.evaluation.MemoryStream
     config:
-      dataset:
-        name: Multimodal-Fatima/OK-VQA_train
-        split: train
-        image_column: image
-        question_column: question
-        answers_column: answers
-        max_samples: 100
-      batch_size: 1
-  - name: CLIP vision encoder (CoreML)
-    id: 1
-    component: stages.multimodal_vqa.CLIPVisionEncoderCoreML
-    config:
-      model:
-        coreml_path: tmp/clip_vit_l14_vision.mlpackage
-        hf_name: openai/clip-vit-large-patch14
-      device: ane
+      size_mb: 256
+      passes: 4
 listeners:
 - macmon

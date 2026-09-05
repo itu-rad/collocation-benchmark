@@ -12,7 +12,7 @@ pipelines:
     max_queries: 100
     timeout: 2256
     config:
-      rate: 0.2243
+      rate: 0.2
   stages:
   - name: Question dataloader
     id: 0

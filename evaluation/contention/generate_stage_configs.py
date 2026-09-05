@@ -57,7 +57,15 @@ OUT_DIR = HERE / "configs"
 #
 # TODO: this belongs in the pilot knob registry (R-LAMBDA-BELOW-SAT) rather than
 # here, keyed on a measured per-device service time.
-FG_RATE = {"mlx": 0.11, "cuda": 0.2243}
+# Round numbers: the CHOSEN knob is round, and rho is what falls out of it
+# against the measured service time. The inherited 0.2243/s was precise-looking
+# without being principled -- it implied rho = 0.61 on m3pro, which is not a
+# number anyone picked.
+#
+#   device  service time (5.1)  lambda   -> rho
+#   m3pro   2.70 s              0.1/s       0.27
+#   gb10    0.70 s              0.2/s       0.14
+FG_RATE = {"mlx": 0.1, "cuda": 0.2}
 FG_MAX_QUERIES = {"mlx": 80, "cuda": 100}
 
 FG_RAGSERVE = {"mlx": "pipeline_configs/rag_serve_plain.yml",
@@ -202,11 +210,19 @@ LISTENERS = {"mlx": ["macmon"], "cuda": ["dcgmi", "top"]}
 # the offered rate is actually delivered and the match holds. That matters here
 # because delivered bytes CANNOT be verified after the fact on m3pro.
 MATCHED_GBPS = 12.0
+# The dose-response ladder, in the same units and equally round. Capped by the
+# ANE ceiling (~20 GB/s), and it includes the matched level so the dose curve and
+# the types cells share a point.
+DOSE_GBPS = (4.0, 8.0, 12.0, 16.0)
 BYTES_CALIBRATION = HERE / "bytes_calibration.json"
 
 
-def _matched_interval(kind: str) -> float | None:
-    """Seconds between queries for `kind` to deliver MATCHED_GBPS, or None."""
+def _bytes_interval(kind: str, gbps: float) -> float | None:
+    """Seconds between queries for `kind` to deliver `gbps`, or None.
+
+    The interval is not round, and should not be: it is derived from a MEASURED
+    bytes/query. The round number is the target it delivers.
+    """
     import json
     try:
         cal = json.loads(BYTES_CALIBRATION.read_text())
@@ -215,7 +231,7 @@ def _matched_interval(kind: str) -> float | None:
     entry = (cal.get("corunners") or {}).get(kind)
     if not entry or not entry.get("bytes_per_query"):
         return None
-    qps = MATCHED_GBPS * 1e9 / entry["bytes_per_query"]
+    qps = gbps * 1e9 / entry["bytes_per_query"]
     return round(1.0 / qps, 5)
 
 # The background must outlast the foreground. Its own query budget used to end
@@ -409,13 +425,21 @@ def main() -> int:
             # partition; `collocation` is what tells radt to bring the daemon up.
             # Time-sliced vs MPS is then a one-line diff, which is the claim.
             if lvl == INTENSITY_LEVELS[0] and dev == "mlx":
-                iv = _matched_interval(kind)
-                if iv:
+                # Matched level for every co-runner; the dose ladder for the
+                # memory-stream antagonist that carries the dose-response.
+                targets = set([MATCHED_GBPS])
+                if kind == "stream":
+                    targets |= set(DOSE_GBPS)
+                for gbps in sorted(targets):
+                    iv = _bytes_interval(kind, gbps)
+                    if not iv:
+                        continue
                     b_doc = copy.deepcopy(doc)
-                    tag = f"B{int(MATCHED_GBPS)}"
+                    # "B" is already taken by stage_a_B<n> (background COUNT); this is bandwidth.
+                    tag = f"GB{int(gbps)}"
                     b_doc["name"] = f"stage_c_{kind}_{tag}_{dev}"
                     b_doc["pipelines"][1]["loadgen"]["config"]["interval"] = iv
-                    files.append((f"C {kind} {tag} (matched bytes)",
+                    files.append((f"C {kind} {tag} ({gbps:g} GB/s)",
                                   _dump(b_doc, f"stage_c_{kind}_{tag}_{dev}.yml")))
             if dev == "cuda" and kind == "clipgpu":
                 mps_doc = copy.deepcopy(doc)
