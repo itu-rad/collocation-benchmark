@@ -47,8 +47,8 @@ pipelines:
   loadgen:
     component: loadgen.MultiStreamScheduler
     queue_depth: 16
-    max_queries: 6701
-    timeout: 534
+    max_queries: 10931
+    timeout: 872
     config:
       interval: 0.0998
   stages:

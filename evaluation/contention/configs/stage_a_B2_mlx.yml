@@ -9,10 +9,10 @@ pipelines:
   loadgen:
     component: loadgen.PoissonLoadScheduler
     queue_depth: 100
-    max_queries: 100
+    max_queries: 80
     timeout: 2256
     config:
-      rate: 0.2243
+      rate: 0.11
   stages:
   - name: Question dataloader
     id: 0

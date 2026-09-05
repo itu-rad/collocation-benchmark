@@ -40,6 +40,26 @@ import pilot_lib as pl  # noqa: E402
 
 OUT_DIR = HERE / "configs"
 
+# Foreground arrival rate, PER DEVICE. The source configs carry 0.2243/s for
+# both, which was derived as rho ~= 0.6 of the UNCONTENDED service time. That is
+# the wrong reference for this section: it leaves no headroom for the contention
+# the experiment exists to create, so the queue goes unstable and the cell never
+# converges.
+#
+#   device  service time (uncontended, measured in 5.1)  rho at 0.2243/s
+#   gb10    0.70 s                                        0.16   <- ample headroom
+#   m3pro   2.70 s                                        0.61   <- saturates under load
+#
+# rho is now set from the uncontended service time so that it stays near 0.6 at
+# the WORST expected contention (~2x), i.e. rho_uncontended <= 0.3. gb10 already
+# satisfies that and is left alone; m3pro drops to 0.11/s. max_queries is trimmed
+# with it so a cell stays around 12 minutes.
+#
+# TODO: this belongs in the pilot knob registry (R-LAMBDA-BELOW-SAT) rather than
+# here, keyed on a measured per-device service time.
+FG_RATE = {"mlx": 0.11, "cuda": 0.2243}
+FG_MAX_QUERIES = {"mlx": 80, "cuda": 100}
+
 FG_RAGSERVE = {"mlx": "pipeline_configs/rag_serve_plain.yml",
                "cuda": "pipeline_configs/rag_serve_plain_cuda.yml"}
 FG_DECODE = {"mlx": "pipeline_configs/pilots/decode_9b_mlx.yml",
@@ -66,6 +86,16 @@ INTENSITY_LEVELS = (25, 50, 75, 100)
 EXTENDED_B_LEVELS = (3, 4)
 FG_LOAD_FRACTIONS = (0.7, 0.8)
 STREAM_STACK_COUNTS = (2, 3)
+
+
+def _apply_fg_rate(pipe: dict, device: str) -> dict:
+    """Set the foreground's arrival rate and query budget for this device."""
+    lg = pipe.get("loadgen") or {}
+    cfg = lg.get("config") or {}
+    if "rate" in cfg and device in FG_RATE:
+        cfg["rate"] = FG_RATE[device]
+        lg["max_queries"] = FG_MAX_QUERIES[device]
+    return pipe
 
 
 def _load_pipeline(rel_path: str) -> dict:
@@ -289,7 +319,7 @@ def main() -> int:
     # (R-INTENSITY); the bg indexer's own R_max needs the e6p_bg_index pilot.
     warn = []
     files: list[tuple[str, Path]] = []
-    fg = _load_pipeline(FG_RAGSERVE[dev])
+    fg = _apply_fg_rate(_load_pipeline(FG_RAGSERVE[dev]), dev)
 
     # ---- Stage A: B in {0,1,2} ------------------------------------------
     for B in (0, 1, 2):
