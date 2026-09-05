@@ -8,7 +8,7 @@
 #   and with which tool/field? -> counter-backed vs proxy-backed vs estimate-only.
 #
 # Run on BOTH DUTs:
-#   M2 Pro (darwin):  bash scripts/preflight_bandwidth_counters.sh
+#   Apple silicon (darwin):  bash scripts/preflight_bandwidth_counters.sh
 #                     (some probes need root; if passwordless sudo is absent the
 #                      script prints the exact sudo commands to run manually)
 #   GB10  (linux):    bash scripts/preflight_bandwidth_counters.sh
@@ -118,30 +118,70 @@ walk(json.loads(sys.stdin.readline()))' 2>/dev/null | head -30
   fi
 
   # --------------------------------------------------------------------------
-  hdr "Probe 4: AMC per-requestor DRAM counters via IOReport (no root) — the decisive check"
-  # Verified on M2 Pro / macOS 26: 'AMC Stats / Perf Counters' exposes per-requestor
-  # RD/WR *byte* counters (PCPU/ECPU/GFX/ANE/AVD/DISP/...), sampled as deltas.
+  hdr "Probe 4: per-engine DRAM counters via IOReport (no root) - the decisive check"
+  # Two backends exist, and which one works is a property of the SoC generation:
+  #   M2-family: "AMC Stats / Perf Counters" per-requestor RD/WR BYTE counters
+  #   M3-family: "PMP / DCS BW / <REQ>" bandwidth HISTOGRAMS -- there the AMC
+  #              group still enumerates 128 channels, but its driver refuses the
+  #              subscription and they never reach a sample.
+  # So EXISTENCE IS NOT READABILITY: the check below is that channels survive
+  # into a SAMPLE, not that they appear in the channel list. Checking the latter
+  # is what once made the M3 look like "counters that exist and read zero".
+  # See docs/amc-m3-counters-plan.md.
   PROBE_SRC="$(dirname "$0")/ioreport_bw_probe.c"
   if command -v clang >/dev/null && [ -f "$PROBE_SRC" ]; then
     PROBE_BIN=$(mktemp -t bwprobe)
-    if clang -o "$PROBE_BIN" "$PROBE_SRC" -framework CoreFoundation 2>/dev/null; then
-      OUT=$(run_to 20 "$PROBE_BIN" 2>/dev/null)
-      N_AMC=$(printf '%s' "$OUT" | grep -c 'AMC Stats' || true)
-      note "AMC channels found: ${N_AMC}"
-      printf '%s' "$OUT" | grep 'AMC Stats' | grep -E 'GFX|ANE|PCPU0 ' | head -6 | sed 's/^/  | /'
-      if [ "${N_AMC:-0}" -gt 0 ]; then
-        printf '%s' "$OUT" | sed -n '/deltas/,$p' | grep -E 'DCS (RD|WR)' | head -4 | sed 's/^/  | /'
-        note "-> per-engine DRAM byte counters (CPU/GPU/ANE) readable WITHOUT root."
-        VERDICT+=("M2: IOReport AMC per-requestor RD/WR byte counters -> COUNTER-BACKED, per-engine attribution")
-      else
-        note "-> no AMC channels on this chip/OS; fall back to macmon ram_power proxy."
+    if clang -O2 -o "$PROBE_BIN" "$PROBE_SRC" -framework CoreFoundation 2>/dev/null; then
+      OUT=$(run_to 30 "$PROBE_BIN" 2>/dev/null)
+      note "channel survival (COPIED -> SUBSCRIBED -> SAMPLED):"
+      printf '%s\n' "$OUT" | sed -n '/per-group survival/,/deltas for flagged/p' \
+        | grep -E 'AMC|PMP|COPIED|DROPPED' | sed 's/^/  | /'
+      if printf '%s' "$OUT" | grep -q 'DROPPED'; then
+        note "-> a group enumerates but never samples (expected on M3-family for AMC Stats):"
+        note "   its channels are UNREADABLE, not zero. The PMP backend covers this."
       fi
+      note "live bandwidth channels (1s deltas):"
+      printf '%s\n' "$OUT" | sed -n '/deltas for flagged/,$p' \
+        | grep -E 'DCS BW|DCS (RD|WR)' | head -6 | sed 's/^/  | /'
       rm -f "$PROBE_BIN"
     else
       note "probe failed to compile (need Xcode CLT)."
     fi
   else
-    note "clang or $PROBE_SRC missing — skipped. (Fallback tools: socpowerbud/macpm read the same IOReport channels.)"
+    note "clang or $PROBE_SRC missing - skipped."
+  fi
+
+  hdr "Probe 5: the sampler we actually collect with"
+  # The authoritative check: whichever backend this picks is what a run records.
+  SAMP_SRC="$(dirname "$0")/amc_bandwidth_sampler.c"
+  if command -v clang >/dev/null && [ -f "$SAMP_SRC" ]; then
+    SAMP_BIN=$(mktemp -t amcsamp)
+    if clang -O2 -o "$SAMP_BIN" "$SAMP_SRC" -framework CoreFoundation 2>/dev/null; then
+      SAMP_CSV=$(mktemp -t amccsv)
+      ERR=$(run_to 30 "$SAMP_BIN" -i 500 -n 2 -o "$SAMP_CSV" 2>&1 >/dev/null); RC=$?
+      printf '%s\n' "$ERR" | sed 's/^/  | /'
+      BACKEND=$(printf '%s' "$ERR" | sed -n 's/.*backend=\([a-z]*\).*/\1/p' | head -1)
+      if [ "$RC" -eq 3 ]; then
+        note "-> rc=3: NEITHER backend is readable here. E3'/E6' per-engine bytes are"
+        note "   unavailable on this machine; escalate before collection."
+      elif [ "$BACKEND" = "amc" ]; then
+        note "-> backend=amc: exact per-requestor DRAM BYTE counters, no root."
+        VERDICT+=("$(sysctl -n machdep.cpu.brand_string): IOReport AMC byte counters -> COUNTER-BACKED, exact per-engine attribution")
+      elif [ "$BACKEND" = "pmp" ]; then
+        note "-> backend=pmp: per-engine bandwidth HISTOGRAMS; bytes are derived."
+        note "   Accurate for smooth loads below the 32 GB/s per-requestor ceiling;"
+        note "   above it rows are a lower bound (check the CSV's 'saturated' column)."
+        VERDICT+=("$(sysctl -n machdep.cpu.brand_string): IOReport PMP DCS BW histograms -> COUNTER-BACKED, per-engine attribution (derived bytes, 32 GB/s ceiling)")
+      else
+        note "-> could not determine backend; sampler said rc=$RC."
+      fi
+      [ -s "$SAMP_CSV" ] && { note "first data row:"; sed -n '2p' "$SAMP_CSV" | sed 's/^/  | /'; }
+      rm -f "$SAMP_BIN" "$SAMP_CSV"
+    else
+      note "sampler failed to compile (need Xcode CLT)."
+    fi
+  else
+    note "clang or $SAMP_SRC missing - skipped."
   fi
 
   # --------------------------------------------------------------------------

@@ -201,14 +201,19 @@ LISTENERS = {"mlx": ["macmon"], "cuda": ["dcgmi", "top"]}
 # 10.0 q/s of ANE encode. Measured, that is 51 / 32 / 13 GB/s -- a 4x spread in
 # pressure on the very resource this section says they share. The types cells are
 # therefore matched on BYTES/S instead, with per-co-runner rates derived from
-# measured bytes/query (calibrate_bytes.py, run on the M2 Pro because the M3 Pro
-# does not populate the AMC counters).
+# measured bytes/query (calibrate_bytes.py; historically run on the M2 Pro,
+# because the M3 Pro's AMC byte counters cannot be subscribed -- it reports the
+# same per-engine traffic through the PMP histogram backend instead, so this can
+# now be re-derived on m3pro directly. See docs/amc-m3-counters-plan.md).
 #
 # The target is bounded by the ANE, which tops out around 20 GB/s -- that ceiling
 # is what caps a bytes-matched comparison, and is worth stating in the paper. 12
 # GB/s keeps every co-runner well inside its solo capacity (13% / 27% / 59%), so
-# the offered rate is actually delivered and the match holds. That matters here
-# because delivered bytes CANNOT be verified after the fact on m3pro.
+# the offered rate is actually delivered and the match holds. Delivered bytes CAN
+# now be verified after the fact on m3pro (pmp backend, 2026-09-05), and the whole
+# ladder sits under the backend's 32 GB/s per-requestor ceiling, so no cell of it
+# is measured by a saturated counter. The measured ANE ceiling, 19.9 GB/s through
+# that backend, independently confirms the ~20 GB/s bound assumed just above.
 MATCHED_GBPS = 12.0
 # The dose-response ladder, in the same units and equally round. Capped by the
 # ANE ceiling (~20 GB/s), and it includes the matched level so the dose curve and

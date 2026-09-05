@@ -1,11 +1,21 @@
 """DRAM-bandwidth trace for benchmark runs (Apple Silicon, no root).
 
-Wraps the compiled AMC sampler (`amc_bandwidth_sampler.c`, auto-built on first
-use) that reads the Apple Memory Controller's per-requestor DRAM byte counters
-via IOReport and streams a CSV time series: per-interval bytes moved by
-CPU / GPU / ANE / other, plus total GB/s. See
-CONTENTION_EXPERIMENTS_REDESIGN.md (E3'/E6' "Counters") for provenance and the
-calibration notes.
+Wraps the compiled sampler (`amc_bandwidth_sampler.c`, auto-built on first use)
+that reads per-requestor DRAM traffic via IOReport and streams a CSV time
+series: per-interval bytes moved by CPU / GPU / ANE / other, plus total GB/s.
+
+It picks one of two backends automatically, by what actually samples on the
+machine (see the C file's header, and docs/amc-m3-counters-plan.md):
+
+  backend=0 "amc"  M2-family "AMC Stats" per-requestor BYTE counters (exact)
+  backend=1 "pmp"  M3-family "PMP / DCS BW" bandwidth HISTOGRAMS, from which
+                   bytes are DERIVED -- accurate for smooth loads below the
+                   32 GB/s per-requestor bin ceiling, a lower bound above it
+                   (check the `saturated` column). M3-family silicon refuses
+                   the AMC subscription outright, so this is the only path.
+
+See CONTENTION_EXPERIMENTS_REDESIGN.md (E3'/E6' "Counters") for provenance and
+evaluation/contention/AMC_CALIBRATION.md for the calibration notes.
 
 CLI (standalone, e.g. alongside a manual run):
 
@@ -93,10 +103,11 @@ class AMCBandwidthSampler:
         """Stop the sampler. Raises if it had already refused to sample.
 
         The 0.2s liveness poll in start() only catches an immediate failure. The
-        sampler can also bail a moment later -- notably exit 3, "the AMC channels
-        are present but all read zero" on machines that do not populate them --
-        and without checking here the caller sees a clean return and an empty
-        trace, which is the failure this whole sampler exists to avoid.
+        sampler can also bail a moment later -- notably exit 3, "no per-engine
+        DRAM counters are readable on this machine" (neither backend yielded a
+        live channel) -- and without checking here the caller sees a clean
+        return and an empty trace, which is the failure this whole sampler
+        exists to avoid.
         """
         rc = None
         if self._proc is not None:
@@ -111,9 +122,9 @@ class AMCBandwidthSampler:
         if rc not in (None, 0, -signal.SIGTERM, 128 + signal.SIGTERM):
             raise RuntimeError(
                 f"AMC sampler exited {rc} rather than being stopped. rc=3 means "
-                f"this machine does not populate the per-requestor DRAM byte "
-                f"counters; run the binary directly for the full message: "
-                f"{BIN} -i 500 -n 2")
+                f"neither the AMC byte counters nor the PMP bandwidth histograms "
+                f"are readable on this machine; run the binary directly for the "
+                f"full message: {BIN} -i 500 -n 2")
         return self.out
 
     def __enter__(self) -> "AMCBandwidthSampler":

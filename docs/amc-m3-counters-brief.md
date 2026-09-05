@@ -1,5 +1,12 @@
 # Brief: per-engine DRAM counters do not work on the M3 Pro
 
+> **SUPERSEDED (2026-09-05).** The diagnosis below — "the channels exist and read
+> zero" — is wrong. The M3's AMC channels never reach the sample at all: the
+> driver refuses the subscription and the channels are dropped silently. Per-engine
+> DRAM attribution *is* available on the M3 Pro, unprivileged, under
+> `PMP / DCS BW / *`. See [`amc-m3-counters-plan.md`](amc-m3-counters-plan.md).
+> Kept for the record of what was ruled out.
+
 **Status:** blocking one exhibit in §5.2. Types cells are unaffected; the bandwidth
 dose–response is.
 

@@ -17,10 +17,30 @@ over idle, and divide by the delivered query rate.
 
     python evaluation/contention/calibrate_bytes.py --device mlx
 
-MACHINE NOTE: the AMC per-requestor counters are populated on the M2 Pro and NOT
-on the M3 Pro (see contention.md), so this calibration runs on the M2 Pro. Bytes
-per query is a property of the model, the input size and the framework, so it
-carries across Apple machines; the delivered RATE is still set per machine.
+MACHINE NOTE: both Apple DUTs can now run this. The M2 Pro uses the exact AMC
+per-requestor byte counters; the M3 Pro cannot subscribe to those and uses the
+PMP bandwidth-histogram backend instead, which the sampler selects automatically
+(see contention.md and docs/amc-m3-counters-plan.md). Historically this ran on
+the M2 Pro only. Bytes per query is a property of the model, the input size and
+the framework, so it carries across Apple machines; the delivered RATE is still
+set per machine.
+
+PREFER THE M2 PRO FOR SETTING RATES. The matched-bytes rates in
+generate_stage_configs.py come from the M2 Pro's exact byte counters and should
+stay there. The M3 backend derives bytes from bandwidth histograms and
+time-averages a gated engine against the aggregate's tick count -- sound for a
+smooth load, but a bursty one (a co-runner that runs flat out then sleeps, which
+is what the CLIP encoders do) is where that estimate is weakest. Re-deriving a
+bursty co-runner's bytes/query there risks setting its rate wrong in a way
+nothing downstream would catch. Use the M3 backend to CONFIRM a dose and to
+attribute traffic to an engine -- which is what exhibit 2 needs -- rather than to
+set the rates.
+
+If you re-run it on the M3 Pro: keep every co-runner under the backend's 32 GB/s
+per-requestor ceiling (the ladder already is) and reject any sample whose CSV
+`saturated` column is 1, since such a row is only a lower bound. An ANE co-runner
+needs >=10 s of warm-up before the measurement window -- CoreML serves the first
+~8 s on the CPU and the ANE bucket reads zero throughout it.
 """
 
 from __future__ import annotations
