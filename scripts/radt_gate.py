@@ -71,7 +71,22 @@ def main() -> int:
     try:
         import radt.schedule.schedule as sched
         ssrc = inspect.getsource(sched)
-        if "param_def, filepath, _ in defs:" not in ssrc:
+        # Patch 0002 has TWO fixes and both matter. Checking only the first is
+        # not enough -- and worse, the string it looks for also occurs in the
+        # LAUNCH loop, which is unpatched upstream, so a naive check passes on a
+        # machine that has neither fix. That false pass cost a 40-minute silent
+        # deadlock: children busy-wait on a radtlock only the scheduler removes,
+        # and stdout is block-buffered under a pipe so nothing is printed.
+        has_tagging_fix = "_, _, letter, run_name, _, _, param_def, filepath, _ in defs:" in ssrc
+        has_deadlock_fix = any(
+            marker in ssrc for marker in ("KILLED", "radtlock"))  # from the except-Exception handler
+        if not has_deadlock_fix:
+            problems.append(
+                "radt patch 0002's deadlock handler is NOT applied: an error "
+                "between child launch and radtlock removal unwinds into an "
+                "eternal wait with no output. Apply evaluation/radt-patches/"
+                "0002-schedule-fix-multi-run-param_def-reuse-deadlock-on-p.patch")
+        if not has_tagging_fix:
             problems.append(
                 "radt patch 0002 is NOT applied (the schedule path reuses the "
                 "last param_def for every run). Multi-pipeline configs -- every "
