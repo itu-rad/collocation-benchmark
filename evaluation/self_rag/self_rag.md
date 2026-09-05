@@ -121,6 +121,32 @@ which is why the section can compare them on latency, memory and power without a
 The conclusion held at both retriever strengths, so it is a property of the task, not of a weak
 retriever.
 
+### Greedy decoding is deterministic within a machine, not across machines
+
+Measured 2026-09-05, same model, same 4-bit quantisation, same config, greedy:
+
+| | answers byte-identical |
+|---|---|
+| m3pro, repetition vs repetition | **30/30** in every cell tested |
+| m3pro vs M2 Pro, same cell | **149/180 (31 differ)** |
+
+Per cell across machines: factoid 29/30, 29/30, 28/30; multihop 27/30, 20/30, and
+**16/30 for the 9B monolith** — divergence grows with generation length, which is what you would
+expect if it comes from accumulated floating-point differences rather than sampling.
+
+Two consequences:
+
+1. **"R=1 is exact for quality" holds per machine and only per machine.** Within m3pro the answers
+   are bit-identical across repetitions, so one repetition suffices — but the claim cannot be
+   stated machine-independently.
+2. **The quality column must be judged per machine.** Carrying the M2 Pro verdicts over to m3pro
+   would mis-score 17% of answers overall and 47% in the worst cell. This is an independent reason
+   the m3pro half had to be re-collected, separate from the memory-budget argument: the quality
+   numbers would have been wrong too, and silently so, since the two sets of answers look alike.
+
+The divergences are not cosmetic — one flips a wrong answer to a right one (*"George Meade"* →
+*"George McClellan"* for the general at Antietam).
+
 ### Why quality is scored by LLM judge, not exact match
 
 Exact match materially mis-ranks these strategies (it penalises correct answers phrased differently),
