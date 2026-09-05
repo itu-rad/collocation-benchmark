@@ -1,0 +1,38 @@
+digraph pipeline {
+  rankdir=LR;
+  node [fontname=Helvetica, fontsize=10];
+  edge [fontname=Helvetica, fontsize=9];
+  compound=true;
+  subgraph cluster_0 {
+    label="Self-RAG Decomposed-Shared";
+    style=dashed; color=gray50; fontname=Helvetica; fontsize=11;
+    n0_0 [label="Question dataloader", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n0_1 [label="Document retriever", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_2 [label="Retrieval grader formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_3 [label="Shared LLM (grade)", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_4 [label="Grade router", shape="diamond", style="filled", fillcolor="#fbe6c2"];
+    n0_5 [label="Answer generator formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_6 [label="Shared LLM (generate)", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_7 [label="Hallucination grader formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_8 [label="Shared LLM (hallucination)", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_9 [label="Hallucination router", shape="diamond", style="filled", fillcolor="#fbe6c2"];
+    n0_10 [label="Query rewrite formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_11 [label="Shared LLM (rewrite)", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_12 [label="End stage", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n0_0 -> n0_1;
+    n0_1 -> n0_2;
+    n0_2 -> n0_3;
+    n0_3 -> n0_4;
+    n0_4 -> n0_5;
+    n0_4 -> n0_10;
+    n0_4 -> n0_12;
+    n0_5 -> n0_6;
+    n0_6 -> n0_7;
+    n0_7 -> n0_8;
+    n0_8 -> n0_9;
+    n0_9 -> n0_5 [color="#b03030", style=dashed, constraint=false, label="retry"];
+    n0_9 -> n0_12 [taillabel="x2"];
+    n0_10 -> n0_11;
+    n0_11 -> n0_1 [color="#b03030", style=dashed, constraint=false, label="retry"];
+  }
+}

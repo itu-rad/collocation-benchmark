@@ -1,0 +1,26 @@
+digraph pipeline {
+  rankdir=LR;
+  node [fontname=Helvetica, fontsize=10];
+  edge [fontname=Helvetica, fontsize=9];
+  compound=true;
+  subgraph cluster_0 {
+    label="Self-RAG Monolith 4B";
+    style=dashed; color=gray50; fontname=Helvetica; fontsize=11;
+    n0_0 [label="Question dataloader", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n0_1 [label="Document retriever", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_2 [label="Monolith formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_3 [label="Monolith LLM", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_4 [label="Monolith router", shape="diamond", style="filled", fillcolor="#fbe6c2"];
+    n0_5 [label="End stage", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n0_6 [label="Query rewrite formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_7 [label="Query rewrite LLM", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_0 -> n0_1;
+    n0_1 -> n0_2;
+    n0_2 -> n0_3;
+    n0_3 -> n0_4;
+    n0_4 -> n0_5;
+    n0_4 -> n0_6;
+    n0_6 -> n0_7;
+    n0_7 -> n0_1 [color="#b03030", style=dashed, constraint=false, label="retry"];
+  }
+}

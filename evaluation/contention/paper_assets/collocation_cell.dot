@@ -1,0 +1,26 @@
+digraph pipeline {
+  rankdir=LR;
+  node [fontname=Helvetica, fontsize=10];
+  edge [fontname=Helvetica, fontsize=9];
+  compound=true;
+  subgraph cluster_0 {
+    label="RAG serve plain";
+    style=dashed; color=gray50; fontname=Helvetica; fontsize=11;
+    n0_0 [label="Question dataloader", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n0_1 [label="Document retriever", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_2 [label="Answer formatter", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n0_3 [label="Generator LLM", shape="box", style="filled,bold", fillcolor="#dde8f5"];
+    n0_4 [label="End stage", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n0_0 -> n0_1;
+    n0_1 -> n0_2;
+    n0_2 -> n0_3;
+    n0_3 -> n0_4;
+  }
+  subgraph cluster_1 {
+    label="BG co-runner clipane";
+    style=dashed; color=gray50; fontname=Helvetica; fontsize=11;
+    n1_0 [label="VQA dataloader", shape="oval", style="filled", fillcolor="#e6e6e6"];
+    n1_1 [label="CLIP vision encoder (CoreML)", shape="box", style="rounded,filled", fillcolor="#ffffff"];
+    n1_0 -> n1_1;
+  }
+}
