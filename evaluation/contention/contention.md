@@ -180,37 +180,56 @@ did not survive to R=5.
 
 **A CPU background costs the GPU foreground almost nothing** (+4%, and its interval overlaps the
 baseline's), against +46-49% for a GPU background. On gb10 the compute engine, not the memory
-system, dominates — which is the opposite of what the unified-memory Apple part is expected to
-show, and is why the m3pro half carries the memory argument.
+system, dominates — and, as the m3pro section above shows, the same is true on the unified-memory
+Apple part at the tested dose.
 
-## m3pro result: separation is not isolation (types R=6, r1 dropped)
+## m3pro result (types R=6 and dose R=3, repetition 1 dropped; complete 2026-09-06)
 
-Foreground latency, and the per-engine DRAM traffic measured during the same runs:
+**Correction.** An earlier version of this section, written before the baseline was collected,
+read the ANE/CPU cells as "interference persists off the GPU". With the baseline in, they do not:
+they sit inside its confidence interval. What follows replaces that reading.
 
-| background on | fg p50 | 95% CI | fg p95 | bg delivered | cpu | gpu | **ane** | total GB/s |
-|---|--:|---|--:|--:|--:|--:|--:|--:|
-| ANE | 1021 ms | [991, 1052] | 1759 | 9.19 q/s | 3.03 | 0.07 | **7.58** | 13.28 |
-| CPU | 1015 ms | [972, 1053] | 1779 | 1.97 q/s | **9.51** | 0.08 | 0.00 | 12.04 |
-| GPU | 1101 ms | [1068, 1135] | 2093 | 3.45 q/s | 2.95 | **8.95** | 0.00 | 15.19 |
+Degradation against the uncontended baseline (998 ms p50 [972, 1050]), bootstrap over runs then
+queries, with the per-engine DRAM traffic measured during the same runs:
 
-Every background delivered essentially its offered rate (9.19 vs 9.28 target, 1.97 vs 1.97, 3.45
-vs 3.46), so the bytes-matching held; each is attributed to its own engine, with the other two
-buckets at or near zero.
+| background on | p50 change | 95% CI | sig. | p95 change | bg delivered | cpu | gpu | ane | total GB/s |
+|---|--:|---|:-:|--:|--:|--:|--:|--:|--:|
+| ANE | +2.2% | [−3.0, +6.8] | no | +5.7% | 9.19 q/s | 3.03 | 0.07 | **7.58** | 13.28 |
+| CPU | +1.1% | [−4.6, +6.3] | no | +6.6% | 1.97 q/s | **9.51** | 0.08 | 0.00 | 12.04 |
+| GPU | **+10.1%** | [+4.5, +14.9] | **yes** | **+25.7%** | 3.45 q/s | 2.95 | **8.95** | 0.00 | 15.19 |
 
-**Moving the background off the GPU does not remove the interference.** An ANE background and a
-CPU background — two engines that share nothing with the foreground's GPU except the memory system
-— produce statistically identical foreground latency (1021 vs 1015 ms, intervals almost entirely
-overlapping), and a GPU background is only about 8% worse. If contention were a compute-engine
-property, moving off the GPU should have recovered the baseline; it does not.
+Dose–response, memory-stream background on the CPU, R=3 (r1 dropped):
 
-**The ANE is not a free engine.** It moves 7.58 GB/s of DRAM traffic while it works, which is what
-makes the point measurable rather than inferred: the interference follows the bytes, not the
-engine.
+| level | measured CPU DRAM GB/s | fg p50 | change | 95% CI | sig. |
+|---|--:|--:|--:|---|:-:|
+| alone | 2.4 | 998 ms | — | — | — |
+| GB4 | 4.0 | 988 ms | −1.8% | [−8.3, +5.5] | no |
+| GB8 | 8.6 | 1001 ms | +0.1% | [−5.3, +7.3] | no |
+| GB12 | 10.4 | 1027 ms | +2.8% | [−3.7, +9.5] | no |
+| GB16 | 14.2 | 1011 ms | +1.3% | [−4.2, +8.4] | no |
 
-Caveat to state: the three backgrounds were matched at 12 GB/s from the M2 Pro calibration but
-land at 7.6, 9.5 and 9.0 GB/s on their own engine buckets here — a ~25% spread, and some traffic
-falls in `other` or is served by cache before reaching DCS. The comparison is close-matched, not
-exactly matched.
+**What the data say.** At a matched ~12 GB/s, only a background on the *same engine as the
+foreground* degrades it measurably. Moving the background to the ANE or the CPU recovers the
+baseline to within noise, and raising the CPU antagonist's measured traffic six-fold (2.4 → 14.2
+GB/s) moves the foreground by nothing the bootstrap can resolve. The bytes were delivered and
+attributed — the ANE bucket carries 7.58 GB/s, the CPU bucket rises monotonically with the dose —
+and the foreground did not respond. Separation *was* isolation at this intensity.
+
+The same holds on gb10 (CPU background +3.9% [−3.2, +11.0], not significant; GPU +44–49%,
+significant), so it is not an Apple-specific result.
+
+**Why the intensity is what it is.** The axis is bytes-matched, and the ANE tops out near 20 GB/s,
+so 12 GB/s was the largest dose all three engines could deliver with headroom. That is ~8% of the
+M3 Pro's DRAM bandwidth. The memory-stream antagonist alone can deliver ~90 GB/s; the question of
+whether unified memory becomes the shared bottleneck at *that* dose is unanswered by this data,
+and it is the obvious next collection (CPU-only dose ladder past the ANE ceiling: 24, 32, 48, 64
+GB/s).
+
+**What this is for the paper.** As a mechanism claim, "separation is not isolation" is not
+supported at the tested dose. As a tool claim it is intact and arguably stronger: the framework
+put a matched dose on three engines, attributed every byte to the engine that moved it, and
+showed that the *compute-engine* explanation survives and the *bandwidth* explanation does not —
+a null with the counters to say why it is a null. The section should be written that way.
 
 ## Engine attribution is not pipeline attribution
 
